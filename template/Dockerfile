@@ -15,11 +15,8 @@ RUN apt-get update -y && \
 RUN rustup target add wasm32-unknown-unknown
 
 # Download Frontier repo
-RUN git clone https://github.com/paritytech/frontier /frontier
-RUN cd /frontier && git submodule init && git submodule update
-
-# Download rust dependencies and build the rust binary
-RUN cargo build "--$PROFILE"
+COPY .. /frontier
+RUN cd /frontier && cargo build "--$PROFILE"
 
 # 30333 for p2p traffic
 # 9933 for RPC call
