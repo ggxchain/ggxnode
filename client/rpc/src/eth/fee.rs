@@ -190,7 +190,7 @@ where
 	}
 
 	pub fn max_priority_fee_per_gas(&self) -> Result<U256> {
-		// https://github.com/ethereum/go-ethereum/blob/master/eth/ethconfig/config.go#L44-L51
+		// https://github.com/ethereum/go-ethereum/blob/polkadot-v0.9.35/eth/ethconfig/config.go#L44-L51
 		let at_percentile = 60;
 		let block_count = 20;
 		let index = (at_percentile * 2) as usize;
@@ -199,7 +199,7 @@ where
 			UniqueSaturatedInto::<u64>::unique_saturated_into(self.client.info().best_number);
 		let lowest = highest.saturating_sub(block_count - 1);
 
-		// https://github.com/ethereum/go-ethereum/blob/master/eth/gasprice/gasprice.go#L149
+		// https://github.com/ethereum/go-ethereum/blob/polkadot-v0.9.35/eth/gasprice/gasprice.go#L149
 		let mut rewards = Vec::new();
 		if let Ok(fee_history_cache) = &self.fee_history_cache.lock() {
 			for n in lowest..highest + 1 {

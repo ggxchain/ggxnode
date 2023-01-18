@@ -3,11 +3,11 @@ name: Rust
 on:
   push:
     branches:
-      - master
+      - polkadot-v0.9.35
       - 'polkadot-v**'
   pull_request:
     branches:
-      - master
+      - polkadot-v0.9.35
       - 'polkadot-v**'
 
 jobs:

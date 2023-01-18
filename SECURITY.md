@@ -2,7 +2,7 @@
 
 ## Supported versions
 
-Currently, only the latest master commit pin is supported. This will be extended back to releases as soon as we fix the Substrate release pipeline.
+Currently, only the latest polkadot-v0.9.35 commit pin is supported. This will be extended back to releases as soon as we fix the Substrate release pipeline.
 
 ## Reporting vulnerabilities
 
