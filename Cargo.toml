@@ -140,3 +140,6 @@ pallet-evm-test-vector-support = { version = "1.0.0-dev", path = "frame/evm/test
 pallet-hotfix-sufficients = { version = "1.0.0", path = "frame/hotfix-sufficients", default-features = false }
 # Frontier Template
 frontier-template-runtime = { path = "template/runtime", default-features = false }
+#GGX
+account-filter = { package = "substrate-account-filter", git = "https://github.com/akorchyn/substrate-account-filter.git", default-features = false, branch = "polkadot-v0.9.35" }
+# pallet-collective = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.35", default-features = false }
