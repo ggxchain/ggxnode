@@ -29,5 +29,4 @@ std = [
 	"sp-runtime/std",
 ]
 try-runtime = [
-	"sp-runtime/try-runtime",
 ]

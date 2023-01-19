@@ -9,13 +9,14 @@ WORKDIR /frontier
 
 # Upcd dates core parts
 RUN apt-get update -y && \
-	apt-get install -y cmake pkg-config libssl-dev git gcc build-essential clang libclang-dev
+	apt-get install -y cmake pkg-config libssl-dev git gcc build-essential clang libclang-dev protobuf-compiler
 
 # Install rust wasm. Needed for substrate wasm engine
 RUN rustup target add wasm32-unknown-unknown
 
 # Download Frontier repo
 COPY .. /frontier
+RUN rm -f /frontier/rust-toolchain
 RUN cd /frontier && cargo build "--$PROFILE"
 
 # 30333 for p2p traffic
