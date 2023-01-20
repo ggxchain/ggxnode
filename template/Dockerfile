@@ -1,11 +1,6 @@
 # Note: This is currently designed to simplify development
 # To get a smaller docker image, there should be 2 images generated, in 2 stages.
-
-FROM rustlang/rust:nightly
-
-
-ARG PROFILE=release
-WORKDIR /frontier
+FROM rustlang/rust:nightly as builder
 
 # Upcd dates core parts
 RUN apt-get update -y && \
@@ -14,21 +9,14 @@ RUN apt-get update -y && \
 # Install rust wasm. Needed for substrate wasm engine
 RUN rustup target add wasm32-unknown-unknown
 
+WORKDIR /frontier
+COPY  . .
+
 # Download Frontier repo
-COPY .. /frontier
-RUN rm -f /frontier/rust-toolchain
-RUN cd /frontier && cargo build "--$PROFILE"
+RUN rm rust-toolchain
+RUN cargo build --release
 
-# 30333 for p2p traffic
-# 9933 for RPC call
-# 9944 for Websocket
-# 9615 for Prometheus (metrics)
-EXPOSE 30333 9933 9944 9615
+FROM debian:sid
 
-
-ENV PROFILE ${PROFILE}
-
-# The execution will re-compile the project to run it
-# This allows to modify the code and not have to re-compile the
-# dependencies.
-CMD cargo run --bin frontier-template-node "--$PROFILE" -- --dev
+# Copy the node binary.
+COPY --from=builder /frontier/target/release/frontier-template-node /frontier/target/release/frontier-template-node
