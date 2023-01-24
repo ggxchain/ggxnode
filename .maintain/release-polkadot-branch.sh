@@ -4,10 +4,10 @@
 
 if  [[ $# -eq 1 && "${1}" == "--help" ]]; then
     echo "USAGE:"
-    echo "  ${0} [<from>] <to>, like polkadot-v0.9.35 or polkadot-v0.9.27"
+    echo "  ${0} [<from>] <to>, like polkadot-v0.9.33 or polkadot-v0.9.27"
 elif [[ $# -ne 2 ]]; then
     to_branch=${1} 
-    rg "https://github.com/paritytech/substrate" -t toml -T lock -l | xargs sed -i "s/polkadot-v0.9.35/$to_branch/g"
+    rg "https://github.com/paritytech/substrate" -t toml -T lock -l | xargs sed -i "s/polkadot-v0.9.33/$to_branch/g"
 else
     from_branch=${1}
     to_branch=${2}

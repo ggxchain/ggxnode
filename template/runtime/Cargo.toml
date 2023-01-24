@@ -58,7 +58,16 @@ pallet-hotfix-sufficients = { workspace = true }
 
 # GGX
 account-filter = { workspace = true }
-# pallet-collective = { workspace = true }
+
+# Astar
+pallet-evm-precompile-xvm = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.33", default-features = false }
+pallet-chain-extension-xvm = { git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.33", default-features = false }
+pallet-xvm = { git = 	"https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.33", default-features = false, features = ["evm", "wasm"] }
+
+# Wasm contracts
+pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false, features = ["unstable-interface"] }
+pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
+pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -112,6 +121,10 @@ std = [
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
 	"account-filter/std",
+	# Astar
+	"pallet-evm-precompile-xvm/std",
+	"pallet-chain-extension-xvm/std",
+	"pallet-xvm/std",
 	# "pallet-collective/std",
 ]
 runtime-benchmarks = [

@@ -1,7 +1,7 @@
 # Frontier Node Template Release Process
 
 > NOTE: this based on the
-> [Subtrate node template release process](https://github.com/paritytech/substrate/blob/polkadot-v0.9.35/docs/node-template-release.md) -
+> [Subtrate node template release process](https://github.com/paritytech/substrate/blob/polkadot-v0.9.33/docs/node-template-release.md) -
 
 1.  Clone and checkout the `main` branch of the
     [Frontier Node Template](https://github.com/substrate-developer-hub/frontier-node-template/).
@@ -71,7 +71,7 @@
         commit but not with published packages due to the latest (as yet) unpublished features. In this case,
         rollback that section of the Node Template to its previous version to ensure the Node Template builds.
 
-6.  Once the PR is merged, tag the merged commit in polkadot-v0.9.35 branch with the version number `vX.Y.Z+A`
+6.  Once the PR is merged, tag the merged commit in polkadot-v0.9.33 branch with the version number `vX.Y.Z+A`
     (e.g. `v3.0.0+1`). The `X`(major), `Y`(minor), and `Z`(patch) version number should follow
     Substrate release version. The last digit is any significant fixes made in the Substrate Node
     Template apart from Substrate. When the Substrate version is updated, this digit is reset to 0.
