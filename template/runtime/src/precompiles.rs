@@ -9,29 +9,19 @@ use pallet_evm_precompile_xvm::XvmPrecompile;
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
-impl<R> FrontierPrecompiles<R>
-where
-	R: pallet_evm::Config,
-{
+impl<R> FrontierPrecompiles<R> {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
-	pub fn used_addresses() -> [H160; 7] {
-		[
-			hash(1),
-			hash(2),
-			hash(3),
-			hash(4),
-			hash(5),
-			hash(1024),
-			hash(1025),
-		]
+	pub fn used_addresses() -> impl Iterator<Item = H160> {
+		[1, 2, 3, 4, 5, 1024, 1025, 20485].into_iter().map(hash)
 	}
 }
+
 impl<R> PrecompileSet for FrontierPrecompiles<R>
 where
-	R: pallet_evm::Config + pallet_xvm::Config,
 	XvmPrecompile<R>: Precompile,
+	R: pallet_evm::Config + pallet_xvm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -51,7 +41,7 @@ where
 	}
 
 	fn is_precompile(&self, address: H160) -> bool {
-		Self::used_addresses().contains(&address)
+		Self::used_addresses().any(|h| h == address)
 	}
 }
 

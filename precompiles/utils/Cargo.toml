@@ -1,0 +1,53 @@
+[package]
+name = "precompile-utils"
+authors = ["StakeTechnologies", "PureStake"]
+description = "Utils to write EVM precompiles."
+edition = "2021"
+version = "0.4.3"
+
+[dependencies]
+# There's a problem with --all-features when this is moved under dev-deps
+evm = { version = "0.37.0", optional = true }
+impl-trait-for-tuples = "0.2.2"
+log = "0.4.16"
+num_enum = { version = "0.5.3", default-features = false }
+sha3 = { version = "0.10.1", default-features = false }
+similar-asserts = { version = "1.1.0", optional = true }
+
+precompile-utils-macro = { path = "macro" }
+
+# Substrate
+scale-codec = { package = "parity-scale-codec", workspace = true, default-features = false }
+frame-support = { workspace = true, default-features = false }
+frame-system = { workspace = true, default-features = false }
+sp-core = { workspace = true, default-features = false }
+sp-io = { workspace = true, default-features = false }
+sp-runtime = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
+
+# Frontier
+fp-evm = { workspace = true, default-features = false }
+pallet-evm = { workspace = true, default-features = false, features = ["forbid-evm-reentrancy"] }
+
+# Polkadot / XCM
+xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.33", default-features = false }
+
+[dev-dependencies]
+hex-literal = "0.3.1"
+
+[features]
+default = ["std"]
+std = [
+	"evm/std",
+	"scale-codec/std",
+	"fp-evm/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-evm/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-std/std",
+	"sp-runtime/std",
+	"xcm/std",
+]
+testing = ["similar-asserts", "std"]

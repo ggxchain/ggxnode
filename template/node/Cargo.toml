@@ -68,6 +68,7 @@ fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 frontier-template-runtime = { workspace = true, features = ["std"] }
 
+
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 

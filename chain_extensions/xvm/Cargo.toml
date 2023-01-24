@@ -1,0 +1,43 @@
+[package]
+name = "pallet-chain-extension-xvm"
+version = "0.1.0"
+authors = ["Stake Technologies <devops@stake.co.jp>"]
+edition = "2021"
+license = "Apache-2.0"
+homepage = "https://astar.network"
+repository = "https://github.com/AstarNetwork/astar-frame"
+description = "Chain extension for XVM"
+
+[dependencies]
+scale-codec = { package = "parity-scale-codec", workspace = true, default-features = false }
+frame-support = { workspace = true, default-features = false }
+frame-system = { workspace = true, default-features = false }
+log = "0.4.16"
+num-traits = { version = "0.2", default-features = false }
+pallet-contracts = { workspace = true, default-features = false, features = ["unstable-interface"] }
+pallet-contracts-primitives = { workspace = true, default-features = false }
+scale-info = { workspace = true, default-features = false, features = ["derive"] }
+sp-core = { workspace = true, default-features = false }
+sp-runtime = { workspace = true, default-features = false }
+sp-std = { workspace = true, default-features = false }
+
+# Astar
+pallet-xvm = { workspace = true, default-features = false }
+xvm-chain-extension-types = { path = "../types/xvm", default-features = false }
+
+[features]
+default = ["std"]
+std = [
+	"scale-codec/std",
+	"frame-support/std",
+	"frame-system/std",
+	"num-traits/std",
+	"pallet-contracts/std",
+	"pallet-contracts-primitives/std",
+	"scale-info/std",
+	"sp-std/std",
+	"sp-core/std",
+	"sp-runtime/std",
+	# Astar
+	"pallet-xvm/std",
+]

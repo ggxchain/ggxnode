@@ -142,5 +142,13 @@ pallet-hotfix-sufficients = { version = "1.0.0", path = "frame/hotfix-sufficient
 # Frontier Template
 frontier-template-runtime = { path = "template/runtime", default-features = false }
 #GGX
-account-filter = { package = "substrate-account-filter", default-features = false, path = "../../substrate-account-filter" }
-# pallet-collective = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate.git", branch = "polkadot-v0.9.33", default-features = false }
+account-filter = { package = "substrate-account-filter", default-features = false, path = "../substrate-account-filter" }
+#Astar
+pallet-xvm = { version = "0.2.1", path = "frame/pallet-xvm", default-features = false }
+pallet-evm-precompile-xvm = { version = "0.1.0", path = "precompiles/xvm", default-features = false }
+pallet-chain-extension-xvm = { version = "0.1.0", path = "chain_extensions/xvm", default-features = false }
+
+# Wasm contracts
+pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
+pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
+pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
