@@ -2343,6 +2343,7 @@ dependencies = [
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
  "pallet-aura",
+ "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
  "pallet-chain-extension-xvm",
@@ -2363,6 +2364,7 @@ dependencies = [
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-utility",
  "pallet-xvm",
  "parity-scale-codec",
  "scale-info",
@@ -4883,6 +4885,7 @@ name = "pallet-utility"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.33#2dff067e9f7f6f3cc4dbfdaaa97753eccc407689"
 dependencies = [
+ "frame-benchmarking",
  "frame-support",
  "frame-system",
  "parity-scale-codec",

@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_core::{sr25519, Pair, Public, H160, U256};
+use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
@@ -56,6 +56,12 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					get_account_id_from_seed::<sr25519::Public>("Bob"),
 					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
 					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+					// Arrakis.TEST account in MetaMask
+					// Import known test account with private key
+					// 0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391
+					// H160 address: 0xaaafB3972B05630fCceE866eC69CdADd9baC2771
+					AccountId::from_ss58check("5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT")
+						.unwrap(),
 				],
 				// Initial PoA authorities
 				vec![authority_keys_from_seed("Alice")],
@@ -227,7 +233,7 @@ fn testnet_genesis(
 			},
 		},
 		ethereum: Default::default(),
-		dynamic_fee: Default::default(),
+		// dynamic_fee: Default::default(),
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
 			allowed_accounts: council.clone().into_iter().map(|e| (e, ())).collect(),

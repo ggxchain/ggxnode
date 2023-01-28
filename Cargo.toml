@@ -152,3 +152,4 @@ pallet-chain-extension-xvm = { version = "0.1.0", path = "chain_extensions/xvm",
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
 pallet-randomness-collective-flip = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.33", default-features = false }
+pallet-authorship = { git = "https://github.com/paritytech/substrate", package = "pallet-authorship", default-features = false, branch = "polkadot-v0.9.33" }
