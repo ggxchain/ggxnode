@@ -282,7 +282,7 @@ impl frame_system::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MaxAuthorities: u32 = 50;
+	pub const MaxAuthorities: u32 = 100;
 }
 
 impl pallet_aura::Config for Runtime {
@@ -335,7 +335,7 @@ impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
 	#[cfg(feature = "aura")]
-	type OnTimestampSet = ();
+	type OnTimestampSet = Aura;
 	#[cfg(feature = "manual-seal")]
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
@@ -479,9 +479,16 @@ impl pallet_ethereum::Config for Runtime {
 }
 
 parameter_types! {
+	pub BoundDivision: U256 = U256::from(1024);
+}
+
+impl pallet_dynamic_fee::Config for Runtime {
+	type MinGasPriceBoundDivisor = BoundDivision;
+}
+
+parameter_types! {
 	pub DefaultBaseFeePerGas: U256 = (MILLIUNIT / 1_000_000).into();
-	// At the moment, we don't use dynamic fee calculation for GoldenGate by default
-	pub DefaultElasticity: Permill = Permill::zero();
+	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
 }
 
 pub struct BaseFeeThreshold;
@@ -527,7 +534,7 @@ construct_runtime!(
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
 		EVMChainId: pallet_evm_chain_id,
-		// DynamicFee: pallet_dynamic_fee,
+		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
 		AccountFilter: account_filter,
@@ -742,7 +749,7 @@ impl_runtime_apis! {
 			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
-			_access_list: Option<Vec<(H160, Vec<H256>)>>,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<pallet_evm::CallInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
@@ -763,7 +770,7 @@ impl_runtime_apis! {
 				max_fee_per_gas,
 				max_priority_fee_per_gas,
 				nonce,
-				Vec::new(),
+				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
 				config
@@ -782,7 +789,7 @@ impl_runtime_apis! {
 			max_priority_fee_per_gas: Option<U256>,
 			nonce: Option<U256>,
 			estimate: bool,
-			_access_list: Option<Vec<(H160, Vec<H256>)>>,
+			access_list: Option<Vec<(H160, Vec<H256>)>>,
 		) -> Result<pallet_evm::CreateInfo, sp_runtime::DispatchError> {
 			let config = if estimate {
 				let mut config = <Runtime as pallet_evm::Config>::config().clone();
@@ -803,7 +810,7 @@ impl_runtime_apis! {
 				max_fee_per_gas,
 				max_priority_fee_per_gas,
 				nonce,
-				Vec::new(),
+				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
 				config

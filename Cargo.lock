@@ -8099,7 +8099,7 @@ dependencies = [
 [[package]]
 name = "substrate-account-filter"
 version = "4.0.0"
-source = "git+https://github.com/akorchyn/substrate-account-filter?branch=polkadot-v0.9.35#16dd8140d4a0702a0c758c9392f1d3ed6deb47cd"
+source = "git+https://github.com/GoldenGateGGX/substrate-account-filter?branch=polkadot-v0.9.35#16dd8140d4a0702a0c758c9392f1d3ed6deb47cd"
 dependencies = [
  "frame-support",
  "frame-system",

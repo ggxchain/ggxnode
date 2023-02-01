@@ -234,7 +234,7 @@ fn testnet_genesis(
 			},
 		},
 		ethereum: Default::default(),
-		// dynamic_fee: Default::default(),
+		dynamic_fee: Default::default(),
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
 			allowed_accounts: council.clone().into_iter().map(|e| (e, ())).collect(),
