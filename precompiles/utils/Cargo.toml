@@ -30,7 +30,7 @@ fp-evm = { workspace = true, default-features = false }
 pallet-evm = { workspace = true, default-features = false, features = ["forbid-evm-reentrancy"] }
 
 # Polkadot / XCM
-xcm = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.33", default-features = false }
+xcm = { workspace = true, default-features = false }
 
 [dev-dependencies]
 hex-literal = "0.3.1"

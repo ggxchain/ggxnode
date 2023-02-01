@@ -65,11 +65,9 @@ pallet-chain-extension-xvm = { workspace = true, default-features = false }
 pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
 
 # Wasm contracts
-pallet-contracts = { workspace = true, features = ["unstable-interface"] }
+pallet-contracts = { workspace = true }
 pallet-contracts-primitives = { workspace = true, default-features = false }
 pallet-randomness-collective-flip = { workspace = true, default-features = false }
-pallet-utility = { workspace = true, default-features = false }
-pallet-authorship = { workspace = true, default-features = false }
 
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
@@ -131,9 +129,6 @@ std = [
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",
 	"pallet-randomness-collective-flip/std",
-	"pallet-utility/std",
-	"pallet-authorship/std",
-	# "pallet-collective/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

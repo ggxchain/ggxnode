@@ -4,7 +4,7 @@ on:
   push:
     branches:
       - '**'
-      - '!polkadot-v0.9.33'
+      - '!polkadot-v0.9.35'
       - '!polkadot-v**'
 
 jobs:

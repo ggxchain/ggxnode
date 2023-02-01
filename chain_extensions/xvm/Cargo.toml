@@ -14,7 +14,7 @@ frame-support = { workspace = true, default-features = false }
 frame-system = { workspace = true, default-features = false }
 log = "0.4.16"
 num-traits = { version = "0.2", default-features = false }
-pallet-contracts = { workspace = true, default-features = false, features = ["unstable-interface"] }
+pallet-contracts = { workspace = true, default-features = false }
 pallet-contracts-primitives = { workspace = true, default-features = false }
 scale-info = { workspace = true, default-features = false, features = ["derive"] }
 sp-core = { workspace = true, default-features = false }
