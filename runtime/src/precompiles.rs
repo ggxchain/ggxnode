@@ -13,6 +13,19 @@ impl<R> FrontierPrecompiles<R> {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
+
+	/// The function contains list of supported Ethereum precompiles.
+	/// The next list contains Ethereum related precompiles:
+	/// * 0x1 - is ECRecover
+	/// * 0x2 - is Sha256
+	/// * 0x3 - is Ripemd160
+	/// * 0x4 - is Identity
+	/// * 0x5 - is Modexp
+	///
+	/// The next list contains handy precompiles that are missing in Ethereum
+	/// * 0x400 - is Sha3FIPS256
+	/// * 0x401 - is ECRecoverPublicKey
+	/// * 0x5005 - is cross virtual machine (XVM)
 	pub fn used_addresses() -> impl Iterator<Item = H160> {
 		[1, 2, 3, 4, 5, 1024, 1025, 20485].into_iter().map(hash)
 	}

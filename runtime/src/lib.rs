@@ -164,7 +164,7 @@ pub const EXISTENTIAL_DEPOSIT: Balance = 1_000_000;
 
 /// Charge fee for stored bytes and items.
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIUNIT / 1_000_000
+	(items as Balance + bytes as Balance) * MILLIUNIT / EXISTENTIAL_DEPOSIT
 }
 
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -199,6 +199,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
+/// We allow for 2 seconds of compute with a 6 second average block time.
 pub const MAXIMUM_BLOCK_WEIGHT: Weight =
 	Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
 
@@ -223,7 +224,7 @@ parameter_types! {
 	})
 	.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
 	.build_or_panic();
-	pub BlockLength:  frame_system::limits::BlockLength = frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
+	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub const SS58Prefix: u8 = 88;
 }
 
