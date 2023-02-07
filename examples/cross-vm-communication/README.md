@@ -69,7 +69,7 @@ Example result:
   * input: we should put here a method selector from ink. The selector is an index for the method in the contract. In our case, it is `0xDEADBEEF` for the flip method. You can see it in the evm-to-wasm/flipper/lib.rs:40
   * Example: ![](evm-to-wasm/evm-contract.png)
   * Click transact and modify the gas price in the Metamask to at least 0.1 GGX (Currently, estimation of the gas price between VM is not implemented). The transaction should be successful.
-  * You can go to the [explorer tab](http://localhost:3000/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/explorer) and check the events from the contract. You are supposed to see something like this: ![](success.png)
+  * You can go to the [explorer tab](http://localhost:3000/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/explorer) and check the events from the contract. You are supposed to see something like this: ![](evm-to-wasm/success.png)
 
 ## WASM to EVM communication
 In this chapter, we will create a simple contract on the EVM side and call it from the WASM.
