@@ -77,9 +77,25 @@ In this chapter, we will create a simple contract on the EVM side and call it fr
 ### Flipper EVM contract
 The Flipper contract is a simple contract that allows you to flip a boolean value. It is written in Solidity and compiled to EVM. The source code can be found in the `wasm_to_evm/flipper.sol` file.
 
-#### Deploy the contract
+#### Deploy the EVM contract
 * Go to the [Remix IDE](https://remix.ethereum.org/#) and create a new contract with the data from the wasm-to-evm/flipper.sol file.
 * Inject Metamask as in the previous chapter
 * Compile the code
 * Deploy the contract with estimated gas.
-* The contract should appear in the Deployed contract section. ![](wasm-to-evm/contract.png)
+* The contract should appear in the Deployed contract section. ![](wasm-to-evm/contract.png). You can play with it if you want.
+* The selector for the `flip` method is `0xcde4efa9`. You can get solidity selector from [the tool](https://abi.hashex.org/) or other similar tools.
+
+### Flipper WASM contract
+We need a wrapper around the EVM contract. The wrapper will allow us to call the EVM contract from the WASM. The source code can be found in the `wasm_to_evm/flipper/lib.rs` file.
+
+#### Building the contract
+```
+# The contract will be located in wasm-to-evm/flipper/target/ink/flipper.contract
+cargo contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
+```
+
+#### Deploying the contract
+* Go to the [Contracts](http://localhost:3000/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/contracts) page
+* Deploy the contract using wasm-to-evm/flipper/target/ink/flipper.contract
+* Use flip method and specify the address of the EVM contract as the first argument. The address should be in hex.![](wasm-to-evm/call_from_wasm.png)
+* Go to [explorer](http://localhost:3000/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/explorer). You are supposed to see events like this ![](wasm-to-evm/events.png)
