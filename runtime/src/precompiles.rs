@@ -14,6 +14,46 @@ use pallet_evm_precompile_xvm::XvmPrecompile;
 
 pub struct FrontierPrecompiles<R>(PhantomData<R>);
 
+pub mod consts {
+	use sp_core::H160;
+
+	pub const EC_RECOVER: H160 = hash(1);
+	pub const SHA256: H160 = hash(2);
+	pub const RIPEMD160: H160 = hash(3);
+	pub const IDENTITY: H160 = hash(4);
+	pub const MODEXP: H160 = hash(5);
+	pub const BN128_ADD: H160 = hash(6);
+	pub const BN128_MUL: H160 = hash(7);
+	pub const BN128_PAIRING: H160 = hash(8);
+	pub const BLAKE2F: H160 = hash(9);
+	pub const SHA3_FIPS256: H160 = hash(0x400);
+	/// 402 is used in Astar and Moonbeam, so preserve the address for contracts interoperability
+	pub const EC_RECOVER_PUBLIC_KEY: H160 = hash(0x402);
+	/// 403 is also used in Astar, so preserve the address for contracts interoperability.
+	/// TO DECIDE: Celo uses 0xF3 for it, so we need to decide which one to use.
+	pub const ED25519_VERIFY: H160 = hash(0x403);
+	/// 5002 is used in Astar, so preserve the address for contracts interoperability
+	pub const SR25519_VERIFY: H160 = hash(0x5002);
+	/// 5003 is used in Astar, so preserve the address for contracts interoperability
+	pub const ECDSA_VERIFY: H160 = hash(0x5003);
+	/// 5005 is used in Astar, so preserve the address for contracts interoperability
+	pub const XVM: H160 = hash(0x5005);
+
+	const fn hash(a: u64) -> H160 {
+		let bytes = a.to_be_bytes();
+		let mut result = [0u8; 20];
+		result[12] = bytes[0];
+		result[13] = bytes[1];
+		result[14] = bytes[2];
+		result[15] = bytes[3];
+		result[16] = bytes[4];
+		result[17] = bytes[5];
+		result[18] = bytes[6];
+		result[19] = bytes[7];
+		H160(result)
+	}
+}
+
 impl<R> FrontierPrecompiles<R> {
 	pub fn new() -> Self {
 		Self(Default::default())
@@ -40,12 +80,24 @@ impl<R> FrontierPrecompiles<R> {
 	/// * 0x5002 - is Sr25519 verify
 	/// * 0x5003 - is Ecdsa verify
 	/// * 0x5005 - is cross virtual machine (XVM)
-	pub fn used_addresses() -> impl Iterator<Item = H160> {
+	pub fn used_addresses() -> [H160; 15] {
 		[
-			1, 2, 3, 4, 5, 6, 7, 8, 9, 1024, 1026, 1027, 20482, 20483, 20485,
+			consts::EC_RECOVER,
+			consts::SHA256,
+			consts::RIPEMD160,
+			consts::IDENTITY,
+			consts::MODEXP,
+			consts::BN128_ADD,
+			consts::BN128_MUL,
+			consts::BN128_PAIRING,
+			consts::BLAKE2F,
+			consts::SHA3_FIPS256,
+			consts::EC_RECOVER_PUBLIC_KEY,
+			consts::ED25519_VERIFY,
+			consts::SR25519_VERIFY,
+			consts::ECDSA_VERIFY,
+			consts::XVM,
 		]
-		.into_iter()
-		.map(hash)
 	}
 }
 
@@ -57,37 +109,29 @@ where
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
 			// Ethereum precompiles :
-			a if a == hash(1) => Some(ECRecover::execute(handle)),
-			a if a == hash(2) => Some(Sha256::execute(handle)),
-			a if a == hash(3) => Some(Ripemd160::execute(handle)),
-			a if a == hash(4) => Some(Identity::execute(handle)),
-			a if a == hash(5) => Some(Modexp::execute(handle)),
-			a if a == hash(6) => Some(Bn128Add::execute(handle)),
-			a if a == hash(7) => Some(Bn128Mul::execute(handle)),
-			a if a == hash(8) => Some(Bn128Pairing::execute(handle)),
-			a if a == hash(9) => Some(Blake2F::execute(handle)),
+			a if a == consts::EC_RECOVER => Some(ECRecover::execute(handle)),
+			a if a == consts::SHA256 => Some(Sha256::execute(handle)),
+			a if a == consts::RIPEMD160 => Some(Ripemd160::execute(handle)),
+			a if a == consts::IDENTITY => Some(Identity::execute(handle)),
+			a if a == consts::MODEXP => Some(Modexp::execute(handle)),
+			a if a == consts::BN128_ADD => Some(Bn128Add::execute(handle)),
+			a if a == consts::BN128_MUL => Some(Bn128Mul::execute(handle)),
+			a if a == consts::BN128_PAIRING => Some(Bn128Pairing::execute(handle)),
+			a if a == consts::BLAKE2F => Some(Blake2F::execute(handle)),
 			// nor Ethereum precompiles :
-			a if a == hash(1024) => Some(Sha3FIPS256::execute(handle)),
-			// TODO: there is also 1025 dispatch call, but it is not used in moonbeam and it's not clear what it is
-			a if a == hash(1026) => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == hash(1027) => Some(Ed25519Verify::execute(handle)),
+			a if a == consts::SHA3_FIPS256 => Some(Sha3FIPS256::execute(handle)),
+			a if a == consts::EC_RECOVER_PUBLIC_KEY => Some(ECRecoverPublicKey::execute(handle)),
+			a if a == consts::ED25519_VERIFY => Some(Ed25519Verify::execute(handle)),
 			// Astar precompiles:
-
-			// Sr25519 0x5002
-			a if a == hash(20482) => Some(Sr25519Precompile::<R>::execute(handle)),
-			// SubstrateEcdsa 0x5003
-			a if a == hash(20483) => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
+			a if a == consts::SR25519_VERIFY => Some(Sr25519Precompile::<R>::execute(handle)),
+			a if a == consts::ECDSA_VERIFY => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
 			// 0x5005 - is cross virtual machine (XVM)
-			a if a == hash(20485) => Some(XvmPrecompile::<R>::execute(handle)),
+			a if a == consts::XVM => Some(XvmPrecompile::<R>::execute(handle)),
 			_ => None,
 		}
 	}
 
 	fn is_precompile(&self, address: H160) -> bool {
-		Self::used_addresses().any(|h| h == address)
+		Self::used_addresses().contains(&address)
 	}
-}
-
-fn hash(a: u64) -> H160 {
-	H160::from_low_u64_be(a)
 }

@@ -65,6 +65,7 @@ pub use pallet_timestamp::Call as TimestampCall;
 mod chain_extensions;
 pub use chain_extensions::*;
 mod precompiles;
+pub use precompiles::consts as precompile_consts;
 use precompiles::FrontierPrecompiles;
 
 /// Import the permissioned ledger pallet.
