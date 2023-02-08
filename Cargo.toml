@@ -6,7 +6,6 @@ members = [
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
 	"examples/cross-vm-communication/wasm-to-evm/flipper"
-	
 ]
 resolver = "2"
 
