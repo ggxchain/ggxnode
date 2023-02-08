@@ -26,15 +26,15 @@ impl<R> FrontierPrecompiles<R> {
 	/// * 0x3 - is Ripemd160
 	/// * 0x4 - is Identity
 	/// * 0x5 - is Modexp
-	/// * 0x6 - is Alt_bn128_Add
-	/// * 0x7 - is Alt_bn128_Mul
-	/// * 0x8 - is Alt_bn128_pairing
+	/// * 0x6 - is EcAdd
+	/// * 0x7 - is EcMul
+	/// * 0x8 - is EcPairing
 	/// * 0x9 - is Blake2F
 	///
 	/// The next list contains handy precompiles that are missing in Ethereum
-	/// * 0x400 - is standart Sha3 precompile
+	/// * 0x400 - is Sha3
 	/// * 0x402 - is ECRecoverPublicKey (402 is used in Astar and Moonbeam, so preserve the address for contracts interoperability)
-	/// * 0x403 - is Ed25519Verify (403 is also used in Astar, so preserve the address for contracts interoperability)
+	/// * 0x403 - is Ed25519 verify (403 is also used in Astar, so preserve the address for contracts interoperability)
 	///
 	/// The next list contains Astar specific precompiles:
 	/// * 0x5002 - is Sr25519 verify

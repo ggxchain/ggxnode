@@ -136,7 +136,7 @@ std = [
 	"pallet-chain-extension-xvm/std",
 	"pallet-xvm/std",
 	"pallet-evm-precompile-sr25519/std",
-    "pallet-evm-precompile-substrate-ecdsa/std",
+	"pallet-evm-precompile-substrate-ecdsa/std",
 	# Wasm contracts
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",
