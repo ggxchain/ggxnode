@@ -7,9 +7,10 @@ This document will show you how to use the cross-VM communication feature of the
 # We need the following to compile WASM smart contracts
 sudo apt-get -y install binaryen protobuf
 rustup component add rust-src
+rustup component add rust-src --toolchain nightly-unknown-linux-gnu
 rustup target add wasm32-unknown-unknown
-cargo install cargo-dylint dylint-link
-cargo install cargo-contract
+cargo +nightly install cargo-dylint dylint-link
+cargo +nightly install cargo-contract
 
 # Start a node with the Golden Gate runtime from the root of the repository
 cargo run --release -- --dev
@@ -22,12 +23,22 @@ brew install binaryen protobuf
 rustup component add rust-src
 rustup component add rust-src --toolchain nightly-x86_64-apple-darwin
 rustup target add wasm32-unknown-unknown
-cargo install cargo-dylint dylint-link
-cargo install cargo-contract
+cargo +nightly install cargo-dylint dylint-link
+cargo +nightly install cargo-contract
 
 # Start a node with the Golden Gate runtime from the root of the repository
 cargo run --release -- --dev
 
+```
+
+### Docker
+Alternatively, you can use provided docker file to build contracts and run the node.
+```
+cd golden-gate # go to the root of the repository
+docker build -t golden-gate-env -f containers/enviroment . # build the docker image
+docker run -it -p 9944:9944 -p 9933:9933 -v $(pwd):/golden-gate golden-gate-env bash # run the docker image
+cd golden-gate # go to the root of the repository
+cargo run --release -- --dev --ws-external --rpc-external # start the node
 ```
 
 ## Building the Polkadot UI
@@ -50,7 +61,7 @@ The Flipper contract is a simple contract that allows you to flip a boolean valu
 ### Building the contract
 ```
 # The contract will be located in evm-to-wasm/flipper/target/ink/flipper.contract
-cargo contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
+cargo +nightly contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
 ```
 
 ### Deploying the contract
@@ -147,7 +158,7 @@ We need a wrapper around the EVM contract. The wrapper will allow us to call the
 #### Building the contract
 ```
 # The contract will be located in wasm-to-evm/flipper/target/ink/flipper.contract
-cargo contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
+cargo +nightly contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
 ```
 
 #### Deploying the contract
