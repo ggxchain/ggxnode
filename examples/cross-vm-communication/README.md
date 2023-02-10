@@ -80,13 +80,15 @@ cargo +nightly contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
 ### Calling from the EVM
 * Go to the [Contracts](http://localhost:3000/?rpc=ws%3A%2F%2F127.0.0.1%3A9944#/contracts) page
 * Click on the contract icon to copy the address
-![](images/copying-address.png)
+
+  ![](images/copying-address.png)
 * Go to the root of the repository and run the following command:
   `cargo run --release -- key inspect $YOUR_ADDRESS`
 ![](images/node-key-inspect.png)
 * Copy the public key in hex format. Also, please add 00 at the beginning of the key. The final key should look like this: `0x00b6e7d9cf2782e61385755e4675194716f86b808f161a3ab7cd0ca36714dad8da`
 * Go to the Metamask extension, click on the active network and click `Add network`. 
- ![](images/metamask-add-network.png)
+ 
+  ![](images/metamask-add-network.png)
 * You will be redirected to the website with the network settings. Click on the `Add a network manually` button at the bottom of the page. Fill in the following fields:
   * Network name: `Golden Gate`
   * New RPC URL: `http://localhost:9933`
@@ -105,7 +107,8 @@ cargo +nightly contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
 * Compile the code
 * Go to the "Deploy & Run Transactions" tab and change the environment to "Injected Metamask"
 * Put the `0x0000000000000000000000000000000000005005` address of XVM precompile in `Load contract from address` field and click `At Address`. 
-![](images/at-address.png)
+
+  ![](images/at-address.png)
 * The contract should appear in the `Deployed Contracts` section. Let's fill in the required data.
   
   ![](images/evm-contract.png)
