@@ -6,14 +6,11 @@ labels: bug
 assignees: ""
 ---
 
-**Description**
+#### Description ####
 
-_Tell us what happened. In particular, tell us how and why you are using this project, and describe
-the bug that you encountered. Ideally, provide a link to your project's GitHub repository. Please
-note that we are not able to support all conceivable use cases, but the more information you are
-able to provide the more equipped we will be to help._
+_Tell us what happened. In particular, tell us how and why you are using this project, and describe the bug that you encountered. Ideally, provide a link to your project's GitHub repository. Please note that we are not able to support all conceivable use cases, but the more information you are able to provide the more equipped we will be to help._
 
-**Steps to Reproduce**
+#### Steps to Reproduce ####
 
 _Replace the example steps below with actual steps to reproduce the bug you're reporting._
 
@@ -22,25 +19,22 @@ _Replace the example steps below with actual steps to reproduce the bug you're r
 3. Scroll down to '....'
 4. See error
 
-**Expected vs. Actual Behavior**
+#### Expected vs. Actual Behavior ####
 
-_What did you expect to happen after you followed the steps you described in the last section? What
-actually happened?_
+_What did you expect to happen after you followed the steps you described in the last section? What actually happened?_
 
-**Environment**
+#### Environment ####
 
-_Describe the environment in which you encountered this bug. Use the list below as a starting point
-and add additional information if you think it's relevant._
+_Describe the environment in which you encountered this bug. Use the list below as a starting point and add additional information if you think it's relevant._
 
 - Operating system:
 - Project version/tag:
 - Rust version (run `rustup show`):
 
-**Logs, Errors or Screenshots**
+#### Logs, Errors or Screenshots ####
 
-_Please provide the text of any logs or errors that you experienced; if applicable, provide
-screenshots to help illustrate the problem._
+_Please provide the text of any logs or errors that you experienced; if applicable, provide screenshots to help illustrate the problem._
 
-**Additional Information**
+#### Additional Information ####
 
 _Please add any other details that you think may help us solve your problem._
