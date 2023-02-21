@@ -23,6 +23,8 @@ log = "0.4.17"
 jsonrpsee = "0.16.2"
 scale-codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ["derive"] }
 scale-info = { version = "2.3.1", default-features = false, features = ["derive"] }
+proptest = "1.1"
+test-strategy = "0.3.0"
 
 # Substrate Client
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35" }
