@@ -23,6 +23,8 @@ log = "0.4.17"
 jsonrpsee = "0.16.2"
 scale-codec = { package = "parity-scale-codec", version = "3.2.1", default-features = false, features = ["derive"] }
 scale-info = { version = "2.3.1", default-features = false, features = ["derive"] }
+proptest = "1.1"
+test-strategy = "0.3.0"
 
 # Substrate Client
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35" }
@@ -106,6 +108,9 @@ pallet-evm-precompile-modexp = { version = "2.0.0-dev", git = "https://github.co
 pallet-evm-precompile-sha3fips = { version = "2.0.0-dev", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
 pallet-evm-precompile-simple = { version = "2.0.0-dev", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
 pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
+pallet-evm-precompile-bn128 = { version = "2.0.0-dev", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
+pallet-evm-precompile-blake2 = { version = "2.0.0-dev", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
+pallet-evm-precompile-ed25519 = { version = "2.0.0-dev", git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.35", default-features = false }
 
 # Golden Gate
 golden-gate-runtime = { path = "runtime", default-features = false }
@@ -115,6 +120,8 @@ account-filter = { package = "substrate-account-filter", git = "https://github.c
 pallet-xvm = { version = "0.2.1", git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
 pallet-evm-precompile-xvm = { version = "0.1.0", git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
+pallet-evm-precompile-sr25519 = { git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
+pallet-evm-precompile-substrate-ecdsa = { git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
 
 # Wasm contracts
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
