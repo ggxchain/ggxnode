@@ -25,6 +25,7 @@ scale-codec = { package = "parity-scale-codec", version = "3.2.1", default-featu
 scale-info = { version = "2.3.1", default-features = false, features = ["derive"] }
 proptest = "1.1"
 test-strategy = "0.3.0"
+serde = { version = "1.0", default-features = false }
 
 # Substrate Client
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35" }
