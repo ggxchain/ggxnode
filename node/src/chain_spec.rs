@@ -6,7 +6,9 @@ use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
-use golden_gate_runtime::{AccountId, GenesisConfig, Signature, WASM_BINARY};
+use golden_gate_runtime::{
+	AccountId, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, Signature, WASM_BINARY,
+};
 
 // The URL for the telemetry server.
 // const STAGING_TELEMETRY_URL: &str = "wss://telemetry.polkadot.io/submit/";
@@ -238,6 +240,11 @@ fn testnet_genesis(
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
 			allowed_accounts: council.clone().into_iter().map(|e| (e, ())).collect(),
+		},
+		runtime_specification: RuntimeSpecificationConfig {
+			chain_spec: RuntimeConfig {
+				block_time_in_millis: 2000,
+			},
 		},
 	}
 }

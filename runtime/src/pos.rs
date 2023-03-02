@@ -75,9 +75,9 @@ parameter_types! {
 
 	pub const ProposalBond: Permill = Permill::from_percent(5);
 	pub const ProposalBondMinimum: Balance = 1 * DOLLARS;
-	pub const SpendPeriod: BlockNumber = 1 * DAYS;
+	pub storage SpendPeriod: BlockNumber = 1 * Days::get();
 	pub const Burn: Permill = Permill::from_percent(50);
-	pub const TipCountdown: BlockNumber = 1 * DAYS;
+	pub storage TipCountdown: BlockNumber = 1 * Days::get();
 	pub const TipFindersFee: Percent = Percent::from_percent(20);
 	pub const TipReportDepositBase: Balance = 1 * DOLLARS;
 	pub const DataDepositPerByte: Balance = 1 * CENTS;
@@ -86,7 +86,7 @@ parameter_types! {
 	pub const MaxApprovals: u32 = 100;
 	pub const MaxBalance: Balance = Balance::max_value();
 
-	pub const CouncilMotionDuration: BlockNumber = 5 * DAYS;
+	pub storage CouncilMotionDuration: BlockNumber = 5 * Days::get();
 	pub const CouncilMaxProposals: u32 = 100;
 	pub const CouncilMaxMembers: u32 = 100;
 
@@ -96,12 +96,12 @@ parameter_types! {
 	pub const CuratorDepositMultiplier: Permill = Permill::from_percent(50);
 	pub const CuratorDepositMin: Balance = 1 * DOLLARS;
 	pub const CuratorDepositMax: Balance = 100 * DOLLARS;
-	pub const BountyDepositPayoutDelay: BlockNumber = 1 * DAYS;
-	pub const BountyUpdatePeriod: BlockNumber = 14 * DAYS;
+	pub storage BountyDepositPayoutDelay: BlockNumber = 1 * Days::get();
+	pub storage BountyUpdatePeriod: BlockNumber = 14 * Days::get();
 
 	// phase durations. 1/4 of the last session for each.
-	pub const SignedPhase: u32 = EPOCH_DURATION_IN_BLOCKS / 4;
-	pub const UnsignedPhase: u32 = EPOCH_DURATION_IN_BLOCKS / 4;
+	pub storage SignedPhase: u32 = EpochDurationInBlocks::get() / 4;
+	pub storage UnsignedPhase: u32 = EpochDurationInBlocks::get() / 4;
 
 	// signed config
 	pub const SignedRewardBase: Balance = 1 * DOLLARS;

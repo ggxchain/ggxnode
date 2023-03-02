@@ -14,6 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 scale-codec = { package = "parity-scale-codec", workspace = true }
 scale-info = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
 
 # Substrate
 sp-api = { workspace = true }
@@ -56,6 +57,7 @@ pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 # Frontier
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true }
+
 # Frontier FRAME
 pallet-base-fee = { workspace = true }
 pallet-dynamic-fee = { workspace = true }
@@ -66,6 +68,11 @@ pallet-evm-precompile-modexp = { workspace = true }
 pallet-evm-precompile-sha3fips = { workspace = true }
 pallet-evm-precompile-simple = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
+pallet-evm-precompile-bn128 = { workspace = true }
+pallet-evm-precompile-blake2 = { workspace = true }
+pallet-evm-precompile-ed25519 = { workspace = true }
+pallet-evm-precompile-sr25519 = { workspace = true }
+pallet-evm-precompile-substrate-ecdsa = { workspace = true }
 
 # GGX
 account-filter = { workspace = true }
@@ -83,6 +90,10 @@ pallet-randomness-collective-flip = { workspace = true, default-features = false
 [build-dependencies]
 substrate-wasm-builder = { workspace = true }
 
+[dev-dependencies]
+proptest = { workspace = true }
+test-strategy = { workspace = true }
+
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
 aura = []
@@ -92,6 +103,7 @@ with-paritydb-weights = []
 std = [
 	"scale-codec/std",
 	"scale-info/std",
+	"serde/std",
 	# Substrate
 	"sp-api/std",
 	"sp-block-builder/std",
@@ -135,11 +147,17 @@ std = [
 	"pallet-evm-precompile-sha3fips/std",
 	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
+	"pallet-evm-precompile-bn128/std",
+	"pallet-evm-precompile-blake2/std",
+	"pallet-evm-precompile-ed25519/std",
+	# GGX
 	"account-filter/std",
 	# Astar
 	"pallet-evm-precompile-xvm/std",
 	"pallet-chain-extension-xvm/std",
 	"pallet-xvm/std",
+	"pallet-evm-precompile-sr25519/std",
+	"pallet-evm-precompile-substrate-ecdsa/std",
 	# Wasm contracts
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",
