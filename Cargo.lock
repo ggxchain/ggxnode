@@ -2494,6 +2494,7 @@ dependencies = [
  "parity-scale-codec",
  "proptest",
  "scale-info",
+ "serde",
  "sp-api",
  "sp-block-builder",
  "sp-consensus-aura",

@@ -67,6 +67,8 @@ pub use chain_extensions::*;
 mod precompiles;
 pub use precompiles::consts as precompile_consts;
 use precompiles::FrontierPrecompiles;
+mod chain_spec;
+pub use chain_spec::RuntimeConfig;
 
 /// Import the permissioned ledger pallet.
 pub use account_filter;
@@ -179,14 +181,6 @@ pub const VERSION: RuntimeVersion = RuntimeVersion {
 	state_version: 1,
 };
 
-pub const MILLISECS_PER_BLOCK: u64 = 6000;
-pub const SLOT_DURATION: u64 = MILLISECS_PER_BLOCK;
-
-// Time is measured by number of blocks.
-pub const MINUTES: BlockNumber = 60_000 / (MILLISECS_PER_BLOCK as BlockNumber);
-pub const HOURS: BlockNumber = MINUTES * 60;
-pub const DAYS: BlockNumber = HOURS * 24;
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {
@@ -200,27 +194,29 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
-/// We allow for 2 seconds of compute with a 6 second average block time.
-pub const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(2u64 * WEIGHT_REF_TIME_PER_SECOND, u64::MAX);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
+	/// We allow for 1 seconds of compute with a 2 second average block time.
+	pub storage MaximumBlockWeight: Weight = Weight::from_parts(
+		(RuntimeSpecification::chain_spec().block_time_in_millis / 1000) * WEIGHT_REF_TIME_PER_SECOND,
+		u64::MAX,
+	);
 	pub BlockWeights: frame_system::limits::BlockWeights =  frame_system::limits::BlockWeights::builder()
 	.base_block(BlockExecutionWeight::get())
 	.for_class(DispatchClass::all(), |weights| {
 		weights.base_extrinsic = ExtrinsicBaseWeight::get();
 	})
 	.for_class(DispatchClass::Normal, |weights| {
-		weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		weights.max_total = Some(NORMAL_DISPATCH_RATIO * MaximumBlockWeight::get());
 	})
 	.for_class(DispatchClass::Operational, |weights| {
-		weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+		weights.max_total = Some(MaximumBlockWeight::get());
 		// Operational transactions have some extra reserved space, so that they
 		// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
 		weights.reserved = Some(
-			MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+			MaximumBlockWeight::get() - NORMAL_DISPATCH_RATIO * MaximumBlockWeight::get()
 		);
 	})
 	.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
@@ -298,6 +294,8 @@ impl account_filter::Config for Runtime {
 	type ValidateOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
+impl chain_spec::Config for Runtime {}
+
 parameter_types! {
 	pub EvmId: u8 = 0x0F;
 	pub WasmId: u8 = 0x1F;
@@ -330,7 +328,7 @@ impl pallet_grandpa::Config for Runtime {
 }
 
 parameter_types! {
-	pub const MinimumPeriod: u64 = SLOT_DURATION / 2;
+	pub storage MinimumPeriod: u64 = RuntimeSpecification::chain_spec().block_time_in_millis / 2;
 }
 
 impl pallet_timestamp::Config for Runtime {
@@ -533,13 +531,16 @@ construct_runtime!(
 		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
 		Sudo: pallet_sudo,
+		// EVM pallets
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
 		EVMChainId: pallet_evm_chain_id,
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
+		// GGX pallets
 		AccountFilter: account_filter,
+		RuntimeSpecification: chain_spec,
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
