@@ -29,35 +29,36 @@
                 let
                   rust-toolchain =
                     pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+
                   cargo-dylint = with pkgs; rustPlatform.buildRustPackage rec {
                     pname = "cargo-dylint";
                     version = "2.1.5";
-
+                    nativeBuildInputs = [ pkgs.pkg-config ];
                     src = fetchCrate {
                       inherit pname version;
                       sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
                     };
 
-                    cargoHash = "sha256-tbrTbutUs5aPSV+yE0IBUZAAytgmZV7Eqxia7g+9zRs=";
+                    cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtkRuTL4EzF0xo=";
                     cargoDepsName = pname;
                   };
                   dylint-link = with pkgs; rustPlatform.buildRustPackage rec {
                     pname = "dylint-link";
                     version = "2.1.5";
-
+                    nativeBuildInputs = [ pkgs.pkg-config ];
                     src = fetchCrate {
                       inherit pname version;
-                      sha256 = "sha256-kH6dhUFaQpQ2kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
+                      sha256 = "sha256-oarEYhv0i2wAPmahx0vgWN3kmfEsK3s6D3+qkOqF9pc=";
                     };
 
-                    cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtkRuTL4EzF0xo=";
+                    cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtk3uTL4EzF1xo=";
                     cargoDepsName = pname;
                   };
 
                 in
                 [
                   {
-                    packages = with pkgs;[ rust-toolchain clang llvmPackages.bintools cargo-dylint dylint-link  ] ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk; [
+                    packages = with pkgs;[ rust-toolchain clang llvmPackages.bintools cargo-dylint dylint-link ] ++ lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk; [
                       frameworks.Security
                     ]);
 
