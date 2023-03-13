@@ -13,14 +13,12 @@ env:
   NIX_VERSION: nix-2.13.2
   NIXPKGS_CHANNEL: nixos-22.11
   CACHIX_NAME: dzmitry-lahoda-forks
-  RUNNER: buildjet-32vcpu-ubuntu-2204
-
 
 jobs:
   build-runtime:
     name: "build-runtime"
     runs-on:
-      - ${{ env.RUNNER }}
+      - buildjet-32vcpu-ubuntu-2204
     concurrency:
       group: build-runtime-${{ github.ref }}
       cancel-in-progress: true
