@@ -8,6 +8,7 @@ on:
 
 permissions: 
   pull-requests: write
+  contents: write
 
 env:
   NIX_VERSION: nix-2.13.2
@@ -48,7 +49,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - run: |          
-          nix develop --command bash -c "cargo build --release --package golden-gate-runtime --target wasm32-unknown-unknown --no-default-features --features=with-paritydb-weights"
+          nix develop --command bash -c "nix build | cachix push ${{ env.CACHIX_NAME }}"
      
       - name: action-gh-release
         uses: softprops/action-gh-release@v1
@@ -60,4 +61,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
           files: |
-            ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime/golden_gate_runtime.compact.compressed.wasm
+            ./result/lib/golden_gate_runtime.compact.compressed.wasm
