@@ -49,7 +49,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - run: |          
-          nix build --print-build-logs --show-trace
+          nix build --print-build-logs --show-trace --no-update-lock-file
      
       - name: action-gh-release
         uses: softprops/action-gh-release@v1
