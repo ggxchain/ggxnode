@@ -85,6 +85,7 @@
                     enterShell = ''
                       echo ggshell
                     '';
+                    devcontainer.enable = true;
                   }
                 ];
             };

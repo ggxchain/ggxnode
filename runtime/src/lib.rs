@@ -340,6 +340,9 @@ impl pallet_timestamp::Config for Runtime {
 	type OnTimestampSet = ();
 	type MinimumPeriod = MinimumPeriod;
 	type WeightInfo = pallet_timestamp::weights::SubstrateWeight<Runtime>;
+	
+	#[cfg(not(feature="std"))]
+	type OnTimestampSet = ();
 }
 
 parameter_types! {
