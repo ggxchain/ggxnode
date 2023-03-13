@@ -15,6 +15,7 @@ cargo +nightly install cargo-contract
 # Start a node with the Golden Gate runtime from the root of the repository
 cargo run --release -- --dev
 ```
+
 ### MacOS
 
 ```
@@ -42,7 +43,7 @@ cargo run --release -- --dev --ws-external --rpc-external # start the node
 ```
 
 ## Building the Polkadot UI
-This step is mandatory until https://github.com/polkadot-js/apps/pull/8538 won't be merged.
+This step is mandatory until https://github.com/polkadot-js/apps/pull/8538 is merged.
 ```
 # Clone the Polkadot UI repository
 git clone https://github.com/niklabh/apps.git
