@@ -4,11 +4,23 @@
     devenv.url = "github:cachix/devenv";
     rust-overlay = {
       url = "github:oxalica/rust-overlay";
+
+      inputs = {
+        nixpkgs.follows = "nixpkgs";
+        flake-utils.follows = "flake-utils";
+      };
+
+    };
+    flake-utils.url = "github:numtide/flake-utils";
+
+    crane = {
+      url = "github:ipetkov/crane";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
   };
 
-  outputs = { self, nixpkgs, devenv, rust-overlay, ... } @ inputs:
+  outputs = { self, nixpkgs, devenv, rust-overlay, crane, ... } @ inputs:
     let
       systems = [ "x86_64-linux" "x86_64-darwin" "aarch64-linux" "aarch64-darwin" ];
       forAllSystems = f: builtins.listToAttrs (map (name: { inherit name; value = f name; }) systems);
@@ -21,6 +33,26 @@
             pkgs = import nixpkgs {
               inherit system overlays;
             };
+            rust-toolchain =
+              pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+            craneLib = (crane.mkLib pkgs).overrideToolchain rust-toolchain;
+            self-src = craneLib.cleanCargoSource ./.;
+            runtime-wasm = craneLib.buildPackage {
+              src = self-src;
+
+              cargoExtraArgs = "--target wasm32-wasi";
+
+              # Tests currently need to be run via `cargo wasi` which
+              # isn't packaged in nixpkgs yet...
+              doCheck = false;
+
+              buildInputs = [
+                # Add additional build inputs here
+              ] ++ pkgs.lib.optionals pkgs.stdenv.isDarwin [
+                # Additional darwin specific inputs can be set here
+                pkgs.libiconv
+              ];
+            };
           in
           {
             default = devenv.lib.mkShell {
@@ -31,8 +63,7 @@
                     frameworks.Security
                   ]);
 
-                  rust-toolchain =
-                    pkgs.rust-bin.fromRustupToolchainFile ./rust-toolchain.toml;
+
                   dylib = {
                     buildInputs = with pkgs; [ openssl ];
                     nativeBuildInputs = with pkgs;[ pkg-config ];

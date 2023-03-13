@@ -49,4 +49,15 @@ jobs:
           persist-credentials: false
       - run: |          
           nix develop --command bash -c "cargo build --release --package golden-gate-runtime --target wasm32-unknown-unknown --no-default-features --features=with-paritydb-weights"
-            
+     
+      - name: action-gh-release
+        uses: softprops/action-gh-release@v1
+        with:
+          draft: true
+          fail_on_unmatched_files: true
+          name: ${{ github.ref_name }}-${{ github.event.pull_request.head.sha }}
+          prerelease: true
+          tag_name: ${{ github.ref_name }}
+          target_commitish: ${{ github.sha }}
+          files: |
+            ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime/golden_gate_runtime.compact.compressed.wasm
