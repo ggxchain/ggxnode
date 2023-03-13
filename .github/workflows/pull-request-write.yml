@@ -49,7 +49,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - run: |          
-          nix develop --command bash -c "nix build | cachix push ${{ env.CACHIX_NAME }}"
+          nix build --print-build-logs
      
       - name: action-gh-release
         uses: softprops/action-gh-release@v1
@@ -57,7 +57,7 @@ jobs:
           draft: true
           fail_on_unmatched_files: true
           name: ${{ github.ref_name }}-${{ github.event.pull_request.head.sha }}
-          prerelease: true
+          prerelease: true 
           tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
           files: |
