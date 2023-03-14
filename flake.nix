@@ -31,7 +31,8 @@
 
   nixConfig = {
     # so you do not need to build locally if CI did
-    extra-substituters = "https://dzmitry-lahoda-forks.cachix.org";
+    extra-substituters = [ "https://cache.nixos.org" "https://dzmitry-lahoda-forks.cachix.org" ];
+    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "dzmitry-lahoda-forks.cachix.org-1:cga9IW9/n7MiiLlI1UrV3W3YfR1zWa0DmenQ1jwLQW0=" ];
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
@@ -148,7 +149,7 @@
                   pname = "cargo-dylint";
                   version = "2.1.5";
                   src = fetchCrate {
-                    inherit pname version;                    
+                    inherit pname version;
                     sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
                   };
 
