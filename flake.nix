@@ -1,4 +1,5 @@
 {
+  # like Cargo.toml or package.json dependencies, but on meta level (tools to run mentined files)
   inputs = {
     # base packages
     nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
@@ -28,8 +29,13 @@
 
   };
 
-  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, ... } @ inputs:
+  nixConfig = {
+    # so you do not need to build locally if CI did
+    extra-substituters = "https://dzmitry-lahoda-forks.cachix.org";
+  };
 
+  # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
+  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, ... } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
 
@@ -38,7 +44,9 @@
           inherit system overlays;
         };
 
-        rust-deps = with pkgs; [ clang ];
+        # not optimal as not all packages requires this,
+        # but many build.rs do - so we add little bit slowness for simplificaiton and reproduceability
+        rust-native-build-inputs = with pkgs; [ clang pkg-config gnumake ];
 
         # reusable env for shell and builds
         rust-env = with pkgs; {
@@ -59,7 +67,7 @@
         common-attrs = rust-env // {
           buildInputs = with pkgs; [ openssl zstd ];
           nativeBuildInputs = with pkgs;
-            rust-deps ++ [ openssl pkg-config ] ++ darwin;
+            rust-native-build-inputs ++ [ openssl ] ++ darwin;
           doCheck = false;
           cargoCheckCommand = "true";
           src = rust-src;
@@ -127,7 +135,7 @@
 
                 dylib = {
                   buildInputs = with pkgs; [ openssl ] ++ darwin;
-                  nativeBuildInputs = with pkgs;[ pkg-config ];
+                  nativeBuildInputs = rust-native-build-inputs;
                   doCheck = false;
                 };
                 rust-deps = pkgs.makeRustPlatform {
@@ -140,7 +148,7 @@
                   pname = "cargo-dylint";
                   version = "2.1.5";
                   src = fetchCrate {
-                    inherit pname version;
+                    inherit pname version;                    
                     sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
                   };
 
@@ -162,7 +170,7 @@
               in
               [
                 {
-                  packages = with pkgs;[ rust-toolchain binaryen clang llvmPackages.bintools dylint-link ] ++ darwin;
+                  packages = with pkgs;[ rust-toolchain binaryen llvmPackages.bintools dylint-link ] ++ rust-native-build-inputs ++ darwin;
                   env = rust-env;
                   # can do systemd/docker stuff here
                   enterShell = ''
