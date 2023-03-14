@@ -30,7 +30,7 @@
   };
 
   nixConfig = {
-    # so you do not need to build locally if CI did
+    # so you do not need to build locally if CI did it (no cache for ARM/MAC because did not added machines to build matrix)
     extra-substituters = [ "https://cache.nixos.org" "https://dzmitry-lahoda-forks.cachix.org" ];
     extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "dzmitry-lahoda-forks.cachix.org-1:cga9IW9/n7MiiLlI1UrV3W3YfR1zWa0DmenQ1jwLQW0=" ];
   };
@@ -76,7 +76,7 @@
 
 
         common-wasm-attrs = common-attrs // {
-          cargoExtraArgs = "--package golden-gate-runtime --target wasm32-unknown-unknown --no-default-features --features=with-paritydb-weights";
+          cargoExtraArgs = "--package golden-gate-runtime --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
           pname = "golden-gate-runtime";
@@ -108,7 +108,6 @@
               )
             )
 
-
             [ ./.gitignore ] ./.;
         };
 
@@ -126,7 +125,6 @@
           inherit golden-gate-runtime;
           default = golden-gate-runtime;
         };
-
 
         devShells = {
           default = devenv.lib.mkShell {
