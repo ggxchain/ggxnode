@@ -31,8 +31,8 @@
 
   nixConfig = {
     # so you do not need to build locally if CI did it (no cache for ARM/MAC because did not added machines to build matrix)
-    extra-substituters = [ "https://cache.nixos.org" "https://dzmitry-lahoda-forks.cachix.org" ];
-    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "dzmitry-lahoda-forks.cachix.org-1:cga9IW9/n7MiiLlI1UrV3W3YfR1zWa0DmenQ1jwLQW0=" ];
+    extra-substituters = [ "https://cache.nixos.org" "https://golden-gate-ggx.cachix.org" ];
+    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "golden-gate-ggx.cachix.org-1:h2zGCI9FqxUS7HxnZJDHaJzbN4iTsWvBcETdd+/0ZD4=" ];
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
