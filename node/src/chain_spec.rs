@@ -4,10 +4,15 @@ use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::traits::{IdentifyAccount, Verify};
+use sp_runtime::{
+	traits::{IdentifyAccount, Verify},
+	Perbill,
+};
 
 use golden_gate_runtime::{
-	AccountId, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, Signature, WASM_BINARY,
+	pos::{SessionKeys, StakerStatus, DOLLARS},
+	AccountId, Balance, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, SessionConfig,
+	Signature, StakingConfig, ValidatorAllowListConfig, WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -34,8 +39,12 @@ where
 }
 
 /// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
-	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+pub fn authority_keys_from_seed(s: &str) -> (AccountId, AuraId, GrandpaId) {
+	(
+		AccountPublic::from(get_from_seed::<sr25519::Public>(s)).into_account(),
+		get_from_seed::<AuraId>(s),
+		get_from_seed::<GrandpaId>(s),
+	)
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -118,6 +127,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				vec![
 					authority_keys_from_seed("Alice"),
 					authority_keys_from_seed("Bob"),
+					authority_keys_from_seed("Charlie"),
 				],
 				42,
 			)
@@ -141,7 +151,7 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<(AuraId, GrandpaId)>,
+	initial_authorities: Vec<(AccountId, AuraId, GrandpaId)>,
 	chain_id: u64,
 ) -> GenesisConfig {
 	use golden_gate_runtime::{
@@ -149,11 +159,8 @@ fn testnet_genesis(
 		GrandpaConfig, SudoConfig, SystemConfig,
 	};
 
-	let council = vec![
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		get_account_id_from_seed::<sr25519::Public>("Bob"),
-		get_account_id_from_seed::<sr25519::Public>("Charlie"),
-	];
+	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
+	const STASH: Balance = ENDOWMENT / 1000;
 
 	GenesisConfig {
 		// System
@@ -172,21 +179,47 @@ fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, ENDOWMENT))
 				.collect(),
 		},
 		transaction_payment: Default::default(),
+		staking: StakingConfig {
+			validator_count: initial_authorities.len() as u32,
+			minimum_validator_count: initial_authorities.len() as u32,
+			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.0.clone(), x.0.clone(), STASH, StakerStatus::Validator))
+				.collect(),
+			slash_reward_fraction: Perbill::from_percent(10),
+			..Default::default()
+		},
+		treasury: Default::default(),
 
 		// Consensus
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities
+		validator_allow_list: ValidatorAllowListConfig {
+			initial_validators: initial_authorities
 				.iter()
-				.map(|x| (x.1.clone(), 1))
-				.collect(),
+				.map(|x| x.0.clone())
+				.collect::<Vec<_>>(),
 		},
+		session: SessionConfig {
+			keys: initial_authorities
+				.iter()
+				.map(|x| -> (AccountId, AccountId, SessionKeys) {
+					(
+						x.0.clone(),
+						x.0.clone(),
+						SessionKeys {
+							aura: x.1.clone(),
+							grandpa: x.2.clone(),
+						},
+					)
+				})
+				.collect::<Vec<_>>(),
+		},
+		aura: AuraConfig::default(),
+		grandpa: GrandpaConfig::default(),
 
 		// EVM compatibility
 		evm_chain_id: EVMChainIdConfig { chain_id },
@@ -239,7 +272,11 @@ fn testnet_genesis(
 		dynamic_fee: Default::default(),
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
-			allowed_accounts: council.clone().into_iter().map(|e| (e, ())).collect(),
+			allowed_accounts: initial_authorities
+				.clone()
+				.into_iter()
+				.map(|e| (e.0, ()))
+				.collect(),
 		},
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {

@@ -2497,7 +2497,6 @@ dependencies = [
  "pallet-base-fee",
  "pallet-bounties",
  "pallet-chain-extension-xvm",
- "pallet-collective",
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-dynamic-fee",
@@ -2535,7 +2534,6 @@ dependencies = [
  "sp-consensus-aura",
  "sp-core",
  "sp-inherents",
- "sp-npos-elections",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -2544,6 +2542,7 @@ dependencies = [
  "sp-transaction-pool",
  "sp-version",
  "substrate-account-filter",
+ "substrate-validator-set",
  "substrate-wasm-builder",
  "test-strategy",
 ]
@@ -4387,23 +4386,6 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "xvm-chain-extension-types",
-]
-
-[[package]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]
@@ -8285,6 +8267,26 @@ dependencies = [
  "prometheus",
  "thiserror",
  "tokio",
+]
+
+[[package]]
+name = "substrate-validator-set"
+version = "0.9.35"
+source = "git+https://github.com/akorchyn/substrate-validator-set.git?branch=polkadot-v0.9.35#1c818253ae7a8c70b899e199283ec1f59047c338"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+ "syn",
 ]
 
 [[package]]

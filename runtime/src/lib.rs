@@ -47,6 +47,7 @@ use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
 use pallet_evm::{
 	Account as EVMAccount, EnsureAddressTruncated, FeeCalculator, HashedAddressMapping, Runner,
 };
+use pallet_session::historical::{self as pallet_session_historical};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -535,14 +536,22 @@ construct_runtime!(
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
+		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		System: frame_system,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		Timestamp: pallet_timestamp,
+		Balances: pallet_balances,
+		ValidatorAllowList: pallet_validator_allowlist,
+		Staking: pallet_staking,
+		Session: pallet_session,
 		Aura: pallet_aura,
 		Grandpa: pallet_grandpa,
-		Balances: pallet_balances,
 		TransactionPayment: pallet_transaction_payment,
+		Treasury: pallet_treasury,
+		Bounties: pallet_bounties,
 		Sudo: pallet_sudo,
+		Historical: pallet_session_historical,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+
 		// EVM pallets
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
@@ -553,13 +562,6 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		RuntimeSpecification: chain_spec,
-		// Proof of Stake and Sessions
-		Council: pallet_collective::<Instance1>,
-		Staking: pallet_staking,
-		Session: pallet_session,
-		Treasury: pallet_treasury,
-		Bounties: pallet_bounties,
-		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
