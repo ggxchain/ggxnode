@@ -13,7 +13,7 @@ permissions:
 env:
   NIX_VERSION: nix-2.13.2
   NIXPKGS_CHANNEL: nixos-22.11
-  CACHIX_NAME: dzmitry-lahoda-forks
+  CACHIX_NAME: golden-gate-ggx
 
 jobs:
   build-runtime:
