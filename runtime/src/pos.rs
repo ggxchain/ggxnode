@@ -34,7 +34,7 @@ parameter_types! {
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
 	pub HistoryDepth: u32 = 84;
 
-	pub SessionPeriod: BlockNumber = Hours::get() * 4;
+	pub storage SessionPeriod: BlockNumber = (RuntimeSpecification::chain_spec().session_time_in_seconds / (RuntimeSpecification::chain_spec().block_time_in_millis / 1000)) as u32;
 	pub SessionOffset: BlockNumber = 0;
 
 	// The maximum winners that can be elected by the Election pallet which is equivalent to the

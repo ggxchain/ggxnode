@@ -13,6 +13,7 @@ use serde::{Deserialize, Serialize};
 )]
 pub struct RuntimeConfig {
 	pub block_time_in_millis: u64,
+	pub session_time_in_seconds: u64,
 }
 
 #[frame_support::pallet]
@@ -42,6 +43,7 @@ pub mod pallet {
 			Self {
 				chain_spec: RuntimeConfig {
 					block_time_in_millis: 2000,
+					session_time_in_seconds: 3600 * 4, // 4 hours
 				},
 			}
 		}

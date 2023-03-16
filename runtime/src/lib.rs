@@ -235,9 +235,6 @@ parameter_types! {
 	pub storage Hours: BlockNumber = Minutes::get() * 60;
 	pub storage Days: BlockNumber = Hours::get() * 24;
 
-	pub storage EpochDurationInBlocks: BlockNumber = 10 * Minutes::get();
-	pub storage EpochDurationInSlots: u64 = EpochDurationInBlocks::get() as u64;
-
 	pub const SS58Prefix: u8 = 88;
 }
 

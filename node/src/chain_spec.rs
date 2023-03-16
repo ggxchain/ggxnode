@@ -274,6 +274,7 @@ fn testnet_genesis(
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,
+				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
 		vesting: Default::default(),
