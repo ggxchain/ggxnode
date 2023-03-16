@@ -172,7 +172,7 @@ pub type Executive = frame_executive::Executive<
 pub const MICROGGX: Balance = 1_000_000_000;
 pub const MILLIGGX: Balance = 1_000 * MICROGGX;
 pub const GGX: Balance = 1000 * MILLIGGX;
-pub const EXISTENTIAL_DEPOSIT: Balance = 1 * GGX;
+pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
 
 /// Charge fee for stored bytes and items.
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
