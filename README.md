@@ -11,7 +11,7 @@ The following dependencies are required to run the project:
 #### Ubuntu example
 ```
 # Install rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install wasm32-unknown-unknown target
 rustup target add wasm32-unknown-unknown
