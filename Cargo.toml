@@ -78,7 +78,11 @@ pallet-balances = { version = "4.0.0-dev", git = "https://github.com/paritytech/
 pallet-bounties = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-election-provider-multi-phase = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-grandpa = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
+pallet-identity = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
+pallet-indices = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
+pallet-multisig = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-nomination-pools = { version = "1.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
+pallet-proxy = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-session = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-staking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-staking-reward-curve = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
@@ -88,6 +92,7 @@ pallet-transaction-payment = { version = "4.0.0-dev", git = "https://github.com/
 pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35" }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-treasury = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
+pallet-vesting = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 
 # Substrate Utility
 frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35" }
@@ -127,8 +132,6 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Golde
 # Golden Gate
 account-filter = { package = "substrate-account-filter", git = "https://github.com/GoldenGateGGX/ggx-frames", branch = "polkadot-v0.9.35", default-features = false }
 golden-gate-runtime = { path = "runtime", default-features = false }
-# Fork for now, we need to think how to properly manage dependencies like that...
-pallet-validator-allowlist = { package = "substrate-validator-set", git = "https://github.com/akorchyn/substrate-validator-set.git", branch = "polkadot-v0.9.35", default-features = false }
 
 # Astar
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }

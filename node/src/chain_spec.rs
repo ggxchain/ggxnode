@@ -10,9 +10,9 @@ use sp_runtime::{
 };
 
 use golden_gate_runtime::{
-	pos::{SessionKeys, StakerStatus, DOLLARS},
+	pos::{SessionKeys, StakerStatus},
 	AccountId, Balance, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, SessionConfig,
-	Signature, StakingConfig, ValidatorAllowListConfig, WASM_BINARY,
+	Signature, StakingConfig, GGX, WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -127,7 +127,6 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				vec![
 					authority_keys_from_seed("Alice"),
 					authority_keys_from_seed("Bob"),
-					authority_keys_from_seed("Charlie"),
 				],
 				42,
 			)
@@ -159,7 +158,7 @@ fn testnet_genesis(
 		GrandpaConfig, SudoConfig, SystemConfig,
 	};
 
-	const ENDOWMENT: Balance = 10_000_000 * DOLLARS;
+	const ENDOWMENT: Balance = 10_000_000 * GGX;
 	const STASH: Balance = ENDOWMENT / 1000;
 
 	GenesisConfig {
@@ -197,12 +196,6 @@ fn testnet_genesis(
 		treasury: Default::default(),
 
 		// Consensus
-		validator_allow_list: ValidatorAllowListConfig {
-			initial_validators: initial_authorities
-				.iter()
-				.map(|x| x.0.clone())
-				.collect::<Vec<_>>(),
-		},
 		session: SessionConfig {
 			keys: initial_authorities
 				.iter()
@@ -283,5 +276,7 @@ fn testnet_genesis(
 				block_time_in_millis: 2000,
 			},
 		},
+		vesting: Default::default(),
+		indices: Default::default(),
 	}
 }

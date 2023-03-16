@@ -38,11 +38,13 @@ frame-system = { workspace = true }
 frame-system-benchmarking = { workspace = true, optional = true }
 frame-system-rpc-runtime-api = { workspace = true }
 pallet-aura = { workspace = true }
-pallet-bags-list = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-bounties = { workspace = true }
-pallet-election-provider-multi-phase = { workspace = true }
 pallet-grandpa = { workspace = true }
+pallet-identity = { workspace = true }
+pallet-indices = { workspace = true }
+pallet-multisig = { workspace = true }
+pallet-proxy = { workspace = true }
 pallet-session = { workspace = true }
 pallet-staking = { workspace = true }
 pallet-staking-reward-curve = { workspace = true }
@@ -51,6 +53,7 @@ pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 pallet-transaction-payment-rpc-runtime-api = { workspace = true }
 pallet-treasury = { workspace = true }
+pallet-vesting = { workspace = true }
 
 # Frontier
 fp-rpc = { workspace = true }
@@ -74,7 +77,6 @@ pallet-hotfix-sufficients = { workspace = true }
 
 # GGX
 account-filter = { workspace = true }
-pallet-validator-allowlist = { workspace = true }
 
 # Astar
 pallet-chain-extension-xvm = { workspace = true, default-features = false }
@@ -131,6 +133,11 @@ std = [
 	"pallet-timestamp/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-transaction-payment/std",
+	"pallet-vesting/std",
+	"pallet-indices/std",
+	"pallet-multisig/std",
+	"pallet-proxy/std",
+	"pallet-identity/std",
 	# Frontier
 	"fp-rpc/std",
 	"fp-self-contained/std",
@@ -149,7 +156,6 @@ std = [
 	"pallet-evm-precompile-ed25519/std",
 	# GGX
 	"account-filter/std",
-	"pallet-validator-allowlist/std",
 	# Astar
 	"pallet-evm-precompile-xvm/std",
 	"pallet-chain-extension-xvm/std",

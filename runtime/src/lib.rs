@@ -10,6 +10,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod pos;
+mod validator_manager;
 
 use frame_support::traits::U128CurrencyToVote;
 use scale_codec::{Decode, Encode};
@@ -168,12 +169,14 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// Constant values used within the runtime.
-const MILLIUNIT: Balance = 1_000_000_000_000_000;
-pub const EXISTENTIAL_DEPOSIT: Balance = 1_000_000;
+pub const MICROGGX: Balance = 1_000_000_000;
+pub const MILLIGGX: Balance = 1_000 * MICROGGX;
+pub const GGX: Balance = 1000 * MILLIGGX;
+pub const EXISTENTIAL_DEPOSIT: Balance = 1 * GGX;
 
 /// Charge fee for stored bytes and items.
 pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIUNIT / EXISTENTIAL_DEPOSIT
+	(items as Balance + bytes as Balance) * MILLIGGX / EXISTENTIAL_DEPOSIT
 }
 
 pub const VERSION: RuntimeVersion = RuntimeVersion {
@@ -500,7 +503,7 @@ impl pallet_dynamic_fee::Config for Runtime {
 }
 
 parameter_types! {
-	pub DefaultBaseFeePerGas: U256 = (MILLIUNIT / 1_000_000).into();
+	pub DefaultBaseFeePerGas: U256 = (MILLIGGX / 1_000_000).into();
 	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
 }
 
@@ -540,7 +543,6 @@ construct_runtime!(
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		Balances: pallet_balances,
-		ValidatorAllowList: pallet_validator_allowlist,
 		Staking: pallet_staking,
 		Session: pallet_session,
 		Aura: pallet_aura,
@@ -548,9 +550,15 @@ construct_runtime!(
 		TransactionPayment: pallet_transaction_payment,
 		Treasury: pallet_treasury,
 		Bounties: pallet_bounties,
+		Vesting: pallet_vesting,
+		Indices: pallet_indices,
+		Proxy: pallet_proxy,
+		Multisig: pallet_multisig,
+		Identity: pallet_identity,
 		Sudo: pallet_sudo,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+		ValidatorManager: validator_manager,
 
 		// EVM pallets
 		Ethereum: pallet_ethereum,
