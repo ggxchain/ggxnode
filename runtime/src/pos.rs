@@ -59,6 +59,12 @@ parameter_types! {
 	pub storage BountyDepositPayoutDelay: BlockNumber = 1 * Days::get();
 	pub storage BountyUpdatePeriod: BlockNumber = 14 * Days::get();
 
+	// Proxy
+	pub const ProxyDepositBase: Balance = deposit(1, 8);
+	pub const ProxyDepositFactor: Balance = deposit(0, 33);
+	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
+	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
+
 	// Vesting
 	pub const MinVestedTransfer: Balance = 100 * GGX;
 	pub UnvestedFundsAllowedWithdrawReasons: WithdrawReasons =
@@ -148,7 +154,7 @@ impl pallet_staking::BenchmarkingConfig for StakingBenchmarkingConfig {
 }
 
 impl pallet_staking::Config for Runtime {
-	type MaxNominations = ConstU32<1000>; // Review it
+	type MaxNominations = ConstU32<1000>; // Review it, but it doesn't matter much since it's fictional for now.
 	type Currency = Balances;
 	type CurrencyBalance = Balance;
 	type UnixTime = Timestamp;
@@ -160,7 +166,6 @@ impl pallet_staking::Config for Runtime {
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type SlashDeferDuration = SlashDeferDuration;
-	/// A super-majority of the council can cancel the slash.
 	type SlashCancelOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
 	type EraPayout = pallet_staking::ConvertCurve<RewardCurve>;
@@ -186,15 +191,6 @@ impl pallet_staking::Config for Runtime {
 	type OnStakerSlash = ();
 	type WeightInfo = pallet_staking::weights::SubstrateWeight<Runtime>;
 	type BenchmarkingConfig = StakingBenchmarkingConfig;
-}
-
-parameter_types! {
-	// One storage item; key size 32, value size 8; .
-	pub const ProxyDepositBase: Balance = deposit(1, 8);
-	// Additional storage item size of 33 bytes.
-	pub const ProxyDepositFactor: Balance = deposit(0, 33);
-	pub const AnnouncementDepositBase: Balance = deposit(1, 8);
-	pub const AnnouncementDepositFactor: Balance = deposit(0, 66);
 }
 
 impl pallet_vesting::Config for Runtime {
