@@ -75,18 +75,27 @@
         };
 
 
-        common-wasm-attrs = common-attrs // {
-          cargoExtraArgs = "--package golden-gate-runtime --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
+        common-wasm-attrs = common-attrs // rec {
+          # really would could read it from Cargo.toml and reuse in here and in CI publish script as refactoring
+          pname = "golden-gate-runtime";
+          cargoExtraArgs = "--package ${pname} --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
-          pname = "golden-gate-runtime";
           version = "0.1.0";
+        };
 
+
+        common-native-release-attrs = common-attrs // rec {
+          cargoExtraArgs = "--package ${pname}";
+          pname = "golden-gate-node";
+          version = "0.1.0";
         };
 
         # calls `cargo vendor` on package deps 
         common-wasm-deps =
           craneLib.buildDepsOnly (common-wasm-attrs // { });
+        common-native-release-deps =
+          craneLib.buildDepsOnly (common-native-release-attrs // { });
 
 
         # rust used by ci and developers
@@ -114,15 +123,64 @@
         golden-gate-runtime = craneLib.buildPackage (common-wasm-attrs // {
           installPhase = ''
             mkdir --parents $out/lib
-            cp ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime/golden_gate_runtime.compact.compressed.wasm $out/lib
+            cp ./target/wasm32-unknown-unknown/release/wbuild/${common-wasm-attrs.pname}/golden_gate_runtime.compact.compressed.wasm $out/lib
           '';
           src = rust-src;
           cargoArtifacts = common-wasm-deps;
         });
+
+        golden-gate-node = craneLib.buildPackage (common-native-release-attrs // {
+          src = rust-src;
+          cargoArtifacts = common-native-release-deps;
+          nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs 
+        });
+
+
+        # really need to run as some points:
+        # - light client emulator (ideal for contracts)
+        # - multi node local fast (fast druation low security)
+        # - multi local slow (duration and security as in prod)
+        # - here can apply above to remote with something if needed (terranix/terraform-ng works)
+        # for each 
+        # - either start from genesis
+        # - of from fork (remote prod data)
+        # all with - archieval and logging enabled
+
+        single-fast = pkgs.writeShellApplication rec {
+          name = "single-fast";
+          text = ''
+            ${pkgs.lib.meta.getExe golden-gate-node} --dev  
+          '';
+        };
+
+        # we do not use existing Dotsama tools as they target relay + parachains
+        # here we can evolve into generating arion/systemd/podman/k8s output (what ever will fit) easy 
+        multi-fast = pkgs.writeShellApplication rec {
+          name = "multi-fast";
+          text = ''
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --alice --tmp &> alice.log ) &
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --bob --tmp &> bob.log ) &
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --charlie --tmp &> charlie.log ) &
+            echo https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:9988#/explorer
+          '';
+        };
+
+        # we should prune 3 things:
+        # - running process
+        # - logs/storages of run proccess
+        # - system prunce of nix cache/oci images
+        prune-running = pkgs.writeShellApplication rec {
+          name = "prune-running";
+          text = ''
+            pkill golden-gate-nod 
+          '';
+        };
       in
       rec {
         packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime;
+          inherit golden-gate-runtime golden-gate-node single-fast multi-fast;
+          node = golden-gate-node;
+          runtime = golden-gate-runtime;
           default = golden-gate-runtime;
         };
 

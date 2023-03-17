@@ -2,7 +2,7 @@ pull_request_rules:
   - name: automatic merge for main when CI passes and 1 reviews
     conditions:
       - "#approved-reviews-by>=1"
-      - check-success=build-runtime
+      - check-success=build-and-publish-draft
       - base=main
     actions:
       merge:
