@@ -4,15 +4,11 @@ use sc_service::ChainType;
 use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::Ss58Codec, sr25519, Pair, Public, H160, U256};
 use sp_finality_grandpa::AuthorityId as GrandpaId;
-use sp_runtime::{
-	traits::{IdentifyAccount, Verify},
-	Perbill,
-};
+use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use golden_gate_runtime::{
-	pos::{SessionKeys, StakerStatus},
-	AccountId, Balance, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, SessionConfig,
-	Signature, StakingConfig, GGX, WASM_BINARY,
+	pos::SessionKeys, AccountId, Balance, GenesisConfig, ImOnlineId, RuntimeConfig,
+	RuntimeSpecificationConfig, SessionConfig, Signature, GGX, WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -38,13 +34,21 @@ where
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AccountId, AuraId, GrandpaId) {
-	(
-		AccountPublic::from(get_from_seed::<sr25519::Public>(s)).into_account(),
-		get_from_seed::<AuraId>(s),
-		get_from_seed::<GrandpaId>(s),
-	)
+#[derive(Debug, Clone)]
+struct ValidatorIdentity {
+	id: AccountId,
+	grandpa: GrandpaId,
+	aura: AuraId,
+	im_online: ImOnlineId,
+}
+
+fn authority_keys_from_seed(s: &str) -> ValidatorIdentity {
+	ValidatorIdentity {
+		id: AccountPublic::from(get_from_seed::<sr25519::Public>(s)).into_account(),
+		aura: get_from_seed::<AuraId>(s),
+		grandpa: get_from_seed::<GrandpaId>(s),
+		im_online: get_from_seed::<ImOnlineId>(s),
+	}
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -150,7 +154,7 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<(AccountId, AuraId, GrandpaId)>,
+	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 ) -> GenesisConfig {
 	use golden_gate_runtime::{
@@ -159,7 +163,6 @@ fn testnet_genesis(
 	};
 
 	const ENDOWMENT: Balance = 10_000_000 * GGX;
-	const STASH: Balance = ENDOWMENT / 1000;
 
 	GenesisConfig {
 		// System
@@ -182,17 +185,6 @@ fn testnet_genesis(
 				.collect(),
 		},
 		transaction_payment: Default::default(),
-		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32,
-			minimum_validator_count: initial_authorities.len() as u32,
-			invulnerables: initial_authorities.iter().map(|x| x.0.clone()).collect(),
-			stakers: initial_authorities
-				.iter()
-				.map(|x| (x.0.clone(), x.0.clone(), STASH, StakerStatus::Validator))
-				.collect(),
-			slash_reward_fraction: Perbill::from_percent(10),
-			..Default::default()
-		},
 		treasury: Default::default(),
 
 		// Consensus
@@ -201,11 +193,12 @@ fn testnet_genesis(
 				.iter()
 				.map(|x| -> (AccountId, AccountId, SessionKeys) {
 					(
-						x.0.clone(),
-						x.0.clone(),
+						x.id.clone(),
+						x.id.clone(),
 						SessionKeys {
-							aura: x.1.clone(),
-							grandpa: x.2.clone(),
+							aura: x.aura.clone(),
+							grandpa: x.grandpa.clone(),
+							im_online: x.im_online.clone(),
 						},
 					)
 				})
@@ -268,7 +261,7 @@ fn testnet_genesis(
 			allowed_accounts: initial_authorities
 				.clone()
 				.into_iter()
-				.map(|e| (e.0, ()))
+				.map(|e| (e.id, ()))
 				.collect(),
 		},
 		runtime_specification: RuntimeSpecificationConfig {
@@ -279,5 +272,6 @@ fn testnet_genesis(
 		},
 		vesting: Default::default(),
 		indices: Default::default(),
+		im_online: Default::default(),
 	}
 }

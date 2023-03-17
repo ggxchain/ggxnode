@@ -16,8 +16,6 @@
 
 //! A pallet for managing validators on Rococo.
 
-use pallet_staking::{Exposure, ExposureOf};
-use sp_runtime::traits::Convert;
 use sp_staking::SessionIndex;
 use sp_std::vec::Vec;
 
@@ -80,7 +78,6 @@ pub mod pallet {
 				.clone()
 				.into_iter()
 				.for_each(ValidatorsToAdd::<T>::append);
-
 			Self::deposit_event(Event::ValidatorsRegistered(validators));
 			Ok(())
 		}
@@ -135,26 +132,10 @@ impl<T: Config> pallet_session::SessionManager<T::ValidatorId> for Pallet<T> {
 	fn start_session(_start_index: SessionIndex) {}
 }
 
-impl<T>
-	pallet_session::historical::SessionManager<
-		T::ValidatorId,
-		Exposure<T::AccountId, T::CurrencyBalance>,
-	> for Pallet<T>
-where
-	T: Config + pallet_staking::Config,
-	T: pallet_session::Config<ValidatorId = <T as frame_system::Config>::AccountId>,
-{
-	fn new_session(
-		new_index: SessionIndex,
-	) -> Option<Vec<(T::ValidatorId, Exposure<T::AccountId, T::CurrencyBalance>)>> {
-		<Self as pallet_session::SessionManager<_>>::new_session(new_index).map(|r| {
-			r.into_iter()
-				.map(|v| {
-					let exposure = ExposureOf::<T>::convert(v.clone()).unwrap_or_default();
-					(v, exposure)
-				})
-				.collect()
-		})
+impl<T: Config> pallet_session::historical::SessionManager<T::ValidatorId, ()> for Pallet<T> {
+	fn new_session(new_index: SessionIndex) -> Option<Vec<(T::ValidatorId, ())>> {
+		<Self as pallet_session::SessionManager<_>>::new_session(new_index)
+			.map(|r| r.into_iter().map(|v| (v, Default::default())).collect())
 	}
 
 	fn start_session(start_index: SessionIndex) {
