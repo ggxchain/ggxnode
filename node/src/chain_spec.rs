@@ -7,7 +7,8 @@ use sp_finality_grandpa::AuthorityId as GrandpaId;
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
 use golden_gate_runtime::{
-	AccountId, GenesisConfig, RuntimeConfig, RuntimeSpecificationConfig, Signature, WASM_BINARY,
+	pos::SessionKeys, AccountId, Balance, GenesisConfig, ImOnlineId, RuntimeConfig,
+	RuntimeSpecificationConfig, SessionConfig, Signature, GGX, WASM_BINARY,
 };
 
 // The URL for the telemetry server.
@@ -18,7 +19,7 @@ pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 /// Generate a crypto pair from seed.
 pub fn get_from_seed<TPublic: Public>(seed: &str) -> <TPublic::Pair as Pair>::Public {
-	TPublic::Pair::from_string(&format!("//{}", seed), None)
+	TPublic::Pair::from_string(&format!("//{seed}"), None)
 		.expect("static values are valid; qed")
 		.public()
 }
@@ -33,9 +34,21 @@ where
 	AccountPublic::from(get_from_seed::<TPublic>(seed)).into_account()
 }
 
-/// Generate an Aura authority key.
-pub fn authority_keys_from_seed(s: &str) -> (AuraId, GrandpaId) {
-	(get_from_seed::<AuraId>(s), get_from_seed::<GrandpaId>(s))
+#[derive(Debug, Clone)]
+struct ValidatorIdentity {
+	id: AccountId,
+	grandpa: GrandpaId,
+	aura: AuraId,
+	im_online: ImOnlineId,
+}
+
+fn authority_keys_from_seed(s: &str) -> ValidatorIdentity {
+	ValidatorIdentity {
+		id: AccountPublic::from(get_from_seed::<sr25519::Public>(s)).into_account(),
+		aura: get_from_seed::<AuraId>(s),
+		grandpa: get_from_seed::<GrandpaId>(s),
+		im_online: get_from_seed::<ImOnlineId>(s),
+	}
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
@@ -141,7 +154,7 @@ fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
-	initial_authorities: Vec<(AuraId, GrandpaId)>,
+	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 ) -> GenesisConfig {
 	use golden_gate_runtime::{
@@ -149,11 +162,7 @@ fn testnet_genesis(
 		GrandpaConfig, SudoConfig, SystemConfig,
 	};
 
-	let council = vec![
-		get_account_id_from_seed::<sr25519::Public>("Alice"),
-		get_account_id_from_seed::<sr25519::Public>("Bob"),
-		get_account_id_from_seed::<sr25519::Public>("Charlie"),
-	];
+	const ENDOWMENT: Balance = 10_000_000 * GGX;
 
 	GenesisConfig {
 		// System
@@ -172,21 +181,31 @@ fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, 1 << 60))
+				.map(|k| (k, ENDOWMENT))
 				.collect(),
 		},
 		transaction_payment: Default::default(),
+		treasury: Default::default(),
 
 		// Consensus
-		aura: AuraConfig {
-			authorities: initial_authorities.iter().map(|x| (x.0.clone())).collect(),
-		},
-		grandpa: GrandpaConfig {
-			authorities: initial_authorities
+		session: SessionConfig {
+			keys: initial_authorities
 				.iter()
-				.map(|x| (x.1.clone(), 1))
-				.collect(),
+				.map(|x| -> (AccountId, AccountId, SessionKeys) {
+					(
+						x.id.clone(),
+						x.id.clone(),
+						SessionKeys {
+							aura: x.aura.clone(),
+							grandpa: x.grandpa.clone(),
+							im_online: x.im_online.clone(),
+						},
+					)
+				})
+				.collect::<Vec<_>>(),
 		},
+		aura: AuraConfig::default(),
+		grandpa: GrandpaConfig::default(),
 
 		// EVM compatibility
 		evm_chain_id: EVMChainIdConfig { chain_id },
@@ -239,12 +258,20 @@ fn testnet_genesis(
 		dynamic_fee: Default::default(),
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
-			allowed_accounts: council.clone().into_iter().map(|e| (e, ())).collect(),
+			allowed_accounts: initial_authorities
+				.clone()
+				.into_iter()
+				.map(|e| (e.id, ()))
+				.collect(),
 		},
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,
+				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
+		vesting: Default::default(),
+		indices: Default::default(),
+		im_online: Default::default(),
 	}
 }
