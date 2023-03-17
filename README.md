@@ -1,5 +1,8 @@
 # 🛠🚧🏗 Under Construction 🛠🚧🏗 
 
+
+![pull-request-write](https://github.com/GoldenGateGGX/golden-gate/actions/workflows/pull-request-write.yml/badge.svg??branch=main)
+
 ## Node set-up
 
 ### Dependencies
