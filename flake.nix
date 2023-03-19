@@ -158,23 +158,17 @@
         multi-fast = pkgs.writeShellApplication rec {
           name = "multi-fast";
           text = ''
-            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --alice --tmp &> alice.log ) &
-            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --bob --tmp &> bob.log ) &
-            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --charlie --tmp &> charlie.log ) &
-            echo https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:9988#/explorer
+            WS_PORT_ALICE=''${WS_PORT_ALICE:-9988}
+            WS_PORT_BOB=''${WS_PORT_BOB:-9989}
+            WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9990}
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --bob --tmp --ws-port="$WS_PORT_BOB" &> bob.log ) &
+            ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --charlie --tmp --ws-port="$WS_PORT_CHARLIE" &> charlie.log ) &
+            echo https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
           '';
         };
 
-        # we should prune 3 things:
-        # - running process
-        # - logs/storages of run proccess
-        # - system prunce of nix cache/oci images
-        prune-running = pkgs.writeShellApplication rec {
-          name = "prune-running";
-          text = ''
-            pkill golden-gate-nod 
-          '';
-        };
+
       in
       rec {
         packages = flake-utils.lib.flattenTree {
@@ -182,6 +176,16 @@
           node = golden-gate-node;
           runtime = golden-gate-runtime;
           default = golden-gate-runtime;
+          # we should prune 3 things:
+          # - running process
+          # - logs/storages of run proccess
+          # - system prunce of nix cache/oci images
+          prune-running = pkgs.writeShellApplication rec {
+            name = "prune-running";
+            text = ''
+              pkill golden-gate-nod 
+            '';
+          };
         };
 
         devShells = {
