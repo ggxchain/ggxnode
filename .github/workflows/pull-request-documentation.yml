@@ -26,5 +26,5 @@ jobs:
           command: config
           globs: |
             .markdownlint-cli2.yaml
-            "**/*.md"
-            "**/*.MD"
+            **/*.md
+            **/*.MD
