@@ -3,8 +3,14 @@ on:
   push:
     branches:
       - main
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.MD"
 
   pull_request:
+    paths-ignore:
+      - "**/*.md"
+      - "**/*.MD"
 
 permissions: 
   pull-requests: write
