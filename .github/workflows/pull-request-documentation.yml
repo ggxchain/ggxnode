@@ -18,6 +18,7 @@ jobs:
     steps:
       - uses: DavidAnson/markdownlint-cli2-action@v9
         with:
+          config: .markdownlint-cli2.yaml
           globs: |
-            **/*.md
-            **/*.MD
+            "**/*.md"
+            "**/*.MD"
