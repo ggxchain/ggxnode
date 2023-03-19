@@ -36,7 +36,8 @@ Important:
 
 Steps:
 
-* Validate that the network is working and that you can connect. Check that all validators behave properly. As you can see, Alice and Bob are producing blocks, and I have connected to the 9003 port, which is Charlie's.
+* Validate that the network is working and that you can connect. Check that all validators behave properly.
+As you can see, Alice and Bob are producing blocks, and I have connected to the 9003 port, which is Charlie's.
 
   ![The image shows that validator are running](images/initial.png)
 * We have to allowlist Charlie initially. How to allowlist the validator user see in the [guide](../adding-user-to-allowlist/README.md)
@@ -46,7 +47,8 @@ Steps:
   ![The image shows example output of the rotate_keys](images/rotate_keys.png)
 * Copy the received key
   * In our example is: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e3104384453ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df9094835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
-* We have received three keys. (can be more later one). Each key is 32 bytes (64 symbols omitting initial 0x). You have to split them into three separate parts as below
+* We have received three keys. (can be more later one). Each key is 32 bytes (64 symbols omitting initial 0x).
+You have to split them into three separate parts as below
   * Aura: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e31043844`
   * Grandpa: `0x53ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df909`
   * I'm online: `0x4835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
@@ -80,7 +82,8 @@ Steps:
 
 ## Genesis config
 
-You can specify initial validators in the GenesisConfig into the session pallet. The pallet accepts AccountId and SessionKeys for each validator.
+You can specify initial validators in the GenesisConfig into the session pallet.
+The pallet accepts AccountId and SessionKeys for each validator.
 
 ```rust
 session: SessionConfig {

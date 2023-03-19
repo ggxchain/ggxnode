@@ -1,0 +1,23 @@
+name: "pull-request-write"
+on:
+  push:
+    branches:
+      - main
+    path:
+      - "**/*.md"
+      - "**/*.MD"
+
+  pull_request:
+    path:
+      - "**/*.md"
+      - "**/*.MD"
+
+jobs:
+  lint-documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: DavidAnson/markdownlint-cli2-action@v9
+        with:
+          globs: |
+            **/*.md
+            **/*.MD

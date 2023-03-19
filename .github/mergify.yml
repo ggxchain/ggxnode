@@ -1,9 +1,22 @@
 pull_request_rules:
-  - name: automatic merge for main when CI passes and 1 reviews
+  - name: automatic merge code changes for main when CI passes and 1 reviews
     conditions:
+      - -files=(\.md|\.MD)$
       - "#approved-reviews-by>=1"
       - check-success=build-runtime
       - base=main
     actions:
       merge:
         method: merge
+  - name: automatic merge documentation when CI passes and 1 reviews
+    conditions:
+      - files=(\.md|\.MD)$
+      - "#approved-reviews-by>=1"
+      - check-success=lint-documentation
+      - base=main
+  - name: automatic merge code changes with documentation when CI passes and 1 reviews
+    conditions:
+      - "#approved-reviews-by>=1"
+      - check-success=build-runtime
+      - check-success=lint-documentation
+      - base=main
