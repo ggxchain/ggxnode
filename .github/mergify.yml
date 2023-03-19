@@ -14,9 +14,15 @@ pull_request_rules:
       - "#approved-reviews-by>=1"
       - check-success=lint-documentation
       - base=main
+    actions:
+      merge:
+        method: merge
   - name: automatic merge code changes with documentation when CI passes and 1 reviews
     conditions:
       - "#approved-reviews-by>=1"
       - check-success=build-runtime
       - check-success=lint-documentation
       - base=main
+    actions:
+      merge:
+        method: merge
