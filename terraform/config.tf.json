@@ -7,10 +7,17 @@
   "resource": {
     "aws_s3_bucket": {
       "terraform-backend": {
-        "bucket": "terraform-backend-ggchain",
+        "bucket": "just-some-storage-ggchain",
         "tags": {
           "tool": "terranix"
         }
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "terraform.tfstate"
       }
     }
   }

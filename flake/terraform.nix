@@ -17,9 +17,15 @@ rec {
   resource = {
     aws_s3_bucket = {
       terraform-backend = {
-        bucket = "terraform-backend-${projet-name}";
+        bucket = "just-some-storage-${projet-name}";
         inherit tags;
       };
+    };
+  };
+
+  backend = { 
+    local = {
+      path = "terraform.tfstate";
     };
   };
 
