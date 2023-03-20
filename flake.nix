@@ -181,6 +181,19 @@
                 }
               ];
           };
+          doc-linter = devenv.lib.mkShell {
+            inherit inputs pkgs;
+            modules = [
+              {
+                packages = with pkgs; [ nodejs-18_x nodePackages.markdownlint-cli2 ];
+                env = rust-env;
+                enterShell = ''
+                    markdownlint-cli2 "**/*.md" "#.devenv" "#target"
+                    exit
+                '';
+              }
+            ];
+          };
         };
       }
     );

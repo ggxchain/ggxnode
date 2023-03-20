@@ -8,7 +8,9 @@ assignees: ""
 
 #### Description ####
 
-_Describe the need or frustration that motivated you to make this suggestion. Please note that the goal of this project is to provide common reusable utilities, so please take care when suggesting features that may be specific to a particular use case._
+_Describe the need or frustration that motivated you to make this suggestion.
+Please note that the goal of this projectis to provide common reusable utilities,
+so please take care when suggesting features that may be specific to a particular use case._
 
 #### Definition of "Done" ####
 
