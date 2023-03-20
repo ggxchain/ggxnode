@@ -1,9 +1,17 @@
 {
   "provider": {
-    "google": {
-      "project": "${ var.PROJECT }",
-      "region": "us-central1",
-      "zone": "us-central1-c"
+    "aws": {
+      "region": "eu-west-1"
+    }
+  },
+  "resource": {
+    "aws_s3_bucket": {
+      "terraform-backend": {
+        "bucket": "terraform-backend-ggchain",
+        "tags": {
+          "tool": "terranix"
+        }
+      }
     }
   }
 }

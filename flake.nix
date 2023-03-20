@@ -181,16 +181,24 @@
           '';
         };
 
-        tf-apply = pkgs.writeShellApplication rec {
-          name = "lint";
+
+        tf-init = pkgs.writeShellApplication rec {
+          name = "tf-init";
           text = ''
-            cd ./terraform  
-            cp ${tf-config} config.tf.json            
-            ${pkgs.lib.meta.getExe pkgs.terraform} init --upgrade
+            aws configure
           '';
         };
 
-        
+        tf-apply = pkgs.writeShellApplication rec {
+          name = "tf-apply";
+          text = ''
+            cd ./terraform  
+            cp --force ${tf-config} config.tf.json
+            ${pkgs.lib.meta.getExe pkgs.terraform} init --upgrade
+            ${pkgs.lib.meta.getExe pkgs.terraform} apply -auto-approve
+          '';
+        };
+
 
         tf-config = terranix.lib.terranixConfiguration {
           inherit system;
