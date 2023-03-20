@@ -3,7 +3,7 @@ pull_request_rules:
     conditions:
       - -files=(\.md|\.MD)$
       - "#approved-reviews-by>=1"
-      - check-success=build-runtime
+      - check-success=build-and-publish-draft
       - base=main
     actions:
       merge:

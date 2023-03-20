@@ -22,12 +22,17 @@ env:
   CACHIX_NAME: golden-gate-ggx
 
 jobs:
-  build-runtime:
-    name: "build-runtime"
+  build-and-publish-draft:
+      # as soon as it will be slow, can 
+      # 1. run in parallel 
+      # 2. cachix watch exec so cache upload is concurrent to build 
+      # 3. use  cachix zstd with higher level of compression
+      # 4. bake nix pkgs/cache into ois image and run CI from it 
+    name: "build-and-publish-draft"
     runs-on:
       - buildjet-32vcpu-ubuntu-2204
     concurrency:
-      group: build-runtime-${{ github.ref }}
+      group: build-and-publish-draft-${{ github.ref }}
       cancel-in-progress: true
     steps:
       - name: cachix-install-nix-action
@@ -55,8 +60,13 @@ jobs:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
       - run: |          
+          mkdir out
           nix build --print-build-logs --show-trace --no-update-lock-file
-     
+          cp ./result/lib/golden_gate_runtime.compact.compressed.wasm ./out
+          nix build .#golden-gate-node --print-build-logs --show-trace --no-update-lock-file
+          cp ./result/bin/golden-gate-node ./out  
+          # can add here contracts and oci image, etc                  
+          
       - name: action-gh-release
         uses: softprops/action-gh-release@v1
         with:
@@ -67,4 +77,4 @@ jobs:
           tag_name: ${{ github.ref_name }}
           target_commitish: ${{ github.sha }}
           files: |
-            ./result/lib/golden_gate_runtime.compact.compressed.wasm
+            ./out/*

@@ -26,3 +26,7 @@ polkadot.*
 .envrc
 .devenv
 result
+
+# devops
+*.log
+out
