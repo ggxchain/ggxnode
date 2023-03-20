@@ -64,7 +64,7 @@ jobs:
           nix build --print-build-logs --show-trace --no-update-lock-file
           cp ./result/lib/golden_gate_runtime.compact.compressed.wasm ./out
           nix build .#golden-gate-node --print-build-logs --show-trace --no-update-lock-file
-          cp ./result/bin/golden-gate-node ./out  
+          cp ./result/bin/golden-gate-node ./out
           # can add here contracts and oci image, etc                  
           
       - name: action-gh-release

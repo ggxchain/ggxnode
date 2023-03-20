@@ -27,6 +27,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # terraform generator to manage clouds/managed services
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   nixConfig = {
@@ -36,7 +42,7 @@
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
-  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, ... } @ inputs:
+  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, terranix, ... } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
 
@@ -168,11 +174,33 @@
           '';
         };
 
+        lint = pkgs.writeShellApplication rec {
+          name = "lint";
+          text = ''
+            ${pkgs.lib.meta.getExe pkgs.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
+          '';
+        };
+
+        tf-apply = pkgs.writeShellApplication rec {
+          name = "lint";
+          text = ''
+            cd ./terraform  
+            cp ${tf-config} config.tf.json            
+            ${pkgs.lib.meta.getExe pkgs.terraform} init --upgrade
+          '';
+        };
+
+        
+
+        tf-config = terranix.lib.terranixConfiguration {
+          inherit system;
+          modules = [ ./flake/terraform.nix ];
+        };
 
       in
       rec {
         packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast;
+          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply;
           node = golden-gate-node;
           runtime = golden-gate-runtime;
           default = golden-gate-runtime;
@@ -231,7 +259,18 @@
               in
               [
                 {
-                  packages = with pkgs;[ rust-toolchain binaryen llvmPackages.bintools dylint-link ] ++ rust-native-build-inputs ++ darwin;
+                  packages = with pkgs;
+                    [
+                      rust-toolchain
+                      binaryen
+                      llvmPackages.bintools
+                      dylint-link
+                      nodejs-18_x
+                      nodePackages.markdownlint-cli2
+                      awscli2
+                      terraform
+                    ]
+                    ++ rust-native-build-inputs ++ darwin;
                   env = rust-env;
                   # can do systemd/docker stuff here
                   enterShell = ''
@@ -242,19 +281,6 @@
                   devcontainer.enable = true;
                 }
               ];
-          };
-          doc-linter = devenv.lib.mkShell {
-            inherit inputs pkgs;
-            modules = [
-              {
-                packages = with pkgs; [ nodejs-18_x nodePackages.markdownlint-cli2 ];
-                env = rust-env;
-                enterShell = ''
-                    markdownlint-cli2 "**/*.md" "#.devenv" "#target"
-                    exit
-                '';
-              }
-            ];
           };
         };
       }
