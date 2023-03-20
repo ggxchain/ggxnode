@@ -17,21 +17,18 @@ rec {
   resource = {
     aws_s3_bucket = {
       terraform-backend = {
+        # just for testing
         bucket = "just-some-storage-${projet-name}";
         inherit tags;
       };
     };
   };
 
-  backend = { 
+  backend = {
     local = {
+      # that value is decrypted by script, update, and encrypted back
       path = "terraform.tfstate";
     };
   };
-
-  # resource "aws_s3_bucket_acl" "example" {
-  #   bucket = aws_s3_bucket.b.id
-  #   acl    = "private"
-  # }
 
 }

@@ -185,17 +185,33 @@
         tf-init = pkgs.writeShellApplication rec {
           name = "tf-init";
           text = ''
+            # here you manually obtain login key
             aws configure
           '';
         };
+
+        # can use envvars override to allow run personally
+        age-pub = "age1a8k02z579lr0qr79pjhlneffjw3dvy3a8j5r4fw3zlphd6cyaf5qukkat5";
 
         tf-apply = pkgs.writeShellApplication rec {
           name = "tf-apply";
           text = ''
             cd ./terraform  
+            # generate terraform input from nix
             cp --force ${tf-config} config.tf.json
             ${pkgs.lib.meta.getExe pkgs.terraform} init --upgrade
+
+            # decrypt secret state (should run only on CI eventually for safety)
+            # if there is encrypted state, decrypt it
+            if [[ -f terraform.tfstate.sops ]]; then
+              # uses age, so can use any of many providers (including aws)
+              sops --decrypt --age ${age-pub} terraform.tfstate.sops > terraform.tfstate          
+            fi
+          
+            # apply state to cloud, eventually should manually approve in CI
             ${pkgs.lib.meta.getExe pkgs.terraform} apply -auto-approve
+            # encrypt update state back and push it (later in CI special job)
+            sops --encrypt --age ${age-pub} terraform.tfstate > terraform.tfstate.sops
           '';
         };
 
@@ -277,6 +293,8 @@
                       nodePackages.markdownlint-cli2
                       awscli2
                       terraform
+                      sops
+                      age
                     ]
                     ++ rust-native-build-inputs ++ darwin;
                   env = rust-env;
