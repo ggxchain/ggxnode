@@ -190,7 +190,7 @@
           '';
         };
 
-        # can use envvars override to allow run personally
+        # can use envvars override to allow run non shared "cloud" for tests
         age-pub = "age1a8k02z579lr0qr79pjhlneffjw3dvy3a8j5r4fw3zlphd6cyaf5qukkat5";
 
         tf-apply = pkgs.writeShellApplication rec {
@@ -212,6 +212,7 @@
             ${pkgs.lib.meta.getExe pkgs.terraform} apply -auto-approve
             # encrypt update state back and push it (later in CI special job)
             sops --encrypt --age ${age-pub} terraform.tfstate > terraform.tfstate.sops
+            # seems good idea to encrypt backup here too
           '';
         };
 
