@@ -3,14 +3,8 @@ on:
   push:
     branches:
       - main
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.MD"
 
   pull_request:
-    paths-ignore:
-      - "**/*.md"
-      - "**/*.MD"
 
 permissions: 
   pull-requests: write
@@ -20,6 +14,7 @@ env:
   NIX_VERSION: nix-2.13.2
   NIXPKGS_CHANNEL: nixos-22.11
   CACHIX_NAME: golden-gate-ggx
+  OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
 
 jobs:
   build-and-publish-draft:
@@ -64,10 +59,13 @@ jobs:
           nix build --print-build-logs --show-trace --no-update-lock-file
           cp ./result/lib/golden_gate_runtime.compact.compressed.wasm ./out
           nix build .#golden-gate-node --print-build-logs --show-trace --no-update-lock-file
-          cp ./result/bin/golden-gate-node ./out  
-          # can add here contracts and oci image, etc                  
+          cp ./result/bin/golden-gate-node ./out
+          # can add here contracts and oci image, etc
+          nix run .#lint                  
           
       - name: action-gh-release
+        # so we do not allow non team members to do releases
+        if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.id != env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.id == env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) }}
         uses: softprops/action-gh-release@v1
         with:
           draft: true

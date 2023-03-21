@@ -27,6 +27,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    # terraform generator to manage clouds/managed services
+    terranix = {
+      url = "github:terranix/terranix";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
   };
 
   nixConfig = {
@@ -36,7 +42,7 @@
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
-  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, ... } @ inputs:
+  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, terranix, ... } @ inputs:
     flake-utils.lib.eachDefaultSystem (system:
       let
 
@@ -114,6 +120,10 @@
                 == false
                 &&
                 (type == "directory" && ".github" == name) == false
+                && (type == "directory" && "terraform" == name) == false
+
+                # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
+                && (type == "regular" && pkgs.lib.strings.hasSuffix ".md" name) == false
               )
             )
 
@@ -168,11 +178,63 @@
           '';
         };
 
+        lint = pkgs.writeShellApplication rec {
+          name = "lint";
+          text = ''
+            ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
+          '';
+        };
 
+
+        tf-init = pkgs.writeShellApplication rec {
+          name = "tf-init";
+          text = ''
+            # here you manually obtain login key
+            aws configure
+          '';
+        };
+
+        # can use envvars override to allow run non shared "cloud" for tests
+        age-pub = "age1a8k02z579lr0qr79pjhlneffjw3dvy3a8j5r4fw3zlphd6cyaf5qukkat5";
+        cloud-tools = with pkgs; [
+          awscli2
+          terraform
+          sops
+          age
+        ];
+        tf-apply = pkgs.writeShellApplication rec {
+          name = "tf-apply";
+          runtimeInputs = cloud-tools;
+          text = ''
+            cd ./terraform  
+            # generate terraform input from nix
+            cp --force ${tf-config} config.tf.json
+            terraform init --upgrade
+
+            # decrypt secret state (should run only on CI eventually for safety)
+            # if there is encrypted state, decrypt it
+            if [[ -f terraform.tfstate.sops ]]; then
+              # uses age, so can use any of many providers (including aws)
+              sops --decrypt --age ${age-pub} terraform.tfstate.sops > terraform.tfstate          
+            fi
+          
+            # apply state to cloud, eventually should manually approve in CI
+            terraform apply -auto-approve
+            # encrypt update state back and push it (later in CI special job)
+            sops --encrypt --age ${age-pub} terraform.tfstate > terraform.tfstate.sops
+            # seems good idea to encrypt backup here too
+          '';
+        };
+
+
+        tf-config = terranix.lib.terranixConfiguration {
+          inherit system;
+          modules = [ ./flake/terraform.nix ];
+        };
       in
       rec {
         packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast;
+          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
           node = golden-gate-node;
           runtime = golden-gate-runtime;
           default = golden-gate-runtime;
@@ -231,7 +293,17 @@
               in
               [
                 {
-                  packages = with pkgs;[ rust-toolchain binaryen llvmPackages.bintools dylint-link ] ++ rust-native-build-inputs ++ darwin;
+                  packages = with pkgs;
+                    [
+                      rust-toolchain
+                      binaryen
+                      llvmPackages.bintools
+                      dylint-link
+                      nodejs-18_x
+                      nodePackages.markdownlint-cli2
+
+                    ]
+                    ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
                   env = rust-env;
                   # can do systemd/docker stuff here
                   enterShell = ''
@@ -242,19 +314,6 @@
                   devcontainer.enable = true;
                 }
               ];
-          };
-          doc-linter = devenv.lib.mkShell {
-            inherit inputs pkgs;
-            modules = [
-              {
-                packages = with pkgs; [ nodejs-18_x nodePackages.markdownlint-cli2 ];
-                env = rust-env;
-                enterShell = ''
-                    markdownlint-cli2 "**/*.md" "#.devenv" "#target"
-                    exit
-                '';
-              }
-            ];
           };
         };
       }
