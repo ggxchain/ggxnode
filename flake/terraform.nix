@@ -3,6 +3,7 @@ let
   var = options.variable;
   # really should do TF_VAR so can arbitrary global suffixes and experimentation
   projet-name = "ggchain";
+  # just ensure we do not to modify manually
   tags = {
     tool = "terranix";
   };
@@ -18,7 +19,7 @@ rec {
     aws_s3_bucket = {
       terraform-backend = {
         # just for testing
-        bucket = "just-some-storage-${projet-name}";
+        bucket = "new-just-some-storage-${projet-name}";
         inherit tags;
       };
     };

@@ -7,7 +7,7 @@
   "resource": {
     "aws_s3_bucket": {
       "terraform-backend": {
-        "bucket": "just-some-storage-ggchain",
+        "bucket": "new-just-some-storage-ggchain",
         "tags": {
           "tool": "terranix"
         }
