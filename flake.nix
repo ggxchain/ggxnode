@@ -120,6 +120,10 @@
                 == false
                 &&
                 (type == "directory" && ".github" == name) == false
+                && (type == "directory" && "terraform" == name) == false
+                
+                # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
+                && (type == "regular" && pkgs.lib.strings.hasSuffix ".md" name) == false
               )
             )
 
@@ -177,7 +181,7 @@
         lint = pkgs.writeShellApplication rec {
           name = "lint";
           text = ''
-            ${pkgs.lib.meta.getExe pkgs.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
+            ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
           '';
         };
 
@@ -225,7 +229,7 @@
       in
       rec {
         packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply;
+          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
           node = golden-gate-node;
           runtime = golden-gate-runtime;
           default = golden-gate-runtime;
