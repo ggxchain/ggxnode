@@ -121,7 +121,7 @@
                 &&
                 (type == "directory" && ".github" == name) == false
                 && (type == "directory" && "terraform" == name) == false
-                
+
                 # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
                 && (type == "regular" && pkgs.lib.strings.hasSuffix ".md" name) == false
               )
@@ -196,14 +196,20 @@
 
         # can use envvars override to allow run non shared "cloud" for tests
         age-pub = "age1a8k02z579lr0qr79pjhlneffjw3dvy3a8j5r4fw3zlphd6cyaf5qukkat5";
-
+        cloud-tools = with pkgs; [
+          awscli2
+          terraform
+          sops
+          age
+        ];
         tf-apply = pkgs.writeShellApplication rec {
           name = "tf-apply";
+          runtimeInputs = cloud-tools;
           text = ''
             cd ./terraform  
             # generate terraform input from nix
             cp --force ${tf-config} config.tf.json
-            ${pkgs.lib.meta.getExe pkgs.terraform} init --upgrade
+            terraform init --upgrade
 
             # decrypt secret state (should run only on CI eventually for safety)
             # if there is encrypted state, decrypt it
@@ -213,7 +219,7 @@
             fi
           
             # apply state to cloud, eventually should manually approve in CI
-            ${pkgs.lib.meta.getExe pkgs.terraform} apply -auto-approve
+            terraform apply -auto-approve
             # encrypt update state back and push it (later in CI special job)
             sops --encrypt --age ${age-pub} terraform.tfstate > terraform.tfstate.sops
             # seems good idea to encrypt backup here too
@@ -225,7 +231,6 @@
           inherit system;
           modules = [ ./flake/terraform.nix ];
         };
-
       in
       rec {
         packages = flake-utils.lib.flattenTree {
@@ -296,12 +301,9 @@
                       dylint-link
                       nodejs-18_x
                       nodePackages.markdownlint-cli2
-                      awscli2
-                      terraform
-                      sops
-                      age
+
                     ]
-                    ++ rust-native-build-inputs ++ darwin;
+                    ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
                   env = rust-env;
                   # can do systemd/docker stuff here
                   enterShell = ''
