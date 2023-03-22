@@ -97,6 +97,22 @@
           version = "0.1.0";
         };
 
+        common-contract-release-attrs  = common-attrs // rec {
+          cargoBuildCommand = "cargo contract build ";
+          preConfigure = ''
+            env
+          '';
+          nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.protobuf cargo-contract cargo-dylint dylint-link ];
+          installPhase = ''
+            mkdir --parents $out/lib
+            cp ./target/ink/$pname/$pname.contract $out/lib
+          '';
+          buildPhase = ''
+            cargo build  --target wasm32-unknown-unknown "-Zbuild-std=std,panic_abort" "--no-default-features" "--release" "--target-dir=/build/source/target/ink/flipper"
+            # cargo contract build --release examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml 
+          '';
+        };
+
         # calls `cargo vendor` on package deps 
         common-wasm-deps =
           craneLib.buildDepsOnly (common-wasm-attrs // { });
@@ -145,6 +161,65 @@
           nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs 
         });
 
+        example-flipper-contract = craneLib.buildPackage ( rec  {
+          src = rust-src;
+          pname = "flipper";
+          version = "0.2.0";
+          cargoExtraArgs = "--manifest-path examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml";
+          CARGO="${rust-toolchain}/bin/cargo -Zbuild-std=std,panic_abort";
+
+          cargoBuildCommand = "cargo contract build ";
+          nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ cargo-contract cargo-dylint dylint-link ];
+          doCheck = false;
+        }  // common-contract-release-attrs);
+
+        dylib = {
+          buildInputs = with pkgs; [ openssl ] ++ darwin;
+          nativeBuildInputs = rust-native-build-inputs;
+          doCheck = false;
+        };
+        rust-deps = pkgs.makeRustPlatform {
+          inherit pkgs;
+          # dylint needs nightly
+          cargo = rust-toolchain;
+          rustc = rust-toolchain;
+        };
+        cargo-dylint = with pkgs; rust-deps.buildRustPackage (rec {
+          pname = "cargo-dylint";
+          version = "2.1.5";
+          src = fetchCrate {
+            inherit pname version;
+            sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
+          };
+          preConfigure = ''
+            mkdir -p /build/cargo-dylint-vendor.tar.gz/driver
+          '';
+
+          cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtkRuTL4EzF0xo=";
+          cargoDepsName = pname;
+        } // dylib);
+        dylint-link = with pkgs; rust-deps.buildRustPackage (rec {
+          pname = "dylint-link";
+          version = "2.1.5";
+          src = fetchCrate {
+            inherit pname version;
+            sha256 = "sha256-oarEYhv0i2wAPmahx0vgWN3kmfEsK3s6D3+qkOqF9pc=";
+          };
+
+          cargoHash = "sha256-pMr9hddHAIyIclHRpxqdUaHphjSAVDnvfNjWGDA2EM4=";
+          cargoDepsName = pname;
+        } // dylib);
+        cargo-contract = with pkgs; rust-deps.buildRustPackage (rec {
+          pname = "cargo-contract";
+          version = "2.1.0";
+          src = fetchCrate {
+            inherit pname version;
+            sha256 = "sha256-jwlld5TAYq1sSj7Lj85/ZqTCfYoTf/K1R/SC1sImO44=";
+          };
+
+          cargoHash = "sha256-MXWFBnxhqOm7BOnhtJ2noFP8FB7tgOlprzYJcgmWg/M=";
+          cargoDepsName = pname;
+        } // dylib);
 
         # really need to run as some points:
         # - light client emulator (ideal for contracts)
@@ -182,6 +257,13 @@
           name = "lint";
           text = ''
             ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
+          '';
+        };
+
+        manage-key = pkgs.writeShellApplication rec {
+          name = "manage-key";
+          text = ''
+            ${pkgs.lib.meta.getExe golden-gate-node} "key" "$@"
           '';
         };
 
@@ -234,7 +316,7 @@
       in
       rec {
         packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
+          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint manage-key example-flipper-contract;
           node = golden-gate-node;
           runtime = golden-gate-runtime;
           default = golden-gate-runtime;
@@ -254,43 +336,6 @@
           default = devenv.lib.mkShell {
             inherit inputs pkgs;
             modules =
-              let
-
-                dylib = {
-                  buildInputs = with pkgs; [ openssl ] ++ darwin;
-                  nativeBuildInputs = rust-native-build-inputs;
-                  doCheck = false;
-                };
-                rust-deps = pkgs.makeRustPlatform {
-                  inherit pkgs;
-                  # dylint needs nightly
-                  cargo = pkgs.rust-bin.beta.latest.default;
-                  rustc = pkgs.rust-bin.beta.latest.default;
-                };
-                cargo-dylint = with pkgs; rust-deps.buildRustPackage (rec {
-                  pname = "cargo-dylint";
-                  version = "2.1.5";
-                  src = fetchCrate {
-                    inherit pname version;
-                    sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
-                  };
-
-                  cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtkRuTL4EzF0xo=";
-                  cargoDepsName = pname;
-                } // dylib);
-                dylint-link = with pkgs; rust-deps.buildRustPackage (rec {
-                  pname = "dylint-link";
-                  version = "2.1.5";
-                  src = fetchCrate {
-                    inherit pname version;
-                    sha256 = "sha256-oarEYhv0i2wAPmahx0vgWN3kmfEsK3s6D3+qkOqF9pc=";
-                  };
-
-                  cargoHash = "sha256-pMr9hddHAIyIclHRpxqdUaHphjSAVDnvfNjWGDA2EM4=";
-                  cargoDepsName = pname;
-                } // dylib);
-                # can `cargo-contract` and nodejs ui easy here 
-              in
               [
                 {
                   packages = with pkgs;
@@ -301,7 +346,9 @@
                       dylint-link
                       nodejs-18_x
                       nodePackages.markdownlint-cli2
-
+                      manage-key
+                      cargo-dylint
+                      cargo-contract
                     ]
                     ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
                   env = rust-env;

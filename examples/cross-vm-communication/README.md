@@ -183,7 +183,7 @@ The source code can be found in the `wasm_to_evm/flipper/lib.rs` file.
 #### Building the flipper wrapper contract
 
 ```bash
-# The contract will be located in wasm-to-evm/flipper/target/ink/flipper.contract
+# The contract will be located in wasm-to-evm/flipper/target/ink/flipper_wrapper.contract
 cargo +nightly contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
 ```
 

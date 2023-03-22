@@ -2,8 +2,6 @@
 members = [
 	"node",
 	"runtime",
-]
-exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
 	"examples/cross-vm-communication/wasm-to-evm/flipper",
 ]

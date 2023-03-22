@@ -1,0 +1,249 @@
+cargoArtifacts not set, will not reuse any cargo artifacts
+@nix { "action": "setPhase", "phase": "unpackPhase" }
+unpacking sources
+unpacking source archive /nix/store/qpnv3b8dnhmgqxi9c8qmj5y5i76ir8jw-source
+source root is source
+@nix { "action": "setPhase", "phase": "patchPhase" }
+patching sources
+Executing configureCargoCommonVars
+@nix { "action": "setPhase", "phase": "configurePhase" }
+configuring
+SHELL=/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin/bash
+NIX_BUILD_CORES=24
+configureFlags=
+RUST_TEST_THREADS=24
+mesonFlags=
+PKG_CONFIG_PATH=/nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/lib/pkgconfig:/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib/pkgconfig:/nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/lib/pkgconfig
+cargoVendorDir=/nix/store/bm29fgnzl56ikr47nqlrka7j2z9x4krx-vendor-cargo-deps
+shell=/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin/bash
+depsHostHost=
+STRINGS=strings
+src=/nix/store/qpnv3b8dnhmgqxi9c8qmj5y5i76ir8jw-source
+LD_FOR_BUILD=ld
+depsTargetTarget=
+stdenv=/nix/store/vy1gljyx0hx57bjnsyj05g3xw1bm2v6m-stdenv-linux
+NIX_CFLAGS_COMPILE_FOR_BUILD= -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include
+builder=/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin/bash
+PWD=/build/source
+SOURCE_DATE_EPOCH=315532800
+pname=flipper-deps
+NIX_ENFORCE_NO_NATIVE=1
+CARGO_BUILD_INCREMENTAL=false
+CXX=g++
+AS_FOR_BUILD=as
+TEMPDIR=/build
+system=x86_64-linux
+TZ=UTC
+SIZE_FOR_BUILD=size
+HOST_PATH=/nix/store/h38i37nld06lhzg0n01m7k938fj2w9gm-compiler-rt-libc-11.1.0/bin:/nix/store/3qy9hdy1v3ci7vqahprrcf7d3553rndy-openssl-3.0.8-bin/bin:/nix/store/3160d2vcxr5xb13hyapz7igpbjk1lvqm-zstd-1.5.2-bin/bin:/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/bin:/nix/store/wxb674h6dp7h63na8z6jwpagps811jl7-coreutils-9.1/bin:/nix/store/qb3dj8ybkm4kj2nq2zkzrri10z05jh7m-findutils-4.9.0/bin:/nix/store/mmjv5vhr0pj8ljfxa9r32dm9dnj05mc8-diffutils-3.8/bin:/nix/store/94vs0vy7k92sndkcxxgjahgp1zv58mya-gnused-4.8/bin:/nix/store/6cw0r7hvdrijq1izljsl9bqbl6568chp-gnugrep-3.7/bin:/nix/store/9izpdvqkiidxqp3x7fhjmmx0xsjq1n9s-gawk-5.1.1/bin:/nix/store/kd0vbwf3685vvgyryqfd0ra2f0s6w70c-gnutar-1.34/bin:/nix/store/pqvn59xib35km9qcl90yq4gma221br8k-gzip-1.12/bin:/nix/store/cvwm2f4nrly4hrq17hf7xb9kpyq66zpp-bzip2-1.0.8-bin/bin:/nix/store/qy5mvspgxdrpcmzyv7rgwfzhb5mqj31q-gnumake-4.3/bin:/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin:/nix/store/xbkzp4y4hb8j7d4yvjxf51y8drp2rzb4-patch-2.7.6/bin:/nix/store/2hl7x5mwibc3fzzm4riym2pc7aw7vy9w-xz-5.2.7-bin/bin:/nix/store/m6pqvzyprlr073z4v2q59wdi7ga8g5qd-file-5.43/bin
+LIBCLANG_PATH=/nix/store/y39v6zn19sazv22241by5chfpicfdb2d-clang-11.1.0-lib/lib
+doInstallCheck=
+HOME=/homeless-shelter
+NIX_BINTOOLS=/nix/store/ky760iqmnd2wcngvzlrh7703i11qvagj-binutils-wrapper-2.39
+installPhase=mkdir --parents $out/lib
+cp ./target/ink/$pname/$pname.contract $out/lib
+
+installCargoArtifactsMode=use-zstd
+checkPhase=runHook preCheck
+cargoWithProfile test --manifest-path examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml 
+
+runHook postCheck
+
+CARGO_HOME=/build/source/.cargo-home
+depsTargetTargetPropagated=
+RUSTUP_TOOLCHAIN=nightly-2022-12-20
+cmakeFlags=
+CXX_FOR_BUILD=g++
+NIX_SSL_CERT_FILE=/no-cert-file.crt
+version=0.2.0
+outputs=out
+PROTOC=/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/bin/protoc
+NIX_STORE=/nix/store
+TMPDIR=/build
+LD=ld
+doInstallCargoArtifacts=1
+NM_FOR_BUILD=nm
+NIX_ENFORCE_PURITY=1
+NIX_BINTOOLS_FOR_BUILD=/nix/store/ky760iqmnd2wcngvzlrh7703i11qvagj-binutils-wrapper-2.39
+buildPhase=runHook preBuild
+cargo --version
+true --manifest-path examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml 
+cargo contract build  --manifest-path examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml
+
+runHook postBuild
+
+CARGO_BUILD_JOBS=24
+READELF=readelf
+STRIP_FOR_BUILD=strip
+NIX_CC_WRAPPER_TARGET_BUILD_x86_64_unknown_linux_gnu=1
+NIX_BINTOOLS_WRAPPER_TARGET_BUILD_x86_64_unknown_linux_gnu=1
+doCheck=
+NIX_LOG_FD=2
+depsBuildBuild=
+TERM=xterm-256color
+SIZE=size
+OBJCOPY_FOR_BUILD=objcopy
+propagatedNativeBuildInputs=
+CC_FOR_BUILD=gcc
+strictDeps=
+AR=ar
+AS=as
+configurePhase=runHook preConfigure
+echo default configurePhase, nothing to do
+runHook postConfigure
+
+TEMP=/build
+NIX_BINTOOLS_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu=1
+OBJDUMP_FOR_BUILD=objdump
+preConfigure=env
+
+SHLVL=1
+AR_FOR_BUILD=ar
+NIX_BUILD_TOP=/build
+NM=nm
+NIX_LDFLAGS_FOR_BUILD= -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib
+NIX_CFLAGS_COMPILE= -frandom-seed=dprji370ps -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include -isystem /nix/store/k6rkm8dhgma28b38kw4hm1rzq083xwfb-compiler-rt-libc-11.1.0-dev/include
+patches=
+ROCKSDB_LIB_DIR=/nix/store/yx7vizxca8sy1qp0xiclz10302xv1c7z-rocksdb-7.7.3/lib
+buildInputs=/nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev
+LD_LIBRARY_PATH=/nix/store/v8481v3a686aa0pa4d016c0lnz2j0wwb-gcc-11.3.0-lib/lib:/nix/store/y39v6zn19sazv22241by5chfpicfdb2d-clang-11.1.0-lib/lib
+SSL_CERT_FILE=/no-cert-file.crt
+NIX_PKG_CONFIG_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu=1
+depsBuildTarget=
+OBJCOPY=objcopy
+RANLIB_FOR_BUILD=ranlib
+out=/nix/store/dprji370psdqahv46wc74gkbpbzh7hvv-flipper-deps-0.2.0
+STRIP=strip
+XDG_DATA_DIRS=/nix/store/wa04mj7rldj3rcimxb5v8c3mj62rklfd-pkg-config-wrapper-0.29.2/share:/nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/share:/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/share:/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/share:/nix/store/xwf8sam0f6sygsbyg4kdlvrr4kf0igdl-patchelf-0.15.0/share
+TMP=/build
+OBJDUMP=objdump
+PATH=/nix/store/dkw46jgi8i0bq64cag95v4ywz6g9bnga-gcc-wrapper-11.3.0/bin:/nix/store/qm03mh5x2j4ls0y80y8h3zsyj4hb52w2-gcc-11.3.0/bin:/nix/store/k7hz7q51yn77j70i2kjrc9rgnik4yqgk-glibc-2.35-224-bin/bin:/nix/store/wxb674h6dp7h63na8z6jwpagps811jl7-coreutils-9.1/bin:/nix/store/ky760iqmnd2wcngvzlrh7703i11qvagj-binutils-wrapper-2.39/bin:/nix/store/lz1bwpdvlywij5ir0fmncgqa83dlpwhn-binutils-2.39/bin:/nix/store/f5hzlalf4vzld97p4z82fkygh1yahb97-clang-wrapper-11.1.0/bin:/nix/store/6hj3941j9zdalv8wqgl0yjlv8gc4rj2z-clang-11.1.0/bin:/nix/store/vx03jglbzr3642ppwkqgcmajrxa8ir3y-binutils-wrapper-2.39/bin:/nix/store/wa04mj7rldj3rcimxb5v8c3mj62rklfd-pkg-config-wrapper-0.29.2/bin:/nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3/bin:/nix/store/3qy9hdy1v3ci7vqahprrcf7d3553rndy-openssl-3.0.8-bin/bin:/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/bin:/nix/store/vhdg429751awvmdmmpn31k919ayhp34x-cargo-contract-2.1.0/bin:/nix/store/w0whjbmx6fs8avi93fdddrwyq5hbqh9j-cargo-dylint-2.1.5/bin:/nix/store/scvrf0jqjskl12knan85xbsyd5z6ic0z-dylint-link-2.1.5/bin:/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/bin:/nix/store/3160d2vcxr5xb13hyapz7igpbjk1lvqm-zstd-1.5.2-bin/bin:/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/bin:/nix/store/xwf8sam0f6sygsbyg4kdlvrr4kf0igdl-patchelf-0.15.0/bin:/nix/store/h38i37nld06lhzg0n01m7k938fj2w9gm-compiler-rt-libc-11.1.0/bin:/nix/store/wxb674h6dp7h63na8z6jwpagps811jl7-coreutils-9.1/bin:/nix/store/qb3dj8ybkm4kj2nq2zkzrri10z05jh7m-findutils-4.9.0/bin:/nix/store/mmjv5vhr0pj8ljfxa9r32dm9dnj05mc8-diffutils-3.8/bin:/nix/store/94vs0vy7k92sndkcxxgjahgp1zv58mya-gnused-4.8/bin:/nix/store/6cw0r7hvdrijq1izljsl9bqbl6568chp-gnugrep-3.7/bin:/nix/store/9izpdvqkiidxqp3x7fhjmmx0xsjq1n9s-gawk-5.1.1/bin:/nix/store/kd0vbwf3685vvgyryqfd0ra2f0s6w70c-gnutar-1.34/bin:/nix/store/pqvn59xib35km9qcl90yq4gma221br8k-gzip-1.12/bin:/nix/store/cvwm2f4nrly4hrq17hf7xb9kpyq66zpp-bzip2-1.0.8-bin/bin:/nix/store/qy5mvspgxdrpcmzyv7rgwfzhb5mqj31q-gnumake-4.3/bin:/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin:/nix/store/xbkzp4y4hb8j7d4yvjxf51y8drp2rzb4-patch-2.7.6/bin:/nix/store/2hl7x5mwibc3fzzm4riym2pc7aw7vy9w-xz-5.2.7-bin/bin:/nix/store/m6pqvzyprlr073z4v2q59wdi7ga8g5qd-file-5.43/bin
+propagatedBuildInputs=
+READELF_FOR_BUILD=readelf
+CC=gcc
+NIX_CC=/nix/store/dkw46jgi8i0bq64cag95v4ywz6g9bnga-gcc-wrapper-11.3.0
+depsBuildTargetPropagated=
+STRINGS_FOR_BUILD=strings
+depsBuildBuildPropagated=
+NIX_CC_WRAPPER_TARGET_HOST_x86_64_unknown_linux_gnu=1
+NIX_INDENT_MAKE=1
+CONFIG_SHELL=/nix/store/96ky1zdkpq871h2dlk198fz0zvklr1dr-bash-5.1-p16/bin/bash
+RANLIB=ranlib
+NIX_HARDENING_ENABLE=fortify stackprotector pic strictoverflow format relro bindnow
+OLDPWD=/build
+NIX_LDFLAGS=-rpath /nix/store/dprji370psdqahv46wc74gkbpbzh7hvv-flipper-deps-0.2.0/lib64 -rpath /nix/store/dprji370psdqahv46wc74gkbpbzh7hvv-flipper-deps-0.2.0/lib  -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzn56dy54k0sdgm4lx98c20r81hq41nl-openssl-3.0.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib -L/nix/store/w6w57bbw78yc0mz9q5iwa77z0rxbbbgk-zstd-1.5.2/lib
+nativeBuildInputs=/nix/store/f5hzlalf4vzld97p4z82fkygh1yahb97-clang-wrapper-11.1.0 /nix/store/wa04mj7rldj3rcimxb5v8c3mj62rklfd-pkg-config-wrapper-0.29.2 /nix/store/pc30zx3jrmm75871jm1kxjk91l22xx4y-gnumake-4.3 /nix/store/cbl1380hrcrpwb7sl09jcaj1h3z5fsnn-openssl-3.0.8-dev /nix/store/xzkh21yw7kbra4hs0hb6wv9jrj7555bh-protobuf-3.21.8 /nix/store/vhdg429751awvmdmmpn31k919ayhp34x-cargo-contract-2.1.0 /nix/store/w0whjbmx6fs8avi93fdddrwyq5hbqh9j-cargo-dylint-2.1.5 /nix/store/scvrf0jqjskl12knan85xbsyd5z6ic0z-dylint-link-2.1.5 /nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20 /nix/store/8zkgp3vvd54n40xzdzi0q58p0gin9na7-cargoHelperFunctionsHook /nix/store/n6nrnia72gh6rbjzb9hs13bk6g47wzm3-configureCargoCommonVarsHook /nix/store/p1gxr3h3x47kbn91v6hirmafz4404qz6-configureCargoVendoredDepsHook /nix/store/ikka1452ikxq39idnxj8hgnxzhlnfypv-inheritCargoArtifactsHook /nix/store/ikyj1sprzp5kiy8w2c6c6vqkrq5sdzws-installCargoArtifactsHook /nix/store/33idjrkkzg6a1xg6d5x9g5rnpn5cpjam-zstd-1.5.2-dev
+name=flipper-deps-0.2.0
+PKG_CONFIG=pkg-config
+NIX_CC_FOR_BUILD=/nix/store/dkw46jgi8i0bq64cag95v4ywz6g9bnga-gcc-wrapper-11.3.0
+depsHostHostPropagated=
+_=/nix/store/wxb674h6dp7h63na8z6jwpagps811jl7-coreutils-9.1/bin/env
+will append /build/source/.cargo-home/config.toml with contents of /nix/store/bm29fgnzl56ikr47nqlrka7j2z9x4krx-vendor-cargo-deps/config.toml
+default configurePhase, nothing to do
+@nix { "action": "setPhase", "phase": "buildPhase" }
+building
+++ command cargo --version
+cargo 1.68.0-nightly (c994a4a63 2022-12-18)
+++ command cargo contract build --manifest-path examples/cross-vm-communication/evm-to-wasm/flipper/Cargo.toml
+[0m[0m[1m[33mwarning[0m[1m:[0m nothing to print.
+
+To find dependencies that require specific target platforms, try to use option `--target all` first, and then narrow your search scope accordingly.
+ [1m[1/*][0m [1;92mBuilding cargo project[0m
+[0m[0m[1m[32m   Compiling[0m compiler_builtins v0.1.85
+[0m[0m[1m[32m   Compiling[0m core v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/core)
+[0m[0m[1m[32m   Compiling[0m libc v0.2.138
+[0m[0m[1m[32m   Compiling[0m proc-macro2 v1.0.51
+[0m[0m[1m[32m   Compiling[0m unicode-ident v1.0.6
+[0m[0m[1m[32m   Compiling[0m quote v1.0.23
+[0m[0m[1m[32m   Compiling[0m syn v1.0.109
+[0m[0m[1m[32m   Compiling[0m cc v1.0.76
+[0m[0m[1m[32m   Compiling[0m memchr v2.5.0
+[0m[0m[1m[32m   Compiling[0m dlmalloc v0.2.3
+[0m[0m[1m[32m   Compiling[0m std v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/std)
+[0m[0m[1m[32m   Compiling[0m serde_derive v1.0.152
+[0m[0m[1m[32m   Compiling[0m serde v1.0.152
+[0m[0m[1m[32m   Compiling[0m thiserror v1.0.38
+[0m[0m[1m[32m   Compiling[0m typenum v1.16.0
+[0m[0m[1m[32m   Compiling[0m version_check v0.9.4
+[0m[0m[1m[32m   Compiling[0m io-lifetimes v1.0.5
+[0m[0m[1m[32m   Compiling[0m cfg-if v1.0.0
+[0m[0m[1m[32m   Compiling[0m rustix v0.36.8
+[0m[0m[1m[32m   Compiling[0m linux-raw-sys v0.1.4
+[0m[0m[1m[32m   Compiling[0m log v0.4.17
+[0m[0m[1m[32m   Compiling[0m arrayvec v0.7.2
+[0m[0m[1m[32m   Compiling[0m generic-array v0.14.6
+[0m[0m[1m[32m   Compiling[0m subtle v2.4.1
+[0m[0m[1m[32m   Compiling[0m autocfg v1.1.0
+[0m[0m[1m[32m   Compiling[0m bitflags v1.3.2
+[0m[0m[1m[32m   Compiling[0m byte-slice-cast v1.2.2
+[0m[0m[1m[32m   Compiling[0m serde_json v1.0.93
+[0m[0m[1m[32m   Compiling[0m paste v1.0.11
+[0m[0m[1m[32m   Compiling[0m regex-syntax v0.6.28
+[0m[0m[1m[32m   Compiling[0m either v1.8.1
+[0m[0m[1m[32m   Compiling[0m ink_prelude v4.0.1
+[0m[0m[1m[32m   Compiling[0m humantime v2.1.0
+[0m[0m[1m[32m   Compiling[0m termcolor v1.2.0
+[0m[0m[1m[32m   Compiling[0m xxhash-rust v0.8.6
+[0m[0m[1m[32m   Compiling[0m itoa v1.0.5
+[0m[0m[1m[32m   Compiling[0m ryu v1.0.12
+[0m[0m[1m[32m   Compiling[0m unicode-xid v0.2.4
+[0m[0m[1m[32m   Compiling[0m heck v0.4.1
+[0m[0m[1m[32m   Compiling[0m itertools v0.10.5
+[0m[0m[1m[32m   Compiling[0m flipper v0.1.0 (/build/cargo-contract_cZmu6n/examples/cross-vm-communication/evm-to-wasm/flipper)
+[0m[0m[1m[32m   Compiling[0m aho-corasick v0.7.20
+[0m[0m[1m[32m   Compiling[0m num-traits v0.2.15
+[0m[0m[1m[32m   Compiling[0m unwind v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/unwind)
+[0m[0m[1m[32m   Compiling[0m regex v1.7.1
+[0m[0m[1m[32m   Compiling[0m block-buffer v0.10.3
+[0m[0m[1m[32m   Compiling[0m crypto-common v0.1.6
+[0m[0m[1m[32m   Compiling[0m digest v0.10.6
+[0m[0m[1m[32m   Compiling[0m blake2 v0.10.6
+[0m[0m[1m[32m   Compiling[0m is-terminal v0.4.4
+[0m[0m[1m[32m   Compiling[0m env_logger v0.10.0
+[0m[0m[1m[32m   Compiling[0m ink_ir v4.0.1
+[0m[0m[1m[32m   Compiling[0m synstructure v0.12.6
+[0m[0m[1m[32m   Compiling[0m thiserror-impl v1.0.38
+[0m[0m[1m[32m   Compiling[0m impl-trait-for-tuples v0.2.2
+[0m[0m[1m[32m   Compiling[0m derive_more v0.99.17
+[0m[0m[1m[32m   Compiling[0m rustc-std-workspace-core v1.99.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/rustc-std-workspace-core)
+[0m[0m[1m[32m   Compiling[0m alloc v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/alloc)
+[0m[0m[1m[32m   Compiling[0m adler v1.0.2
+[0m[0m[1m[32m   Compiling[0m rustc-demangle v0.1.21
+[0m[0m[1m[32m   Compiling[0m rustc-std-workspace-alloc v1.99.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/rustc-std-workspace-alloc)
+[0m[0m[1m[32m   Compiling[0m panic_abort v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/panic_abort)
+[0m[0m[1m[32m   Compiling[0m panic_unwind v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/panic_unwind)
+[0m[0m[1m[32m   Compiling[0m gimli v0.26.1
+[0m[0m[1m[32m   Compiling[0m hashbrown v0.12.3
+[0m[0m[1m[32m   Compiling[0m miniz_oxide v0.5.3
+[0m[0m[1m[32m   Compiling[0m std_detect v0.1.5 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/stdarch/crates/std_detect)
+[0m[0m[1m[32m   Compiling[0m object v0.29.0
+[0m[0m[1m[32m   Compiling[0m toml v0.5.11
+[0m[0m[1m[32m   Compiling[0m impl-serde v0.4.0
+[0m[0m[1m[32m   Compiling[0m addr2line v0.17.0
+[0m[0m[1m[32m   Compiling[0m proc-macro-crate v1.1.3
+[0m[0m[1m[32m   Compiling[0m parity-scale-codec-derive v3.1.4
+[0m[0m[1m[32m   Compiling[0m scale-info-derive v2.3.1
+[0m[0m[1m[32m   Compiling[0m parity-scale-codec v3.4.0
+[0m[0m[1m[32m   Compiling[0m proc_macro v0.0.0 (/nix/store/ln27c09nhy22fhrp2ji06sgsqn1l5i7v-rust-default-1.68.0-nightly-2022-12-20/lib/rustlib/src/rust/library/proc_macro)
+[0m[0m[1m[32m   Compiling[0m scale-info v2.3.1
+[0m[0m[1m[32m   Compiling[0m static_assertions v1.1.0
+[0m[0m[1m[32m   Compiling[0m rlibc v1.0.0
+[0m[0m[1m[32m   Compiling[0m arrayref v0.3.6
+[0m[0m[1m[32m   Compiling[0m array-init v2.1.0
+[0m[0m[1m[32m   Compiling[0m ink_allocator v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_primitives v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_codegen v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_storage_traits v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_env v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_storage v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink_macro v4.0.1
+[0m[0m[1m[32m   Compiling[0m ink v4.0.1
+[0m[1m[38;5;9merror[E0152][0m[0m[1m: duplicate lang item in crate `core`: `sized`.[0m
+[0m  [0m[0m[1m[38;5;12m|[0m
+[0m  [0m[0m[1m[38;5;12m= [0m[0m[1mnote[0m[0m: the lang item is first defined in crate `core` (which `flipper` depends on)[0m
+[0m  [0m[0m[1m[38;5;12m= [0m[0m[1mnote[0m[0m: first definition in `core` loaded from /build/source/target/ink/flipper/wasm32-unknown-unknown/release/deps/libcore-fd2e48716918298b.rlib, /build/source/target/ink/flipper/wasm32-unknown-unknown/release/deps/libcore-fd2e48716918298b.rmeta[0m
+[0m  [0m[0m[1m[38;5;12m= [0m[0m[1mnote[0m[0m: second definition in `core` loaded from /nix/store/14zh588jw8x42xlwwrcd28qjp9pbsm7y-rust-std-1.68.0-nightly-2022-12-20-wasm32-unknown-unknown/lib/rustlib/wasm32-unknown-unknown/lib/libcore-658cdd8d8c2a0952.rlib[0m
+
+[0m[1mFor more information about this error, try `rustc --explain E0152`.[0m
+[0m[0m[1m[31merror[0m[1m:[0m could not compile `flipper` due to previous error
+[1;91mERROR:[0m [91m`"/nix/store/h7mqwhs0sj0rzgg1w3470fkbmy9kfkqr-cargo-1.68.0-nightly-2022-12-20-x86_64-unknown-linux-gnu/bin/cargo" "build" "--target=wasm32-unknown-unknown" "-Zbuild-std" "--no-default-features" "--release" "--target-dir=/build/source/target/ink/flipper" "--features" "ink/ink-debug"` failed with exit code: Some(101)[0m
