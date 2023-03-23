@@ -180,8 +180,8 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 }
 
 pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("node-frontier-template"),
-	impl_name: create_runtime_str!("node-frontier-template"),
+	spec_name: create_runtime_str!("golden-gate-node"),
+	impl_name: create_runtime_str!("golden-gate-node"),
 	authoring_version: 1,
 	spec_version: 4,
 	impl_version: 1,
