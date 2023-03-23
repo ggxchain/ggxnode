@@ -10,12 +10,11 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod pos;
-mod validator_manager;
 
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
 	OpaqueMetadata, H160, H256, U256,
@@ -36,9 +35,8 @@ use sp_version::RuntimeVersion;
 use frame_support::weights::constants::ParityDbWeight as RuntimeDbWeight;
 #[cfg(feature = "with-rocksdb-weights")]
 use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
-use pallet_grandpa::{
-	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
-};
+pub use pallet_grandpa::AuthorityId as GrandpaId;
+use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::CurrencyAdapter;
 // Frontier
 use fp_rpc::TransactionStatus;
@@ -70,11 +68,12 @@ pub use pallet_timestamp::Call as TimestampCall;
 
 mod chain_extensions;
 pub use chain_extensions::*;
-mod precompiles;
-pub use precompiles::consts as precompile_consts;
-use precompiles::FrontierPrecompiles;
-mod chain_spec;
-pub use chain_spec::RuntimeConfig;
+pub use runtime_common::{
+	chain_spec::{self, RuntimeConfig},
+	validator_manager,
+};
+
+use runtime_common::precompiles::GoldenGatePrecompiles;
 
 /// Import the permissioned ledger pallet.
 pub use account_filter;
@@ -496,7 +495,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
 		NORMAL_DISPATCH_RATIO * WEIGHT_REF_TIME_PER_SECOND / WEIGHT_PER_GAS
 	);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
 	pub ChainId: u64 = 0x42;
 }
@@ -511,7 +510,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = GoldenGatePrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;

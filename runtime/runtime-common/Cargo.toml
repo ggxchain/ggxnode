@@ -1,0 +1,58 @@
+[package]
+name = "runtime-common"
+version = "0.1.0"
+authors = { workspace = true }
+edition = { workspace = true }
+repository = { workspace = true }
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+scale-codec = { package = "parity-scale-codec", workspace = true }
+scale-info = { workspace = true }
+serde = { workspace = true }
+
+frame-support = { workspace = true }
+frame-system = { workspace = true }
+pallet-contracts = { workspace = true }
+pallet-session = { workspace = true, features = ["historical"] }
+pallet-xvm = { workspace = true }
+sp-core = { workspace = true }
+sp-staking = { workspace = true }
+sp-std = { workspace = true }
+
+pallet-evm = { workspace = true }
+pallet-evm-precompile-blake2 = { workspace = true }
+pallet-evm-precompile-bn128 = { workspace = true }
+pallet-evm-precompile-ed25519 = { workspace = true }
+pallet-evm-precompile-modexp = { workspace = true }
+pallet-evm-precompile-sha3fips = { workspace = true }
+pallet-evm-precompile-simple = { workspace = true }
+pallet-evm-precompile-sr25519 = { workspace = true }
+pallet-evm-precompile-substrate-ecdsa = { workspace = true }
+pallet-evm-precompile-xvm = { workspace = true }
+
+[features]
+default = ["std"]
+std = [
+	"scale-codec/std",
+	"scale-info/std",
+	"serde/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-contracts/std",
+	"pallet-xvm/std",
+	"sp-core/std",
+	"sp-staking/std",
+	"sp-std/std",
+	"pallet-evm/std",
+	"pallet-evm-precompile-blake2/std",
+	"pallet-evm-precompile-bn128/std",
+	"pallet-evm-precompile-ed25519/std",
+	"pallet-evm-precompile-modexp/std",
+	"pallet-evm-precompile-sha3fips/std",
+	"pallet-evm-precompile-simple/std",
+	"pallet-evm-precompile-sr25519/std",
+	"pallet-evm-precompile-substrate-ecdsa/std",
+	"pallet-evm-precompile-xvm/std",
+]

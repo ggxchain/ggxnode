@@ -2436,7 +2436,8 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
- "golden-gate-runtime",
+ "golden-gate-poa-runtime",
+ "golden-gate-pos-runtime",
  "jsonrpsee",
  "log",
  "pallet-transaction-payment",
@@ -2472,7 +2473,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "golden-gate-runtime"
+name = "golden-gate-poa-runtime"
 version = "0.0.0"
 dependencies = [
  "fp-rpc",
@@ -2495,15 +2496,6 @@ dependencies = [
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
- "pallet-evm-precompile-blake2",
- "pallet-evm-precompile-bn128",
- "pallet-evm-precompile-ed25519",
- "pallet-evm-precompile-modexp",
- "pallet-evm-precompile-sha3fips",
- "pallet-evm-precompile-simple",
- "pallet-evm-precompile-sr25519",
- "pallet-evm-precompile-substrate-ecdsa",
- "pallet-evm-precompile-xvm",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
  "pallet-identity",
@@ -2523,6 +2515,70 @@ dependencies = [
  "pallet-xvm",
  "parity-scale-codec",
  "proptest",
+ "runtime-common",
+ "scale-info",
+ "serde",
+ "sp-api",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-core",
+ "sp-inherents",
+ "sp-offchain",
+ "sp-runtime",
+ "sp-session",
+ "sp-staking",
+ "sp-std",
+ "sp-transaction-pool",
+ "sp-version",
+ "substrate-account-filter",
+ "substrate-wasm-builder",
+ "test-strategy",
+]
+
+[[package]]
+name = "golden-gate-pos-runtime"
+version = "0.0.0"
+dependencies = [
+ "fp-rpc",
+ "fp-self-contained",
+ "frame-benchmarking",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-base-fee",
+ "pallet-bounties",
+ "pallet-chain-extension-xvm",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "pallet-dynamic-fee",
+ "pallet-ethereum",
+ "pallet-evm",
+ "pallet-evm-chain-id",
+ "pallet-grandpa",
+ "pallet-hotfix-sufficients",
+ "pallet-identity",
+ "pallet-im-online",
+ "pallet-indices",
+ "pallet-multisig",
+ "pallet-offences",
+ "pallet-proxy",
+ "pallet-randomness-collective-flip",
+ "pallet-session",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-treasury",
+ "pallet-vesting",
+ "pallet-xvm",
+ "parity-scale-codec",
+ "proptest",
+ "runtime-common",
  "scale-info",
  "serde",
  "sp-api",
@@ -5839,6 +5895,33 @@ checksum = "034e22c514f5c0cb8a10ff341b9b048b5ceb21591f31c8f44c43b960f9b3524a"
 dependencies = [
  "libc",
  "winapi",
+]
+
+[[package]]
+name = "runtime-common"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-contracts",
+ "pallet-evm",
+ "pallet-evm-precompile-blake2",
+ "pallet-evm-precompile-bn128",
+ "pallet-evm-precompile-ed25519",
+ "pallet-evm-precompile-modexp",
+ "pallet-evm-precompile-sha3fips",
+ "pallet-evm-precompile-simple",
+ "pallet-evm-precompile-sr25519",
+ "pallet-evm-precompile-substrate-ecdsa",
+ "pallet-evm-precompile-xvm",
+ "pallet-session",
+ "pallet-xvm",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-staking",
+ "sp-std",
 ]
 
 [[package]]

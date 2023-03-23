@@ -1,7 +1,9 @@
 [workspace]
 members = [
 	"node",
-	"runtime",
+	"runtime/poa",
+	"runtime/pos",
+	"runtime/runtime-common",
 ]
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
@@ -128,7 +130,9 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Golde
 
 # Golden Gate
 account-filter = { package = "substrate-account-filter", git = "https://github.com/GoldenGateGGX/ggx-frames", branch = "polkadot-v0.9.35", default-features = false }
-golden-gate-runtime = { path = "runtime", default-features = false }
+golden-gate-poa-runtime = { path = "runtime/poa", default-features = false }
+golden-gate-pos-runtime = { path = "runtime/pos", default-features = false }
+runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/GoldenGateGGX/astar-frame.git", branch = "polkadot-v0.9.35", default-features = false }
