@@ -9,7 +9,7 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-pub mod pos;
+pub mod poa;
 
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
@@ -408,7 +408,7 @@ impl pallet_im_online::Config for Runtime {
 	type AuthorityId = ImOnlineId;
 	type RuntimeEvent = RuntimeEvent;
 	type ValidatorSet = Historical;
-	type NextSessionRotation = pos::PeriodicSessions;
+	type NextSessionRotation = poa::PeriodicSessions;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
 	type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;

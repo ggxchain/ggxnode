@@ -11,6 +11,8 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod pos;
 
+use core::cmp::Ordering;
+
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
@@ -576,13 +578,14 @@ construct_runtime!(
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
 		TransactionPayment: pallet_transaction_payment,
+		// Authorship must go before session in order to track the correct author of the block.
 		Authorship: pallet_authorship,
 		Offences: pallet_offences,
 		Session: pallet_session,
 		Grandpa: pallet_grandpa,
-		Treasury: pallet_treasury,
 		Bounties: pallet_bounties,
 		Vesting: pallet_vesting,
+		Scheduler: pallet_scheduler,
 		Indices: pallet_indices,
 		Proxy: pallet_proxy,
 		Multisig: pallet_multisig,
@@ -591,6 +594,14 @@ construct_runtime!(
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ValidatorManager: validator_manager,
+
+		// Goverment pallets
+		Democracy: pallet_democracy,
+		Council: pallet_collective::<Instance1>,
+		TechnicalCommittee: pallet_collective::<Instance2>,
+		TechnicalMembership: pallet_membership::<Instance1>,
+		Treasury: pallet_treasury,
+		Society: pallet_society,
 
 		// EVM pallets
 		Ethereum: pallet_ethereum,

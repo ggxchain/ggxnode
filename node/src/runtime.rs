@@ -9,7 +9,7 @@ pub use poa::*;
 #[cfg(feature = "pos")]
 pub mod pos;
 #[cfg(feature = "pos")]
-pub use pos::*;
+pub use poa::*;
 
 pub type AccountPublic = <Signature as Verify>::Signer;
 
