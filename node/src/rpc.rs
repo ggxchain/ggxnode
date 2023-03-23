@@ -27,7 +27,7 @@ use fc_rpc::{
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 use fp_storage::EthereumStorageSchema;
 // Runtime
-use golden_gate_runtime::{opaque::Block, AccountId, Balance, Hash, Index};
+use crate::runtime::{opaque::Block, AccountId, Balance, Hash, Index};
 
 /// Full client dependencies.
 pub struct FullDeps<C, P, A: ChainApi> {
@@ -159,7 +159,7 @@ where
 			client.clone(),
 			pool.clone(),
 			graph,
-			Some(golden_gate_runtime::TransactionConverter),
+			Some(crate::runtime::TransactionConverter),
 			network.clone(),
 			signers,
 			overrides.clone(),

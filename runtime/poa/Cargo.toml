@@ -1,8 +1,8 @@
 [package]
-name = "golden-gate-runtime"
+name = "golden-gate-poa-runtime"
 version = "0.0.0"
 license = "Unlicense"
-description = "A fresh FRAME-based Substrate runtime, ready for hacking."
+description = "Golden Gate PoS Runtime"
 publish = false
 authors = { workspace = true }
 edition = { workspace = true }
@@ -65,22 +65,14 @@ pallet-dynamic-fee = { workspace = true }
 pallet-ethereum = { workspace = true }
 pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"] }
 pallet-evm-chain-id = { workspace = true }
-pallet-evm-precompile-blake2 = { workspace = true }
-pallet-evm-precompile-bn128 = { workspace = true }
-pallet-evm-precompile-ed25519 = { workspace = true }
-pallet-evm-precompile-modexp = { workspace = true }
-pallet-evm-precompile-sha3fips = { workspace = true }
-pallet-evm-precompile-simple = { workspace = true }
-pallet-evm-precompile-sr25519 = { workspace = true }
-pallet-evm-precompile-substrate-ecdsa = { workspace = true }
 pallet-hotfix-sufficients = { workspace = true }
 
 # GGX
 account-filter = { workspace = true }
+runtime-common = { workspace = true }
 
 # Astar
 pallet-chain-extension-xvm = { workspace = true, default-features = false }
-pallet-evm-precompile-xvm = { workspace = true, default-features = false }
 pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
 
 # Wasm contracts
@@ -148,21 +140,13 @@ std = [
 	"pallet-ethereum/std",
 	"pallet-evm/std",
 	"pallet-evm-chain-id/std",
-	"pallet-evm-precompile-modexp/std",
-	"pallet-evm-precompile-sha3fips/std",
-	"pallet-evm-precompile-simple/std",
 	"pallet-hotfix-sufficients/std",
-	"pallet-evm-precompile-bn128/std",
-	"pallet-evm-precompile-blake2/std",
-	"pallet-evm-precompile-ed25519/std",
 	# GGX
 	"account-filter/std",
+	"runtime-common/std",
 	# Astar
-	"pallet-evm-precompile-xvm/std",
 	"pallet-chain-extension-xvm/std",
 	"pallet-xvm/std",
-	"pallet-evm-precompile-sr25519/std",
-	"pallet-evm-precompile-substrate-ecdsa/std",
 	# Wasm contracts
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",

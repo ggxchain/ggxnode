@@ -10,12 +10,13 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod pos;
-mod validator_manager;
+
+use core::cmp::Ordering;
 
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
-use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
 	OpaqueMetadata, H160, H256, U256,
@@ -36,9 +37,8 @@ use sp_version::RuntimeVersion;
 use frame_support::weights::constants::ParityDbWeight as RuntimeDbWeight;
 #[cfg(feature = "with-rocksdb-weights")]
 use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
-use pallet_grandpa::{
-	fg_primitives, AuthorityId as GrandpaId, AuthorityList as GrandpaAuthorityList,
-};
+pub use pallet_grandpa::AuthorityId as GrandpaId;
+use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::CurrencyAdapter;
 // Frontier
 use fp_rpc::TransactionStatus;
@@ -70,11 +70,12 @@ pub use pallet_timestamp::Call as TimestampCall;
 
 mod chain_extensions;
 pub use chain_extensions::*;
-mod precompiles;
-pub use precompiles::consts as precompile_consts;
-use precompiles::FrontierPrecompiles;
-mod chain_spec;
-pub use chain_spec::RuntimeConfig;
+pub use runtime_common::{
+	chain_spec::{self, RuntimeConfig},
+	validator_manager,
+};
+
+use runtime_common::precompiles::GoldenGatePrecompiles;
 
 /// Import the permissioned ledger pallet.
 pub use account_filter;
@@ -496,7 +497,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
 		NORMAL_DISPATCH_RATIO * WEIGHT_REF_TIME_PER_SECOND / WEIGHT_PER_GAS
 	);
-	pub PrecompilesValue: FrontierPrecompiles<Runtime> = FrontierPrecompiles::<_>::new();
+	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
 	pub ChainId: u64 = 0x42;
 }
@@ -511,7 +512,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = FrontierPrecompiles<Self>;
+	type PrecompilesType = GoldenGatePrecompiles<Self>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;
@@ -577,13 +578,14 @@ construct_runtime!(
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
 		TransactionPayment: pallet_transaction_payment,
+		// Authorship must go before session in order to track the correct author of the block.
 		Authorship: pallet_authorship,
 		Offences: pallet_offences,
 		Session: pallet_session,
 		Grandpa: pallet_grandpa,
-		Treasury: pallet_treasury,
 		Bounties: pallet_bounties,
 		Vesting: pallet_vesting,
+		Scheduler: pallet_scheduler,
 		Indices: pallet_indices,
 		Proxy: pallet_proxy,
 		Multisig: pallet_multisig,
@@ -592,6 +594,14 @@ construct_runtime!(
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ValidatorManager: validator_manager,
+
+		// Goverment pallets
+		Democracy: pallet_democracy,
+		Council: pallet_collective::<Instance1>,
+		TechnicalCommittee: pallet_collective::<Instance2>,
+		TechnicalMembership: pallet_membership::<Instance1>,
+		Treasury: pallet_treasury,
+		Society: pallet_society,
 
 		// EVM pallets
 		Ethereum: pallet_ethereum,

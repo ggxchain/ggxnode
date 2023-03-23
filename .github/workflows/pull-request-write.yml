@@ -54,15 +54,18 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - run: |          
+      - name: linting documentation
+        run: nix run .#lint  
+      - name: building-targets
+        run: |          
           mkdir out
-          nix build --print-build-logs --show-trace --no-update-lock-file
-          cp ./result/lib/golden_gate_runtime.compact.compressed.wasm ./out
+          nix build .#poa-runtime --print-build-logs --show-trace --no-update-lock-file
+          cp ./result/lib/golden_gate_poa_runtime.compact.compressed.wasm ./out
+          nix build .#pos-runtime --print-build-logs --show-trace --no-update-lock-file
+          cp ./result/lib/golden_gate_pos_runtime.compact.compressed.wasm ./out
           nix build .#golden-gate-node --print-build-logs --show-trace --no-update-lock-file
           cp ./result/bin/golden-gate-node ./out
-          # can add here contracts and oci image, etc
-          nix run .#lint                  
-          
+          # can add here contracts and oci image, etc       
       - name: action-gh-release
         # so we do not allow non team members to do releases
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.id != env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.id == env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) }}

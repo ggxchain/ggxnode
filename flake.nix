@@ -80,16 +80,21 @@
           src = rust-src;
         };
 
-
-        common-wasm-attrs = common-attrs // rec {
-          # really would could read it from Cargo.toml and reuse in here and in CI publish script as refactoring
-          pname = "golden-gate-runtime";
-          cargoExtraArgs = "--package ${pname} --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
+        common-wasm-deps-attrs = common-attrs // {
+          cargoExtraArgs = # Removing "-deps" from pname is a hack to utilise this for deps and the actual package
+            "--package \${pname%\"-deps\"} --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
-          version = "0.1.0";
         };
 
+        common-wasm-attrs = common-wasm-deps-attrs // {
+          src = rust-src;
+          installPhase = ''
+            mkdir --parents $out/lib
+            pname_underscore=''${pname//-/_}
+            cp ./target/wasm32-unknown-unknown/release/wbuild/$pname/$pname_underscore.compact.compressed.wasm $out/lib
+          '';
+        };
 
         common-native-release-attrs = common-attrs // rec {
           cargoExtraArgs = "--package ${pname}";
@@ -97,9 +102,6 @@
           version = "0.1.0";
         };
 
-        # calls `cargo vendor` on package deps 
-        common-wasm-deps =
-          craneLib.buildDepsOnly (common-wasm-attrs // { });
         common-native-release-deps =
           craneLib.buildDepsOnly (common-native-release-attrs // { });
 
@@ -130,13 +132,16 @@
             [ ./.gitignore ] ./.;
         };
 
-        golden-gate-runtime = craneLib.buildPackage (common-wasm-attrs // {
-          installPhase = ''
-            mkdir --parents $out/lib
-            cp ./target/wasm32-unknown-unknown/release/wbuild/${common-wasm-attrs.pname}/golden_gate_runtime.compact.compressed.wasm $out/lib
-          '';
-          src = rust-src;
-          cargoArtifacts = common-wasm-deps;
+        golden-gate-poa-runtime = craneLib.buildPackage (common-wasm-attrs // rec {
+          pname = "golden-gate-poa-runtime";
+          version = "0.1.0";
+          cargoArtifacts = craneLib.buildDepsOnly (common-wasm-deps-attrs // { inherit pname version; });
+        });
+
+        golden-gate-pos-runtime = craneLib.buildPackage (common-wasm-attrs // rec  {
+          pname = "golden-gate-pos-runtime";
+          version = "0.1.0";
+          cargoArtifacts = craneLib.buildDepsOnly (common-wasm-deps-attrs // { inherit pname version; });
         });
 
         golden-gate-node = craneLib.buildPackage (common-native-release-attrs // {
@@ -233,11 +238,12 @@
         };
       in
       rec {
-        packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
+        packages = flake-utils.lib.flattenTree rec {
+          inherit golden-gate-poa-runtime golden-gate-pos-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
           node = golden-gate-node;
-          runtime = golden-gate-runtime;
-          default = golden-gate-runtime;
+          pos-runtime = golden-gate-pos-runtime;
+          poa-runtime = golden-gate-poa-runtime;
+          default = poa-runtime;
           # we should prune 3 things:
           # - running process
           # - logs/storages of run proccess

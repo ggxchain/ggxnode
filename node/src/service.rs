@@ -23,11 +23,7 @@ use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Runtime
-use golden_gate_runtime::{opaque::Block, RuntimeApi};
-
-use crate::cli::Cli;
-#[cfg(feature = "manual-seal")]
-use crate::cli::Sealing;
+use crate::runtime::{opaque::Block, RuntimeApi};
 
 // Our native executor instance.
 pub struct ExecutorDispatch;
@@ -41,11 +37,11 @@ impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
 	type ExtendHostFunctions = ();
 
 	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		golden_gate_runtime::api::dispatch(method, data)
+		crate::runtime::api::dispatch(method, data)
 	}
 
 	fn native_version() -> sc_executor::NativeVersion {
-		golden_gate_runtime::native_version()
+		crate::runtime::native_version()
 	}
 }
 
@@ -53,6 +49,10 @@ pub type FullClient =
 	sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
 type FullBackend = sc_service::TFullBackend<Block>;
 type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
+
+use crate::cli::Cli;
+#[cfg(feature = "manual-seal")]
+use crate::cli::Sealing;
 
 #[cfg(feature = "aura")]
 pub type ConsensusResult = (

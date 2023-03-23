@@ -25,6 +25,7 @@ use fc_db::frontier_database_dir;
 use crate::{
 	chain_spec,
 	cli::{Cli, Subcommand},
+	runtime,
 	service::{self, db_config_dir},
 };
 
@@ -64,7 +65,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&golden_gate_runtime::VERSION
+		&runtime::VERSION
 	}
 }
 
@@ -229,7 +230,7 @@ pub fn run() -> sc_cli::Result<()> {
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } = service::new_partial(&config, &cli)?;
 				let frontier_backend = other.2;
-				cmd.run::<_, golden_gate_runtime::opaque::Block>(client, frontier_backend)
+				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
 			})
 		}
 		None => {
