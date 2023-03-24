@@ -12,6 +12,7 @@ use pallet_evm_precompile_sr25519::Sr25519Precompile;
 use pallet_evm_precompile_substrate_ecdsa::SubstrateEcdsaPrecompile;
 use pallet_evm_precompile_xvm::XvmPrecompile;
 
+#[derive(Default)]
 pub struct GoldenGatePrecompiles<R>(PhantomData<R>);
 
 pub mod consts {

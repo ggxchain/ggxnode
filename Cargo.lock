@@ -2541,7 +2541,6 @@ dependencies = [
  "pallet-vesting",
  "pallet-xvm",
  "parity-scale-codec",
- "proptest",
  "runtime-common",
  "scale-info",
  "serde",
@@ -2559,7 +2558,6 @@ dependencies = [
  "sp-version",
  "substrate-account-filter",
  "substrate-wasm-builder",
- "test-strategy",
 ]
 
 [[package]]
@@ -2610,7 +2608,6 @@ dependencies = [
  "pallet-vesting",
  "pallet-xvm",
  "parity-scale-codec",
- "proptest",
  "runtime-common",
  "scale-info",
  "serde",
@@ -2628,7 +2625,6 @@ dependencies = [
  "sp-version",
  "substrate-account-filter",
  "substrate-wasm-builder",
- "test-strategy",
 ]
 
 [[package]]
@@ -6077,11 +6073,13 @@ dependencies = [
  "pallet-session",
  "pallet-xvm",
  "parity-scale-codec",
+ "proptest",
  "scale-info",
  "serde",
  "sp-core",
  "sp-staking",
  "sp-std",
+ "test-strategy",
 ]
 
 [[package]]
