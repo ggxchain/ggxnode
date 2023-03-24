@@ -60,7 +60,7 @@ jobs:
           nix build .#build --print-build-logs --show-trace --no-update-lock-file
           cp ./result/lib/* ./result/bin/* ./out
       - name: linters (clippy, fmt, documentation)
-        run: nix run .#lint 
+        run: nix build .#lint 
       - name: action-gh-release
         # so we do not allow non team members to do releases
         if: ${{ github.event_name == 'push' || (github.event_name == 'pull_request_target' && github.event.pull_request.head.repo.id != env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) || (github.event_name == 'pull_request' && github.event.pull_request.head.repo.id == env.OCTOLYTICS_DIMENSION_REPOSITORY_ID) }}
