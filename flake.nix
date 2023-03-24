@@ -82,14 +82,13 @@
         };
 
         common-wasm-deps-attrs = common-attrs // {
-          cargoExtraArgs = # Removing "-deps" from pname is a hack to utilise this for deps and the actual package
+          cargoExtraArgs =
             "--package '*-runtime' --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
         };
 
         common-wasm-attrs = common-wasm-deps-attrs // {
-          src = rust-src;
           installPhase = ''
             runHook preInstall
             mkdir --parents $out/lib
