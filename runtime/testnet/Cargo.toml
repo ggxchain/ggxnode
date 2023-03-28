@@ -1,5 +1,5 @@
 [package]
-name = "golden-gate-poa-runtime"
+name = "golgen-gate-runtime-testnet"
 version = "0.0.0"
 license = "Unlicense"
 description = "Golden Gate PoS Runtime"
@@ -69,7 +69,7 @@ pallet-hotfix-sufficients = { workspace = true }
 
 # GGX
 account-filter = { workspace = true }
-runtime-common = { workspace = true }
+runtime-common = { workspace = true, features = ["xvm"] }
 
 # Astar
 pallet-chain-extension-xvm = { workspace = true, default-features = false }

@@ -83,7 +83,7 @@
 
         common-wasm-deps-attrs = common-attrs // {
           cargoExtraArgs =
-            "--package '*-runtime' --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
+            "--package 'golden-gate-runtime-*' --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights,pos";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
         };

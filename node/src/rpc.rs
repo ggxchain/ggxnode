@@ -48,6 +48,7 @@ pub struct FullDeps<C, P, A: ChainApi> {
 	/// EthFilterApi pool.
 	pub filter_pool: Option<FilterPool>,
 	/// Backend.
+	#[cfg(feature = "poa")]
 	pub backend: Arc<fc_db::Backend<Block>>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
@@ -154,60 +155,63 @@ where
 		signers.push(Box::new(EthDevSigner::new()) as Box<dyn EthSigner>);
 	}
 
-	io.merge(
-		Eth::new(
-			client.clone(),
-			pool.clone(),
-			graph,
-			Some(crate::runtime::TransactionConverter),
-			network.clone(),
-			signers,
-			overrides.clone(),
-			backend.clone(),
-			// Is authority.
-			is_authority,
-			block_data_cache.clone(),
-			fee_history_cache,
-			fee_history_cache_limit,
-			10,
-		)
-		.into_rpc(),
-	)?;
-
-	if let Some(filter_pool) = filter_pool {
+	#[cfg(feature = "poa")]
+	{
 		io.merge(
-			EthFilter::new(
+			Eth::new(
 				client.clone(),
-				backend,
-				filter_pool,
-				500_usize, // max stored filters
-				max_past_logs,
-				block_data_cache,
+				pool.clone(),
+				graph,
+				Some(crate::runtime::TransactionConverter),
+				network.clone(),
+				signers,
+				overrides.clone(),
+				backend.clone(),
+				// Is authority.
+				is_authority,
+				block_data_cache.clone(),
+				fee_history_cache,
+				fee_history_cache_limit,
+				10,
+			)
+			.into_rpc(),
+		)?;
+
+		if let Some(filter_pool) = filter_pool {
+			io.merge(
+				EthFilter::new(
+					client.clone(),
+					backend,
+					filter_pool,
+					500_usize, // max stored filters
+					max_past_logs,
+					block_data_cache,
+				)
+				.into_rpc(),
+			)?;
+		}
+
+		io.merge(
+			EthPubSub::new(
+				pool,
+				client.clone(),
+				network.clone(),
+				subscription_task_executor,
+				overrides,
+			)
+			.into_rpc(),
+		)?;
+
+		io.merge(
+			Net::new(
+				client.clone(),
+				network,
+				// Whether to format the `peer_count` response as Hex (default) or not.
+				true,
 			)
 			.into_rpc(),
 		)?;
 	}
-
-	io.merge(
-		EthPubSub::new(
-			pool,
-			client.clone(),
-			network.clone(),
-			subscription_task_executor,
-			overrides,
-		)
-		.into_rpc(),
-	)?;
-
-	io.merge(
-		Net::new(
-			client.clone(),
-			network,
-			// Whether to format the `peer_count` response as Hex (default) or not.
-			true,
-		)
-		.into_rpc(),
-	)?;
 
 	io.merge(Web3::new(client).into_rpc())?;
 

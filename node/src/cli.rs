@@ -89,5 +89,6 @@ pub enum Subcommand {
 	Benchmark,
 
 	/// Db meta columns information.
+	#[cfg(feature = "poa")]
 	FrontierDb(fc_cli::FrontierDbCmd),
 }

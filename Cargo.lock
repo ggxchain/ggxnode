@@ -260,6 +260,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "atomic-polyfill"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "c314e70d181aa6053b26e3f7fbf86d1dfff84f816a6175b967666b3506ef7289"
+dependencies = [
+ "critical-section",
+]
+
+[[package]]
 name = "atomic-waker"
 version = "1.1.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -950,6 +959,12 @@ checksum = "b540bd8bc810d3885c6ea91e2018302f68baba2129ab3e88f32389ee9370880d"
 dependencies = [
  "cfg-if",
 ]
+
+[[package]]
+name = "critical-section"
+version = "1.1.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6548a0ad5d2549e111e1f6a11a6c2e2d00ce6a3dafe22948d67c2b443f775e52"
 
 [[package]]
 name = "crossbeam-channel"
@@ -2463,8 +2478,8 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
- "golden-gate-poa-runtime",
- "golden-gate-pos-runtime",
+ "golgen-gate-runtime-mainnet",
+ "golgen-gate-runtime-testnet",
  "jsonrpsee",
  "log",
  "pallet-transaction-payment",
@@ -2500,31 +2515,22 @@ dependencies = [
 ]
 
 [[package]]
-name = "golden-gate-poa-runtime"
+name = "golgen-gate-runtime-mainnet"
 version = "0.0.0"
 dependencies = [
- "fp-rpc",
- "fp-self-contained",
  "frame-benchmarking",
  "frame-executive",
  "frame-support",
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "once_cell",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
- "pallet-base-fee",
  "pallet-bounties",
- "pallet-chain-extension-xvm",
- "pallet-contracts",
- "pallet-contracts-primitives",
- "pallet-dynamic-fee",
- "pallet-ethereum",
- "pallet-evm",
- "pallet-evm-chain-id",
+ "pallet-conviction-voting",
  "pallet-grandpa",
- "pallet-hotfix-sufficients",
  "pallet-identity",
  "pallet-im-online",
  "pallet-indices",
@@ -2532,19 +2538,25 @@ dependencies = [
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
+ "pallet-ranked-collective",
+ "pallet-referenda",
+ "pallet-scheduler",
  "pallet-session",
+ "pallet-society",
+ "pallet-staking",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-vesting",
- "pallet-xvm",
+ "pallet-whitelist",
  "parity-scale-codec",
  "runtime-common",
  "scale-info",
  "serde",
  "sp-api",
+ "sp-arithmetic",
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-core",
@@ -2561,7 +2573,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "golden-gate-pos-runtime"
+name = "golgen-gate-runtime-testnet"
 version = "0.0.0"
 dependencies = [
  "fp-rpc",
@@ -2578,10 +2590,8 @@ dependencies = [
  "pallet-base-fee",
  "pallet-bounties",
  "pallet-chain-extension-xvm",
- "pallet-collective",
  "pallet-contracts",
  "pallet-contracts-primitives",
- "pallet-democracy",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-evm",
@@ -2591,15 +2601,11 @@ dependencies = [
  "pallet-identity",
  "pallet-im-online",
  "pallet-indices",
- "pallet-membership",
  "pallet-multisig",
  "pallet-offences",
  "pallet-proxy",
  "pallet-randomness-collective-flip",
- "pallet-scheduler",
  "pallet-session",
- "pallet-society",
- "pallet-staking",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -4316,6 +4322,10 @@ name = "once_cell"
 version = "1.17.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "b7e5500299e16ebb147ae15a00a942af264cf3688f47923b8fc2cd5858f23ad3"
+dependencies = [
+ "atomic-polyfill",
+ "critical-section",
+]
 
 [[package]]
 name = "opaque-debug"
@@ -4470,23 +4480,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-collective"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-contracts"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
@@ -4537,18 +4530,17 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-democracy"
+name = "pallet-conviction-voting"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
 dependencies = [
+ "assert_matches",
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "log",
  "parity-scale-codec",
  "scale-info",
  "serde",
- "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
@@ -4830,23 +4822,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-membership"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "log",
- "parity-scale-codec",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std",
-]
-
-[[package]]
 name = "pallet-multisig"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
@@ -4904,6 +4879,42 @@ dependencies = [
  "parity-scale-codec",
  "safe-mix",
  "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-ranked-collective"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-referenda"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-io",
  "sp-runtime",
  "sp-std",
 ]
@@ -5087,6 +5098,21 @@ dependencies = [
  "log",
  "parity-scale-codec",
  "scale-info",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-whitelist"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
  "sp-runtime",
  "sp-std",
 ]

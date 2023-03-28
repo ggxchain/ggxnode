@@ -56,45 +56,56 @@ frame-system = { workspace = true }
 pallet-transaction-payment = { workspace = true }
 
 # Frontier
-fc-cli = { workspace = true }
-fc-consensus = { workspace = true }
-fc-db = { workspace = true }
-fc-mapping-sync = { workspace = true }
-fc-rpc = { workspace = true }
-fc-rpc-core = { workspace = true }
-fp-dynamic-fee = { workspace = true, features = ["std"] }
-fp-evm = { workspace = true, features = ["std"] }
-fp-rpc = { workspace = true, features = ["std"] }
-fp-storage = { workspace = true, features = ["std"] }
-golden-gate-poa-runtime = { workspace = true, features = ["std"], optional = true }
-golden-gate-pos-runtime = { workspace = true, features = ["std"], optional = true }
+fc-cli = { workspace = true, optional = true }
+fc-consensus = { workspace = true, optional = true }
+fc-db = { workspace = true, optional = true }
+fc-mapping-sync = { workspace = true, optional = true }
+fc-rpc = { workspace = true, optional = true }
+fc-rpc-core = { workspace = true, optional = true }
+fp-dynamic-fee = { workspace = true, features = ["std"], optional = true }
+fp-evm = { workspace = true, features = ["std"], optional = true }
+fp-rpc = { workspace = true, features = ["std"], optional = true }
+fp-storage = { workspace = true, features = ["std"], optional = true }
+
+golgen-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
+golgen-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 
 [features]
-default = ["aura", "with-rocksdb-weights", "poa"]
+default = ["aura", "with-rocksdb-weights", "pos"]
 poa = [
-	"golden-gate-poa-runtime",
+	"golgen-gate-runtime-testnet",
+	"fc-cli",
+	"fc-consensus",
+	"fc-db",
+	"fc-mapping-sync",
+	"fc-rpc",
+	"fc-rpc-core",
+	"fp-dynamic-fee",
+	"fp-evm",
+	"fp-rpc",
+	"fp-storage",
 ]
-pos = ["golden-gate-pos-runtime"]
+pos = ["golgen-gate-runtime-mainnet"]
 aura = [
 	"sc-consensus-aura",
-	"golden-gate-poa-runtime?/aura",
-	"golden-gate-pos-runtime?/aura",
+	"golgen-gate-runtime-testnet?/aura",
+	"golgen-gate-runtime-mainnet?/aura",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"golden-gate-poa-runtime?/manual-seal",
-	"golden-gate-pos-runtime?/manual-seal",
+	"golgen-gate-runtime-testnet?/manual-seal",
+	"golgen-gate-runtime-mainnet?/manual-seal",
 ]
-with-rocksdb-weights = ["golden-gate-poa-runtime?/with-rocksdb-weights", "golden-gate-pos-runtime?/with-rocksdb-weights"]
-with-paritydb-weights = ["golden-gate-poa-runtime?/with-paritydb-weights", "golden-gate-pos-runtime?/with-paritydb-weights"]
-rpc_binary_search_estimate = ["fc-rpc/rpc_binary_search_estimate"]
+with-rocksdb-weights = ["golgen-gate-runtime-testnet?/with-rocksdb-weights", "golgen-gate-runtime-mainnet?/with-rocksdb-weights"]
+with-paritydb-weights = ["golgen-gate-runtime-testnet?/with-paritydb-weights", "golgen-gate-runtime-mainnet?/with-paritydb-weights"]
+rpc_binary_search_estimate = ["fc-rpc?/rpc_binary_search_estimate"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"golden-gate-poa-runtime?/runtime-benchmarks",
-	"golden-gate-pos-runtime?/runtime-benchmarks",
+	"golgen-gate-runtime-testnet?/runtime-benchmarks",
+	"golgen-gate-runtime-mainnet?/runtime-benchmarks",
 ]

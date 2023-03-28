@@ -1,7 +1,9 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-pub mod chain_spec;
+#[cfg(feature = "xvm")]
 pub mod precompiles;
+
+pub mod chain_spec;
 pub mod validator_manager;
 
 #[macro_export]
