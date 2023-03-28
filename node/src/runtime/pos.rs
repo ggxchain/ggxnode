@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, str::FromStr};
 
-pub use golgen_gate_runtime_mainnet::{opaque::SessionKeys, *};
+pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
 
 use sp_core::{sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;

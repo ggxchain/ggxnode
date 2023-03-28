@@ -2,16 +2,11 @@
 
 use frame_support::{
 	pallet_prelude::MaxEncodedLen,
-	traits::{EitherOf, EitherOfDiverse, InstanceFilter, PrivilegeCmp, WithdrawReasons},
+	traits::{InstanceFilter, PrivilegeCmp, WithdrawReasons},
 	PalletId, RuntimeDebug,
 };
-use frame_system::EnsureRoot;
+use frame_system::{EnsureRoot, EnsureWithSuccess};
 use sp_runtime::traits::ConvertInto;
-
-use crate::governance::{
-	pallet_custom_origins::{GeneralAdmin, Treasurer},
-	TreasurySpender,
-};
 
 use super::*;
 
@@ -97,8 +92,8 @@ impl crate::validator_manager::Config for Runtime {
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
-	type ApproveOrigin = EitherOfDiverse<EnsureRoot<AccountId>, Treasurer>;
-	type RejectOrigin = EitherOfDiverse<EnsureRoot<AccountId>, Treasurer>;
+	type ApproveOrigin = EnsureRoot<AccountId>;
+	type RejectOrigin = EnsureRoot<AccountId>;
 	type RuntimeEvent = RuntimeEvent;
 	type OnSlash = Treasury;
 	type ProposalBond = ProposalBond;
@@ -110,7 +105,7 @@ impl pallet_treasury::Config for Runtime {
 	type SpendFunds = Bounties;
 	type WeightInfo = pallet_treasury::weights::SubstrateWeight<Runtime>;
 	type MaxApprovals = MaxApprovals;
-	type SpendOrigin = TreasurySpender;
+	type SpendOrigin = EnsureWithSuccess<EnsureRoot<AccountId>, AccountId, MaxBalance>;
 }
 
 impl pallet_bounties::Config for Runtime {
@@ -199,8 +194,8 @@ impl pallet_identity::Config for Runtime {
 	type MaxAdditionalFields = MaxAdditionalFields;
 	type MaxRegistrars = MaxRegistrars;
 	type Slashed = Treasury;
-	type ForceOrigin = EitherOf<EnsureRoot<Self::AccountId>, GeneralAdmin>;
-	type RegistrarOrigin = EitherOf<EnsureRoot<Self::AccountId>, GeneralAdmin>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type RegistrarOrigin = EnsureRoot<AccountId>;
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
@@ -251,8 +246,6 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				RuntimeCall::Bounties(..) |
 				RuntimeCall::ConvictionVoting(..) |
 				RuntimeCall::Referenda(..) |
-				RuntimeCall::FellowshipCollective(..) |
-				RuntimeCall::FellowshipReferenda(..) |
 				RuntimeCall::Whitelist(..) |
 				RuntimeCall::Vesting(pallet_vesting::Call::vest{..}) |
 				RuntimeCall::Vesting(pallet_vesting::Call::vest_other{..}) |
@@ -268,8 +261,6 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 						| RuntimeCall::Bounties(..)
 						| RuntimeCall::ConvictionVoting(..)
 						| RuntimeCall::Referenda(..)
-						| RuntimeCall::FellowshipCollective(..)
-						| RuntimeCall::FellowshipReferenda(..)
 						| RuntimeCall::Whitelist(..)
 				)
 			}

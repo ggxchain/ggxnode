@@ -1,5 +1,5 @@
 [package]
-name = "golgen-gate-runtime-testnet"
+name = "golden-gate-runtime-testnet"
 version = "0.0.0"
 license = "Unlicense"
 description = "Golden Gate PoS Runtime"

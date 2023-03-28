@@ -67,8 +67,8 @@ fp-evm = { workspace = true, features = ["std"], optional = true }
 fp-rpc = { workspace = true, features = ["std"], optional = true }
 fp-storage = { workspace = true, features = ["std"], optional = true }
 
-golgen-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
-golgen-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
+golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
+golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
@@ -76,7 +76,7 @@ substrate-build-script-utils = { workspace = true }
 [features]
 default = ["aura", "with-rocksdb-weights", "pos"]
 poa = [
-	"golgen-gate-runtime-testnet",
+	"golden-gate-runtime-testnet",
 	"fc-cli",
 	"fc-consensus",
 	"fc-db",
@@ -88,24 +88,24 @@ poa = [
 	"fp-rpc",
 	"fp-storage",
 ]
-pos = ["golgen-gate-runtime-mainnet"]
+pos = ["golden-gate-runtime-mainnet"]
 aura = [
 	"sc-consensus-aura",
-	"golgen-gate-runtime-testnet?/aura",
-	"golgen-gate-runtime-mainnet?/aura",
+	"golden-gate-runtime-testnet?/aura",
+	"golden-gate-runtime-mainnet?/aura",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"golgen-gate-runtime-testnet?/manual-seal",
-	"golgen-gate-runtime-mainnet?/manual-seal",
+	"golden-gate-runtime-testnet?/manual-seal",
+	"golden-gate-runtime-mainnet?/manual-seal",
 ]
-with-rocksdb-weights = ["golgen-gate-runtime-testnet?/with-rocksdb-weights", "golgen-gate-runtime-mainnet?/with-rocksdb-weights"]
-with-paritydb-weights = ["golgen-gate-runtime-testnet?/with-paritydb-weights", "golgen-gate-runtime-mainnet?/with-paritydb-weights"]
+with-rocksdb-weights = ["golden-gate-runtime-testnet?/with-rocksdb-weights", "golden-gate-runtime-mainnet?/with-rocksdb-weights"]
+with-paritydb-weights = ["golden-gate-runtime-testnet?/with-paritydb-weights", "golden-gate-runtime-mainnet?/with-paritydb-weights"]
 rpc_binary_search_estimate = ["fc-rpc?/rpc_binary_search_estimate"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"golgen-gate-runtime-testnet?/runtime-benchmarks",
-	"golgen-gate-runtime-mainnet?/runtime-benchmarks",
+	"golden-gate-runtime-testnet?/runtime-benchmarks",
+	"golden-gate-runtime-mainnet?/runtime-benchmarks",
 ]

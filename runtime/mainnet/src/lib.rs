@@ -10,8 +10,8 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod governance;
-use governance::pallet_custom_origins;
 pub mod pos;
+pub mod version;
 
 use core::cmp::Ordering;
 
@@ -21,7 +21,7 @@ use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{crypto::KeyTypeId, OpaqueMetadata};
 use sp_runtime::{
-	create_runtime_str, generic, impl_opaque_keys,
+	generic, impl_opaque_keys,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, IdentifyAccount, NumberFor, OpaqueKeys,
 		Verify,
@@ -167,22 +167,11 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 	(items as Balance + bytes as Balance) * MILLIGGX / EXISTENTIAL_DEPOSIT
 }
 
-pub const VERSION: RuntimeVersion = RuntimeVersion {
-	spec_name: create_runtime_str!("golden-gate-node"),
-	impl_name: create_runtime_str!("golden-gate-node"),
-	authoring_version: 1,
-	spec_version: 4,
-	impl_version: 1,
-	apis: RUNTIME_API_VERSIONS,
-	transaction_version: 1,
-	state_version: 1,
-};
-
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {
 	sp_version::NativeVersion {
-		runtime_version: VERSION,
+		runtime_version: crate::version::VERSION,
 		can_author_with: Default::default(),
 	}
 }
@@ -193,7 +182,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
 parameter_types! {
-	pub const Version: RuntimeVersion = VERSION;
+	pub const Version: RuntimeVersion = version::VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
 	/// We allow for 1 seconds of compute with a 2 second average block time.
 	pub storage MaximumBlockWeight: Weight = Weight::from_parts(
@@ -436,9 +425,6 @@ construct_runtime!(
 		Treasury: pallet_treasury,
 		ConvictionVoting: pallet_conviction_voting,
 		Referenda: pallet_referenda,
-		FellowshipCollective: pallet_ranked_collective::<Instance1>,
-		FellowshipReferenda: pallet_referenda::<Instance2>,
-		Origins: pallet_custom_origins::{Origin},
 		Whitelist: pallet_whitelist,
 		Society: pallet_society,
 
@@ -468,7 +454,7 @@ mod benches {
 impl_runtime_apis! {
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
-			VERSION
+			version::VERSION
 		}
 
 		fn execute_block(block: Block) {

@@ -140,8 +140,8 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Golde
 
 # Golden Gate
 account-filter = { package = "substrate-account-filter", git = "https://github.com/GoldenGateGGX/ggx-frames", branch = "polkadot-v0.9.35", default-features = false }
-golgen-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
-golgen-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
+golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
+golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar

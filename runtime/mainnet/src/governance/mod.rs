@@ -1,20 +1,9 @@
 use super::*;
-use frame_support::{
-	parameter_types,
-	traits::{ConstU16, EitherOf},
-};
-use frame_system::{EnsureRoot, EnsureRootWithSuccess};
+use frame_support::parameter_types;
+use frame_system::EnsureRoot;
 
-mod origins;
-pub use origins::{
-	pallet_custom_origins, Fellows, FellowshipAdmin, FellowshipExperts, FellowshipInitiates,
-	FellowshipMasters, GeneralAdmin, ReferendumCanceller, ReferendumKiller, Spender, StakingAdmin,
-	Treasurer, WhitelistedCaller,
-};
 mod tracks;
 pub use tracks::TracksInfo;
-mod fellowship;
-pub use fellowship::{FellowshipCollectiveInstance, FellowshipReferendaInstance};
 
 parameter_types! {
 	pub storage VoteLockingPeriod: BlockNumber = 7 * Days::get();
@@ -40,17 +29,14 @@ parameter_types! {
 parameter_types! {
 	pub const MaxBalance: Balance = Balance::max_value();
 }
-pub type TreasurySpender = EitherOf<EnsureRootWithSuccess<AccountId, MaxBalance>, Spender>;
-
-impl origins::pallet_custom_origins::Config for Runtime {}
+pub type TreasurySpender = EnsureRoot<AccountId>;
 
 impl pallet_whitelist::Config for Runtime {
 	type WeightInfo = pallet_whitelist::weights::SubstrateWeight<Self>;
 	type RuntimeCall = RuntimeCall;
 	type RuntimeEvent = RuntimeEvent;
-	type WhitelistOrigin =
-		EitherOf<EnsureRootWithSuccess<Self::AccountId, ConstU16<65535>>, Fellows>;
-	type DispatchWhitelistedOrigin = EitherOf<EnsureRoot<Self::AccountId>, WhitelistedCaller>;
+	type WhitelistOrigin = EnsureRoot<Self::AccountId>;
+	type DispatchWhitelistedOrigin = EnsureRoot<Self::AccountId>;
 	type Preimages = ();
 }
 
@@ -61,8 +47,8 @@ impl pallet_referenda::Config for Runtime {
 	type Scheduler = Scheduler;
 	type Currency = Balances;
 	type SubmitOrigin = frame_system::EnsureSigned<AccountId>;
-	type CancelOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumCanceller>;
-	type KillOrigin = EitherOf<EnsureRoot<AccountId>, ReferendumKiller>;
+	type CancelOrigin = EnsureRoot<Self::AccountId>;
+	type KillOrigin = EnsureRoot<Self::AccountId>;
 	type Slash = Treasury;
 	type Votes = pallet_conviction_voting::VotesOf<Runtime>;
 	type Tally = pallet_conviction_voting::TallyOf<Runtime>;

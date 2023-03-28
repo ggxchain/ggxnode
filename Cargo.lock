@@ -2478,8 +2478,8 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
- "golgen-gate-runtime-mainnet",
- "golgen-gate-runtime-testnet",
+ "golden-gate-runtime-mainnet",
+ "golden-gate-runtime-testnet",
  "jsonrpsee",
  "log",
  "pallet-transaction-payment",
@@ -2515,7 +2515,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "golgen-gate-runtime-mainnet"
+name = "golden-gate-runtime-mainnet"
 version = "0.0.0"
 dependencies = [
  "frame-benchmarking",
@@ -2573,7 +2573,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "golgen-gate-runtime-testnet"
+name = "golden-gate-runtime-testnet"
 version = "0.0.0"
 dependencies = [
  "fp-rpc",
