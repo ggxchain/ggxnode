@@ -11,6 +11,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod poa;
 mod version;
+pub use version::VERSION;
 
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
@@ -183,7 +184,7 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {
 	sp_version::NativeVersion {
-		runtime_version: version::VERSION,
+		runtime_version: VERSION,
 		can_author_with: Default::default(),
 	}
 }
@@ -194,7 +195,7 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
 
 parameter_types! {
-	pub const Version: RuntimeVersion = version::VERSION;
+	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
 	/// We allow for 1 seconds of compute with a 2 second average block time.
 	pub storage MaximumBlockWeight: Weight = Weight::from_parts(
@@ -701,7 +702,7 @@ mod benches {
 impl_runtime_apis! {
 	impl sp_api::Core<Block> for Runtime {
 		fn version() -> RuntimeVersion {
-			version::VERSION
+			VERSION
 		}
 
 		fn execute_block(block: Block) {
