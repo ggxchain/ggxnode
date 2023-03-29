@@ -18,16 +18,16 @@
 use clap::Parser;
 // Substrate
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use sc_service::{DatabaseSource, PartialComponents};
+use sc_service::PartialComponents;
 // Frontier
-#[cfg(feature = "poa")]
+#[cfg(feature = "testnet")]
 use fc_db::frontier_database_dir;
 
 use crate::{
 	chain_spec,
 	cli::{Cli, Subcommand},
 	runtime,
-	service::{self, db_config_dir},
+	service::{self},
 };
 
 impl SubstrateCli for Cli {
@@ -129,8 +129,10 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				#[cfg(feature = "poa")]
+				#[cfg(feature = "testnet")]
 				{
+					use fc_db::DatabaseSource;
+					use service::contract::db_config_dir;
 					// Remove Frontier offchain db
 					let db_config_dir = db_config_dir(&config);
 					let frontier_database_config = match config.database {
@@ -231,6 +233,7 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark) => Err("Benchmarking wasn't enabled when building the node. \
 			You can enable it with `--features runtime-benchmarks`."
 			.into()),
+		#[cfg(feature = "testnet")]
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {

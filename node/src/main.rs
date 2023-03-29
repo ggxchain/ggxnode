@@ -3,8 +3,8 @@
 #![warn(missing_docs)]
 #![allow(clippy::type_complexity, clippy::too_many_arguments)]
 
-#[cfg(all(feature = "pos", feature = "poa"))]
-compile_error!("feature \"pos\" and feature \"poa\" cannot be enabled at the same time");
+#[cfg(all(feature = "testnet", feature = "mainnet"))]
+compile_error!("feature \"testnet\" and feature \"mainnet\" cannot be enabled at the same time");
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benchmarking;

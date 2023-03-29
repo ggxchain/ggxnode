@@ -22,7 +22,7 @@ impl pallet_conviction_voting::Config for Runtime {
 
 parameter_types! {
 	pub const AlarmInterval: BlockNumber = 1;
-	pub const SubmissionDeposit: Balance = 1 * GGX;
+	pub const SubmissionDeposit: Balance = GGX;
 	pub storage UndecidingTimeout: BlockNumber = 14 * Days::get();
 }
 
@@ -37,7 +37,7 @@ impl pallet_whitelist::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WhitelistOrigin = EnsureRoot<Self::AccountId>;
 	type DispatchWhitelistedOrigin = EnsureRoot<Self::AccountId>;
-	type Preimages = ();
+	type Preimages = Preimage;
 }
 
 impl pallet_referenda::Config for Runtime {
@@ -57,5 +57,5 @@ impl pallet_referenda::Config for Runtime {
 	type UndecidingTimeout = UndecidingTimeout;
 	type AlarmInterval = AlarmInterval;
 	type Tracks = TracksInfo;
-	type Preimages = ();
+	type Preimages = Preimage;
 }

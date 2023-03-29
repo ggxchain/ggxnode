@@ -74,8 +74,8 @@ golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional =
 substrate-build-script-utils = { workspace = true }
 
 [features]
-default = ["aura", "with-rocksdb-weights", "pos"]
-poa = [
+default = ["aura", "with-rocksdb-weights", "testnet"]
+testnet = [
 	"golden-gate-runtime-testnet",
 	"fc-cli",
 	"fc-consensus",
@@ -88,7 +88,7 @@ poa = [
 	"fp-rpc",
 	"fp-storage",
 ]
-pos = ["golden-gate-runtime-mainnet"]
+mainnet = ["golden-gate-runtime-mainnet"]
 aura = [
 	"sc-consensus-aura",
 	"golden-gate-runtime-testnet?/aura",

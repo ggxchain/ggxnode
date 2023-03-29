@@ -84,11 +84,6 @@ parameter_types! {
 
 pub type PeriodicSessions = pallet_session::PeriodicSessions<SessionPeriod, SessionOffset>;
 
-impl crate::validator_manager::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type PrivilegedOrigin = EnsureRoot<AccountId>;
-}
-
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
 	type Currency = Balances;
@@ -164,6 +159,11 @@ impl pallet_vesting::Config for Runtime {
 	// `VestingInfo` encode length is 36bytes. 28 schedules gets encoded as 1009 bytes, which is the
 	// highest number of schedules that encodes less than 2^10.
 	const MAX_VESTING_SCHEDULES: u32 = 28;
+}
+
+impl crate::validator_manager::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PrivilegedOrigin = EnsureRoot<AccountId>;
 }
 
 impl pallet_indices::Config for Runtime {
@@ -340,7 +340,7 @@ impl pallet_scheduler::Config for Runtime {
 	type MaxScheduledPerBlock = MaxScheduledPerBlock;
 	type WeightInfo = pallet_scheduler::weights::SubstrateWeight<Runtime>;
 	type OriginPrivilegeCmp = OriginPrivilegeCmp;
-	type Preimages = ();
+	type Preimages = Preimage;
 }
 
 impl pallet_society::Config for Runtime {

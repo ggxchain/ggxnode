@@ -1,58 +1,53 @@
 //! Service and ServiceFactory implementation. Specialized wrapper over substrate service.
 
+use super::*;
+
+use futures::{future, StreamExt};
+use jsonrpsee::RpcModule;
+use sp_api::ProvideRuntimeApi;
 use std::{
 	collections::BTreeMap,
 	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
-
-use futures::{future, StreamExt};
 // Substrate
 use sc_cli::SubstrateCli;
-use sc_client_api::BlockchainEvents;
+use sc_client_api::{
+	backend::{Backend, StateBackend},
+	AuxStore, BlockchainEvents, StorageProvider,
+};
 use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
-use sc_service::{error::Error as ServiceError, BasePath, Configuration, TaskManager};
+use sc_network::NetworkService;
+use sc_rpc::SubscriptionTaskExecutor;
+use sc_service::{
+	error::Error as ServiceError, BasePath, Configuration, TaskManager, TransactionPool,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
+use sc_transaction_pool::{ChainApi, Pool};
+use sp_block_builder::BlockBuilder;
+use sp_blockchain::{HeaderBackend, HeaderMetadata};
 use sp_core::U256;
+use sp_runtime::traits::BlakeTwo256;
 // Frontier
 use fc_consensus::FrontierBlockImport;
 use fc_db::Backend as FrontierBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
-use fc_rpc::{EthTask, OverrideHandle};
+use fc_rpc::{
+	EthBlockDataCacheTask, EthTask, OverrideHandle, RuntimeApiStorageOverride, SchemaV1Override,
+	SchemaV2Override, SchemaV3Override, StorageOverride,
+};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
+use fp_storage::EthereumStorageSchema;
 // Runtime
-use crate::runtime::{opaque::Block, RuntimeApi};
-
-// Our native executor instance.
-pub struct ExecutorDispatch;
-
-impl sc_executor::NativeExecutionDispatch for ExecutorDispatch {
-	/// Only enable the benchmarking host functions when we actually want to benchmark.
-	#[cfg(feature = "runtime-benchmarks")]
-	type ExtendHostFunctions = frame_benchmarking::benchmarking::HostFunctions;
-	/// Otherwise we only use the default Substrate host functions.
-	#[cfg(not(feature = "runtime-benchmarks"))]
-	type ExtendHostFunctions = ();
-
-	fn dispatch(method: &str, data: &[u8]) -> Option<Vec<u8>> {
-		crate::runtime::api::dispatch(method, data)
-	}
-
-	fn native_version() -> sc_executor::NativeVersion {
-		crate::runtime::native_version()
-	}
-}
-
-pub type FullClient =
-	sc_service::TFullClient<Block, RuntimeApi, NativeElseWasmExecutor<ExecutorDispatch>>;
-type FullBackend = sc_service::TFullBackend<Block>;
-type FullSelectChain = sc_consensus::LongestChain<FullBackend, Block>;
-
-use crate::cli::Cli;
 #[cfg(feature = "manual-seal")]
 use crate::cli::Sealing;
+use crate::{
+	cli::Cli,
+	rpc::FullDeps,
+	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
+};
 
 #[cfg(feature = "aura")]
 pub type ConsensusResult = (
@@ -184,14 +179,8 @@ pub fn new_partial(
 				*timestamp,
 				slot_duration,
 			);
-			#[cfg(feature = "poa")]
-			{
-				let dynamic_fee =
-					fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-				Ok((slot, timestamp, dynamic_fee))
-			}
-			#[cfg(feature = "pos")]
-			Ok((slot, timestamp))
+			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+			Ok((slot, timestamp, dynamic_fee))
 		};
 
 		let import_queue = sc_consensus_aura::import_queue::<AuraPair, _, _, _, _, _>(
@@ -349,7 +338,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	let name = config.network.node_name.clone();
 	let enable_grandpa = !config.disable_grandpa;
 	let prometheus_registry = config.prometheus_registry().cloned();
-	let overrides = crate::rpc::overrides_handle(client.clone());
+	let overrides = overrides_handle(client.clone());
 	let block_data_cache = Arc::new(fc_rpc::EthBlockDataCacheTask::new(
 		task_manager.spawn_handle(),
 		overrides.clone(),
@@ -374,18 +363,20 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: pool.clone(),
-				graph: pool.pool().clone(),
 				deny_unsafe,
-				is_authority,
-				enable_dev_signer,
-				network: network.clone(),
-				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
-				max_past_logs,
-				fee_history_cache: fee_history_cache.clone(),
-				fee_history_cache_limit,
-				overrides: overrides.clone(),
-				block_data_cache: block_data_cache.clone(),
+				testnet: TestNetParams {
+					graph: pool.pool().clone(),
+					is_authority,
+					enable_dev_signer,
+					network: network.clone(),
+					filter_pool: filter_pool.clone(),
+					backend: frontier_backend.clone(),
+					max_past_logs,
+					fee_history_cache: fee_history_cache.clone(),
+					fee_history_cache_limit,
+					overrides: overrides.clone(),
+					block_data_cache: block_data_cache.clone(),
+				},
 			};
 
 			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
@@ -436,14 +427,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				*timestamp,
 				slot_duration,
 			);
-			#[cfg(feature = "poa")]
-			{
-				let dynamic_fee =
-					fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
-				Ok((slot, timestamp, dynamic_fee))
-			}
-			#[cfg(feature = "pos")]
-			Ok((slot, timestamp))
+			let dynamic_fee = fp_dynamic_fee::InherentDataProvider(U256::from(target_gas_price));
+			Ok((slot, timestamp, dynamic_fee))
 		};
 
 		let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(
@@ -606,18 +591,20 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			let deps = crate::rpc::FullDeps {
 				client: client.clone(),
 				pool: pool.clone(),
-				graph: pool.pool().clone(),
 				deny_unsafe,
-				is_authority,
-				enable_dev_signer,
-				network: network.clone(),
-				filter_pool: filter_pool.clone(),
-				backend: frontier_backend.clone(),
-				max_past_logs,
-				fee_history_cache: fee_history_cache.clone(),
-				fee_history_cache_limit,
-				overrides: overrides.clone(),
-				block_data_cache: block_data_cache.clone(),
+				testnet: TestNetParams {
+					graph: pool.pool().clone(),
+					is_authority,
+					enable_dev_signer,
+					network: network.clone(),
+					filter_pool: filter_pool.clone(),
+					backend: frontier_backend.clone(),
+					max_past_logs,
+					fee_history_cache: fee_history_cache.clone(),
+					fee_history_cache_limit,
+					overrides: overrides.clone(),
+					block_data_cache: block_data_cache.clone(),
+				},
 				command_sink: Some(command_sink.clone()),
 			};
 
@@ -782,4 +769,189 @@ fn spawn_frontier_tasks(
 			fee_history_cache_limit,
 		),
 	);
+}
+
+pub fn overrides_handle<C, BE>(client: Arc<C>) -> Arc<OverrideHandle<Block>>
+where
+	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
+	C: Send + Sync + 'static,
+	C::Api: sp_api::ApiExt<Block>
+		+ fp_rpc::EthereumRuntimeRPCApi<Block>
+		+ fp_rpc::ConvertTransactionRuntimeApi<Block>,
+	BE: Backend<Block> + 'static,
+	BE::State: StateBackend<BlakeTwo256>,
+{
+	let mut overrides_map = BTreeMap::new();
+	overrides_map.insert(
+		EthereumStorageSchema::V1,
+		Box::new(SchemaV1Override::new(client.clone()))
+			as Box<dyn StorageOverride<_> + Send + Sync>,
+	);
+	overrides_map.insert(
+		EthereumStorageSchema::V2,
+		Box::new(SchemaV2Override::new(client.clone()))
+			as Box<dyn StorageOverride<_> + Send + Sync>,
+	);
+	overrides_map.insert(
+		EthereumStorageSchema::V3,
+		Box::new(SchemaV3Override::new(client.clone()))
+			as Box<dyn StorageOverride<_> + Send + Sync>,
+	);
+
+	Arc::new(OverrideHandle {
+		schemas: overrides_map,
+		fallback: Box::new(RuntimeApiStorageOverride::new(client)),
+	})
+}
+
+pub fn create_full_rpc<C, P, BE, A>(
+	deps: FullDeps<C, P, A>,
+	subscription_task_executor: SubscriptionTaskExecutor,
+) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
+where
+	BE: Backend<Block> + 'static,
+	BE::State: StateBackend<BlakeTwo256>,
+	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+	C: BlockchainEvents<Block>,
+	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
+	C: Send + Sync + 'static,
+	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
+	C::Api: BlockBuilder<Block>,
+	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
+	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
+	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+	P: TransactionPool<Block = Block> + 'static,
+	A: ChainApi<Block = Block> + 'static,
+{
+	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use substrate_frame_rpc_system::{System, SystemApiServer};
+
+	let mut io = RpcModule::new(());
+	let FullDeps {
+		client,
+		pool,
+		deny_unsafe,
+		testnet:
+			TestNetParams {
+				graph,
+				is_authority,
+				enable_dev_signer,
+				network,
+				filter_pool,
+				backend,
+				max_past_logs,
+				fee_history_cache,
+				fee_history_cache_limit,
+				overrides,
+				block_data_cache,
+			},
+		#[cfg(feature = "manual-seal")]
+		command_sink,
+	} = deps;
+
+	io.merge(System::new(client.clone(), pool.clone(), deny_unsafe).into_rpc())?;
+	io.merge(TransactionPayment::new(client.clone()).into_rpc())?;
+
+	let mut signers = Vec::new();
+
+	if enable_dev_signer {
+		signers.push(Box::new(EthDevSigner::new()) as Box<dyn EthSigner>);
+	}
+	use fc_rpc::{
+		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3, Web3ApiServer,
+	};
+	io.merge(
+		Eth::new(
+			client.clone(),
+			pool.clone(),
+			graph,
+			Some(crate::runtime::TransactionConverter),
+			network.clone(),
+			signers,
+			overrides.clone(),
+			backend.clone(),
+			// Is authority.
+			is_authority,
+			block_data_cache.clone(),
+			fee_history_cache,
+			fee_history_cache_limit,
+			10,
+		)
+		.into_rpc(),
+	)?;
+
+	if let Some(filter_pool) = filter_pool {
+		io.merge(
+			EthFilter::new(
+				client.clone(),
+				backend,
+				filter_pool,
+				500_usize, // max stored filters
+				max_past_logs,
+				block_data_cache,
+			)
+			.into_rpc(),
+		)?;
+	}
+
+	io.merge(
+		EthPubSub::new(
+			pool,
+			client.clone(),
+			network.clone(),
+			subscription_task_executor,
+			overrides,
+		)
+		.into_rpc(),
+	)?;
+
+	io.merge(
+		Net::new(
+			client.clone(),
+			network,
+			// Whether to format the `peer_count` response as Hex (default) or not.
+			true,
+		)
+		.into_rpc(),
+	)?;
+	io.merge(Web3::new(client).into_rpc())?;
+
+	#[cfg(feature = "manual-seal")]
+	if let Some(command_sink) = command_sink {
+		io.merge(
+			// We provide the rpc handler with the sending end of the channel to allow the rpc
+			// send EngineCommands to the background block authorship task.
+			ManualSeal::new(command_sink).into_rpc(),
+		)?;
+	}
+
+	Ok(io)
+}
+
+#[cfg(feature = "testnet")]
+pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
+	/// Graph pool instance.                        
+	pub graph: Arc<Pool<A>>,
+	/// The Node authority flag
+	pub is_authority: bool,
+	/// Whether to enable dev signer
+	pub enable_dev_signer: bool,
+	/// Network service
+	pub network: Arc<NetworkService<Block, Hash>>,
+	/// EthFilterApi pool.
+	pub filter_pool: Option<FilterPool>,
+	/// Backend.
+	pub backend: Arc<fc_db::Backend<Block>>,
+	/// Maximum number of logs in a query.
+	pub max_past_logs: u32,
+	/// Fee history cache.
+	pub fee_history_cache: FeeHistoryCache,
+	/// Maximum fee history cache size.
+	pub fee_history_cache_limit: FeeHistoryCacheLimit,
+	/// Ethereum data access overrides.
+	pub overrides: Arc<OverrideHandle<Block>>,
+	/// Cache for Ethereum block data.
+	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
 }

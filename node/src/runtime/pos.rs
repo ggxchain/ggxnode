@@ -1,8 +1,6 @@
-use std::{collections::BTreeMap, str::FromStr};
-
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
 
-use sp_core::{sr25519, H160, U256};
+use sp_core::sr25519;
 use sp_runtime::traits::IdentifyAccount;
 
 use super::{get_from_seed, AccountPublic};
@@ -31,7 +29,7 @@ pub fn testnet_genesis(
 	sudo_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<ValidatorIdentity>,
-	chain_id: u64,
+	_chain_id: u64,
 ) -> GenesisConfig {
 	const ENDOWMENT: Balance = 10_000_000 * GGX;
 
@@ -85,5 +83,6 @@ pub fn testnet_genesis(
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
+		society: Default::default(),
 	}
 }

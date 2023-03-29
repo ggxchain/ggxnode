@@ -391,6 +391,20 @@ impl pallet_sudo::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 }
 
+parameter_types! {
+	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = deposit(0, 1);
+}
+
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Self>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -420,7 +434,6 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
-		ValidatorManager: validator_manager,
 
 		// Goverment pallets
 		Treasury: pallet_treasury,
@@ -428,10 +441,12 @@ construct_runtime!(
 		Referenda: pallet_referenda,
 		Whitelist: pallet_whitelist,
 		Society: pallet_society,
+		Preimage: pallet_preimage,
 
 		// GGX pallets
 		AccountFilter: account_filter,
-		RuntimeSpecification: chain_spec
+		RuntimeSpecification: chain_spec,
+		ValidatorManager: validator_manager
 	}
 );
 
