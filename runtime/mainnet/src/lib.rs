@@ -62,10 +62,8 @@ pub use pallet_balances::Call as BalancesCall;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use pallet_timestamp::Call as TimestampCall;
 
-pub use runtime_common::{
-	chain_spec::{self, RuntimeConfig},
-	validator_manager,
-};
+pub use pallet_staking::StakerStatus;
+pub use runtime_common::chain_spec::{self, RuntimeConfig};
 
 /// Import the permissioned ledger pallet.
 pub use account_filter;
@@ -363,11 +361,12 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_offences::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = ();
+	type OnOffenceHandler = Staking;
 }
 
 parameter_types! {
 	pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const MaxKeys: u32 = 10_000;
 	pub const MaxPeerInHeartbeats: u32 = 10_000;
 	pub const MaxPeerDataEncodingSize: u32 = 1_000;
@@ -422,6 +421,7 @@ construct_runtime!(
 		// Authorship must go before session in order to track the correct author of the block.
 		Authorship: pallet_authorship,
 		Offences: pallet_offences,
+		Staking: pallet_staking,
 		Session: pallet_session,
 		Grandpa: pallet_grandpa,
 		Bounties: pallet_bounties,
@@ -434,6 +434,7 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
 
 		// Goverment pallets
 		Treasury: pallet_treasury,
@@ -446,7 +447,6 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		RuntimeSpecification: chain_spec,
-		ValidatorManager: validator_manager
 	}
 );
 
@@ -620,6 +620,12 @@ impl_runtime_apis! {
 				.map(fg_primitives::OpaqueKeyOwnershipProof::new)
 		}
 	}
+
+	// impl pallet_staking_runtime_api::StakingApi<Block, Balance> for Runtime {
+	// 	fn nominations_quota(balance: Balance) -> u32 {
+	// 		Staking::api_nominations_quota(balance)
+	// 	}
+	// }
 
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {

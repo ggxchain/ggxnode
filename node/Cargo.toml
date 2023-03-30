@@ -74,7 +74,7 @@ golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional =
 substrate-build-script-utils = { workspace = true }
 
 [features]
-default = ["aura", "with-rocksdb-weights", "testnet"]
+default = ["aura", "with-rocksdb-weights", "mainnet"]
 testnet = [
 	"golden-gate-runtime-testnet",
 	"fc-cli",

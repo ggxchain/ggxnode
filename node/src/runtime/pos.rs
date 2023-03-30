@@ -32,6 +32,7 @@ pub fn testnet_genesis(
 	_chain_id: u64,
 ) -> GenesisConfig {
 	const ENDOWMENT: Balance = 10_000_000 * GGX;
+	const STASH: Balance = ENDOWMENT / 1000;
 
 	GenesisConfig {
 		// System
@@ -55,6 +56,17 @@ pub fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
+		staking: StakingConfig {
+			validator_count: initial_authorities.len() as u32,
+			minimum_validator_count: initial_authorities.len() as u32,
+			invulnerables: initial_authorities.iter().map(|x| x.id.clone()).collect(),
+			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
+			stakers: initial_authorities
+				.iter()
+				.map(|x| (x.id.clone(), x.id.clone(), STASH, StakerStatus::Validator))
+				.collect::<Vec<_>>(),
+			..Default::default()
+		},
 
 		// Consensus
 		session: SessionConfig {
