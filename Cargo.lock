@@ -2531,7 +2531,6 @@ dependencies = [
  "pallet-session",
  "pallet-society",
  "pallet-staking",
- "pallet-staking-reward-curve",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
@@ -5030,17 +5029,6 @@ dependencies = [
  "sp-runtime",
  "sp-staking",
  "sp-std",
-]
-
-[[package]]
-name = "pallet-staking-reward-curve"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.35#2a0eeff4008573f6ead70eb9bd43cf6d268d2e7d"
-dependencies = [
- "proc-macro-crate",
- "proc-macro2",
- "quote",
- "syn",
 ]
 
 [[package]]

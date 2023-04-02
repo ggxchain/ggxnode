@@ -59,7 +59,6 @@ pallet-scheduler = { workspace = true }
 pallet-session = { workspace = true, features = ["historical"] }
 pallet-society = { workspace = true }
 pallet-staking = { workspace = true }
-pallet-staking-reward-curve = { workspace = true }
 pallet-sudo = { workspace = true }
 pallet-timestamp = { workspace = true }
 pallet-transaction-payment = { workspace = true }

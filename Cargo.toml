@@ -96,7 +96,6 @@ pallet-scheduler = { version = "4.0.0-dev", git = "https://github.com/paritytech
 pallet-session = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-society = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-staking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
-pallet-staking-reward-curve = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-sudo = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-timestamp = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }
 pallet-tips = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.35", default-features = false }

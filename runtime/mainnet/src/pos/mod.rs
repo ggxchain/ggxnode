@@ -9,10 +9,13 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_election_provider_multi_phase::SolutionAccuracyOf;
-use sp_runtime::{curve::PiecewiseLinear, traits::ConvertInto};
+use pallet_staking::EraPayout;
+use sp_runtime::traits::ConvertInto;
 use sp_staking::SessionIndex;
 
 use super::*;
+
+pub mod inflation;
 
 pub use opaque::SessionKeys;
 
@@ -93,7 +96,6 @@ parameter_types! {
 	pub const SlashDeferDuration: sp_staking::EraIndex = BondingDuration::get() / 4;
 	pub const MaxNominatorRewardedPerValidator: u32 = 512;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
-	pub const RewardCurve: &'static PiecewiseLinear<'static> = &REWARD_CURVE;
 
 	pub const MaxNominations: u32 = <NposSolution16 as frame_election_provider_support::NposSolution>::LIMIT as u32;
 	pub const MaxElectingVoters: u32 = 40_000;
@@ -107,17 +109,6 @@ parameter_types! {
 	pub const OffchainRepeat: BlockNumber = 5;
 	pub const HistoryDepth: u32 = 84;
 
-}
-
-pallet_staking_reward_curve::build! {
-	const REWARD_CURVE: PiecewiseLinear<'static> = curve!(
-		min_inflation: 0_016_000,
-		max_inflation: 0_016_001,
-		ideal_stake: 0_500_000,
-		falloff: 0_050_000,
-		max_piece_count: 40,
-		test_precision: 0_005_000,
-	);
 }
 
 pub type PeriodicSessions = pallet_session::PeriodicSessions<SessionPeriod, SessionOffset>;
@@ -166,13 +157,6 @@ impl pallet_session::Config for Runtime {
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
-}
-
-pub struct FullIdentificationOf;
-impl sp_runtime::traits::Convert<AccountId, Option<()>> for FullIdentificationOf {
-	fn convert(_: AccountId) -> Option<()> {
-		Some(())
-	}
 }
 
 impl pallet_session::historical::Config for Runtime {
@@ -283,7 +267,7 @@ impl pallet_staking::Config for Runtime {
 	type SlashDeferDuration = SlashDeferDuration;
 	type SlashCancelOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
-	type EraPayout = pallet_staking::ConvertCurve<RewardCurve>;
+	type EraPayout = Inflation;
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
@@ -536,4 +520,9 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type MaxElectingVoters = MaxElectingVoters;
 	type BenchmarkingConfig = ElectionProviderBenchmarkConfig;
 	type WeightInfo = pallet_election_provider_multi_phase::weights::SubstrateWeight<Self>;
+}
+
+impl inflation::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PrivilegedOrigin = EnsureRoot<AccountId>;
 }

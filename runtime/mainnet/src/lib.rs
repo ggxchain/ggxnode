@@ -16,7 +16,10 @@ pub use version::VERSION;
 
 use core::cmp::Ordering;
 
-use frame_support::pallet_prelude::TransactionPriority;
+use frame_support::{
+	pallet_prelude::TransactionPriority,
+	traits::{Currency, OnUnbalanced},
+};
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -41,6 +44,7 @@ pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
+use pos::inflation;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -48,7 +52,8 @@ pub use frame_support::{
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, KeyOwnerProofSystem, Randomness,
+		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance, KeyOwnerProofSystem,
+		Randomness,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
@@ -155,8 +160,7 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// Constant values used within the runtime.
-pub const MICROGGX: Balance = 1_000_000_000;
-pub const MILLIGGX: Balance = 1_000 * MICROGGX;
+pub const MILLIGGX: Balance = 1_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
 pub const KGGX: Balance = 1000 * GGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
@@ -326,7 +330,7 @@ impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
 	type UncleGenerations = ConstU32<0>;
 	type FilterUncle = ();
-	type EventHandler = ImOnline;
+	type EventHandler = (Staking, ImOnline);
 }
 
 parameter_types! {
@@ -349,9 +353,36 @@ impl pallet_balances::Config for Runtime {
 	type ReserveIdentifier = [u8; 8];
 }
 
+type NegativeImbalance = <Balances as Currency<AccountId>>::NegativeImbalance;
+
+pub struct Author;
+impl OnUnbalanced<NegativeImbalance> for Author {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance) {
+		if let Some(author) = Authorship::author() {
+			Balances::resolve_creating(&author, amount);
+		}
+	}
+}
+
+pub struct DealWithFees;
+impl OnUnbalanced<NegativeImbalance> for DealWithFees {
+	fn on_unbalanceds<B>(mut fees_then_tips: impl Iterator<Item = NegativeImbalance>) {
+		if let Some(fees) = fees_then_tips.next() {
+			// for fees, 25% to treasury, 75% to author
+			let mut split = fees.ration(25, 75);
+			if let Some(tips) = fees_then_tips.next() {
+				// for tips, if any, 25% to treasury, 75% to author (though this can be anything)
+				tips.ration_merge_into(25, 75, &mut split);
+			}
+			Treasury::on_unbalanced(split.0);
+			Author::on_unbalanced(split.1);
+		}
+	}
+}
+
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, DealWithFees>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -447,6 +478,7 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		RuntimeSpecification: chain_spec,
+		Inflation: inflation,
 	}
 );
 

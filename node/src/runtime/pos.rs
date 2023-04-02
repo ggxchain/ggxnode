@@ -31,8 +31,8 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	_chain_id: u64,
 ) -> GenesisConfig {
-	const ENDOWMENT: Balance = 10_000_000 * GGX;
-	const STASH: Balance = ENDOWMENT / 1000;
+	const ENDOWMENT: Balance = 10_000 * GGX;
+	const STASH: Balance = ENDOWMENT / 2;
 
 	GenesisConfig {
 		// System
@@ -58,8 +58,9 @@ pub fn testnet_genesis(
 		treasury: Default::default(),
 		staking: StakingConfig {
 			validator_count: initial_authorities.len() as u32,
-			minimum_validator_count: initial_authorities.len() as u32,
-			invulnerables: initial_authorities.iter().map(|x| x.id.clone()).collect(),
+			minimum_validator_count: 2,
+			max_validator_count: Some(100),
+			invulnerables: vec![],
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			stakers: initial_authorities
 				.iter()
@@ -81,10 +82,7 @@ pub fn testnet_genesis(
 		grandpa: GrandpaConfig::default(),
 
 		account_filter: AccountFilterConfig {
-			allowed_accounts: initial_authorities
-				.into_iter()
-				.map(|e| (e.id, ()))
-				.collect(),
+			allowed_accounts: endowed_accounts.into_iter().map(|e| (e, ())).collect(),
 		},
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
