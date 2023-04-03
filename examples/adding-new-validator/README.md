@@ -7,7 +7,7 @@ There are two ways to add or remove the validator:
 * Using the sudo extrinsic to the validator_manager pallet.
 * Modifying the genesis config
 
-## SUDO mechanism
+## SUDO mechanism in testnet
 
 ### Prerequisites
 
@@ -26,7 +26,7 @@ cargo run --release -- --chain local --bob --tmp
 cargo run --release -- --chain local --charlie --tmp --ws-port 9003
 ```
 
-### Adding validator
+### Adding validator in testnet
 
 Important:
 
@@ -103,3 +103,41 @@ session: SessionConfig {
         .collect::<Vec<_>>(),
 },
 ```
+
+## Mainnet
+
+### Adding validator in mainnet
+
+Steps:
+
+* Validate that the network is working and that you can connect. Check that all validators behave correctly.
+As you can see, Alice and Bob are producing blocks, and I have connected to the 9003 port, which is Charlie's.
+
+  ![The image shows that validator are running](images/initial.png)
+* We have to allowlist Charlie initially. How to allowlist the validator user see in the [guide](../adding-user-to-allowlist/README.md)
+* Go to the [Staking overview page](https://blockexptest.ggxchain.io/?rpc=ws://127.0.0.1:9003#/staking).
+You have to see the current validator list.
+
+  ![The image shows the current validator list, which consists of two validators, Bob and Alice](images/staking-validator-list.png)
+* Go to Develop/RPC tab in the block explorer.
+* Submit RPC to the author.rotateKeys()
+* Copy the received key
+  * In our example is: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e3104384453ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df9094835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
+* Go to the [Network/Staking/Accounts](https://blockexptest.ggxchain.io/?rpc=ws://127.0.0.1:9003#/staking/actions) tab.
+* Click the `stash` button and choose the `Charlie` account. Add a stake higher or equal to other validators.
+
+  ![The image shows example input during the staking process](images/staking.png)
+* You are supposed to see a newly added Charlie account in the list.
+Please, click the `Session Key` button on the `Charlie` line.
+* Insert the key that we copied early into `keys from rotateKeys`.
+
+  ![The image shows an example how to set a session key](images/setting-session-key.png)
+* Click on the `Validate` button in the same place where the `Session Key` was.
+Choose the nominator commission and sign it.
+* Wait for the session change. And see that Charlie is now participating in validating.
+
+  ![Image shows that Charlie is validator now](images/charlie-is-validator.png)
+
+### Removing validator in mainnet
+
+You can't directly remove validator from mainnet because it's now chosed stake-based.
