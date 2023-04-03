@@ -9,7 +9,6 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_election_provider_multi_phase::SolutionAccuracyOf;
-use pallet_staking::EraPayout;
 use sp_runtime::traits::ConvertInto;
 use sp_staking::SessionIndex;
 

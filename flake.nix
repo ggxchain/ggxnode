@@ -92,7 +92,7 @@
           installPhase = ''
             runHook preInstall
             mkdir --parents $out/lib
-            cp ./target/wasm32-unknown-unknown/release/wbuild/*-runtime/*.compact.compressed.wasm $out/lib
+            cp ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime-*/*.compact.compressed.wasm $out/lib
             runHook postInstall
           '';
         };
@@ -255,11 +255,11 @@
             name = "linting";
             paths = [ doclint fmt clippy-node clippy-wasm ];
           };
-          build = pkgs.symlinkJoin { 
-            name = "build";
-            paths = [ golden-gate-runtimes node ];
+          release = pkgs.symlinkJoin { 
+            name = "release";
+            paths = [ node golden-gate-runtimes ];
           };
-          default = build;
+          default = release;
           # we should prune 3 things:
           # - running process
           # - logs/storages of run proccess

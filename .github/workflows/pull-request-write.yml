@@ -57,7 +57,7 @@ jobs:
       - name: building-targets
         run: |          
           mkdir out
-          nix build .#build --print-build-logs --show-trace --no-update-lock-file
+          nix build .#release --print-build-logs --show-trace --no-update-lock-file
           cp ./result/lib/* ./result/bin/* ./out
       - name: linters (clippy, fmt, documentation)
         run: nix build .#lint 

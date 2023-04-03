@@ -132,7 +132,7 @@ pub fn run() -> sc_cli::Result<()> {
 				#[cfg(feature = "testnet")]
 				{
 					use fc_db::DatabaseSource;
-					use service::contract::db_config_dir;
+					use service::testnet::db_config_dir;
 					// Remove Frontier offchain db
 					let db_config_dir = db_config_dir(&config);
 					let frontier_database_config = match config.database {

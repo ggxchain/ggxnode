@@ -14,7 +14,7 @@ pub struct FullDeps<C, P, #[cfg(feature = "testnet")] A: sc_transaction_pool::Ch
 	pub deny_unsafe: DenyUnsafe,
 
 	#[cfg(feature = "testnet")]
-	pub testnet: crate::service::contract::TestNetParams<A>,
+	pub testnet: crate::service::testnet::TestNetParams<A>,
 	/// Manual seal command sink
 	#[cfg(feature = "manual-seal")]
 	pub command_sink:

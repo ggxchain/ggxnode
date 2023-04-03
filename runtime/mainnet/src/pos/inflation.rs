@@ -76,7 +76,7 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 	// Milliseconds per year for the Julian year (365.25 days).
 	const MILLISECONDS_PER_YEAR: u64 = 1000 * 3600 * 24 * 36525 / 100;
 	let percent_per_era =
-		Perbill::from_rational(era_duration_millis as u64, MILLISECONDS_PER_YEAR) * year_inflation;
+		Perbill::from_rational(era_duration_millis, MILLISECONDS_PER_YEAR) * year_inflation;
 
 	let total_inflation = percent_per_era * total_issuance;
 	let validator_reward = percent_per_era * total_staked;

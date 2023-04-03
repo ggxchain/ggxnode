@@ -1,12 +1,12 @@
 #[cfg(feature = "testnet")]
-pub mod contract;
+pub mod testnet;
 #[cfg(feature = "testnet")]
-use contract as service;
+use testnet as service;
 
 #[cfg(feature = "mainnet")]
-pub mod contractless;
+pub mod mainnet;
 #[cfg(feature = "mainnet")]
-use contractless as service;
+use mainnet as service;
 
 pub use service::{create_full_rpc, new_full, new_partial};
 
