@@ -12,7 +12,8 @@ use pallet_evm_precompile_sr25519::Sr25519Precompile;
 use pallet_evm_precompile_substrate_ecdsa::SubstrateEcdsaPrecompile;
 use pallet_evm_precompile_xvm::XvmPrecompile;
 
-pub struct FrontierPrecompiles<R>(PhantomData<R>);
+#[derive(Default)]
+pub struct GoldenGatePrecompiles<R>(PhantomData<R>);
 
 pub mod consts {
 	use sp_core::H160;
@@ -84,7 +85,7 @@ pub mod consts {
 	}
 }
 
-impl<R> FrontierPrecompiles<R> {
+impl<R> GoldenGatePrecompiles<R> {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
@@ -115,7 +116,7 @@ impl<R> FrontierPrecompiles<R> {
 	}
 }
 
-impl<R> PrecompileSet for FrontierPrecompiles<R>
+impl<R> PrecompileSet for GoldenGatePrecompiles<R>
 where
 	XvmPrecompile<R>: Precompile,
 	R: pallet_evm::Config + pallet_xvm::Config,

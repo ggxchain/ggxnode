@@ -73,23 +73,29 @@
 
         common-attrs = rust-env // {
           buildInputs = with pkgs; [ openssl zstd ];
-          nativeBuildInputs = with pkgs;
-            rust-native-build-inputs ++ [ openssl ] ++ darwin;
+          nativeBuildInputs = with pkgs; rust-native-build-inputs ++ [ openssl ] ++ darwin;
           doCheck = false;
           cargoCheckCommand = "true";
           src = rust-src;
+          pname = "...";
+          version = "...";
         };
 
-
-        common-wasm-attrs = common-attrs // rec {
-          # really would could read it from Cargo.toml and reuse in here and in CI publish script as refactoring
-          pname = "golden-gate-runtime";
-          cargoExtraArgs = "--package ${pname} --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
+        common-wasm-deps-attrs = common-attrs // {
+          cargoExtraArgs =
+            "--package 'golden-gate-runtime-*' --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
           RUSTFLAGS =
             "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
-          version = "0.1.0";
         };
 
+        common-wasm-attrs = common-wasm-deps-attrs // {
+          installPhase = ''
+            runHook preInstall
+            mkdir --parents $out/lib
+            cp ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime-*/golden_gate_runtime_*.compact.compressed.wasm $out/lib
+            runHook postInstall
+          '';
+        };
 
         common-native-release-attrs = common-attrs // rec {
           cargoExtraArgs = "--package ${pname}";
@@ -97,12 +103,10 @@
           version = "0.1.0";
         };
 
-        # calls `cargo vendor` on package deps 
-        common-wasm-deps =
-          craneLib.buildDepsOnly (common-wasm-attrs // { });
         common-native-release-deps =
           craneLib.buildDepsOnly (common-native-release-attrs // { });
-
+        common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
+        
 
         # rust used by ci and developers
         rust-toolchain =
@@ -130,21 +134,32 @@
             [ ./.gitignore ] ./.;
         };
 
-        golden-gate-runtime = craneLib.buildPackage (common-wasm-attrs // {
-          installPhase = ''
-            mkdir --parents $out/lib
-            cp ./target/wasm32-unknown-unknown/release/wbuild/${common-wasm-attrs.pname}/golden_gate_runtime.compact.compressed.wasm $out/lib
-          '';
-          src = rust-src;
-          cargoArtifacts = common-wasm-deps;
+        golden-gate-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
+          pname = "golden-gate-runtimes";
+          cargoArtifacts = common-wasm-release-deps;
         });
 
         golden-gate-node = craneLib.buildPackage (common-native-release-attrs // {
-          src = rust-src;
           cargoArtifacts = common-native-release-deps;
           nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs 
         });
 
+        fmt = craneLib.cargoFmt (common-attrs // {
+          cargoExtraArgs = "--all";
+          rustFmtExtraArgs = "--color always";
+        });
+
+        cargoClippyExtraArgs = "-- -D warnings";
+
+        clippy-node = craneLib.cargoClippy (common-native-release-attrs // {
+          inherit cargoClippyExtraArgs;
+          cargoArtifacts = golden-gate-node.cargoArtifacts;
+        });
+
+        clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
+          inherit cargoClippyExtraArgs;
+          cargoArtifacts = golden-gate-runtimes.cargoArtifacts;
+        });
 
         # really need to run as some points:
         # - light client emulator (ideal for contracts)
@@ -178,8 +193,8 @@
           '';
         };
 
-        lint = pkgs.writeShellApplication rec {
-          name = "lint";
+        doclint = pkgs.writeShellApplication rec {
+          name = "doclint";
           text = ''
             ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target"
           '';
@@ -233,11 +248,18 @@
         };
       in
       rec {
-        packages = flake-utils.lib.flattenTree {
-          inherit golden-gate-runtime golden-gate-node single-fast multi-fast tf-config tf-apply lint;
+        packages = flake-utils.lib.flattenTree rec {
+          inherit golden-gate-runtimes golden-gate-node single-fast multi-fast tf-config tf-apply doclint fmt clippy-node clippy-wasm;
           node = golden-gate-node;
-          runtime = golden-gate-runtime;
-          default = golden-gate-runtime;
+          lint = pkgs.symlinkJoin { 
+            name = "linting";
+            paths = [ doclint fmt clippy-node clippy-wasm ];
+          };
+          release = pkgs.symlinkJoin { 
+            name = "release";
+            paths = [ node golden-gate-runtimes ];
+          };
+          default = release;
           # we should prune 3 things:
           # - running process
           # - logs/storages of run proccess

@@ -18,14 +18,16 @@
 use clap::Parser;
 // Substrate
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use sc_service::{DatabaseSource, PartialComponents};
+use sc_service::PartialComponents;
 // Frontier
+#[cfg(feature = "testnet")]
 use fc_db::frontier_database_dir;
 
 use crate::{
 	chain_spec,
 	cli::{Cli, Subcommand},
-	service::{self, db_config_dir},
+	runtime,
+	service::{self},
 };
 
 impl SubstrateCli for Cli {
@@ -64,7 +66,7 @@ impl SubstrateCli for Cli {
 	}
 
 	fn native_runtime_version(_: &Box<dyn ChainSpec>) -> &'static RuntimeVersion {
-		&golden_gate_runtime::VERSION
+		&runtime::VERSION
 	}
 }
 
@@ -127,21 +129,28 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				// Remove Frontier offchain db
-				let db_config_dir = db_config_dir(&config);
-				let frontier_database_config = match config.database {
-					DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-						path: frontier_database_dir(&db_config_dir, "db"),
-						cache_size: 0,
-					},
-					DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-						path: frontier_database_dir(&db_config_dir, "paritydb"),
-					},
-					_ => {
-						return Err(format!("Cannot purge `{:?}` database", config.database).into())
-					}
-				};
-				cmd.run(frontier_database_config)?;
+				#[cfg(feature = "testnet")]
+				{
+					use fc_db::DatabaseSource;
+					use service::testnet::db_config_dir;
+					// Remove Frontier offchain db
+					let db_config_dir = db_config_dir(&config);
+					let frontier_database_config = match config.database {
+						DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+							path: frontier_database_dir(&db_config_dir, "db"),
+							cache_size: 0,
+						},
+						DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+							path: frontier_database_dir(&db_config_dir, "paritydb"),
+						},
+						_ => {
+							return Err(
+								format!("Cannot purge `{:?}` database", config.database).into()
+							)
+						}
+					};
+					cmd.run(frontier_database_config)?;
+				}
 				cmd.run(config.database)
 			})
 		}
@@ -224,12 +233,13 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark) => Err("Benchmarking wasn't enabled when building the node. \
 			You can enable it with `--features runtime-benchmarks`."
 			.into()),
+		#[cfg(feature = "testnet")]
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } = service::new_partial(&config, &cli)?;
 				let frontier_backend = other.2;
-				cmd.run::<_, golden_gate_runtime::opaque::Block>(client, frontier_backend)
+				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
 			})
 		}
 		None => {
