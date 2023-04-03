@@ -92,7 +92,7 @@
           installPhase = ''
             runHook preInstall
             mkdir --parents $out/lib
-            cp ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime-*/*.compact.compressed.wasm $out/lib
+            cp ./target/wasm32-unknown-unknown/release/wbuild/golden-gate-runtime-*/golden_gate_runtime_*.compact.compressed.wasm $out/lib
             runHook postInstall
           '';
         };
