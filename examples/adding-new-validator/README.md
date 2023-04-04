@@ -42,26 +42,29 @@ As you can see, Alice and Bob are producing blocks, and I have connected to the 
   ![The image shows that validator are running](images/initial.png)
 * We have to allowlist Charlie initially. How to allowlist the validator user see in the [guide](../adding-user-to-allowlist/README.md)
 * Go to Develop/RPC tab in the block explorer.
-* Submit RPC to the author.rotateKeys()
+* Submit RPC to the `author.rotateKeys()`
 
   ![The image shows example output of the rotate_keys](images/rotate_keys.png)
 * Copy the received key
   * In our example is: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e3104384453ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df9094835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
 * We have received three keys. (can be more later one). Each key is 32 bytes (64 symbols omitting initial 0x).
-You have to split them into three separate parts as below
-  * Aura: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e31043844`
-  * Grandpa: `0x53ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df909`
-  * I'm online: `0x4835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
-* Go to the Developer/Extrinsics and submit the session.setKeys transaction
+
+You have to split them into three separate parts as below (Runtime Calls -> sessionKeys -> decodeSessionKey):
+
+* Aura: `0xdc97a6016d31900481e291be8d7d6149156109ee9132d3eb8965140e31043844`
+* Grandpa: `0x53ec873dc7f96e4e3119931120668939f36dc643a33b3ee3f12d75cf406df909`
+* I'm online: `0x4835ea42bfcfc8468ba7777d5701d28992c7f79032d81c88fededacf3dea357e`
+* Go to the Developer/Extrinsics and submit the `session.setKeys` transaction
 
   ![The image shows how to set_keys with given data](images/set_keys.png)
   * Fill the data with your keys
   * proof: `0x`
 
 * Submit the transaction and sign it.
-* Go to the Developer/Sudo tab and choose validatorManager.registerValidator transaction
+* Go to the Developer/Sudo tab and choose `validatorManager.registerValidator` transaction
 
-  ![The image shows example how to register validator](images/adding_validator.png)
+![The image shows example how to register validator](images/adding_validator.png)
+
 * Submit sudo and sign the transaction.
 * The validator is supposed to become active in two sessions. Verify that it is working.
 

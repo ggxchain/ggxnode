@@ -1,0 +1,536 @@
+{
+  "data": {
+    "aws_iam_policy_document": {
+      "machine": {
+        "statement": {
+          "actions": [
+            "s3:ListAllMyBuckets",
+            "s3:GetBucketLocation",
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:GetBucketLocation"
+          ],
+          "resources": [
+            "arn:aws:s3:::*"
+          ],
+          "sid": "1"
+        }
+      }
+    },
+    "local_sensitive_file": {
+      "node-a-key-ed": {
+        "filename": "${path.module}/../../.secret/node-a.ed25519.json"
+      },
+      "node-a-key-sr": {
+        "filename": "${path.module}/../../.secret/node-a.sr25519.json"
+      },
+      "node-b-key-ed": {
+        "filename": "${path.module}/../../.secret/node-b.ed25519.json"
+      },
+      "node-b-key-sr": {
+        "filename": "${path.module}/../../.secret/node-b.sr25519.json"
+      },
+      "node-c-key-ed": {
+        "filename": "${path.module}/../../.secret/node-c.ed25519.json"
+      },
+      "node-c-key-sr": {
+        "filename": "${path.module}/../../.secret/node-c.sr25519.json"
+      },
+      "node-d-key-ed": {
+        "filename": "${path.module}/../../.secret/node-d.ed25519.json"
+      },
+      "node-d-key-sr": {
+        "filename": "${path.module}/../../.secret/node-d.sr25519.json"
+      }
+    }
+  },
+  "output": {
+    "node_public_dns_a": {
+      "value": "${resource.aws_instance.node-a.public_dns}"
+    },
+    "node_public_dns_b": {
+      "value": "${resource.aws_instance.node-b.public_dns}"
+    },
+    "node_public_dns_c": {
+      "value": "${resource.aws_instance.node-c.public_dns}"
+    },
+    "node_public_dns_d": {
+      "value": "${resource.aws_instance.node-d.public_dns}"
+    },
+    "node_public_ip_a": {
+      "value": "${resource.aws_instance.node-a.public_ip}"
+    },
+    "node_public_ip_b": {
+      "value": "${resource.aws_instance.node-b.public_ip}"
+    },
+    "node_public_ip_c": {
+      "value": "${resource.aws_instance.node-c.public_ip}"
+    },
+    "node_public_ip_d": {
+      "value": "${resource.aws_instance.node-d.public_ip}"
+    },
+    "ssh_a": {
+      "value": "ssh -i ./terraform/testnet/id_rsa.pem root@${resource.aws_instance.node-a.public_dns}"
+    },
+    "ssh_b": {
+      "value": "ssh -i ./terraform/testnet/id_rsa.pem root@${resource.aws_instance.node-b.public_dns}"
+    },
+    "ssh_c": {
+      "value": "ssh -i ./terraform/testnet/id_rsa.pem root@${resource.aws_instance.node-c.public_dns}"
+    },
+    "ssh_d": {
+      "value": "ssh -i ./terraform/testnet/id_rsa.pem root@${resource.aws_instance.node-d.public_dns}"
+    }
+  },
+  "provider": {
+    "acme": {
+      "server_url": "https://acme-staging-v02.api.letsencrypt.org/directory"
+    },
+    "aws": {
+      "region": "${var.AWS_REGION}"
+    },
+    "uptime": {}
+  },
+  "resource": {
+    "acme_certificate": {
+      "certificate": {
+        "account_key_pem": "${acme_registration.reg.account_key_pem}",
+        "common_name": "${aws_route53_zone.primary.name}",
+        "dns_challenge": {
+          "config": {
+            "AWS_DEFAULT_REGION": "${var.AWS_REGION}",
+            "AWS_HOSTED_ZONE_ID": "${aws_route53_zone.primary.zone_id}",
+            "AWS_MAX_RETRIES": 100,
+            "AWS_POLLING_INTERVAL": 60,
+            "AWS_PROPAGATION_TIMEOUT": 900
+          },
+          "provider": "route53"
+        },
+        "subject_alternative_names": [
+          "*.${aws_route53_zone.primary.name}"
+        ]
+      }
+    },
+    "acme_registration": {
+      "reg": {
+        "account_key_pem": "${tls_private_key.machine.private_key_pem}",
+        "email_address": "${aws_route53domains_registered_domain.nodes.admin_contact[0].email}"
+      }
+    },
+    "aws_iam_role": {
+      "machine": {
+        "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"ec2.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}\n",
+        "name": "machine-${var.VALIDATOR_NAME}"
+      },
+      "vmimport": {
+        "assume_role_policy": "        {\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Effect\": \"Allow\",\n            \"Principal\": { \"Service\": \"vmie.amazonaws.com\" },\n            \"Action\": \"sts:AssumeRole\",\n            \"Condition\": {\n                \"StringEquals\":{\n                    \"sts:Externalid\": \"vmimport\"\n                }\n            }\n        }\n    ]\n}\n",
+        "name": "vmimport-${var.VALIDATOR_NAME}"
+      }
+    },
+    "aws_iam_role_policy": {
+      "machine": {
+        "name": "${var.VALIDATOR_NAME}",
+        "policy": "${data.aws_iam_policy_document.machine.json}",
+        "role": "${aws_iam_role.machine.name}"
+      }
+    },
+    "aws_instance": {
+      "node-a": {
+        "ami": "ami-05173ee0952a97126",
+        "associate_public_ip_address": true,
+        "instance_type": "t2.medium",
+        "key_name": "${aws_key_pair.machine.key_name}",
+        "provisioner": {
+          "file": [
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "ed25519.json",
+              "source": "${path.module}/../../.secret/node-a.ed25519.json"
+            },
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "sr25519.json",
+              "source": "${path.module}/../../.secret/node-a.sr25519.json"
+            }
+          ]
+        },
+        "root_block_device": {
+          "volume_size": 84
+        },
+        "security_groups": [
+          "${aws_security_group.machine.name}"
+        ],
+        "tags": {
+          "tool": "terranix"
+        }
+      },
+      "node-b": {
+        "ami": "ami-05173ee0952a97126",
+        "associate_public_ip_address": true,
+        "instance_type": "t2.medium",
+        "key_name": "${aws_key_pair.machine.key_name}",
+        "provisioner": {
+          "file": [
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "ed25519.json",
+              "source": "${path.module}/../../.secret/node-b.ed25519.json"
+            },
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "sr25519.json",
+              "source": "${path.module}/../../.secret/node-b.sr25519.json"
+            }
+          ]
+        },
+        "root_block_device": {
+          "volume_size": 84
+        },
+        "security_groups": [
+          "${aws_security_group.machine.name}"
+        ],
+        "tags": {
+          "tool": "terranix"
+        }
+      },
+      "node-c": {
+        "ami": "ami-05173ee0952a97126",
+        "associate_public_ip_address": true,
+        "instance_type": "t2.medium",
+        "key_name": "${aws_key_pair.machine.key_name}",
+        "provisioner": {
+          "file": [
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "ed25519.json",
+              "source": "${path.module}/../../.secret/node-c.ed25519.json"
+            },
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "sr25519.json",
+              "source": "${path.module}/../../.secret/node-c.sr25519.json"
+            }
+          ]
+        },
+        "root_block_device": {
+          "volume_size": 84
+        },
+        "security_groups": [
+          "${aws_security_group.machine.name}"
+        ],
+        "tags": {
+          "tool": "terranix"
+        }
+      },
+      "node-d": {
+        "ami": "ami-05173ee0952a97126",
+        "associate_public_ip_address": true,
+        "instance_type": "t2.medium",
+        "key_name": "${aws_key_pair.machine.key_name}",
+        "provisioner": {
+          "file": [
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "ed25519.json",
+              "source": "${path.module}/../../.secret/node-d.ed25519.json"
+            },
+            {
+              "connection": {
+                "host": "${self.public_ip}",
+                "private_key": "${local_sensitive_file.machine_ssh_key.content}",
+                "type": "ssh",
+                "user": "root"
+              },
+              "destination": "sr25519.json",
+              "source": "${path.module}/../../.secret/node-d.sr25519.json"
+            }
+          ]
+        },
+        "root_block_device": {
+          "volume_size": 84
+        },
+        "security_groups": [
+          "${aws_security_group.machine.name}"
+        ],
+        "tags": {
+          "tool": "terranix"
+        }
+      }
+    },
+    "aws_key_pair": {
+      "machine": {
+        "key_name": "centralization-risk-${var.VALIDATOR_NAME}",
+        "public_key": "${tls_private_key.machine.public_key_openssh}"
+      }
+    },
+    "aws_route53_health_check": {
+      "node-a": {
+        "failure_threshold": "5",
+        "fqdn": "${aws_route53_record.node-a.name}",
+        "port": 443,
+        "request_interval": "30",
+        "resource_path": "/",
+        "tags": {
+          "tool": "terranix"
+        },
+        "type": "HTTPS"
+      },
+      "node-b": {
+        "failure_threshold": "5",
+        "fqdn": "${aws_route53_record.node-b.name}",
+        "port": 443,
+        "request_interval": "30",
+        "resource_path": "/",
+        "tags": {
+          "tool": "terranix"
+        },
+        "type": "HTTPS"
+      },
+      "node-c": {
+        "failure_threshold": "5",
+        "fqdn": "${aws_route53_record.node-c.name}",
+        "port": 443,
+        "request_interval": "30",
+        "resource_path": "/",
+        "tags": {
+          "tool": "terranix"
+        },
+        "type": "HTTPS"
+      },
+      "node-d": {
+        "failure_threshold": "5",
+        "fqdn": "${aws_route53_record.node-d.name}",
+        "port": 443,
+        "request_interval": "30",
+        "resource_path": "/",
+        "tags": {
+          "tool": "terranix"
+        },
+        "type": "HTTPS"
+      }
+    },
+    "aws_route53_record": {
+      "node-a": {
+        "name": "node-a.${var.DOMAIN_NAME}",
+        "records": [
+          "${aws_instance.node-a.public_ip}"
+        ],
+        "ttl": 300,
+        "type": "A",
+        "zone_id": "${aws_route53_zone.primary.zone_id}"
+      },
+      "node-b": {
+        "name": "node-b.${var.DOMAIN_NAME}",
+        "records": [
+          "${aws_instance.node-b.public_ip}"
+        ],
+        "ttl": 300,
+        "type": "A",
+        "zone_id": "${aws_route53_zone.primary.zone_id}"
+      },
+      "node-c": {
+        "name": "node-c.${var.DOMAIN_NAME}",
+        "records": [
+          "${aws_instance.node-c.public_ip}"
+        ],
+        "ttl": 300,
+        "type": "A",
+        "zone_id": "${aws_route53_zone.primary.zone_id}"
+      },
+      "node-d": {
+        "name": "node-d.${var.DOMAIN_NAME}",
+        "records": [
+          "${aws_instance.node-d.public_ip}"
+        ],
+        "ttl": 300,
+        "type": "A",
+        "zone_id": "${aws_route53_zone.primary.zone_id}"
+      }
+    },
+    "aws_route53_zone": {
+      "primary": {
+        "name": "${var.DOMAIN_NAME}"
+      }
+    },
+    "aws_route53domains_registered_domain": {
+      "nodes": {
+        "admin_privacy": false,
+        "domain_name": "${var.DOMAIN_NAME}",
+        "name_server": [
+          {
+            "name": "${aws_route53_zone.primary.name_servers[0]}"
+          },
+          {
+            "name": "${aws_route53_zone.primary.name_servers[1]}"
+          },
+          {
+            "name": "${aws_route53_zone.primary.name_servers[2]}"
+          },
+          {
+            "name": "${aws_route53_zone.primary.name_servers[3]}"
+          }
+        ],
+        "registrant_privacy": false,
+        "tags": {
+          "tool": "terranix"
+        },
+        "tech_privacy": false
+      }
+    },
+    "aws_security_group": {
+      "machine": {
+        "name": "${var.VALIDATOR_NAME}"
+      }
+    },
+    "aws_security_group_rule": {
+      "machine_egress_all": {
+        "cidr_blocks": [
+          "0.0.0.0/0"
+        ],
+        "description": "Allow to connect to the whole Internet",
+        "from_port": 0,
+        "protocol": "-1",
+        "security_group_id": "${aws_security_group.machine.id}",
+        "to_port": 0,
+        "type": "egress"
+      },
+      "machine_ingress_ssh": {
+        "cidr_blocks": [
+          "0.0.0.0/0"
+        ],
+        "description": "non secure access via all ports",
+        "from_port": 0,
+        "protocol": "all",
+        "security_group_id": "${aws_security_group.machine.id}",
+        "to_port": 65535,
+        "type": "ingress"
+      }
+    },
+    "local_sensitive_file": {
+      "machine_ssh_key": {
+        "content": "${tls_private_key.machine.private_key_pem}",
+        "file_permission": "0600",
+        "filename": "id_rsa.pem"
+      }
+    },
+    "tls_private_key": {
+      "machine": {
+        "algorithm": "RSA"
+      }
+    },
+    "uptime_check_http": {
+      "node-a": {
+        "address": "node-a.${var.DOMAIN_NAME}",
+        "contact_groups": [
+          "Default"
+        ],
+        "interval": 1,
+        "locations": [
+          "US East",
+          "United Kingdom"
+        ],
+        "name": "Node"
+      },
+      "node-b": {
+        "address": "node-b.${var.DOMAIN_NAME}",
+        "contact_groups": [
+          "Default"
+        ],
+        "interval": 1,
+        "locations": [
+          "US East",
+          "United Kingdom"
+        ],
+        "name": "Node"
+      },
+      "node-c": {
+        "address": "node-c.${var.DOMAIN_NAME}",
+        "contact_groups": [
+          "Default"
+        ],
+        "interval": 1,
+        "locations": [
+          "US East",
+          "United Kingdom"
+        ],
+        "name": "Node"
+      },
+      "node-d": {
+        "address": "node-d.${var.DOMAIN_NAME}",
+        "contact_groups": [
+          "Default"
+        ],
+        "interval": 1,
+        "locations": [
+          "US East",
+          "United Kingdom"
+        ],
+        "name": "Node"
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "terraform-testnet.tfstate"
+      }
+    },
+    "required_providers": {
+      "acme": {
+        "source": "vancluever/acme",
+        "version": "2.13.1"
+      },
+      "uptime": {
+        "source": "onesdata/uptime",
+        "version": "1.0.1"
+      }
+    }
+  },
+  "variable": {
+    "AWS_REGION": {
+      "type": "string"
+    },
+    "DOMAIN_NAME": {
+      "type": "string"
+    },
+    "VALIDATOR_NAME": {
+      "description": "should be more than 3 but less then 12 symbols, only lower case letters",
+      "type": "string"
+    }
+  }
+}

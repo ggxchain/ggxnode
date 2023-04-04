@@ -1,6 +1,6 @@
 [package]
 name = "golden-gate-node"
-version = "0.0.0"
+version = "0.0.1"
 license = "Unlicense"
 build = "build.rs"
 description = "A fresh FRAME-based Substrate node, ready for hacking."
