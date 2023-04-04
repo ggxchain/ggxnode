@@ -155,6 +155,21 @@
     },
     "flake-utils_4": {
       "locked": {
+        "lastModified": 1678901627,
+        "narHash": "sha256-U02riOqrKKzwjsxc/400XnElV+UtPUQWpANPlyazjH0=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "93a2b84fc4b70d9e089d029deacc3583435c2ed6",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_5": {
+      "locked": {
         "lastModified": 1634851050,
         "narHash": "sha256-N83GlSGPJJdcqhUxSCS/WwW5pksYf3VP1M13cDRTSVA=",
         "owner": "numtide",
@@ -230,6 +245,42 @@
         "type": "github"
       }
     },
+    "nixlib": {
+      "locked": {
+        "lastModified": 1679187309,
+        "narHash": "sha256-H8udmkg5wppL11d/05MMzOMryiYvc403axjDNZy1/TQ=",
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "rev": "44214417fe4595438b31bdb9469be92536a61455",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs.lib",
+        "type": "github"
+      }
+    },
+    "nixos-generators": {
+      "inputs": {
+        "nixlib": "nixlib",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1679464055,
+        "narHash": "sha256-RiZpwkbm1GeKRqrTtGGsEDieJyplMSRG1bQzOZgY378=",
+        "owner": "nix-community",
+        "repo": "nixos-generators",
+        "rev": "d5cd198c80ee62a801a078ad991c99c0175971cf",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixos-generators",
+        "type": "github"
+      }
+    },
     "nixpkgs": {
       "locked": {
         "lastModified": 1677534593,
@@ -275,6 +326,26 @@
         "owner": "NixOS",
         "ref": "nixos-22.11",
         "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs-terraform-providers-bin": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1679532506,
+        "narHash": "sha256-ZyWIpRVdlzash46WWQUb2fqFuFWQAvjAhGbpF9qU06U=",
+        "owner": "nix-community",
+        "repo": "nixpkgs-terraform-providers-bin",
+        "rev": "dc01babcab88fa95ac00cd4796909545edf0f66f",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-community",
+        "repo": "nixpkgs-terraform-providers-bin",
         "type": "github"
       }
     },
@@ -327,8 +398,11 @@
         "crane": "crane",
         "devenv": "devenv",
         "flake-utils": "flake-utils_3",
+        "nixos-generators": "nixos-generators",
         "nixpkgs": "nixpkgs_2",
+        "nixpkgs-terraform-providers-bin": "nixpkgs-terraform-providers-bin",
         "rust-overlay": "rust-overlay_2",
+        "substrate": "substrate",
         "terranix": "terranix"
       }
     },
@@ -380,11 +454,59 @@
         "type": "github"
       }
     },
+    "rust-overlay_3": {
+      "inputs": {
+        "flake-utils": [
+          "substrate",
+          "flake-utils"
+        ],
+        "nixpkgs": [
+          "substrate",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1679710743,
+        "narHash": "sha256-zB6vEMoOmXZyqD/yNu1DYqtYvQaPERjWEnmhK8ovlWk=",
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "rev": "8ba8bdaee0dfb4b7ad8b1f398e4f24d4dee89760",
+        "type": "github"
+      },
+      "original": {
+        "owner": "oxalica",
+        "repo": "rust-overlay",
+        "type": "github"
+      }
+    },
+    "substrate": {
+      "inputs": {
+        "flake-utils": "flake-utils_4",
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "rust-overlay": "rust-overlay_3"
+      },
+      "locked": {
+        "lastModified": 1679773020,
+        "narHash": "sha256-/Nc2c4eTNIpFwi+Q8YyaGDXz0fdjRZDUamCuavjT6hk=",
+        "owner": "dzmitry-lahoda-forks",
+        "repo": "substrate",
+        "rev": "8e8e54d99f5f86da1ff984646dc6cba3597a42f8",
+        "type": "github"
+      },
+      "original": {
+        "owner": "dzmitry-lahoda-forks",
+        "repo": "substrate",
+        "rev": "8e8e54d99f5f86da1ff984646dc6cba3597a42f8",
+        "type": "github"
+      }
+    },
     "terranix": {
       "inputs": {
         "bats-assert": "bats-assert",
         "bats-support": "bats-support",
-        "flake-utils": "flake-utils_4",
+        "flake-utils": "flake-utils_5",
         "nixpkgs": [
           "nixpkgs"
         ],

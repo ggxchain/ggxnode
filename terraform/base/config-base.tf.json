@@ -1,0 +1,128 @@
+{
+  "data": {
+    "aws_iam_policy_document": {
+      "machine": {
+        "statement": {
+          "actions": [
+            "s3:ListAllMyBuckets",
+            "s3:GetBucketLocation",
+            "s3:ListBucket",
+            "s3:GetObject",
+            "s3:GetBucketLocation"
+          ],
+          "resources": [
+            "arn:aws:s3:::*"
+          ],
+          "sid": "1"
+        }
+      }
+    }
+  },
+  "output": {
+    "ami-a": {
+      "value": "${resource.aws_ami.node-image-base.id}"
+    }
+  },
+  "provider": {
+    "aws": {
+      "region": "${var.AWS_REGION}"
+    }
+  },
+  "resource": {
+    "aws_ami": {
+      "node-image-base": {
+        "architecture": "x86_64",
+        "ebs_block_device": {
+          "delete_on_termination": true,
+          "device_name": "/dev/xvda",
+          "snapshot_id": "${aws_ebs_snapshot_import.nixos-a.id}",
+          "volume_size": 82,
+          "volume_type": "gp3"
+        },
+        "ena_support": true,
+        "name": "node-image-base-${var.VALIDATOR_NAME}",
+        "root_device_name": "/dev/xvda",
+        "sriov_net_support": "simple",
+        "virtualization_type": "hvm"
+      }
+    },
+    "aws_ebs_snapshot_import": {
+      "nixos-a": {
+        "disk_container": {
+          "format": "VHD",
+          "user_bucket": {
+            "s3_bucket": "${aws_s3_bucket.deploy.bucket}",
+            "s3_key": "${aws_s3_object.nixos-a.key}"
+          }
+        },
+        "role_name": "${aws_iam_role.vmimport.name}"
+      }
+    },
+    "aws_iam_role": {
+      "machine": {
+        "assume_role_policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Action\": \"sts:AssumeRole\",\n      \"Principal\": {\n        \"Service\": \"ec2.amazonaws.com\"\n      },\n      \"Effect\": \"Allow\",\n      \"Sid\": \"\"\n    }\n  ]\n}\n",
+        "name": "${var.VALIDATOR_NAME}"
+      },
+      "vmimport": {
+        "assume_role_policy": "        {\n    \"Version\": \"2012-10-17\",\n    \"Statement\": [\n        {\n            \"Effect\": \"Allow\",\n            \"Principal\": { \"Service\": \"vmie.amazonaws.com\" },\n            \"Action\": \"sts:AssumeRole\",\n            \"Condition\": {\n                \"StringEquals\":{\n                    \"sts:Externalid\": \"vmimport\"\n                }\n            }\n        }\n    ]\n}\n",
+        "name": "vmimport${var.VALIDATOR_NAME}",
+        "tags": {
+          "tool": "terranix"
+        }
+      }
+    },
+    "aws_iam_role_policy": {
+      "machine": {
+        "name": "${var.VALIDATOR_NAME}",
+        "policy": "${data.aws_iam_policy_document.machine.json}",
+        "role": "${aws_iam_role.machine.name}"
+      },
+      "vmimport_policy": {
+        "name": "vmimport${var.VALIDATOR_NAME}",
+        "policy": "{\n  \"Version\": \"2012-10-17\",\n  \"Statement\": [\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:ListBucket\",\n        \"s3:GetObject\",\n        \"s3:GetBucketLocation\"\n      ],\n      \"Resource\": [\n        \"${aws_s3_bucket.deploy.arn}\",\n        \"${aws_s3_bucket.deploy.arn}/*\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"s3:GetBucketLocation\",\n        \"s3:GetObject\",\n        \"s3:ListBucket\",\n        \"s3:PutObject\",\n        \"s3:GetBucketAcl\"\n      ],\n      \"Resource\": [\n        \"${aws_s3_bucket.deploy.arn}\",\n        \"${aws_s3_bucket.deploy.arn}/*\"\n      ]\n    },\n    {\n      \"Effect\": \"Allow\",\n      \"Action\": [\n        \"ec2:ModifySnapshotAttribute\",\n        \"ec2:CopySnapshot\",\n        \"ec2:RegisterImage\",\n        \"ec2:Describe*\"\n      ],\n      \"Resource\": \"*\"\n    }\n  ]\n    }\n",
+        "role": "${aws_iam_role.vmimport.id}"
+      }
+    },
+    "aws_s3_bucket": {
+      "deploy": {
+        "bucket": "deploy-instance-storage-${var.VALIDATOR_NAME}",
+        "tags": {
+          "tool": "terranix"
+        }
+      }
+    },
+    "aws_s3_object": {
+      "nixos-a": {
+        "bucket": "${aws_s3_bucket.deploy.bucket}",
+        "key": "nixos-amazon-${var.VALIDATOR_NAME}.vhd",
+        "lifecycle": {
+          "ignore_changes": [
+            "key",
+            "etag"
+          ]
+        },
+        "source": "${var.NODE_IMAGE}",
+        "source_hash": "${filemd5(var.NODE_IMAGE)}"
+      }
+    }
+  },
+  "terraform": {
+    "backend": {
+      "local": {
+        "path": "terraform-base.tfstate"
+      }
+    }
+  },
+  "variable": {
+    "AWS_REGION": {
+      "type": "string"
+    },
+    "NODE_IMAGE": {
+      "type": "string"
+    },
+    "VALIDATOR_NAME": {
+      "description": "should be more than 3 but less then 12 symbols, only lower case letters",
+      "type": "string"
+    }
+  }
+}
