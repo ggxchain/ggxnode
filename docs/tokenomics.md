@@ -40,7 +40,7 @@ Currently, it doesn't handle leap years and runs every ~365 days.  (configured b
 
 ## Staking
 
-Each new validators when enters `PoS` with `100 thousands` staked for `1 year`.
+Each new validators when enters `PoS` with `200 thousands` staked for `1 year`.
 
 Staking rewards are distributed each session.
 

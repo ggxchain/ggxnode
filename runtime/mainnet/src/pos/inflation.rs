@@ -6,6 +6,7 @@ pub use pallet::*;
 parameter_types! {
 	pub(crate) const DefaultInflation: Perbill = Perbill::from_percent(16);
 	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_parts(67000000); // 6.7% per year
+	pub(crate) storage DefaultInflationDecayPeriod: crate::BlockNumber = 365 * crate::Days::get();
 }
 
 #[frame_support::pallet]
@@ -64,12 +65,13 @@ pub mod pallet {
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
 		fn build(&self) {
 			use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::OriginTrait;
+
 			let call =
 				<T as pallet::Config>::RuntimeCall::from(pallet::Call::inflation_decay {}).into();
 			pallet_scheduler::Pallet::<T>::schedule(
 				<T as frame_system::Config>::RuntimeOrigin::root(),
-				(crate::Days::get() * 365).into(), // todo: Leap year
-				Some(((crate::Days::get() * 365u32).into(), 30)),
+				DefaultInflationDecayPeriod::get().into(), // todo: Leap year
+				Some((DefaultInflationDecayPeriod::get().into(), 30)), // Once in 365 days for 30 years
 				0,
 				sp_std::boxed::Box::new(call),
 			)
@@ -108,12 +110,12 @@ pub mod pallet {
 			let last_decay = LastInflationDecay::<T>::get();
 
 			ensure!(
-				now >= last_decay + (365 * crate::Days::get()).into(),
+				now >= last_decay + DefaultInflationDecayPeriod::get().into(),
 				Error::<T>::InflationdecayCalledTooEarly
 			);
 			let decay = InflationDecay::<T>::get();
 			let inflation = InflationPercent::<T>::get();
-			let new_inflation = inflation * decay;
+			let new_inflation = inflation - (inflation * decay);
 
 			InflationPercent::<T>::put(new_inflation);
 			LastInflationDecay::<T>::put(now);
