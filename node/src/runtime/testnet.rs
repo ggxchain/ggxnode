@@ -33,7 +33,7 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 ) -> GenesisConfig {
-	const ENDOWMENT: Balance = 10_000_000 * GGX;
+	const ENDOWMENT: Balance = 10_000 * GGX;
 
 	GenesisConfig {
 		// System

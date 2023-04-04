@@ -1,4 +1,4 @@
-use sc_service::ChainType;
+use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
 
 use crate::runtime::{
@@ -7,6 +7,13 @@ use crate::runtime::{
 };
 
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
+
+fn properties() -> Option<Properties> {
+	let mut properties = Properties::new();
+	properties.insert("tokenSymbol".into(), "GGX".into());
+	properties.insert("tokenDecimals".into(), 18u32.into());
+	Some(properties)
+}
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
@@ -46,10 +53,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		None,
+		Some("Golden Gate Dev"),
 		None,
 		// Properties
-		None,
+		properties(),
 		// Extensions
 		None,
 	))
@@ -88,10 +95,10 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		None,
+		Some("Golden Gate"),
 		None,
 		// Properties
-		None,
+		properties(),
 		// Extensions
 		None,
 	))

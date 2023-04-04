@@ -5,12 +5,15 @@ pub use pallet::*;
 
 parameter_types! {
 	pub(crate) const DefaultInflation: Perbill = Perbill::from_percent(16);
+	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_parts(67000000); // 6.7% per year
 }
 
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::EnsureOrigin};
+	use frame_support::{
+		dispatch::DispatchResult, ensure, pallet_prelude::*, traits::EnsureOrigin,
+	};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Perbill;
 
@@ -19,29 +22,101 @@ pub mod pallet {
 	pub struct Pallet<T>(_);
 
 	#[pallet::config]
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + pallet_scheduler::Config {
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
 		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
+
+		type RuntimeCall: Parameter
+			+ From<Call<Self>>
+			+ IsType<<Self as frame_system::Config>::RuntimeCall>
+			+ IsType<<Self as pallet_scheduler::Config>::RuntimeCall>;
 	}
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		InflationChanged(Perbill),
+		InflationdecayChanged(Perbill),
+	}
+
+	#[pallet::error]
+	pub enum Error<T> {
+		InflationdecayCalledTooEarly,
 	}
 
 	#[pallet::storage]
 	pub(crate) type InflationPercent<T: Config> =
 		StorageValue<_, Perbill, ValueQuery, DefaultInflation>;
 
+	#[pallet::storage]
+	pub(crate) type InflationDecay<T: Config> =
+		StorageValue<_, Perbill, ValueQuery, DefaultInflationDecay>;
+
+	#[pallet::storage]
+	pub(crate) type LastInflationDecay<T: Config> = StorageValue<_, T::BlockNumber, ValueQuery>;
+
+	#[pallet::genesis_config]
+	#[derive(Default)]
+	pub struct GenesisConfig {}
+
+	#[pallet::genesis_build]
+	impl<T: Config> GenesisBuild<T> for GenesisConfig {
+		fn build(&self) {
+			use crate::sp_api_hidden_includes_construct_runtime::hidden_include::traits::OriginTrait;
+			let call =
+				<T as pallet::Config>::RuntimeCall::from(pallet::Call::inflation_decay {}).into();
+			pallet_scheduler::Pallet::<T>::schedule(
+				<T as frame_system::Config>::RuntimeOrigin::root(),
+				(crate::Days::get() * 365).into(), // todo: Leap year
+				Some(((crate::Days::get() * 365u32).into(), 30)),
+				0,
+				sp_std::boxed::Box::new(call),
+			)
+			.expect("Failed to schedule inflation decay");
+			{}
+		}
+	}
+
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(100_000)]
 		pub fn change_inflation(origin: OriginFor<T>, new_inflation: Perbill) -> DispatchResult {
-			T::PrivilegedOrigin::ensure_origin(origin)?;
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			InflationPercent::<T>::put(new_inflation);
+			Self::deposit_event(Event::InflationChanged(new_inflation));
+
+			Ok(())
+		}
+
+		#[pallet::call_index(1)]
+		#[pallet::weight(100_000)]
+		pub fn change_inflation_decay(origin: OriginFor<T>, new_decay: Perbill) -> DispatchResult {
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
+			InflationDecay::<T>::put(new_decay);
+			Self::deposit_event(Event::InflationdecayChanged(new_decay));
+
+			Ok(())
+		}
+
+		#[pallet::call_index(2)]
+		#[pallet::weight(100_000)]
+		pub fn inflation_decay(origin: OriginFor<T>) -> DispatchResult {
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
+			let now = frame_system::Pallet::<T>::block_number();
+			let last_decay = LastInflationDecay::<T>::get();
+
+			ensure!(
+				now >= last_decay + (365 * crate::Days::get()).into(),
+				Error::<T>::InflationdecayCalledTooEarly
+			);
+			let decay = InflationDecay::<T>::get();
+			let inflation = InflationPercent::<T>::get();
+			let new_inflation = inflation * decay;
+
+			InflationPercent::<T>::put(new_inflation);
+			LastInflationDecay::<T>::put(now);
 			Self::deposit_event(Event::InflationChanged(new_inflation));
 			Ok(())
 		}

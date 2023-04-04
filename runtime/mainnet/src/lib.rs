@@ -160,7 +160,7 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000;
+pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
 pub const KGGX: Balance = 1000 * GGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = GGX;

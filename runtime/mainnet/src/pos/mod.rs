@@ -524,4 +524,5 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 impl inflation::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
+	type RuntimeCall = RuntimeCall;
 }
