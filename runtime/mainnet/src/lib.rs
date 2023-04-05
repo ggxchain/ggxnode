@@ -160,7 +160,7 @@ pub type Executive = frame_executive::Executive<
 >;
 
 /// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000;
+pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
 pub const KGGX: Balance = 1000 * GGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
@@ -217,7 +217,7 @@ parameter_types! {
 	pub storage EpochDurationInBlocks: BlockNumber = (RuntimeSpecification::chain_spec().session_time_in_seconds / (RuntimeSpecification::chain_spec().block_time_in_millis / 1000)) as u32;
 
 	pub ReportLongevity: u64 = EpochDurationInBlocks::get() as u64 * 10;
-	pub const SS58Prefix: u8 = 88;
+	pub const SS58Prefix: u16 = 8866;
 }
 
 // Configure FRAME pallets to include in runtime.

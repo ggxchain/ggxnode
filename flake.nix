@@ -133,7 +133,7 @@
             doclint = pkgs.writeShellApplication rec {
               name = "doclint";
               text = ''
-                ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target" "#terraform"
+                ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target" "#terraform" "#result"
               '';
             };
 
