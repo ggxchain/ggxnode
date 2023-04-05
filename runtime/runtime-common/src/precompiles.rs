@@ -105,7 +105,8 @@ impl<R> GoldenGatePrecompiles<R> {
 	/// * 0x8 - is EcPairing
 	/// * 0x9 - is Blake2F
 	///
-	/// The next list contains handy precompiles that are missing in Ethereum. Please note we use 0xF3 and 0x403 for Ed25519 verify to be compatible with Celo and Astar
+	/// The next list contains handy precompiles that are missing in Ethereum.
+        /// Please note we use 0xF3 and 0x403 for `Ed25519 verify` to be compatible with Celo and Astar
 	/// * 0xF3 - is Ed25519 verify
 	/// * 0x400 - is Sha3
 	/// * 0x402 - is ECRecoverPublicKey (402 is used in Astar and Moonbeam, so preserve the address for contracts interoperability)
