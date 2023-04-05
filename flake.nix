@@ -91,7 +91,7 @@
               LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
               PROTOC = "${pkgs.protobuf}/bin/protoc";
               ROCKSDB_LIB_DIR = "${pkgs.rocksdb}/lib";
-              RUSTUP_TOOLCHAIN = "nightly-2022-12-20"; # could read from toml for dylint
+              RUSTUP_TOOLCHAIN = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel; # for dylint
             };
 
             darwin = pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk; [
@@ -136,6 +136,18 @@
                 ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target" "#terraform" "#result"
               '';
             };
+
+            fix = pkgs.writeShellApplication rec {
+              name = "fix";
+              runtimeInputs = [
+                rust-toolchain
+              ];
+              text = ''
+                cargo clippy --fix --allow-staged --allow-dirty
+                cargo fmt                
+              '';
+            };
+
 
             # rust used by ci and developers
             rust-toolchain =
@@ -393,7 +405,7 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit golden-gate-runtimes golden-gate-node gen-node-key single-fast multi-fast tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node clippy-wasm;
+                inherit fix golden-gate-runtimes golden-gate-node gen-node-key single-fast multi-fast tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node clippy-wasm;
                 subkey = pkgs.subkey;
                 node = golden-gate-node;
                 lint-all = pkgs.symlinkJoin {
