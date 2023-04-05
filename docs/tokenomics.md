@@ -35,8 +35,8 @@ After 30 years the APY stabilizes at 2%
 * Initial total supply is not implemented as it requires more detailed composition.
 * 18 decimals is done. (configured by MILLIGGX)
 * APY configured to 16%. (configured by runtime/mainnet/src/pos/inflation.rs)
-* Decrease ladder scheduled for the runtime.
-Currently, it doesn't handle leap years and runs every ~365 days.  (configured by runtime/mainnet/src/pos/inflation.rs)
+* APY decrease ladder scheduled for the runtime.
+APY decrease happens every 365.25 days to address leap years. (configured by runtime/mainnet/src/pos/inflation.rs)
 
 ## Staking
 
@@ -80,7 +80,7 @@ Slashed amounts are sent to treasury.
 (configured by EpochDurationInBlocks, SessionsPerEra).
 This can be hard to configure using Parity toolchain, cause they use era as payout and validator rotation point.
 * Fixed comission is not implemented yet. Currently, validator can set any comission it wants.
-* Tresuary cut is not implemented yet.
+* Tresuary cut from validators reward is not implemented yet.
 
 ## Rewards
 

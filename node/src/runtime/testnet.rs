@@ -2,11 +2,8 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use golden_gate_runtime_testnet::{opaque::SessionKeys, *};
 
-use sc_service::ChainType;
 use sp_core::{crypto::Ss58Codec, ed25519, sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;
-
-use crate::chain_spec::ChainSpec;
 
 use super::{get_from_seed, AccountPublic};
 
@@ -24,6 +21,22 @@ impl ValidatorIdentity {
 				aura: get_from_seed::<AuraId>(s),
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
+			},
+		}
+	}
+
+	pub fn from_pub(ed: &str, sr: &str) -> ValidatorIdentity {
+		let ed = ed25519::Public::from_ss58check(ed)
+			.unwrap()
+			.into_account()
+			.into();
+		let sr = sr25519::Public::from_ss58check(sr).unwrap().into_account();
+		ValidatorIdentity {
+			id: sr.into(),
+			session_keys: SessionKeys {
+				aura: sr.into(),
+				grandpa: ed,
+				im_online: sr.into(),
 			},
 		}
 	}
@@ -138,96 +151,5 @@ pub fn testnet_genesis(
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
-	}
-}
-
-pub fn remote_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		"Remote Testnet",
-		"remote_testnet",
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				// Sudo account
-				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
-					.unwrap()
-					.into_account()
-					.into(),
-				// Pre-funded accounts
-				vec![
-					sr25519::Public::from_ss58check(
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-				],
-				vec![
-					authority_keys_from_pub(
-						"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-					),
-					authority_keys_from_pub(
-						"5Dos85SfdWJbh2RAkTLpViwjJXcSpkZjn9B5FGRCsCWQ4cT3",
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-					),
-					authority_keys_from_pub(
-						"5DMjxJDSWR1uBQ8fN5o7fxUxpE3MeePf3b5f5iqTxm4KaLBY",
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-					),
-				],
-				888888,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
-		None,
-		None,
-		// Properties
-		None,
-		// Extensions
-		None,
-	))
-}
-
-fn authority_keys_from_pub(ed: &str, sr: &str) -> ValidatorIdentity {
-	ValidatorIdentity {
-		id: sr25519::Public::from_ss58check(sr)
-			.unwrap()
-			.into_account()
-			.into(),
-		session_keys: SessionKeys {
-			aura: sr25519::Public::from_ss58check(sr)
-				.unwrap()
-				.into_account()
-				.into(),
-			grandpa: ed25519::Public::from_ss58check(ed)
-				.unwrap()
-				.into_account()
-				.into(),
-			im_online: sr25519::Public::from_ss58check(sr)
-				.unwrap()
-				.into_account()
-				.into(),
-		},
 	}
 }
