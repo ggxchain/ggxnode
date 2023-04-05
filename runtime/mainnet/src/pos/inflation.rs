@@ -15,10 +15,7 @@ const YEAR_IN_MILLIS: u64 = 1000 * 3600 * 24 * 36525 / 100;
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::DispatchResult,
-		ensure,
-		pallet_prelude::*,
-		traits::{EnsureOrigin, OriginTrait},
+		dispatch::DispatchResult, ensure, pallet_prelude::*, traits::EnsureOrigin,
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Perbill;
@@ -122,7 +119,10 @@ pub mod pallet {
 		}
 	}
 	impl<T: Config> Pallet<T> {
+		#[cfg(feature = "std")]
 		pub(super) fn init_inflation_decay() -> DispatchResult {
+			use frame_support::traits::OriginTrait;
+
 			let period = Self::decay_period();
 			let call =
 				<T as pallet::Config>::RuntimeCall::from(pallet::Call::yearly_inflation_decay {})
