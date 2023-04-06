@@ -160,3 +160,8 @@ pallet-xvm = { version = "0.2.1", git = "https://github.com/AstarNetwork/astar-f
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-collective-flip", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
+
+dkg-gadget = { package = "dkg-gadget", git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-runtime-primitives = { package = "dkg-runtime-primitives", git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-primitives = { package = "dkg-primitives", git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-standalone-runtime = { package = "dkg-standalone-runtime", git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }

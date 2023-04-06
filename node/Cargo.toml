@@ -71,6 +71,11 @@ fp-storage = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
+dkg-gadget = { workspace = true }
+dkg-runtime-primitives = { workspace = true }
+dkg-primitives = { workspace = true }
+dkg-standalone-runtime = { workspace = true }
+
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 
