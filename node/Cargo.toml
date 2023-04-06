@@ -62,6 +62,7 @@ fc-db = { workspace = true, optional = true }
 fc-mapping-sync = { workspace = true, optional = true }
 fc-rpc = { workspace = true, optional = true }
 fc-rpc-core = { workspace = true, optional = true }
+fc-storage = { workspace = true, optional = true }
 fp-dynamic-fee = { workspace = true, features = ["std"], optional = true }
 fp-evm = { workspace = true, features = ["std"], optional = true }
 fp-rpc = { workspace = true, features = ["std"], optional = true }
@@ -87,6 +88,7 @@ testnet = [
 	"fp-evm",
 	"fp-rpc",
 	"fp-storage",
+	"fc-storage",
 ]
 mainnet = ["golden-gate-runtime-mainnet"]
 aura = [
@@ -101,7 +103,6 @@ manual-seal = [
 ]
 with-rocksdb-weights = ["golden-gate-runtime-testnet?/with-rocksdb-weights", "golden-gate-runtime-mainnet?/with-rocksdb-weights"]
 with-paritydb-weights = ["golden-gate-runtime-testnet?/with-paritydb-weights", "golden-gate-runtime-mainnet?/with-paritydb-weights"]
-rpc_binary_search_estimate = ["fc-rpc?/rpc_binary_search_estimate"]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",

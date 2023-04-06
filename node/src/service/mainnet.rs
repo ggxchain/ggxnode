@@ -5,7 +5,9 @@ use sc_client_api::{BlockBackend, HeaderBackend};
 use sc_consensus_aura::{ImportQueueParams, SlotProportion, StartAuraParams};
 use sc_finality_grandpa::SharedVoterState;
 use sc_keystore::LocalKeystore;
-use sc_service::{error::Error as ServiceError, Arc, Configuration, TaskManager, TransactionPool};
+use sc_service::{
+	error::Error as ServiceError, Arc, Configuration, TaskManager, TransactionPool, WarpSyncParams,
+};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
@@ -200,7 +202,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			spawn_handle: task_manager.spawn_handle(),
 			import_queue,
 			block_announce_validator_builder: None,
-			warp_sync: Some(warp_sync),
+			warp_sync_params: Some(WarpSyncParams::WithProvider(warp_sync)),
 		})?;
 
 	if config.offchain_worker.enabled {

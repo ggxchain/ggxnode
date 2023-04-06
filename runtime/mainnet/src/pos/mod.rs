@@ -264,7 +264,7 @@ impl pallet_staking::Config for Runtime {
 	type SessionsPerEra = SessionsPerEra;
 	type BondingDuration = BondingDuration;
 	type SlashDeferDuration = SlashDeferDuration;
-	type SlashCancelOrigin = EnsureRoot<AccountId>;
+	type AdminOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
 	type EraPayout = Inflation;
 	type NextNewSession = Session;

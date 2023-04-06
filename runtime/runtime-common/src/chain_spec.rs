@@ -5,12 +5,9 @@ use frame_support::{
 	pallet_prelude::{MaxEncodedLen, TypeInfo},
 };
 
-use serde::{Deserialize, Serialize};
-
 // Later, we can extend this struct with the new fields to add chain spec parameters in case of need.
-#[derive(
-	Encode, Decode, Default, Clone, PartialEq, TypeInfo, MaxEncodedLen, Deserialize, Serialize,
-)]
+#[derive(Encode, Decode, Default, Clone, PartialEq, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub struct RuntimeConfig {
 	pub block_time_in_millis: u64,
 	pub session_time_in_seconds: u64,

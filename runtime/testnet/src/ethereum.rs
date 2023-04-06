@@ -4,6 +4,7 @@ use super::{Balances, Runtime, RuntimeEvent};
 
 use super::opaque;
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
+use pallet_ethereum::PostLogContent;
 use runtime_common::precompiles::GoldenGatePrecompiles;
 
 use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping};
@@ -46,11 +47,17 @@ impl pallet_evm::Config for Runtime {
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type OnChargeTransaction = ();
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
+	type OnCreate = ();
+}
+
+parameter_types! {
+	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
 }
 
 impl pallet_ethereum::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+	type PostLogContent = PostBlockAndTxnHashes;
 }
 
 pub struct TransactionConverter;
