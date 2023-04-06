@@ -28,7 +28,7 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
-use sp_core::U256;
+use sp_core::{crypto::Ss58AddressFormat, U256};
 use sp_runtime::traits::BlakeTwo256;
 // Frontier
 use fc_consensus::FrontierBlockImport;
@@ -101,6 +101,10 @@ pub fn new_partial(
 			"Remote Keystores are not supported.".to_string(),
 		));
 	}
+
+	sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(
+		crate::runtime::SS58Prefix::get(),
+	));
 
 	let telemetry = config
 		.telemetry_endpoints

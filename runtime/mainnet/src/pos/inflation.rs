@@ -5,7 +5,8 @@ pub use pallet::*;
 
 parameter_types! {
 	pub(crate) const DefaultInflation: Perbill = Perbill::from_percent(16);
-	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_parts(67000000); // 6.7% per year
+	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_perthousand(67); // 6.7% per year
+	pub(crate) const DefaultTreasuryCommission: Perbill = Perbill::from_percent(10);
 }
 
 // 1 julian year to address leap years
@@ -42,12 +43,13 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		InflationChanged(Perbill),
-		InflationdecayChanged(Perbill),
+		InflationDecayChanged(Perbill),
+		TreasuryCommissionChanged(Perbill),
 	}
 
 	#[pallet::error]
 	pub enum Error<T> {
-		InflationdecayCalledTooEarly,
+		InflationAlreadyDecayedThisYear,
 	}
 
 	#[pallet::storage]
@@ -62,6 +64,11 @@ pub mod pallet {
 
 	#[pallet::storage]
 	pub(crate) type LastInflationDecay<T: Config> = StorageValue<_, T::BlockNumber, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn treasury_commission)]
+	pub(crate) type TreasuryCommission<T: Config> =
+		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommission>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -92,7 +99,7 @@ pub mod pallet {
 		pub fn change_inflation_decay(origin: OriginFor<T>, new_decay: Perbill) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			InflationDecay::<T>::put(new_decay);
-			Self::deposit_event(Event::InflationdecayChanged(new_decay));
+			Self::deposit_event(Event::InflationDecayChanged(new_decay));
 
 			Ok(())
 		}
@@ -106,7 +113,7 @@ pub mod pallet {
 
 			ensure!(
 				now >= last_decay + Self::decay_period(),
-				Error::<T>::InflationdecayCalledTooEarly
+				Error::<T>::InflationAlreadyDecayedThisYear
 			);
 			let decay = InflationDecay::<T>::get();
 			let inflation = InflationPercent::<T>::get();
@@ -115,6 +122,18 @@ pub mod pallet {
 			InflationPercent::<T>::put(new_inflation);
 			LastInflationDecay::<T>::put(now);
 			Self::deposit_event(Event::InflationChanged(new_inflation));
+			Ok(())
+		}
+
+		#[pallet::call_index(3)]
+		#[pallet::weight(100_000)]
+		pub fn change_treasury_commission(
+			origin: OriginFor<T>,
+			new_commission: Perbill,
+		) -> DispatchResult {
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
+			TreasuryCommission::<T>::put(new_commission);
+			Self::deposit_event(Event::TreasuryCommissionChanged(new_commission));
 			Ok(())
 		}
 	}
@@ -156,12 +175,14 @@ impl<T: Config, Balance: AtLeast32BitUnsigned + Clone> pallet_staking::EraPayout
 		era_duration_millis: u64,
 	) -> (Balance, Balance) {
 		let year_inflation = InflationPercent::<T>::get();
+		let treasury_commission = TreasuryCommission::<T>::get();
 
 		era_payout_impl(
 			total_staked,
 			total_issuance,
 			era_duration_millis,
 			year_inflation,
+			treasury_commission,
 		)
 	}
 }
@@ -171,12 +192,14 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 	total_issuance: Balance,
 	era_duration_millis: u64,
 	year_inflation: Perbill,
+	treasury_commission: Perbill,
 ) -> (Balance, Balance) {
 	let percent_per_era =
 		Perbill::from_rational(era_duration_millis, YEAR_IN_MILLIS) * year_inflation;
 
+	let validator_percent = Perbill::one() - treasury_commission;
 	let total_inflation = percent_per_era * total_issuance;
-	let validator_reward = percent_per_era * total_staked;
+	let validator_reward = validator_percent * percent_per_era * total_staked;
 
 	(
 		validator_reward.clone(),
@@ -186,10 +209,10 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 
 #[cfg(test)]
 mod tests {
-	use frame_support::assert_ok;
+	use frame_support::{assert_ok, pallet_prelude::DispatchResult};
 	use sp_runtime::Perbill;
 
-	use crate::pos::inflation::YEAR_IN_MILLIS;
+	use crate::pos::inflation::{DefaultTreasuryCommission, YEAR_IN_MILLIS};
 
 	use super::{era_payout_impl, DefaultInflation, DefaultInflationDecay, Event};
 
@@ -197,13 +220,22 @@ mod tests {
 	fn test_year_calculation() {
 		let total_staked: u64 = 1000;
 		let total_issuance: u64 = 10000;
+		let treasury_commission = Perbill::from_percent(10);
 		let year_inflation = Perbill::from_percent(16);
 
-		let (validator_reward, treasury_reward) =
-			era_payout_impl(total_staked, total_issuance, YEAR_IN_MILLIS, year_inflation);
+		let (validator_reward, treasury_reward) = era_payout_impl(
+			total_staked,
+			total_issuance,
+			YEAR_IN_MILLIS,
+			year_inflation,
+			treasury_commission,
+		);
 
-		assert_eq!(validator_reward, 160);
-		assert_eq!(treasury_reward, 1600 - 160);
+		// 1600 is total apy for year (16%)
+		// 160 is validator reward because staked is 10% of total issuance
+		// 16 is treasury comission from each validator reward, so validator reward is 160 - 16
+		assert_eq!(validator_reward, 160 - 16);
+		assert_eq!(treasury_reward, 1600 - 160 + 16);
 	}
 
 	#[test]
@@ -211,26 +243,29 @@ mod tests {
 		let total_staked: u64 = 100000;
 		let total_issuance: u64 = 1000000;
 		let era_duration_millis = 1000 * 3600 * 24; // 1 day in milliseconds
-		let year_inflation = Perbill::from_percent(16);
+		let year_inflation = Perbill::from_percent(10);
+		let treasury_commission = Perbill::from_percent(10);
 
 		let (validator_reward, treasury_reward) = era_payout_impl(
 			total_staked,
 			total_issuance,
 			era_duration_millis,
 			year_inflation,
+			treasury_commission,
 		);
 
-		let percent = Perbill::from_rational(16u64, 36525u64); // (1/365.25 of 16%)
-
-		assert_eq!(validator_reward, percent * total_staked);
+		let percent = Perbill::from_rational(10u64, 36525u64); // (1/365.25 of 16%)
+		let validator_reward_expected =
+			(Perbill::one() - treasury_commission) * percent * total_staked;
+		assert_eq!(validator_reward, validator_reward_expected);
 		assert_eq!(
 			treasury_reward,
-			percent * total_issuance - percent * total_staked
+			percent * total_issuance - validator_reward_expected
 		);
 	}
 
 	#[test]
-	fn test_changing_inflation_params() {
+	fn test_changing_params() {
 		mock::test_runtime().execute_with(|| {
 			assert_eq!(
 				mock::Inflation::inflation_percent(),
@@ -240,14 +275,40 @@ mod tests {
 				mock::Inflation::inflation_decay(),
 				DefaultInflationDecay::get()
 			);
+			assert_eq!(
+				mock::Inflation::treasury_commission(),
+				DefaultTreasuryCommission::get()
+			);
 
+			// Changing inflation
 			let new_inflation = Perbill::from_percent(10);
+			assert_ne!(new_inflation, DefaultInflation::get());
 			assert_ok!(mock::Inflation::change_inflation(
 				mock::RuntimeOrigin::root(),
 				new_inflation
 			));
 			mock::System::assert_has_event(Event::InflationChanged(new_inflation).into());
 			assert_eq!(mock::Inflation::inflation_percent(), new_inflation);
+
+			// Changing inflation decay
+			let new_decoy = Perbill::from_percent(10);
+			assert_ne!(new_decoy, DefaultInflationDecay::get());
+			assert_ok!(mock::Inflation::change_inflation_decay(
+				mock::RuntimeOrigin::root(),
+				new_decoy
+			));
+			mock::System::assert_has_event(Event::InflationDecayChanged(new_decoy).into());
+			assert_eq!(mock::Inflation::inflation_decay(), new_decoy);
+
+			// Changing treasury commission
+			let new_commission = Perbill::from_percent(15);
+			assert_ne!(new_commission, DefaultTreasuryCommission::get());
+			assert_ok!(mock::Inflation::change_treasury_commission(
+				mock::RuntimeOrigin::root(),
+				new_commission
+			));
+			mock::System::assert_has_event(Event::TreasuryCommissionChanged(new_commission).into());
+			assert_eq!(mock::Inflation::treasury_commission(), new_commission);
 		});
 	}
 
@@ -292,6 +353,32 @@ mod tests {
 			assert_eq!(inflation_after_year(25), Perbill::from_parts(28259284)); // 2.826%
 			assert_eq!(inflation_after_year(30), Perbill::from_parts(19978801)); // 1.998%
 			assert_eq!(inflation_after_year(31), Perbill::from_parts(19978801)); // 1.998%
+		});
+	}
+
+	#[test]
+	fn test_that_inflation_can_fall_only_once_per_year() {
+		let check_err = || {
+			assert_eq!(
+				mock::Inflation::yearly_inflation_decay(mock::RuntimeOrigin::root()),
+				DispatchResult::Err(
+					super::Error::<mock::Test>::InflationAlreadyDecayedThisYear.into()
+				)
+			)
+		};
+		mock::test_runtime().execute_with(|| {
+			check_err();
+
+			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() - 1);
+
+			check_err();
+
+			mock::run_to_block(super::Pallet::<mock::Test>::decay_period());
+			assert_ok!(mock::Inflation::yearly_inflation_decay(
+				mock::RuntimeOrigin::root()
+			));
+
+			check_err();
 		});
 	}
 
