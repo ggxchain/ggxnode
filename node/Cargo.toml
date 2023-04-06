@@ -62,6 +62,7 @@ fc-db = { workspace = true, optional = true }
 fc-mapping-sync = { workspace = true, optional = true }
 fc-rpc = { workspace = true, optional = true }
 fc-rpc-core = { workspace = true, optional = true }
+fc-storage = { workspace = true, optional = true }
 fp-dynamic-fee = { workspace = true, features = ["std"], optional = true }
 fp-evm = { workspace = true, features = ["std"], optional = true }
 fp-rpc = { workspace = true, features = ["std"], optional = true }
@@ -87,6 +88,7 @@ testnet = [
 	"fp-evm",
 	"fp-rpc",
 	"fp-storage",
+	"fc-storage",
 ]
 mainnet = ["golden-gate-runtime-mainnet"]
 aura = [
