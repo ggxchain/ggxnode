@@ -11,6 +11,7 @@ use sp_api::ProvideRuntimeApi;
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{Error as BlockChainError, HeaderMetadata};
 use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
+use sp_core::crypto::Ss58AddressFormat;
 
 use crate::{
 	cli::Cli,
@@ -48,6 +49,10 @@ pub fn new_partial(
 			"Remote Keystores are not supported.".into(),
 		));
 	}
+
+	sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(
+		crate::runtime::SS58Prefix::get(),
+	));
 
 	let telemetry = config
 		.telemetry_endpoints
