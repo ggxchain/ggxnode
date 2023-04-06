@@ -103,7 +103,6 @@ manual-seal = [
 ]
 with-rocksdb-weights = ["golden-gate-runtime-testnet?/with-rocksdb-weights", "golden-gate-runtime-mainnet?/with-rocksdb-weights"]
 with-paritydb-weights = ["golden-gate-runtime-testnet?/with-paritydb-weights", "golden-gate-runtime-mainnet?/with-paritydb-weights"]
-rpc_binary_search_estimate = [] # "fc-rpc?/rpc_binary_search_estimate"
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
