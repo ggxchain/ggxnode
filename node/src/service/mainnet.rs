@@ -106,6 +106,13 @@ pub fn new_partial(
 		telemetry.as_ref().map(|x| x.handle()),
 	)?;
 
+	let keygen_network_protocol_name = dkg_gadget::DKG_KEYGEN_PROTOCOL_NAME;
+	let signing_network_protocol_name = dkg_gadget::DKG_SIGNING_PROTOCOL_NAME;
+
+
+	config.network.extra_sets.push(dkg_gadget::dkg_peers_set_config(keygen_network_protocol_name.into()));
+	config.network.extra_sets.push(dkg_gadget::dkg_peers_set_config(signing_network_protocol_name.into()));
+
 	let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 
 	let import_queue =
@@ -250,6 +257,11 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	})?;
 
 	if role.is_authority() {
+		dkg_primitives::utils::insert_controller_account_keys_into_keystore(
+			&config,
+			Some(keystore_container.sync_keystore())
+		);
+		
 		let proposer_factory = sc_basic_authorship::ProposerFactory::new(
 			task_manager.spawn_handle(),
 			client.clone(),

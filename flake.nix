@@ -428,6 +428,15 @@
                   '';
                 };
 
+
+                check-node = pkgs.writeShellApplication
+                  {
+                    name = "check-node";
+                    text = ''
+                      export SKIP_WASM_BUILD=1 && cargo check --package golden-gate-node
+                    '';
+                  };
+
                 deploy-testnet-node-a = mkNixosAwsRemoteRebuild bootnode region "testnet-node-a";
                 deploy-testnet-node-b = mkNixosAwsRemoteRebuild "34-243-72-53" region "testnet-node-b";
                 deploy-testnet-node-c = mkNixosAwsRemoteRebuild "54-246-50-70" region "testnet-node-c";
