@@ -114,5 +114,5 @@ Parameters can be changed by OpenGov.
 
 ### Current state
 
-* APY can be managed by OpenGov
+* APY, APY Decay, Treasury comission from validators can be managed by OpenGov
 * Everything else is not yet configurable.
