@@ -831,7 +831,7 @@ where
 			client.clone(),
 			pool.clone(),
 			graph,
-			Some(crate::runtime::TransactionConverter),
+			Some(crate::runtime::ethereum::TransactionConverter),
 			network.clone(),
 			signers,
 			overrides.clone(),

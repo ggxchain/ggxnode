@@ -29,10 +29,12 @@ pub mod consts {
 	pub const BLAKE2F: H160 = hash(9);
 
 	/// F3 is also used in Celo, so preserve the address for contracts interoperability.
-	pub const ED25519_VERIFY: H160 = hash(0xF3);
+	pub const ED25519_VERIFY_CELO: H160 = hash(0xF3);
 	pub const SHA3_FIPS256: H160 = hash(0x400);
 	/// 402 is used in Astar and Moonbeam, so preserve the address for contracts interoperability
 	pub const EC_RECOVER_PUBLIC_KEY: H160 = hash(0x402);
+	/// 403 is used in Astar, so preserve the address for contracts interoperability
+	pub const ED25519_VERIFY_ASTAR: H160 = hash(0x403);
 	/// 5002 is used in Astar, so preserve the address for contracts interoperability
 	pub const SR25519_VERIFY: H160 = hash(0x5002);
 	/// 5003 is used in Astar, so preserve the address for contracts interoperability
@@ -40,7 +42,7 @@ pub mod consts {
 	/// 5005 is used in Astar, so preserve the address for contracts interoperability
 	pub const XVM: H160 = hash(0x5005);
 
-	pub const SUPPORTED_PRECOMPILES: [H160; 15] = [
+	pub const SUPPORTED_PRECOMPILES: [H160; 16] = [
 		EC_RECOVER,
 		SHA256,
 		RIPEMD160,
@@ -50,9 +52,10 @@ pub mod consts {
 		BN128_MUL,
 		BN128_PAIRING,
 		BLAKE2F,
+		ED25519_VERIFY_CELO,
 		SHA3_FIPS256,
 		EC_RECOVER_PUBLIC_KEY,
-		ED25519_VERIFY,
+		ED25519_VERIFY_ASTAR,
 		SR25519_VERIFY,
 		ECDSA_VERIFY,
 		XVM,
@@ -102,16 +105,18 @@ impl<R> GoldenGatePrecompiles<R> {
 	/// * 0x8 - is EcPairing
 	/// * 0x9 - is Blake2F
 	///
-	/// The next list contains handy precompiles that are missing in Ethereum
+	/// The next list contains handy precompiles that are missing in Ethereum.
+	/// Please note we use 0xF3 and 0x403 for `Ed25519 verify` to be compatible with Celo and Astar
 	/// * 0xF3 - is Ed25519 verify
 	/// * 0x400 - is Sha3
 	/// * 0x402 - is ECRecoverPublicKey (402 is used in Astar and Moonbeam, so preserve the address for contracts interoperability)
+	/// * 0x403 - is Ed25519 verify (403 is used in Astar, so preserve the address for contracts interoperability)
 	///
 	/// The next list contains Astar specific precompiles:
 	/// * 0x5002 - is Sr25519 verify
 	/// * 0x5003 - is Ecdsa verify
 	/// * 0x5005 - is cross virtual machine (XVM)
-	pub fn used_addresses() -> [H160; 15] {
+	pub fn used_addresses() -> [H160; 16] {
 		consts::SUPPORTED_PRECOMPILES
 	}
 }
@@ -134,9 +139,11 @@ where
 			a if a == consts::BN128_PAIRING => Some(Bn128Pairing::execute(handle)),
 			a if a == consts::BLAKE2F => Some(Blake2F::execute(handle)),
 			// nor Ethereum precompiles :
+			a if a == consts::ED25519_VERIFY_CELO || a == consts::ED25519_VERIFY_ASTAR => {
+				Some(Ed25519Verify::execute(handle))
+			}
 			a if a == consts::SHA3_FIPS256 => Some(Sha3FIPS256::execute(handle)),
 			a if a == consts::EC_RECOVER_PUBLIC_KEY => Some(ECRecoverPublicKey::execute(handle)),
-			a if a == consts::ED25519_VERIFY => Some(Ed25519Verify::execute(handle)),
 			// Astar precompiles:
 			a if a == consts::SR25519_VERIFY => Some(Sr25519Precompile::<R>::execute(handle)),
 			a if a == consts::ECDSA_VERIFY => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
