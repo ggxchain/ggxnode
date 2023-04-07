@@ -13,7 +13,8 @@ pub mod ethereum;
 mod ink;
 pub mod poa;
 mod prelude;
-
+mod mpc;
+mod xcm;
 mod version;
 pub use version::VERSION;
 

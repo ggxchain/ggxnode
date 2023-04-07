@@ -92,19 +92,9 @@ impl pallet_dynamic_fee::Config for Runtime {
 	type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-parameter_types! {
-	pub EvmId: u8 = 0x0F;
-	pub WasmId: u8 = 0x1F;
-}
-
-use pallet_xvm::{evm, wasm};
 use sp_core::U256;
 use sp_runtime::{traits::BlakeTwo256, Permill};
-impl pallet_xvm::Config for Runtime {
-	type SyncVM = (evm::EVM<EvmId, Self>, wasm::WASM<WasmId, Self>);
-	type AsyncVM = ();
-	type RuntimeEvent = RuntimeEvent;
-}
+
 
 parameter_types! {
 	pub DefaultBaseFeePerGas: U256 = (super::MILLIGGX / 1_000_000).into();
