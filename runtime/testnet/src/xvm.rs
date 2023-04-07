@@ -2,8 +2,8 @@ use super::{prelude::*, Runtime, RuntimeEvent};
 
 
 parameter_types! {
-	pub EvmId: u8 = 0x0F;
-	pub WasmId: u8 = 0x1F;
+	pub const EvmId: u8 = 0x0F;
+	pub const WasmId: u8 = 0x1F;
 }
 
 use pallet_xvm::{evm, wasm};

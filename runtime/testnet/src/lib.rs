@@ -14,7 +14,7 @@ mod ink;
 pub mod poa;
 mod prelude;
 mod mpc;
-mod xcm;
+mod xvm;
 mod version;
 pub use version::VERSION;
 
