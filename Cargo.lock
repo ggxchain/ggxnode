@@ -3181,6 +3181,9 @@ dependencies = [
  "pallet-chain-extension-xvm",
  "pallet-contracts",
  "pallet-contracts-primitives",
+ "pallet-dkg-metadata",
+ "pallet-dkg-proposal-handler",
+ "pallet-dkg-proposals",
  "pallet-dynamic-fee",
  "pallet-ethereum",
  "pallet-evm",
@@ -5480,6 +5483,67 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-dkg-metadata"
+version = "0.1.0"
+source = "git+https://github.com/webb-tools/dkg-substrate?branch=polkadot-v0.9.39#1916a0aadd28c434d280d57b1a13a98a50be3faf"
+dependencies = [
+ "dkg-runtime-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "libsecp256k1",
+ "log",
+ "pallet-session",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
+name = "pallet-dkg-proposal-handler"
+version = "0.1.0"
+source = "git+https://github.com/webb-tools/dkg-substrate?branch=polkadot-v0.9.39#1916a0aadd28c434d280d57b1a13a98a50be3faf"
+dependencies = [
+ "dkg-runtime-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "pallet-dkg-metadata",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
+ "webb-proposals",
+]
+
+[[package]]
+name = "pallet-dkg-proposals"
+version = "1.0.0"
+source = "git+https://github.com/webb-tools/dkg-substrate?branch=polkadot-v0.9.39#1916a0aadd28c434d280d57b1a13a98a50be3faf"
+dependencies = [
+ "dkg-runtime-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "k256",
+ "log",
+ "pallet-balances",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
