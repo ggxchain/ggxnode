@@ -127,7 +127,7 @@ pub mod opaque {
 }
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
+pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
@@ -192,8 +192,8 @@ parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
 	/// We allow for 1 seconds of compute with a 2 second average block time.
-	pub const MaximumBlockWeight: Weight = Weight::from_parts(
-		(2) * WEIGHT_REF_TIME_PER_SECOND,
+	pub storage MaximumBlockWeight: Weight = Weight::from_parts(
+		(RuntimeSpecification::chain_spec().block_time_in_millis / 1000) * WEIGHT_REF_TIME_PER_SECOND,
 		u64::MAX,
 	);
 	pub BlockWeights: frame_system::limits::BlockWeights =  frame_system::limits::BlockWeights::builder()
@@ -248,7 +248,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, AccountIndex>;
+	type Lookup = AccountIdLookup<AccountId, ()>;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
