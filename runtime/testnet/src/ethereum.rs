@@ -95,7 +95,6 @@ impl pallet_dynamic_fee::Config for Runtime {
 use sp_core::U256;
 use sp_runtime::{traits::BlakeTwo256, Permill};
 
-
 parameter_types! {
 	pub DefaultBaseFeePerGas: U256 = (super::MILLIGGX / 1_000_000).into();
 	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
