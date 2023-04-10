@@ -3165,6 +3165,7 @@ dependencies = [
 name = "golden-gate-runtime-testnet"
 version = "0.0.0"
 dependencies = [
+ "dkg-runtime-primitives",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",

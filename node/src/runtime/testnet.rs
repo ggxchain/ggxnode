@@ -2,7 +2,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use golden_gate_runtime_testnet::{opaque::SessionKeys, *};
 
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519, H160, U256};
+use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;
 
 use super::{get_from_seed, AccountPublic};
@@ -21,6 +21,7 @@ impl ValidatorIdentity {
 				aura: get_from_seed::<AuraId>(s),
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
+				dkg: get_from_seed::<DKGId>(s),
 			},
 		}
 	}
@@ -30,6 +31,7 @@ impl ValidatorIdentity {
 			.unwrap()
 			.into_account()
 			.into();
+		let dkg = ecdsa::Public::from_ss58check(sr).unwrap().into_account();
 		let sr = sr25519::Public::from_ss58check(sr).unwrap().into_account();
 		ValidatorIdentity {
 			id: sr.into(),
@@ -37,6 +39,7 @@ impl ValidatorIdentity {
 				aura: sr.into(),
 				grandpa: ed,
 				im_online: sr.into(),
+				dkg: dkg.into(),
 			},
 		}
 	}
@@ -138,8 +141,8 @@ pub fn testnet_genesis(
 		base_fee: Default::default(),
 		account_filter: AccountFilterConfig {
 			allowed_accounts: initial_authorities
-				.into_iter()
-				.map(|e| (e.id, ()))
+				.iter()
+				.map(|e| (e.id.clone(), ()))
 				.collect(),
 		},
 		runtime_specification: RuntimeSpecificationConfig {
@@ -151,5 +154,15 @@ pub fn testnet_genesis(
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
+		dkg: DKGConfig {
+			authorities: initial_authorities
+				.iter()
+				.map(|x| x.session_keys.dkg.clone())
+				.collect::<_>(),
+			keygen_threshold: 2,
+			signature_threshold: 1,
+			authority_ids: initial_authorities.into_iter().map(|x| x.id).collect::<_>(),
+		},
+		dkg_proposals: Default::default(),
 	}
 }

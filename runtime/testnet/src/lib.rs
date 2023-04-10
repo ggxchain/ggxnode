@@ -11,15 +11,15 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod ethereum;
 mod ink;
+mod mpc;
 pub mod poa;
 mod prelude;
-mod mpc;
-mod xvm;
 mod version;
+mod xvm;
 pub use version::VERSION;
 
 use frame_support::pallet_prelude::TransactionPriority;
-use scale_codec::{Decode, Encode};
+use scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{
@@ -45,6 +45,8 @@ use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
 pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::CurrencyAdapter;
+
+pub use mpc::DKGId;
 
 use pallet_session::historical::{self as pallet_session_historical};
 
@@ -123,12 +125,13 @@ pub mod opaque {
 			pub aura: Aura,
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
+			pub dkg: DKG,
 		}
 	}
 }
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+pub type Address = sp_runtime::MultiAddress<AccountId, Index>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
@@ -139,6 +142,7 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -163,7 +167,12 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations,
 >;
+
+// All migrations executed on runtime upgrade as a nested tuple of types implementing
+// `OnRuntimeUpgrade`.
+type Migrations = (pallet_contracts::Migration<Runtime>,);
 
 /// Constant values used within the runtime.
 pub const MILLIGGX: Balance = 1_000_000_000_000_000;
@@ -249,7 +258,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = AccountIdLookup<AccountId, AccountIndex>;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
@@ -280,6 +289,7 @@ impl frame_system::Config for Runtime {
 }
 
 parameter_types! {
+	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd, MaxEncodedLen, Default)]
 	pub const MaxAuthorities: u32 = 100;
 }
 
@@ -418,9 +428,16 @@ construct_runtime!(
 		NodeBlock = opaque::Block,
 		UncheckedExtrinsic = UncheckedExtrinsic
 	{
-		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		System: frame_system,
 		Timestamp: pallet_timestamp,
+		RuntimeSpecification: chain_spec,
+
+		// DKG / offchain worker - the order and position of these pallet should not change
+		DKG: pallet_dkg_metadata::{Pallet, Storage, Call, Event<T>, Config<T>, ValidateUnsigned},
+		DKGProposals: pallet_dkg_proposals,
+		DKGProposalHandler: pallet_dkg_proposal_handler::{Pallet, Storage, Call, Event<T>, ValidateUnsigned},
+
+		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		Balances: pallet_balances,
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
@@ -450,16 +467,10 @@ construct_runtime!(
 		HotfixSufficients: pallet_hotfix_sufficients,
 		// GGX pallets
 		AccountFilter: account_filter,
-		RuntimeSpecification: chain_spec,
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
 		Xvm: pallet_xvm,
-
-		// DKG / offchain worker - the order and position of these pallet should not change
-		DKG: pallet_dkg_metadata::{Pallet, Storage, Call, Event<T>, Config<T>, ValidateUnsigned},
-		DKGProposals: pallet_dkg_proposals,
-		DKGProposalHandler: pallet_dkg_proposal_handler::{Pallet, Storage, Call, Event<T>, ValidateUnsigned},
 	}
 );
 
@@ -965,7 +976,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl dkg_runtime_primitives::DKGApi<Block, dkg_runtime_primitives::crypto::AuthorityId, BlockNumber, MaxProposalLength, MaxAuthorities> for Runtime {
+	impl dkg_runtime_primitives::DKGApi<Block, dkg_runtime_primitives::crypto::AuthorityId, BlockNumber, mpc::MaxProposalLength, MaxAuthorities> for Runtime {
 		fn authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
 			let authorities = DKG::authorities();
 			let authority_set_id = DKG::authority_set_id();
@@ -1018,20 +1029,20 @@ impl_runtime_apis! {
 			(DKG::dkg_public_key().0, DKG::dkg_public_key().1.into())
 		  }
 
-		  fn get_best_authorities() -> Vec<(u16, DKGId)> {
+		  fn get_best_authorities() -> Vec<(u16, mpc::DKGId)> {
 			DKG::best_authorities().into()
 		  }
 
-		  fn get_next_best_authorities() -> Vec<(u16, DKGId)> {
+		  fn get_next_best_authorities() -> Vec<(u16, mpc::DKGId)> {
 			DKG::next_best_authorities().into()
 		  }
 
 		fn get_current_session_progress(block_number: BlockNumber) -> Option<Permill> {
 			use frame_support::traits::EstimateNextSessionRotation;
-			<pallet_dkg_metadata::DKGPeriodicSessions<Period, Offset, Runtime> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
+			<pallet_dkg_metadata::DKGPeriodicSessions<poa::SessionPeriod, poa::SessionOffset, Runtime> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
 		}
 
-		fn get_unsigned_proposals() -> Vec<UnsignedProposal<MaxProposalLength>> {
+		fn get_unsigned_proposals() -> Vec<dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>> {
 			DKGProposalHandler::get_unsigned_proposals()
 		}
 
@@ -1043,15 +1054,15 @@ impl_runtime_apis! {
 			(DKG::current_authorities_accounts().into(), DKG::next_authorities_accounts().into())
 		}
 
-		fn get_reputations(authorities: Vec<DKGId>) -> Vec<(DKGId, Reputation)> {
+		fn get_reputations(authorities: Vec<mpc::DKGId>) -> Vec<(mpc::DKGId, mpc::Reputation)> {
 			authorities.iter().map(|a| (a.clone(), DKG::authority_reputations(a))).collect()
 		}
 
-		fn get_keygen_jailed(set: Vec<DKGId>) -> Vec<DKGId> {
+		fn get_keygen_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
 			set.iter().filter(|a| pallet_dkg_metadata::JailedKeygenAuthorities::<Runtime>::contains_key(a)).cloned().collect()
 		}
 
-		fn get_signing_jailed(set: Vec<DKGId>) -> Vec<DKGId> {
+		fn get_signing_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
 			set.iter().filter(|a| pallet_dkg_metadata::JailedSigningAuthorities::<Runtime>::contains_key(a)).cloned().collect()
 		}
 
@@ -1064,21 +1075,4 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl Convert<dkg_runtime_primitives::crypto::AuthorityId, Vec<u8>> for DKGEcdsaToEthereum {
-		fn convert(a: dkg_runtime_primitives::crypto::AuthorityId) -> Vec<u8> {
-			use k256::{ecdsa::VerifyingKey, elliptic_curve::sec1::ToEncodedPoint};
-			let _x = VerifyingKey::from_sec1_bytes(sp_core::crypto::ByteArray::as_slice(&a));
-			VerifyingKey::from_sec1_bytes(sp_core::crypto::ByteArray::as_slice(&a))
-				.map(|pub_key| {
-					// uncompress the key
-					let uncompressed = pub_key.to_encoded_point(false);
-					// convert to ETH address
-					sp_io::hashing::keccak_256(&uncompressed.as_bytes()[1..])[12..].to_vec()
-				})
-				.map_err(|_| {
-					log::error!(target: "runtime::dkg_proposals", "Invalid DKG PublicKey format!");
-				})
-				.unwrap_or_default()
-		}
-	}
 }

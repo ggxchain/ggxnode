@@ -193,7 +193,7 @@
 
             golden-gate-node = craneLib.buildPackage (common-native-release-attrs // {
               cargoArtifacts = common-native-release-deps;
-              nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs 
+              nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git pkgs.gmp ]; # parity does some git hacks in build.rs. Also, mpc links gmp 
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -612,6 +612,7 @@
                           nodePackages.markdownlint-cli2
                           jq
                           subkey
+                          gmp
                         ]
                         ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
                       env = rust-env;
