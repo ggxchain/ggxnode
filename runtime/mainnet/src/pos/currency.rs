@@ -98,7 +98,7 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
 		fn build(&self) {
-			Pallet::<T>::init_inflation_decay().expect("Inflation decay init failed");
+			Pallet::<T>::init_inflation_decay().expect("CurrencyManager decay init failed");
 			{}
 		}
 	}
@@ -288,12 +288,9 @@ mod tests {
 	use pallet_balances::NegativeImbalance;
 	use sp_runtime::Perbill;
 
-	use crate::pos::inflation::{
-		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee, YEAR_IN_MILLIS,
-	};
-
 	use super::{
-		era_payout_impl, fee_processing_impl, DefaultInflation, DefaultInflationDecay, Event,
+		era_payout_impl, fee_processing_impl, DefaultInflation, DefaultInflationDecay,
+		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee, Event, YEAR_IN_MILLIS,
 	};
 
 	#[test]
@@ -348,56 +345,56 @@ mod tests {
 	fn test_changing_params() {
 		mock::test_runtime().execute_with(|| {
 			assert_eq!(
-				mock::Inflation::inflation_percent(),
+				mock::CurrencyManager::inflation_percent(),
 				DefaultInflation::get()
 			);
 			assert_eq!(
-				mock::Inflation::inflation_decay(),
+				mock::CurrencyManager::inflation_decay(),
 				DefaultInflationDecay::get()
 			);
 			assert_eq!(
-				mock::Inflation::treasury_commission(),
+				mock::CurrencyManager::treasury_commission(),
 				DefaultTreasuryCommission::get()
 			);
 			assert_eq!(
-				mock::Inflation::treasury_commission_from_fee(),
+				mock::CurrencyManager::treasury_commission_from_fee(),
 				DefaultTreasuryCommissionFromFee::get()
 			);
 
 			// Changing inflation
 			let new_inflation = Perbill::from_percent(10);
 			assert_ne!(new_inflation, DefaultInflation::get());
-			assert_ok!(mock::Inflation::change_inflation(
+			assert_ok!(mock::CurrencyManager::change_inflation(
 				mock::RuntimeOrigin::root(),
 				new_inflation
 			));
 			mock::System::assert_has_event(Event::InflationChanged(new_inflation).into());
-			assert_eq!(mock::Inflation::inflation_percent(), new_inflation);
+			assert_eq!(mock::CurrencyManager::inflation_percent(), new_inflation);
 
 			// Changing inflation decay
 			let new_decoy = Perbill::from_percent(10);
 			assert_ne!(new_decoy, DefaultInflationDecay::get());
-			assert_ok!(mock::Inflation::change_inflation_decay(
+			assert_ok!(mock::CurrencyManager::change_inflation_decay(
 				mock::RuntimeOrigin::root(),
 				new_decoy
 			));
 			mock::System::assert_has_event(Event::InflationDecayChanged(new_decoy).into());
-			assert_eq!(mock::Inflation::inflation_decay(), new_decoy);
+			assert_eq!(mock::CurrencyManager::inflation_decay(), new_decoy);
 
 			// Changing treasury commission
 			let new_commission = Perbill::from_percent(15);
 			assert_ne!(new_commission, DefaultTreasuryCommission::get());
-			assert_ok!(mock::Inflation::change_treasury_commission(
+			assert_ok!(mock::CurrencyManager::change_treasury_commission(
 				mock::RuntimeOrigin::root(),
 				new_commission
 			));
 			mock::System::assert_has_event(Event::TreasuryCommissionChanged(new_commission).into());
-			assert_eq!(mock::Inflation::treasury_commission(), new_commission);
+			assert_eq!(mock::CurrencyManager::treasury_commission(), new_commission);
 
 			// Changing treasury commission
 			let new_commission = Perbill::from_percent(15);
 			assert_ne!(new_commission, DefaultTreasuryCommissionFromFee::get());
-			assert_ok!(mock::Inflation::change_treasury_commission_from_fee(
+			assert_ok!(mock::CurrencyManager::change_treasury_commission_from_fee(
 				mock::RuntimeOrigin::root(),
 				new_commission
 			));
@@ -405,7 +402,7 @@ mod tests {
 				Event::TreasuryCommissionFromFeeChanged(new_commission).into(),
 			);
 			assert_eq!(
-				mock::Inflation::treasury_commission_from_fee(),
+				mock::CurrencyManager::treasury_commission_from_fee(),
 				new_commission
 			);
 		});
@@ -414,19 +411,19 @@ mod tests {
 	#[test]
 	fn test_inflation_decoy() {
 		mock::test_runtime().execute_with(|| {
-			assert_ok!(mock::Inflation::init_inflation_decay());
-			let initial_inflation = mock::Inflation::inflation_percent();
-			let decay = mock::Inflation::inflation_decay();
+			assert_ok!(mock::CurrencyManager::init_inflation_decay());
+			let initial_inflation = mock::CurrencyManager::inflation_percent();
+			let decay = mock::CurrencyManager::inflation_decay();
 			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() + 1);
-			let inflation = mock::Inflation::inflation_percent();
+			let inflation = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation, initial_inflation - (initial_inflation * decay));
 			let new_decoy = Perbill::from_percent(10);
-			assert_ok!(mock::Inflation::change_inflation_decay(
+			assert_ok!(mock::CurrencyManager::change_inflation_decay(
 				mock::RuntimeOrigin::root(),
 				new_decoy
 			));
 			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() * 2 + 1);
-			let inflation_after_change = mock::Inflation::inflation_percent();
+			let inflation_after_change = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation_after_change, inflation - (inflation * new_decoy));
 		});
 	}
@@ -435,11 +432,11 @@ mod tests {
 	fn test_default_inflation_decay_ladder() {
 		fn inflation_after_year(year: u64) -> Perbill {
 			mock::run_to_block(year * super::Pallet::<mock::Test>::decay_period());
-			mock::Inflation::inflation_percent()
+			mock::CurrencyManager::inflation_percent()
 		}
 
 		mock::test_runtime().execute_with(|| {
-			assert_ok!(mock::Inflation::init_inflation_decay());
+			assert_ok!(mock::CurrencyManager::init_inflation_decay());
 
 			assert_eq!(inflation_after_year(1), Perbill::from_parts(149280000)); // 14.928%
 			assert_eq!(inflation_after_year(2), Perbill::from_parts(139278240)); // 13.93%
@@ -459,7 +456,7 @@ mod tests {
 	fn test_that_inflation_can_fall_only_once_per_year() {
 		let check_err = || {
 			assert_eq!(
-				mock::Inflation::yearly_inflation_decay(mock::RuntimeOrigin::root()),
+				mock::CurrencyManager::yearly_inflation_decay(mock::RuntimeOrigin::root()),
 				DispatchResult::Err(
 					super::Error::<mock::Test>::InflationAlreadyDecayedThisYear.into()
 				)
@@ -473,7 +470,7 @@ mod tests {
 			check_err();
 
 			mock::run_to_block(super::Pallet::<mock::Test>::decay_period());
-			assert_ok!(mock::Inflation::yearly_inflation_decay(
+			assert_ok!(mock::CurrencyManager::yearly_inflation_decay(
 				mock::RuntimeOrigin::root()
 			));
 
@@ -564,7 +561,7 @@ mod tests {
 				System: frame_system,
 				Balances: pallet_balances,
 				Scheduler: pallet_scheduler,
-				Inflation: inflation,
+				CurrencyManager: inflation,
 				Treasury: pallet_treasury,
 				Authorship: pallet_authorship,
 				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`

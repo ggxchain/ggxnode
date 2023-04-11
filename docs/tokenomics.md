@@ -34,9 +34,9 @@ After 30 years the APY stabilizes at 2%
 
 * Initial total supply is not implemented as it requires more detailed composition.
 * 18 decimals is done. (configured by MILLIGGX)
-* APY configured to 16%. (configured by runtime/mainnet/src/pos/inflation.rs InflationPercent)
+* APY configured to 16%. (configured by runtime/mainnet/src/pos/currency.rs InflationPercent)
 * APY decrease ladder scheduled for the runtime.
-APY decrease happens every 365.25 days to address leap years. (configured by runtime/mainnet/src/pos/inflation.rs InflationPercentDecay)
+APY decrease happens every 365.25 days to address leap years. (configured by runtime/mainnet/src/pos/currency.rs InflationPercentDecay)
 
 ## Staking
 
@@ -80,7 +80,7 @@ Slashed amounts are sent to treasury.
 (configured by EpochDurationInBlocks, SessionsPerEra).
 This can be hard to configure using Parity toolchain, cause they use era as payout and validator rotation point.
 * Fixed comission is not implemented yet. Currently, validator can set any comission it wants.
-* 10% Treasury comission is implemented. (configured by runtime/mainnet/src/pos/inflation.rs TreasuryCommission)
+* 10% Treasury comission is implemented. (configured by runtime/mainnet/src/pos/currency.rs TreasuryCommission)
 
 ## Rewards
 
@@ -96,7 +96,7 @@ Fees are distributed each block.
 
 ### Current state
 
-* Done, but percents are not configurable by OpenGov, only runtime upgrade.
+* Done
 
 ## Fees
 
@@ -114,5 +114,4 @@ Parameters can be changed by OpenGov.
 
 ### Current state
 
-* APY, APY Decay, Treasury comission from validators can be managed by OpenGov
-* Everything else is not yet configurable.
+* Implemented most of it.

@@ -110,6 +110,6 @@ pub fn testnet_genesis(
 		indices: Default::default(),
 		im_online: Default::default(),
 		society: Default::default(),
-		inflation: InflationConfig {},
+		currency_manager: CurrencyManagerConfig {},
 	}
 }

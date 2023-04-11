@@ -14,7 +14,7 @@ use sp_staking::SessionIndex;
 
 use super::*;
 
-pub mod inflation;
+pub mod currency;
 
 pub use opaque::SessionKeys;
 
@@ -266,7 +266,7 @@ impl pallet_staking::Config for Runtime {
 	type SlashDeferDuration = SlashDeferDuration;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
-	type EraPayout = Inflation;
+	type EraPayout = CurrencyManager;
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
@@ -521,7 +521,7 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type WeightInfo = pallet_election_provider_multi_phase::weights::SubstrateWeight<Self>;
 }
 
-impl inflation::Config for Runtime {
+impl currency::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;

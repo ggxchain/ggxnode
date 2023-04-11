@@ -46,7 +46,7 @@ pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
-use pos::inflation;
+use pos::currency;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -360,7 +360,7 @@ impl pallet_balances::Config for Runtime {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = CurrencyAdapter<Balances, Inflation>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, CurrencyManager>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -456,7 +456,7 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		RuntimeSpecification: chain_spec,
-		Inflation: inflation,
+		CurrencyManager: currency,
 	}
 );
 
