@@ -522,7 +522,7 @@ mod tests {
 
 	mod mock {
 
-		use super::super::pallet as inflation;
+		use super::super::pallet as currency;
 
 		use frame_support::{
 			pallet_prelude::Weight,
@@ -561,7 +561,7 @@ mod tests {
 				System: frame_system,
 				Balances: pallet_balances,
 				Scheduler: pallet_scheduler,
-				CurrencyManager: inflation,
+				CurrencyManager: currency,
 				Treasury: pallet_treasury,
 				Authorship: pallet_authorship,
 				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`
@@ -664,7 +664,7 @@ mod tests {
 			type Preimages = ();
 		}
 
-		impl inflation::Config for Test {
+		impl currency::Config for Test {
 			type RuntimeEvent = RuntimeEvent;
 			type RuntimeCall = RuntimeCall;
 			type PrivilegedOrigin = EnsureRoot<u32>;
