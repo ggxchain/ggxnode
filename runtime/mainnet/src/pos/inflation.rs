@@ -1,4 +1,9 @@
-use frame_support::parameter_types;
+use core::marker::PhantomData;
+
+use frame_support::{
+	parameter_types,
+	traits::{Currency, Imbalance, OnUnbalanced},
+};
 use sp_runtime::{traits::AtLeast32BitUnsigned, Perbill};
 
 pub use pallet::*;
@@ -7,6 +12,7 @@ parameter_types! {
 	pub(crate) const DefaultInflation: Perbill = Perbill::from_percent(16);
 	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_perthousand(67); // 6.7% per year
 	pub(crate) const DefaultTreasuryCommission: Perbill = Perbill::from_percent(10);
+	pub(crate) const DefaultTreasuryCommissionFromFee: Perbill = Perbill::from_percent(25);
 }
 
 // 1 julian year to address leap years
@@ -16,7 +22,10 @@ const YEAR_IN_MILLIS: u64 = 1000 * 3600 * 24 * 36525 / 100;
 pub mod pallet {
 	use super::*;
 	use frame_support::{
-		dispatch::DispatchResult, ensure, pallet_prelude::*, traits::EnsureOrigin,
+		dispatch::DispatchResult,
+		ensure,
+		pallet_prelude::*,
+		traits::{EnsureOrigin, OnUnbalanced},
 	};
 	use frame_system::pallet_prelude::*;
 	use sp_runtime::Perbill;
@@ -27,7 +36,11 @@ pub mod pallet {
 
 	#[pallet::config]
 	pub trait Config:
-		frame_system::Config + pallet_scheduler::Config + runtime_common::chain_spec::Config
+		frame_system::Config
+		+ pallet_scheduler::Config
+		+ pallet_balances::Config
+		+ pallet_authorship::Config
+		+ runtime_common::chain_spec::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -37,6 +50,8 @@ pub mod pallet {
 			+ From<Call<Self>>
 			+ IsType<<Self as frame_system::Config>::RuntimeCall>
 			+ IsType<<Self as pallet_scheduler::Config>::RuntimeCall>;
+
+		type FeeComissionRecipient: OnUnbalanced<NegativeImbalance<Self>>;
 	}
 
 	#[pallet::event]
@@ -45,6 +60,7 @@ pub mod pallet {
 		InflationChanged(Perbill),
 		InflationDecayChanged(Perbill),
 		TreasuryCommissionChanged(Perbill),
+		TreasuryCommissionFromFeeChanged(Perbill),
 	}
 
 	#[pallet::error]
@@ -69,6 +85,11 @@ pub mod pallet {
 	#[pallet::getter(fn treasury_commission)]
 	pub(crate) type TreasuryCommission<T: Config> =
 		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommission>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn treasury_commission_from_fee)]
+	pub(crate) type TreasuryCommissionFromFee<T: Config> =
+		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommissionFromFee>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -136,6 +157,18 @@ pub mod pallet {
 			Self::deposit_event(Event::TreasuryCommissionChanged(new_commission));
 			Ok(())
 		}
+
+		#[pallet::call_index(4)]
+		#[pallet::weight(100_000)]
+		pub fn change_treasury_commission_from_fee(
+			origin: OriginFor<T>,
+			new_commission: Perbill,
+		) -> DispatchResult {
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
+			TreasuryCommissionFromFee::<T>::put(new_commission);
+			Self::deposit_event(Event::TreasuryCommissionFromFeeChanged(new_commission));
+			Ok(())
+		}
 	}
 	impl<T: Config> Pallet<T> {
 		#[cfg(feature = "std")]
@@ -187,6 +220,48 @@ impl<T: Config, Balance: AtLeast32BitUnsigned + Clone> pallet_staking::EraPayout
 	}
 }
 
+type NegativeImbalance<T> = <pallet_balances::Pallet<T> as Currency<
+	<T as frame_system::Config>::AccountId,
+>>::NegativeImbalance;
+
+impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Pallet<T> {
+	fn on_unbalanceds<B>(fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>) {
+		let fee_comission = TreasuryCommissionFromFee::<T>::get();
+		if let Some((comission, reward)) = fee_processing_impl(fee_comission, fees_then_tips) {
+			T::FeeComissionRecipient::on_unbalanced(comission);
+			Author::<T>::on_unbalanced(reward);
+		}
+	}
+}
+
+pub struct Author<T: Config>(PhantomData<T>);
+impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
+	fn on_nonzero_unbalanced(amount: NegativeImbalance<T>) {
+		if let Some(author) = pallet_authorship::Pallet::<T>::author() {
+			pallet_balances::Pallet::<T>::resolve_creating(&author, amount);
+		}
+	}
+}
+
+fn fee_processing_impl<T: Config>(
+	fee_comission: Perbill,
+	mut fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>,
+) -> Option<(NegativeImbalance<T>, NegativeImbalance<T>)> {
+	if let Some(fees) = fees_then_tips.next() {
+		let calculate_comission = |amount: &NegativeImbalance<T>| fee_comission * amount.peek();
+		let comission = calculate_comission(&fees);
+		let mut split = fees.split(comission);
+
+		if let Some(tips) = fees_then_tips.next() {
+			let comission = calculate_comission(&tips);
+			tips.split_merge_into(comission, &mut split);
+		}
+		Some((split.0, split.1))
+	} else {
+		None
+	}
+}
+
 fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 	total_staked: Balance,
 	total_issuance: Balance,
@@ -210,11 +285,16 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 #[cfg(test)]
 mod tests {
 	use frame_support::{assert_ok, pallet_prelude::DispatchResult};
+	use pallet_balances::NegativeImbalance;
 	use sp_runtime::Perbill;
 
-	use crate::pos::inflation::{DefaultTreasuryCommission, YEAR_IN_MILLIS};
+	use crate::pos::inflation::{
+		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee, YEAR_IN_MILLIS,
+	};
 
-	use super::{era_payout_impl, DefaultInflation, DefaultInflationDecay, Event};
+	use super::{
+		era_payout_impl, fee_processing_impl, DefaultInflation, DefaultInflationDecay, Event,
+	};
 
 	#[test]
 	fn test_year_calculation() {
@@ -279,6 +359,10 @@ mod tests {
 				mock::Inflation::treasury_commission(),
 				DefaultTreasuryCommission::get()
 			);
+			assert_eq!(
+				mock::Inflation::treasury_commission_from_fee(),
+				DefaultTreasuryCommissionFromFee::get()
+			);
 
 			// Changing inflation
 			let new_inflation = Perbill::from_percent(10);
@@ -309,6 +393,21 @@ mod tests {
 			));
 			mock::System::assert_has_event(Event::TreasuryCommissionChanged(new_commission).into());
 			assert_eq!(mock::Inflation::treasury_commission(), new_commission);
+
+			// Changing treasury commission
+			let new_commission = Perbill::from_percent(15);
+			assert_ne!(new_commission, DefaultTreasuryCommissionFromFee::get());
+			assert_ok!(mock::Inflation::change_treasury_commission_from_fee(
+				mock::RuntimeOrigin::root(),
+				new_commission
+			));
+			mock::System::assert_has_event(
+				Event::TreasuryCommissionFromFeeChanged(new_commission).into(),
+			);
+			assert_eq!(
+				mock::Inflation::treasury_commission_from_fee(),
+				new_commission
+			);
 		});
 	}
 
@@ -382,6 +481,48 @@ mod tests {
 		});
 	}
 
+	#[test]
+	fn test_fee_cut() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(25);
+			let vector = vec![
+				NegativeImbalance::<mock::Test>::new(80),
+				NegativeImbalance::<mock::Test>::new(20),
+			];
+			assert_eq!(
+				fee_processing_impl(fee_percent, vector.into_iter()),
+				Some((
+					NegativeImbalance::<mock::Test>::new(25),
+					NegativeImbalance::<mock::Test>::new(75)
+				))
+			);
+		});
+	}
+
+	#[test]
+	fn test_none() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(25);
+			let vector: Vec<NegativeImbalance<mock::Test>> = vec![];
+			assert_eq!(fee_processing_impl(fee_percent, vector.into_iter()), None);
+		});
+	}
+
+	#[test]
+	fn test_only_fee() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let vector = vec![NegativeImbalance::<mock::Test>::new(100)];
+			assert_eq!(
+				fee_processing_impl(fee_percent, vector.into_iter()),
+				Some((
+					NegativeImbalance::<mock::Test>::new(50),
+					NegativeImbalance::<mock::Test>::new(50)
+				))
+			);
+		});
+	}
+
 	mod mock {
 
 		use super::super::pallet as inflation;
@@ -391,14 +532,15 @@ mod tests {
 			parameter_types,
 			traits::{EqualPrivilegeOnly, GenesisBuild, OnFinalize, OnInitialize},
 			weights::constants::RocksDbWeight,
+			PalletId,
 		};
-		use frame_system::EnsureRoot;
+		use frame_system::{EnsureRoot, EnsureWithSuccess};
 		use sp_core::{ConstU32, ConstU64, H256};
 		use sp_runtime::{
 			impl_opaque_keys,
 			testing::{Header, UintAuthorityId},
 			traits::IdentityLookup,
-			Perbill,
+			Perbill, Permill,
 		};
 		use sp_std::convert::{TryFrom, TryInto};
 
@@ -419,9 +561,12 @@ mod tests {
 				NodeBlock = Block,
 				UncheckedExtrinsic = UncheckedExtrinsic,
 			{
-				System: frame_system::{Pallet, Call, Config, Storage, Event<T>},
+				System: frame_system,
+				Balances: pallet_balances,
 				Scheduler: pallet_scheduler,
 				Inflation: inflation,
+				Treasury: pallet_treasury,
+				Authorship: pallet_authorship,
 				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`
 				RuntimeSpecification: chain_specification,
 			}
@@ -432,6 +577,49 @@ mod tests {
 				frame_system::limits::BlockWeights::simple_max(
 					Weight::from_parts(2_000_000_000_000, u64::MAX),
 				);
+			pub storage SpendPeriod: u64 = 2;
+			pub const Burn: Permill = Permill::from_percent(50);
+			pub const DataDepositPerByte: u32 = 1;
+			pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
+			pub const MaximumReasonLength: u32 = 300;
+			pub const MaxApprovals: u32 = 100;
+			pub const MaxBalance: u32 = u32::max_value();
+		}
+
+		impl pallet_authorship::Config for Test {
+			type FindAuthor = ();
+			type EventHandler = ();
+		}
+
+		impl pallet_balances::Config for Test {
+			type Balance = u32;
+			type DustRemoval = ();
+			type RuntimeEvent = RuntimeEvent;
+			type ExistentialDeposit = ConstU32<1>;
+			type AccountStore = System;
+			type WeightInfo = pallet_balances::weights::SubstrateWeight<Test>;
+			type MaxLocks = ConstU32<50>;
+			type MaxReserves = ();
+			type ReserveIdentifier = [u8; 8];
+		}
+
+		impl pallet_treasury::Config for Test {
+			type PalletId = TreasuryPalletId;
+			type Currency = Balances;
+			type ApproveOrigin = EnsureRoot<u32>;
+			type RejectOrigin = EnsureRoot<u32>;
+			type RuntimeEvent = RuntimeEvent;
+			type OnSlash = Treasury;
+			type ProposalBond = Burn;
+			type ProposalBondMinimum = DataDepositPerByte;
+			type ProposalBondMaximum = DataDepositPerByte;
+			type SpendPeriod = SpendPeriod;
+			type Burn = Burn;
+			type BurnDestination = ();
+			type SpendFunds = ();
+			type WeightInfo = pallet_treasury::weights::SubstrateWeight<Test>;
+			type MaxApprovals = MaxApprovals;
+			type SpendOrigin = EnsureWithSuccess<EnsureRoot<u32>, u32, MaxBalance>;
 		}
 
 		impl frame_system::Config for Test {
@@ -452,7 +640,7 @@ mod tests {
 			type RuntimeEvent = RuntimeEvent;
 			type BlockHashCount = ConstU64<250>;
 			type PalletInfo = PalletInfo;
-			type AccountData = ();
+			type AccountData = pallet_balances::AccountData<u32>;
 			type OnNewAccount = ();
 			type OnKilledAccount = ();
 			type SystemWeightInfo = ();
@@ -483,6 +671,7 @@ mod tests {
 			type RuntimeEvent = RuntimeEvent;
 			type RuntimeCall = RuntimeCall;
 			type PrivilegedOrigin = EnsureRoot<u32>;
+			type FeeComissionRecipient = Treasury;
 		}
 
 		impl chain_specification::Config for Test {}

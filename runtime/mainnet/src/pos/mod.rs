@@ -525,4 +525,5 @@ impl inflation::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;
+	type FeeComissionRecipient = Treasury;
 }
