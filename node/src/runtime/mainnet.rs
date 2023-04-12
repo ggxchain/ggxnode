@@ -1,5 +1,6 @@
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
 
+use rand::SeedableRng;
 use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
 use sp_runtime::traits::IdentifyAccount;
 
@@ -46,9 +47,12 @@ pub fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	_chain_id: u64,
+	token_supply_in_ggx: u64,
 ) -> GenesisConfig {
-	const ENDOWMENT: Balance = 10_000 * GGX;
-	const STASH: Balance = ENDOWMENT / 2;
+	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
+	let stash: Balance = endowment / 2;
+
+	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 
 	GenesisConfig {
 		// System
@@ -67,7 +71,7 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, ENDOWMENT))
+				.map(|k| (k, endowment))
 				.collect(),
 		},
 		transaction_payment: Default::default(),
@@ -78,9 +82,30 @@ pub fn testnet_genesis(
 			max_validator_count: Some(100),
 			invulnerables: vec![],
 			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
-			stakers: initial_authorities
+			stakers: endowed_accounts
 				.iter()
-				.map(|x| (x.id.clone(), x.id.clone(), STASH, StakerStatus::Validator))
+				.map(|user| {
+					let status = if initial_authorities
+						.iter()
+						.any(|validator| validator.id == *user)
+					{
+						StakerStatus::Validator
+					} else {
+						use rand::{seq::SliceRandom, Rng};
+						let limit =
+							(pos::MaxNominations::get() as usize).min(initial_authorities.len());
+						let count = rng.gen::<usize>() % limit + 1;
+						let nominations = initial_authorities
+							.as_slice()
+							.choose_multiple(&mut rng, count)
+							.into_iter()
+							.map(|choice| choice.id.clone())
+							.collect::<Vec<_>>();
+						StakerStatus::Nominator(nominations)
+					};
+
+					(user.clone(), user.clone(), stash, status)
+				})
 				.collect::<Vec<_>>(),
 			..Default::default()
 		},

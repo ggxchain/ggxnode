@@ -32,7 +32,7 @@ After 30 years the APY stabilizes at 2%
 
 ### Current state
 
-* Initial total supply is not implemented as it requires more detailed composition.
+* Initial total supply is distributed to active nodes for now.
 * 18 decimals is done. (configured by MILLIGGX)
 * APY configured to 16%. (configured by runtime/mainnet/src/pos/currency.rs InflationPercent)
 * APY decrease ladder scheduled for the runtime.

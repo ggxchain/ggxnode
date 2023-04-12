@@ -48,8 +48,9 @@ pub fn testnet_genesis(
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
+	token_supply_in_ggx: u64,
 ) -> GenesisConfig {
-	const ENDOWMENT: Balance = 10_000 * GGX;
+	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
 
 	GenesisConfig {
 		// System
@@ -68,7 +69,7 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, ENDOWMENT))
+				.map(|k| (k, endowment))
 				.collect(),
 		},
 		transaction_payment: Default::default(),
