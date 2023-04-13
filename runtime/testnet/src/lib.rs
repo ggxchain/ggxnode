@@ -19,7 +19,7 @@ mod xvm;
 pub use version::VERSION;
 
 use frame_support::pallet_prelude::TransactionPriority;
-use scale_codec::{Decode, Encode, MaxEncodedLen};
+use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
 use sp_core::{
@@ -46,7 +46,7 @@ pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_transaction_payment::CurrencyAdapter;
 
-pub use mpc::DKGId;
+pub use mpc::{DKGId, MaxProposalLength};
 
 use pallet_session::historical::{self as pallet_session_historical};
 
@@ -288,10 +288,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = ConstU32<16>;
 }
 
-parameter_types! {
-	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd, MaxEncodedLen, Default)]
-	pub const MaxAuthorities: u32 = 100;
-}
+pub type MaxAuthorities = dkg_runtime_primitives::CustomU32Getter<100>;
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -433,9 +430,9 @@ construct_runtime!(
 		RuntimeSpecification: chain_spec,
 
 		// DKG / offchain worker - the order and position of these pallet should not change
-		DKG: pallet_dkg_metadata::{Pallet, Storage, Call, Event<T>, Config<T>, ValidateUnsigned},
+		DKG: pallet_dkg_metadata,
 		DKGProposals: pallet_dkg_proposals,
-		DKGProposalHandler: pallet_dkg_proposal_handler::{Pallet, Storage, Call, Event<T>, ValidateUnsigned},
+		DKGProposalHandler: pallet_dkg_proposal_handler,
 
 		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		Balances: pallet_balances,
@@ -879,42 +876,102 @@ impl_runtime_apis! {
 		}
 	}
 
-	#[cfg(feature = "runtime-benchmarks")]
-	impl frame_benchmarking::Benchmark<Block> for Runtime {
-		fn benchmark_metadata(extra: bool) -> (
-			Vec<frame_benchmarking::BenchmarkList>,
-			Vec<frame_support::traits::StorageInfo>,
-		) {
-			use frame_benchmarking::{Benchmarking, BenchmarkList};
-			use frame_support::traits::StorageInfoTrait;
-			use pallet_hotfix_sufficients::Pallet as PalletHotfixSufficients;
+	impl dkg_runtime_primitives::DKGApi<Block, DKGId, BlockNumber, mpc::MaxProposalLength, MaxAuthorities> for Runtime {
+		fn authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
+			let authorities = DKG::authorities();
+			let authority_set_id = DKG::authority_set_id();
 
-			let mut list = Vec::<BenchmarkList>::new();
-			list_benchmarks!(list, extra);
-			list_benchmark!(list, extra, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
-
-			let storage_info = AllPalletsWithSystem::storage_info();
-			(list, storage_info)
+			dkg_runtime_primitives::AuthoritySet {
+				authorities,
+				id: authority_set_id
+			}
 		}
 
-		fn dispatch_benchmark(
-			config: frame_benchmarking::BenchmarkConfig
-		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
-			use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
-			use pallet_evm::Pallet as PalletEvmBench;
-			use pallet_hotfix_sufficients::Pallet as PalletHotfixSufficients;
-			impl frame_system_benchmarking::Config for Runtime {}
+		fn queued_authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
+			let queued_authorities = DKG::next_authorities();
+			let queued_authority_set_id = DKG::next_authority_set_id();
 
-			let whitelist: Vec<TrackedStorageKey> = vec![];
+			dkg_runtime_primitives::AuthoritySet {
+				authorities: queued_authorities,
+				id: queued_authority_set_id
+			}
+		}
 
-			let mut batches = Vec::<BenchmarkBatch>::new();
-			let params = (&config, &whitelist);
+		fn signature_threshold() -> u16 {
+			DKG::signature_threshold()
+		}
 
-			add_benchmark!(params, batches, pallet_evm, PalletEvmBench::<Runtime>);
-			add_benchmark!(params, batches, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
+		fn keygen_threshold() -> u16 {
+			DKG::keygen_threshold()
+		}
 
-			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
-			Ok(batches)
+		fn next_signature_threshold() -> u16 {
+			DKG::next_signature_threshold()
+		}
+
+		fn next_keygen_threshold() -> u16 {
+			DKG::next_keygen_threshold()
+		}
+
+		fn should_refresh(block_number: BlockNumber) -> bool {
+			DKG::should_refresh(block_number)
+		}
+
+		fn next_dkg_pub_key() -> Option<(dkg_runtime_primitives::AuthoritySetId, Vec<u8>)> {
+			DKG::next_dkg_public_key().map(|pub_key| (pub_key.0, pub_key.1.into()))
+		}
+
+		fn next_pub_key_sig() -> Option<Vec<u8>> {
+			DKG::next_public_key_signature().map(|pub_key_sig| pub_key_sig.into())
+		}
+
+		fn dkg_pub_key() -> (dkg_runtime_primitives::AuthoritySetId, Vec<u8>) {
+			(DKG::dkg_public_key().0, DKG::dkg_public_key().1.into())
+		}
+
+		fn get_best_authorities() -> Vec<(u16, mpc::DKGId)> {
+			DKG::best_authorities().into()
+		}
+
+		fn get_next_best_authorities() -> Vec<(u16, mpc::DKGId)> {
+			DKG::next_best_authorities().into()
+		}
+
+		fn get_current_session_progress(block_number: BlockNumber) -> Option<Permill> {
+			use frame_support::traits::EstimateNextSessionRotation;
+			<pallet_dkg_metadata::DKGPeriodicSessions<poa::SessionPeriod, poa::SessionOffset, Runtime> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
+		}
+
+		fn get_unsigned_proposals() -> Vec<dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>> {
+			DKGProposalHandler::get_unsigned_proposals()
+		}
+
+		fn get_max_extrinsic_delay(block_number: BlockNumber) -> BlockNumber {
+			DKG::max_extrinsic_delay(block_number)
+		}
+
+		fn get_authority_accounts() -> (Vec<AccountId>, Vec<AccountId>) {
+			(DKG::current_authorities_accounts().into(), DKG::next_authorities_accounts().into())
+		}
+
+		fn get_reputations(authorities: Vec<mpc::DKGId>) -> Vec<(mpc::DKGId, mpc::Reputation)> {
+			authorities.iter().map(|a| (a.clone(), DKG::authority_reputations(a))).collect()
+		}
+
+		fn get_keygen_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
+			set.iter().filter(|a| pallet_dkg_metadata::JailedKeygenAuthorities::<Runtime>::contains_key(a)).cloned().collect()
+		}
+
+		fn get_signing_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
+			set.iter().filter(|a| pallet_dkg_metadata::JailedSigningAuthorities::<Runtime>::contains_key(a)).cloned().collect()
+		}
+
+		fn refresh_nonce() -> u32 {
+			DKG::refresh_nonce()
+		}
+
+		fn should_execute_new_keygen() -> bool {
+			DKG::should_execute_new_keygen()
 		}
 	}
 
@@ -976,102 +1033,42 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl dkg_runtime_primitives::DKGApi<Block, dkg_runtime_primitives::crypto::AuthorityId, BlockNumber, mpc::MaxProposalLength, MaxAuthorities> for Runtime {
-		fn authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
-			let authorities = DKG::authorities();
-			let authority_set_id = DKG::authority_set_id();
+	#[cfg(feature = "runtime-benchmarks")]
+	impl frame_benchmarking::Benchmark<Block> for Runtime {
+		fn benchmark_metadata(extra: bool) -> (
+			Vec<frame_benchmarking::BenchmarkList>,
+			Vec<frame_support::traits::StorageInfo>,
+		) {
+			use frame_benchmarking::{Benchmarking, BenchmarkList};
+			use frame_support::traits::StorageInfoTrait;
+			use pallet_hotfix_sufficients::Pallet as PalletHotfixSufficients;
 
-			dkg_runtime_primitives::AuthoritySet {
-				authorities,
-				id: authority_set_id
-			}
+			let mut list = Vec::<BenchmarkList>::new();
+			list_benchmarks!(list, extra);
+			list_benchmark!(list, extra, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
+
+			let storage_info = AllPalletsWithSystem::storage_info();
+			(list, storage_info)
 		}
 
-		fn queued_authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
-			let queued_authorities = DKG::next_authorities();
-			let queued_authority_set_id = DKG::next_authority_set_id();
+		fn dispatch_benchmark(
+			config: frame_benchmarking::BenchmarkConfig
+		) -> Result<Vec<frame_benchmarking::BenchmarkBatch>, sp_runtime::RuntimeString> {
+			use frame_benchmarking::{Benchmarking, BenchmarkBatch, add_benchmark, TrackedStorageKey};
+			use pallet_evm::Pallet as PalletEvmBench;
+			use pallet_hotfix_sufficients::Pallet as PalletHotfixSufficients;
+			impl frame_system_benchmarking::Config for Runtime {}
 
-			dkg_runtime_primitives::AuthoritySet {
-				authorities: queued_authorities,
-				id: queued_authority_set_id
-			}
-		}
+			let whitelist: Vec<TrackedStorageKey> = vec![];
 
-		fn signature_threshold() -> u16 {
-			DKG::signature_threshold()
-		}
+			let mut batches = Vec::<BenchmarkBatch>::new();
+			let params = (&config, &whitelist);
 
-		fn keygen_threshold() -> u16 {
-			DKG::keygen_threshold()
-		}
+			add_benchmark!(params, batches, pallet_evm, PalletEvmBench::<Runtime>);
+			add_benchmark!(params, batches, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
 
-		fn next_signature_threshold() -> u16 {
-			DKG::next_signature_threshold()
-		}
-
-		fn next_keygen_threshold() -> u16 {
-			DKG::next_keygen_threshold()
-		}
-
-		fn should_refresh(block_number: BlockNumber) -> bool {
-			DKG::should_refresh(block_number)
-		}
-
-		fn next_dkg_pub_key() -> Option<(dkg_runtime_primitives::AuthoritySetId, Vec<u8>)> {
-			DKG::next_dkg_public_key().map(|pub_key| (pub_key.0, pub_key.1.into()))
-		  }
-
-		  fn next_pub_key_sig() -> Option<Vec<u8>> {
-			DKG::next_public_key_signature().map(|pub_key_sig| pub_key_sig.into())
-		  }
-
-		  fn dkg_pub_key() -> (dkg_runtime_primitives::AuthoritySetId, Vec<u8>) {
-			(DKG::dkg_public_key().0, DKG::dkg_public_key().1.into())
-		  }
-
-		  fn get_best_authorities() -> Vec<(u16, mpc::DKGId)> {
-			DKG::best_authorities().into()
-		  }
-
-		  fn get_next_best_authorities() -> Vec<(u16, mpc::DKGId)> {
-			DKG::next_best_authorities().into()
-		  }
-
-		fn get_current_session_progress(block_number: BlockNumber) -> Option<Permill> {
-			use frame_support::traits::EstimateNextSessionRotation;
-			<pallet_dkg_metadata::DKGPeriodicSessions<poa::SessionPeriod, poa::SessionOffset, Runtime> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
-		}
-
-		fn get_unsigned_proposals() -> Vec<dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>> {
-			DKGProposalHandler::get_unsigned_proposals()
-		}
-
-		fn get_max_extrinsic_delay(block_number: BlockNumber) -> BlockNumber {
-			DKG::max_extrinsic_delay(block_number)
-		}
-
-		fn get_authority_accounts() -> (Vec<AccountId>, Vec<AccountId>) {
-			(DKG::current_authorities_accounts().into(), DKG::next_authorities_accounts().into())
-		}
-
-		fn get_reputations(authorities: Vec<mpc::DKGId>) -> Vec<(mpc::DKGId, mpc::Reputation)> {
-			authorities.iter().map(|a| (a.clone(), DKG::authority_reputations(a))).collect()
-		}
-
-		fn get_keygen_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
-			set.iter().filter(|a| pallet_dkg_metadata::JailedKeygenAuthorities::<Runtime>::contains_key(a)).cloned().collect()
-		}
-
-		fn get_signing_jailed(set: Vec<mpc::DKGId>) -> Vec<mpc::DKGId> {
-			set.iter().filter(|a| pallet_dkg_metadata::JailedSigningAuthorities::<Runtime>::contains_key(a)).cloned().collect()
-		}
-
-		fn refresh_nonce() -> u32 {
-			DKG::refresh_nonce()
-		}
-
-		fn should_execute_new_keygen() -> bool {
-			DKG::should_execute_new_keygen()
+			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
+			Ok(batches)
 		}
 	}
 

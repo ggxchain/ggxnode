@@ -42,7 +42,10 @@ use crate::cli::Sealing;
 use crate::{
 	cli::Cli,
 	rpc::FullDeps,
-	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
+	runtime::{
+		opaque::Block, AccountId, Balance, Hash, Index,
+		RuntimeApi,
+	},
 };
 
 #[cfg(feature = "aura")]
@@ -347,6 +350,30 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		50,
 		prometheus_registry.clone(),
 	));
+
+	if role.is_authority() {
+		dkg_primitives::utils::insert_controller_account_keys_into_keystore(
+			&config,
+			Some(keystore_container.sync_keystore()),
+		);
+
+		let dkg_params = dkg_gadget::DKGParams::<Block, FullBackend, FullClient> {
+			client: client.clone(),
+			backend: backend.clone(),
+			key_store: Some(keystore_container.sync_keystore()),
+			network: network.clone(),
+			prometheus_registry: prometheus_registry.clone(),
+			local_keystore: keystore_container.local_keystore(),
+			_block: std::marker::PhantomData::<Block>,
+		};
+
+		// Start the DKG gadget.
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"dkg-gadget",
+			None,
+			dkg_gadget::start_dkg_gadget::<_, _, _>(dkg_params),
+		);
+	}
 
 	let rpc_builder = {
 		let client = client.clone();
@@ -789,6 +816,7 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
+
 	P: TransactionPool<Block = Block> + 'static,
 	A: ChainApi<Block = Block> + 'static,
 {

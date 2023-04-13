@@ -1,7 +1,7 @@
 use super::{prelude::*, Runtime, RuntimeEvent, *};
 
 use crate::{
-	poa::{SessionOffset, SessionPeriod},
+	poa::{PeriodicSessions, SessionPeriod},
 	Hours,
 };
 
@@ -39,14 +39,12 @@ pub type MaxSignatureLength = CustomU32Getter<512>;
 pub type MaxReporters = CustomU32Getter<100>;
 
 impl pallet_dkg_metadata::Config for Runtime {
-	type SessionPeriod = SessionPeriod;
 	type DKGId = DKGId;
 	type RuntimeEvent = RuntimeEvent;
 	type OnAuthoritySetChangeHandler = DKGProposals;
 	type OnDKGPublicKeyChangeHandler = ();
 	type OffChainAuthId = dkg_runtime_primitives::offchain::crypto::OffchainAuthId;
-	type NextSessionRotation =
-		pallet_dkg_metadata::DKGPeriodicSessions<SessionPeriod, SessionOffset, Runtime>;
+	type NextSessionRotation = PeriodicSessions;
 	type RefreshDelay = RefreshDelay;
 	type UnsignedPriority = crate::ImOnlineUnsignedPriority;
 	type UnsignedInterval = UnsignedInterval;
@@ -57,6 +55,7 @@ impl pallet_dkg_metadata::Config for Runtime {
 	type ForceOrigin = EnsureRoot<Self::AccountId>;
 	type AuthorityIdOf = pallet_dkg_metadata::AuthorityIdOf<Self>;
 	type ProposalHandler = DKGProposalHandler;
+	type SessionPeriod = SessionPeriod;
 	type MaxKeyLength = MaxKeyLength;
 	type MaxSignatureLength = MaxSignatureLength;
 	type MaxReporters = MaxReporters;
@@ -76,12 +75,12 @@ parameter_types! {
 }
 
 impl pallet_dkg_proposals::Config for Runtime {
-	type AdminOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type AdminOrigin = EnsureRoot<Self::AccountId>;
 	type DKGAuthorityToMerkleLeaf = DKGEcdsaToEthereum;
 	type DKGId = DKGId;
 	type ChainIdentifier = ChainIdentifier;
 	type RuntimeEvent = RuntimeEvent;
-	type NextSessionRotation = pallet_session::PeriodicSessions<SessionPeriod, SessionOffset>;
+	type NextSessionRotation = PeriodicSessions;
 	type Proposal = frame_support::BoundedVec<u8, MaxProposalLength>;
 	type ProposalLifetime = ProposalLifetime;
 	type ProposalHandler = DKGProposalHandler;
