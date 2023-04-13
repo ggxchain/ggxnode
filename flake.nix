@@ -177,13 +177,25 @@
             };
 
             common-native-release-attrs = common-attrs // rec {
-              cargoExtraArgs = "--package ${pname}";
+              cargoExtraArgs = ''--package ${pname}  --no-default-features --features="aura,with-rocksdb-weights,$RUNTIME"'';
               pname = "golden-gate-node";
+              nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git gmp ]; # parity does some git hacks in build.rs. DKG uses gmp
+            };
+
+            common-native-mainnet-attrs = common-native-release-attrs // rec {
+              RUNTIME="mainnet";
               version = "0.1.0";
             };
 
-            common-native-release-deps =
-              craneLib.buildDepsOnly (common-native-release-attrs // { });
+            common-native-testnet-attrs = common-native-release-attrs // rec {
+              RUNTIME="testnet";
+              version = "0.2.0";
+            };
+
+            common-native-release-mainnet-deps =
+              craneLib.buildDepsOnly (common-native-mainnet-attrs // { });
+            common-native-release-testnet-deps =
+              craneLib.buildDepsOnly (common-native-testnet-attrs // { });
             common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
 
             golden-gate-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
@@ -191,9 +203,12 @@
               cargoArtifacts = common-wasm-release-deps;
             });
 
-            golden-gate-node = craneLib.buildPackage (common-native-release-attrs // {
-              cargoArtifacts = common-native-release-deps;
-              nativeBuildInputs = common-native-release-attrs.nativeBuildInputs ++ [ pkgs.git pkgs.gmp ]; # parity does some git hacks in build.rs. Also, mpc links gmp 
+            golden-gate-node-mainnet = craneLib.buildPackage (common-native-mainnet-attrs // {
+              cargoArtifacts = common-native-release-mainnet-deps;
+            });
+
+            golden-gate-node-testnet = craneLib.buildPackage (common-native-testnet-attrs // {
+              cargoArtifacts = common-native-release-testnet-deps;
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -203,48 +218,20 @@
 
             cargoClippyExtraArgs = "-- -D warnings";
 
-            clippy-node = craneLib.cargoClippy (common-native-release-attrs // {
+            clippy-node-testnet = craneLib.cargoClippy (common-native-testnet-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = golden-gate-node.cargoArtifacts;
+              cargoArtifacts = golden-gate-node-testnet.cargoArtifacts;
+            });
+
+            clippy-node-mainnet = craneLib.cargoClippy (common-native-mainnet-attrs // {
+              inherit cargoClippyExtraArgs;
+              cargoArtifacts = golden-gate-node-mainnet.cargoArtifacts;
             });
 
             clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
               inherit cargoClippyExtraArgs;
               cargoArtifacts = golden-gate-runtimes.cargoArtifacts;
             });
-
-
-
-            # really need to run as some points:
-            # - light client emulator (ideal for contracts)
-            # - multi node local fast (fast druation low security)
-            # - multi local slow (duration and security as in prod)
-            # - here can apply above to remote with something if needed (terranix/terraform-ng works)
-            # for each 
-            # - either start from genesis
-            # - of from fork (remote prod data)
-            # all with - archieval and logging enabled
-            single-fast = pkgs.writeShellApplication rec {
-              name = "single-fast";
-              text = ''
-                ${pkgs.lib.meta.getExe golden-gate-node} --dev  
-              '';
-            };
-
-            # we do not use existing Dotsama tools as they target relay + parachains
-            # here we can evolve into generating arion/systemd/podman/k8s output (what ever will fit) easy 
-            multi-fast = pkgs.writeShellApplication rec {
-              name = "multi-fast";
-              text = ''
-                WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
-                WS_PORT_BOB=''${WS_PORT_BOB:-9945}
-                WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
-                ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
-                ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --bob --tmp --ws-port="$WS_PORT_BOB" &> bob.log ) &
-                ( ${pkgs.lib.meta.getExe golden-gate-node} --chain=local --rpc-cors=all --charlie --tmp --ws-port="$WS_PORT_CHARLIE" &> charlie.log ) &
-                echo https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
-              '';
-            };
 
             tf-init = pkgs.writeShellApplication rec {
               name = "tf-init";
@@ -405,12 +392,13 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit fix golden-gate-runtimes golden-gate-node gen-node-key single-fast multi-fast tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node clippy-wasm;
+                inherit fix golden-gate-runtimes golden-gate-node-testnet golden-gate-node-mainnet gen-node-key tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
                 subkey = pkgs.subkey;
+                golden-gate-node = golden-gate-node-testnet;
                 node = golden-gate-node;
                 lint-all = pkgs.symlinkJoin {
                   name = "lint-all";
-                  paths = [ doclint fmt clippy-node clippy-wasm ];
+                  paths = [ doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm ];
                 };
                 release = pkgs.symlinkJoin {
                   name = "release";
@@ -428,7 +416,6 @@
                   '';
                 };
 
-
                 check-node = pkgs.writeShellApplication
                   {
                     name = "check-node";
@@ -436,6 +423,39 @@
                       export SKIP_WASM_BUILD=1 && cargo check --package golden-gate-node
                     '';
                   };
+                  
+                # really need to run as some points:
+                # - light client emulator (ideal for contracts)
+                # - multi node local fast (fast druation low security)
+                # - multi local slow (duration and security as in prod)
+                # - here can apply above to remote with something if needed (terranix/terraform-ng works)
+                # for each 
+                # - either start from genesis
+                # - of from fork (remote prod data)
+                # all with - archieval and logging enabled
+                single-fast = pkgs.writeShellApplication rec {
+                  name = "single-fast";
+                  text = ''
+                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe golden-gate-node-mainnet} || package=${pkgs.lib.meta.getExe golden-gate-node-testnet}
+                    $package --dev  
+                  '';
+                };
+
+                # we do not use existing Dotsama tools as they target relay + parachains
+                # here we can evolve into generating arion/systemd/podman/k8s output (what ever will fit) easy 
+                multi-fast = pkgs.writeShellApplication rec {
+                  name = "multi-fast";
+                  text = ''
+                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe golden-gate-node-mainnet} || package=${pkgs.lib.meta.getExe golden-gate-node-testnet}
+                    WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
+                    WS_PORT_BOB=''${WS_PORT_BOB:-9945}
+                    WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
+                    ( $package --chain=local --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
+                    ( $package --chain=local --rpc-cors=all --bob --tmp --ws-port="$WS_PORT_BOB" &> bob.log ) &
+                    ( $package --chain=local --rpc-cors=all --charlie --tmp --ws-port="$WS_PORT_CHARLIE" &> charlie.log ) &
+                    echo https://polkadot.js.org/apps/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
+                  '';
+                };
 
                 deploy-testnet-node-a = mkNixosAwsRemoteRebuild bootnode region "testnet-node-a";
                 deploy-testnet-node-b = mkNixosAwsRemoteRebuild "34-243-72-53" region "testnet-node-b";
