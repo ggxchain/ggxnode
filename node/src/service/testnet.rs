@@ -42,10 +42,7 @@ use crate::cli::Sealing;
 use crate::{
 	cli::Cli,
 	rpc::FullDeps,
-	runtime::{
-		opaque::Block, AccountId, Balance, Hash, Index,
-		RuntimeApi,
-	},
+	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
 };
 
 #[cfg(feature = "aura")]
@@ -309,6 +306,18 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		.extra_sets
 		.push(sc_finality_grandpa::grandpa_peers_set_config(
 			grandpa_protocol_name.clone(),
+		));
+	config
+		.network
+		.extra_sets
+		.push(dkg_gadget::dkg_peers_set_config(
+			dkg_gadget::DKG_KEYGEN_PROTOCOL_NAME.into(),
+		));
+	config
+		.network
+		.extra_sets
+		.push(dkg_gadget::dkg_peers_set_config(
+			dkg_gadget::DKG_SIGNING_PROTOCOL_NAME.into(),
 		));
 
 	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
@@ -816,7 +825,6 @@ where
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
-
 	P: TransactionPool<Block = Block> + 'static,
 	A: ChainApi<Block = Block> + 'static,
 {

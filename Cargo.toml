@@ -150,11 +150,11 @@ golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = fal
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
-pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-sr25519 = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-substrate-ecdsa = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-xvm = { version = "0.2.1", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
+pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-sr25519 = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-substrate-ecdsa = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-xvm = { version = "0.2.1", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
 
 # Wasm contracts
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
@@ -162,18 +162,18 @@ pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate",
 pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-collective-flip", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 
 dkg-gadget = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-runtime-primitives = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-primitives = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-standalone-runtime = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-primitives = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-runtime-primitives = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-standalone-runtime = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
 
 # these too pallets seems usable as is
-pallet-dkg-metadata = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-pallet-dkg-proposal-handler = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-dkg-metadata = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-dkg-proposal-handler = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
 
 # this to be heavilty modified to allow users to ask for signatures for some sort 
 # example, user owns tokens on btc/eth, and that is reflected on ggx chain, and if proposal to move BTC approved (user owns token),
 # than approved and signed (user should pay for transaction)
 # so main use case seems moving protocol locked token on BTC/ETH to new wallet
-pallet-dkg-proposals = {  git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-dkg-proposals = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
 
 # so here will need some ggx pallet just for user calls to sign DXG into queue

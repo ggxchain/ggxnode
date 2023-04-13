@@ -59,6 +59,7 @@ pub enum Subcommand {
 	Key(sc_cli::KeySubcommand),
 
 	/// DKG key management cli utilities
+	#[cfg(feature = "testnet")]
 	#[command(subcommand)]
 	DKGKey(dkg_primitives::dkg_key_cli::DKGKeySubcommand),
 

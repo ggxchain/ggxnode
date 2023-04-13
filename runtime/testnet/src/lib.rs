@@ -939,7 +939,7 @@ impl_runtime_apis! {
 
 		fn get_current_session_progress(block_number: BlockNumber) -> Option<Permill> {
 			use frame_support::traits::EstimateNextSessionRotation;
-			<pallet_dkg_metadata::DKGPeriodicSessions<poa::SessionPeriod, poa::SessionOffset, Runtime> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
+			<poa::PeriodicSessions as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
 		}
 
 		fn get_unsigned_proposals() -> Vec<dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>> {

@@ -71,9 +71,9 @@ fp-storage = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
-dkg-gadget = { workspace = true, default-features = false } 
-dkg-runtime-primitives = { workspace = true, default-features = false, features = ["std"] } 
-dkg-primitives = { workspace = true, default-features = false } 
+dkg-gadget = { workspace = true, default-features = false, optional = true }
+dkg-primitives = { workspace = true, default-features = false, optional = true }
+dkg-runtime-primitives = { workspace = true, default-features = false, features = ["std"], optional = true }
 
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
@@ -93,6 +93,9 @@ testnet = [
 	"fp-rpc",
 	"fp-storage",
 	"fc-storage",
+	"dkg-gadget",
+	"dkg-runtime-primitives",
+	"dkg-primitives",
 ]
 mainnet = ["golden-gate-runtime-mainnet"]
 aura = [
