@@ -179,7 +179,7 @@
             common-native-release-attrs = common-attrs // rec {
               cargoExtraArgs = ''--package ${pname}  --no-default-features --features="aura,with-rocksdb-weights,$RUNTIME"'';
               pname = "golden-gate-node";
-              nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git gmp ]; # parity does some git hacks in build.rs. DKG uses gmp
+              nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git pkgs.gmp ]; # parity does some git hacks in build.rs. DKG uses gmp
             };
 
             common-native-mainnet-attrs = common-native-release-attrs // rec {
