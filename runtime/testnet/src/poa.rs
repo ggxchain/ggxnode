@@ -64,7 +64,8 @@ parameter_types! {
 	pub const MaxRegistrars: u32 = 20;
 }
 
-pub type PeriodicSessions = pallet_dkg_metadata::DKGPeriodicSessions<SessionPeriod, SessionOffset, Runtime>;
+pub type PeriodicSessions =
+	pallet_dkg_metadata::DKGPeriodicSessions<SessionPeriod, SessionOffset, Runtime>;
 
 impl crate::validator_manager::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
