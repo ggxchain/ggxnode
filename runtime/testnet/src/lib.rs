@@ -167,12 +167,8 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
-	Migrations,
+	(),
 >;
-
-// All migrations executed on runtime upgrade as a nested tuple of types implementing
-// `OnRuntimeUpgrade`.
-type Migrations = (pallet_contracts::Migration<Runtime>,);
 
 /// Constant values used within the runtime.
 pub const MILLIGGX: Balance = 1_000_000_000_000_000;
