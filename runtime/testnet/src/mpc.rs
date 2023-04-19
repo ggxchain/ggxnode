@@ -13,7 +13,7 @@ use pallet_dkg_proposals::DKGEcdsaToEthereum;
 use sp_runtime::{generic::Era, traits::StaticLookup, Percent, SaturatedConversion};
 
 parameter_types! {
-	pub const ChainIdentifier: TypedChainId = TypedChainId::Ink(8866);
+	pub const ChainIdentifier: TypedChainId = TypedChainId::Substrate(8866);
 	pub storage ProposalLifetime: BlockNumber = Hours::get() / 5;
 	pub const DKGAccountId: PalletId = PalletId(*b"dw/dkgac");
 	pub const RefreshDelay: Permill = Permill::from_percent(50);
@@ -63,16 +63,10 @@ impl pallet_dkg_metadata::Config for Runtime {
 	type WeightInfo = pallet_dkg_metadata::weights::WebbWeight<Runtime>;
 }
 
-parameter_types! {
-	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd)]
-	pub const MaxVotes : u32 = 100;
-	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd)]
-	pub const MaxResources : u32 = 1000;
-	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd)]
-	pub const MaxAuthorityProposers : u32 = 1000;
-	#[derive(Clone, Encode, Decode, Debug, Eq, PartialEq, scale_info::TypeInfo, Ord, PartialOrd)]
-	pub const MaxExternalProposerAccounts : u32 = 1000;
-}
+type MaxVotes = CustomU32Getter<100>;
+type MaxResources = CustomU32Getter<1000>;
+type MaxAuthorityProposers = CustomU32Getter<1000>;
+type MaxExternalProposerAccounts = CustomU32Getter<1000>;
 
 impl pallet_dkg_proposals::Config for Runtime {
 	type AdminOrigin = EnsureRoot<Self::AccountId>;

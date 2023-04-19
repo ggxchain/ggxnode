@@ -1,4 +1,6 @@
-use crate::{prelude::*, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO};
+use crate::{
+	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO,
+};
 
 use super::{Balances, Runtime, RuntimeEvent};
 
@@ -21,7 +23,7 @@ pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND.saturating_div(GAS_PE
 
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
-		NORMAL_DISPATCH_RATIO * WEIGHT_REF_TIME_PER_SECOND / WEIGHT_PER_GAS
+		NORMAL_DISPATCH_RATIO * BlockWeights::get().max_block.ref_time() / WEIGHT_PER_GAS
 	);
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
@@ -97,7 +99,9 @@ use sp_runtime::{traits::BlakeTwo256, Permill};
 
 parameter_types! {
 	pub DefaultBaseFeePerGas: U256 = (super::MILLIGGX / 1_000_000).into();
-	pub DefaultElasticity: Permill = Permill::from_parts(125_000);
+	// At the moment, we disable dynamic fee scaling as well as Astar does not have it.
+	// It fixes MPC incremental gath growth as well as XVM call estimation from EVM side.
+	pub DefaultElasticity: Permill = Permill::zero();
 }
 
 pub struct BaseFeeThreshold;
