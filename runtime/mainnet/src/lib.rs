@@ -9,6 +9,11 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
+/// Max size for serialized extrinsic params for this testing runtime.
+/// This is a quite arbitrary but empirically battle tested value.
+#[cfg(test)]
+pub const CALL_PARAMS_MAX_SIZE: usize = 208;
+
 pub mod governance;
 pub mod pos;
 mod version;
@@ -125,7 +130,7 @@ pub mod opaque {
 }
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
@@ -244,7 +249,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = AccountIdLookup<AccountId, AccountIndex>;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
@@ -670,12 +675,6 @@ impl_runtime_apis! {
 		}
 	}
 
-	// impl pallet_staking_runtime_api::StakingApi<Block, Balance> for Runtime {
-	// 	fn nominations_quota(balance: Balance) -> u32 {
-	// 		Staking::api_nominations_quota(balance)
-	// 	}
-	// }
-
 	#[cfg(feature = "runtime-benchmarks")]
 	impl frame_benchmarking::Benchmark<Block> for Runtime {
 		fn benchmark_metadata(extra: bool) -> (
@@ -706,5 +705,38 @@ impl_runtime_apis! {
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
 		}
+	}
+}
+
+#[cfg(test)]
+mod tests {
+	use crate::{pos::MaxNominations, CALL_PARAMS_MAX_SIZE};
+
+	use super::{Runtime, RuntimeCall};
+
+	use frame_election_provider_support::NposSolution;
+	use sp_runtime::UpperOf;
+
+	#[test]
+	fn perbill_as_onchain_accuracy() {
+		type OnChainAccuracy =
+			<<Runtime as pallet_election_provider_multi_phase::MinerConfig>::Solution as NposSolution>::Accuracy;
+		let maximum_chain_accuracy: Vec<UpperOf<OnChainAccuracy>> = (0..MaxNominations::get())
+			.map(|_| <UpperOf<OnChainAccuracy>>::from(OnChainAccuracy::one().deconstruct()))
+			.collect();
+		let _: UpperOf<OnChainAccuracy> = maximum_chain_accuracy
+			.iter()
+			.fold(0, |acc, x| acc.checked_add(*x).unwrap());
+	}
+
+	#[test]
+	fn call_size() {
+		let size = core::mem::size_of::<RuntimeCall>();
+		assert!(
+			size <= CALL_PARAMS_MAX_SIZE,
+			"size of RuntimeCall {size} is more than {CALL_PARAMS_MAX_SIZE} bytes.
+			 Some calls have too big arguments, use Box to reduce the size of RuntimeCall.
+			 If the limit is too strong, maybe consider increase the limit.",
+		);
 	}
 }
