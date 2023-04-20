@@ -47,6 +47,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
@@ -89,6 +90,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Bob"),
 				],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
@@ -157,6 +159,7 @@ pub fn remote_testnet_config() -> Result<ChainSpec, String> {
 					),
 				],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
