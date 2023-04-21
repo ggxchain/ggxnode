@@ -1,5 +1,7 @@
 # Mainnet inflation management
 
+> Please note, inflation was renamed to currencyManager
+
 We have fixed inflation 16% per year configured by genesis initially.
 Validators are receiving its portion (stake dependent to total issuance) on the end of the era.
 The inflation can be managed by sudo or referendum.
@@ -7,14 +9,14 @@ The inflation can be managed by sudo or referendum.
 ## Getting inflation percent
 
 * Go to the [chain state](https://blockexptest.ggxchain.io/#/chainstate) tab.
-* Select `inflation.inflationPercent` query and click on the plus icon.
+* Select `currencyManager.inflationPercent` query and click on the plus icon.
 
   ![The image shows 16% inflation returned from query](images/fetching-inflation.png)
 
 ## Changing inflation by sudo
 
 * Go to the [sudo](https://blockexptest.ggxchain.io/#/sudo) tab
-* Choose `inflation.changeInflation` from drop down menus. Choose new value.
+* Choose `currencyManager.changeInflation` from drop down menus. Choose new value.
 Please note that the value represented as integer per billion. So 500'000'000 represents 50%.
 
   ![The image shows how to change value using sudo](images/sudo-mechanism.png)
@@ -27,7 +29,7 @@ Please note that the value represented as integer per billion. So 500'000'000 re
 
 * Go to the [preimages](https://blockexptest.ggxchain.io/#/preimages) tab.
 * Click on the `Add preimage`
-* Choose `inflation.changeInflation` from dropdown menu
+* Choose `currencyManager.changeInflation` from dropdown menu
 
   ![Image shows example how to fill preimage](images/preimage.png)
 * Copy the created preimage hash.
