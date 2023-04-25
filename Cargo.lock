@@ -5042,7 +5042,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-xvm"
 version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -5298,7 +5298,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sr25519"
 version = "1.2.1"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "fp-evm",
  "log",
@@ -5314,7 +5314,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-substrate-ecdsa"
 version = "1.2.2"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "fp-evm",
  "log",
@@ -5330,7 +5330,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-xvm"
 version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -5343,6 +5343,7 @@ dependencies = [
  "precompile-utils",
  "sp-core",
  "sp-io",
+ "sp-runtime",
  "sp-std",
 ]
 
@@ -5753,7 +5754,7 @@ dependencies = [
 [[package]]
 name = "pallet-xvm"
 version = "0.2.1"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -6113,7 +6114,7 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 [[package]]
 name = "precompile-utils"
 version = "0.4.3"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "evm",
  "fp-evm",
@@ -6136,7 +6137,7 @@ dependencies = [
 [[package]]
 name = "precompile-utils-macro"
 version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "num_enum",
  "proc-macro2",
@@ -11102,7 +11103,7 @@ dependencies = [
 [[package]]
 name = "xvm-chain-extension-types"
 version = "0.1.0"
-source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=temp/polkadot-v0.9.39#0e90f7ea1c6f382d5bc6f229e668939e638e1b0c"
+source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
  "parity-scale-codec",
  "scale-info",

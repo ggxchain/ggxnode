@@ -127,7 +127,7 @@ pub mod opaque {
 }
 
 /// The address format for describing accounts.
-pub type Address = sp_runtime::MultiAddress<AccountId, ()>;
+pub type Address = sp_runtime::MultiAddress<AccountId, AccountIndex>;
 /// Block header type as expected by this runtime.
 pub type Header = generic::Header<BlockNumber, BlakeTwo256>;
 /// Block type as expected by this runtime.
@@ -248,7 +248,7 @@ impl frame_system::Config for Runtime {
 	/// The identifier used to distinguish between accounts.
 	type AccountId = AccountId;
 	/// The lookup mechanism to get account ID from whatever is passed in dispatchers.
-	type Lookup = AccountIdLookup<AccountId, ()>;
+	type Lookup = AccountIdLookup<AccountId, AccountIndex>;
 	/// The header type.
 	type Header = generic::Header<BlockNumber, BlakeTwo256>;
 	/// The ubiquitous event type.
@@ -420,6 +420,7 @@ construct_runtime!(
 		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		System: frame_system,
 		Timestamp: pallet_timestamp,
+		RuntimeSpecification: chain_spec,
 		Balances: pallet_balances,
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
@@ -449,7 +450,6 @@ construct_runtime!(
 		HotfixSufficients: pallet_hotfix_sufficients,
 		// GGX pallets
 		AccountFilter: account_filter,
-		RuntimeSpecification: chain_spec,
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
