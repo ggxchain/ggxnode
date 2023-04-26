@@ -11,7 +11,7 @@ pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn properties() -> Option<Properties> {
 	let mut properties = Properties::new();
-	properties.insert("tokenSymbol".into(), "GGX".into());
+	properties.insert("tokenSymbol".into(), "GGX Test".into());
 	properties.insert("tokenDecimals".into(), 18u32.into());
 	Some(properties)
 }

@@ -99,8 +99,8 @@ You are supposed to see an event. Example:
 * You will be redirected to the website with the network settings.
 Click on the `Add a network manually` button at the bottom of the page. Fill in the following fields:
   * Network name: `Golden Gate`
-  * New RPC URL: `http://localhost:9933`
-  * Chain ID: `66`.
+  * New RPC URL: `http://localhost:9944`
+  * Chain ID: `8866`.
   * Currency symbol: `GGX`
   * Block explorer URL: None
 * Click on the user icon nearby with a network selector on the top of the page.

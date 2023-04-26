@@ -151,11 +151,11 @@ golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = fal
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
-pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-sr25519 = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-substrate-ecdsa = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-evm-precompile-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
-pallet-xvm = { version = "0.2.1", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.39", default-features = false }
+pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-sr25519 = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-substrate-ecdsa = { git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-evm-precompile-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
+pallet-xvm = { version = "0.2.1", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }
 
 # Wasm contracts
 pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
