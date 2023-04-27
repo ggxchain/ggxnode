@@ -5,6 +5,7 @@ use crate::{
 use super::{Balances, Runtime, RuntimeEvent};
 
 use super::opaque;
+use crate::Treasury;
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 use pallet_ethereum::PostLogContent;
 use runtime_common::precompiles::GoldenGatePrecompiles;
@@ -47,7 +48,7 @@ impl pallet_evm::Config for Runtime {
 	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type OnChargeTransaction = ();
+	type OnChargeTransaction = pallet_evm::EVMCurrencyAdapter<Balances, Treasury>;
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type OnCreate = ();
 }
