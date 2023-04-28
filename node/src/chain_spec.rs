@@ -11,7 +11,7 @@ pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn properties() -> Option<Properties> {
 	let mut properties = Properties::new();
-	properties.insert("tokenSymbol".into(), "GGX".into());
+	properties.insert("tokenSymbol".into(), "GGX Test".into());
 	properties.insert("tokenDecimals".into(), 18u32.into());
 	Some(properties)
 }
@@ -47,6 +47,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
@@ -89,6 +90,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Bob"),
 				],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
@@ -157,6 +159,7 @@ pub fn remote_testnet_config() -> Result<ChainSpec, String> {
 					),
 				],
 				888888,
+				1_000_000_000,
 			)
 		},
 		// Bootnodes
