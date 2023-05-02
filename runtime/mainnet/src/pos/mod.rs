@@ -26,8 +26,9 @@ parameter_types! {
 	pub const ProposalBondMinimum: Balance = 1 * GGX;
 	pub const ProposalBondMaximum: Balance = 1000 * GGX;
 
-	pub storage SpendPeriod: BlockNumber = 1 * Days::get();
-	pub const Burn: Permill = Permill::from_percent(50);
+	pub storage SpendPeriod: BlockNumber = BlockNumber::MAX;
+	// We don't want to burn anything.
+	pub const Burn: Permill = Permill::zero();
 	pub const DataDepositPerByte: Balance = 1 * GGX;
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const MaximumReasonLength: u32 = 300;
