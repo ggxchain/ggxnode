@@ -75,6 +75,7 @@ runtime-common = { workspace = true }
 substrate-wasm-builder = { workspace = true }
 
 [dev-dependencies]
+paste = { workspace = true }
 sp-io = { workspace = true }
 
 [features]
