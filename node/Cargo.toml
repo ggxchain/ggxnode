@@ -72,6 +72,22 @@ fp-storage = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
 golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
+[dev-dependencies]
+assert_cmd = "2.0.2"
+ethers = { version = "2.0.4", features = ["legacy"] }
+hex = "0.4"
+nix = { version = "0.26.1", features = ["signal"] }
+pallet-balances = { workspace = true }
+regex = "1.6.0"
+serde_json = "1.0.68"
+substrate-rpc-client = { workspace = true }
+substrate-test-utils = { workspace = true }
+tempfile = "3.1.0"
+tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
+tokio-util = { version = "0.7.4", features = ["compat"] }
+wait-timeout = "0.2"
+web3 = "0.18.0"
+
 [build-dependencies]
 substrate-build-script-utils = { workspace = true }
 
