@@ -11,7 +11,6 @@ use nix::{
 };
 
 use std::process::{self};
-
 pub mod common;
 
 use ethers::{
@@ -27,12 +26,12 @@ async fn send_transaction(
 	client: &Client,
 	address_from: &Address,
 	address_to: &Address,
-) -> Result<(), Box<dyn std::error::Error>> {
+) -> Result<TransactionReceipt, Box<dyn std::error::Error>> {
 	println!(
 		"Beginning transfer of 10000 native currency {} to {}.",
 		address_from, address_to
 	);
-	let tx = TransactionRequest::new()
+	let tx = Eip1559TransactionRequest::new()
 		.to(address_to.clone())
 		.value(U256::from(utils::parse_ether(10000)?))
 		.from(address_from.clone());
@@ -40,11 +39,11 @@ async fn send_transaction(
 
 	println!("Transaction Receipt: {}", serde_json::to_string(&tx)?);
 
-	Ok(())
+	Ok(tx.unwrap_or_default())
 }
 
 // Print the balance of a wallet
-async fn print_balances(
+async fn _print_balances(
 	provider: &Provider<Http>,
 	address_from: &Address,
 	address_to: &Address,
@@ -59,8 +58,6 @@ async fn print_balances(
 
 #[tokio::test]
 async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
-	const BASE_FEE: u128 = 21000000000000u128;
-
 	let base_path = tempdir().expect("could not create a temp dir");
 
 	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
@@ -93,13 +90,21 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 		.with_chain_id(8866u64); // Change to correct network
 	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
 
+	let (_, max_priority_fee_per_gas) = provider.estimate_eip1559_fees(None).await?;
+
+	let block = provider.get_block(BlockNumber::Latest).await?;
+	let base_fee_per_gas = block
+		.unwrap_or_default()
+		.base_fee_per_gas
+		.unwrap_or_default();
+
 	let address_from = "aaafB3972B05630fCceE866eC69CdADd9baC2771".parse::<Address>()?;
 	let address_to = "0000000000000000000000000000000000000000".parse::<Address>()?;
 
 	let before_treasury = common::get_treasury_balance(&ws_url).await?;
 
 	//print_balances(&provider, &address_from, &address_to).await?;
-	send_transaction(&client, &address_from, &address_to).await?;
+	let tx = send_transaction(&client, &address_from, &address_to).await?;
 	let _ = common::wait_n_finalized_blocks(3, 30, &ws_url).await;
 	//print_balances(&provider, &address_from, &address_to).await?;
 
@@ -107,7 +112,10 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 
 	let diff = after_treasury - before_treasury;
 
-	assert!(diff == BASE_FEE);
+	let sum_of_commission =
+		tx.cumulative_gas_used * (base_fee_per_gas + max_priority_fee_per_gas / 4); // div 4 means 25% tip commission
+
+	assert!(<u128 as Into<U256>>::into(diff) == sum_of_commission);
 
 	// Stop the process
 	kill(Pid::from_raw(child.id().try_into().unwrap()), SIGINT).unwrap();
