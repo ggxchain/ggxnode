@@ -18,11 +18,15 @@ repository = "https://github.com/paritytech/frontier/"
 
 [workspace.dependencies]
 # General purpose dependencies
+assert_cmd = "2.0.2"
 async-trait = "0.1"
 clap = { version = "4.1", features = ["derive"] }
+ethers = { version = "2.0.4" }
 futures = "0.3.28"
+hex = "0.4"
 jsonrpsee = "0.16.2"
 log = "0.4.17"
+nix = { version = "0.26.1", features = ["signal"] }
 once_cell = { version = "1.17.1", default-features = false }
 paste = "1.0"
 proptest = "1.1"
@@ -30,7 +34,13 @@ rand = "0.8.4"
 scale-codec = { package = "parity-scale-codec", version = "3.4.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0", default-features = false }
+serde_json = "1.0.68"
+tempfile = "3.1.0"
 test-strategy = "0.3.0"
+tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
+tokio-util = { version = "0.7.4", features = ["compat"] }
+wait-timeout = "0.2"
+web3 = "0.18.0"
 
 # Substrate Client
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
@@ -48,6 +58,7 @@ sc-rpc-api = { version = "0.10.0-dev", git = "https://github.com/paritytech/subs
 sc-service = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 sc-telemetry = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 sc-transaction-pool = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
+substrate-rpc-client = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 
 # Substrate Primitive
 sp-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
@@ -114,6 +125,7 @@ frame-benchmarking-cli = { version = "4.0.0-dev", git = "https://github.com/pari
 substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
+substrate-test-utils= { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39" }
 
 # Frontier Client
 fc-cli = { version = "1.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.39" }
