@@ -26,8 +26,9 @@ parameter_types! {
 	pub const ProposalBondMinimum: Balance = 1 * GGX;
 	pub const ProposalBondMaximum: Balance = 1000 * GGX;
 
-	pub storage SpendPeriod: BlockNumber = 1 * Days::get();
-	pub const Burn: Permill = Permill::from_percent(50);
+	pub storage SpendPeriod: BlockNumber = BlockNumber::MAX;
+	// We don't want to burn anything.
+	pub const Burn: Permill = Permill::zero();
 	pub const DataDepositPerByte: Balance = 1 * GGX;
 	pub const TreasuryPalletId: PalletId = PalletId(*b"py/trsry");
 	pub const MaximumReasonLength: u32 = 300;
@@ -87,8 +88,8 @@ parameter_types! {
 	pub const MaxCandidateIntake: u32 = 1;
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
-	// Six sessions in an era (6 * 4 hours = 24 hours).
-	pub const SessionsPerEra: SessionIndex = 6;
+	// Six sessions in an era (90 * 6 * 4 hours = 90 days eras).
+	pub const SessionsPerEra: SessionIndex = 90 * 6;
 
 	// 365 eras for unbonding (1 year).
 	pub const BondingDuration: sp_staking::EraIndex = 365;
