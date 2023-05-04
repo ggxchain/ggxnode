@@ -103,7 +103,6 @@ pub async fn get_treasury_balance(url: &str) -> Result<u128, Box<dyn std::error:
 
 	//system.account(5EYCAe5ijiYfyeZ2JJCGq56LmPyNRAKzpG4QkoQkkQNB5e6Z)
 	let key = "26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da95ecffd7b6c0f78751baa9d281e0bfa3a6d6f646c70792f74727372790000000000000000000000000000000000000000";
-	//let key = "26aa394eea5630e07c48ae0c9558cef7b99d880ec681799c0cf30e8886371da95ecffd7b6c0f78751baa9d281e0bfa3a6d6f646c70792f7472737279";
 	let decoded = hex::decode(key).expect("Decoding failed");
 
 	let opt: Option<StorageData> =

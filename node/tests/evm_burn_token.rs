@@ -56,6 +56,7 @@ async fn _print_balances(
 	Ok(())
 }
 
+#[cfg(unix)]
 #[tokio::test]
 async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let base_path = tempdir().expect("could not create a temp dir");
@@ -84,8 +85,8 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	);
 
 	let provider: Provider<Http> = Provider::<Http>::try_from(http_url)?; // Change to correct network
-																	  // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
-	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391"
+
+	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
 		.parse::<LocalWallet>()?
 		.with_chain_id(8866u64); // Change to correct network
 	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
