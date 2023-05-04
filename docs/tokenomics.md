@@ -87,11 +87,19 @@ Slashed amounts are sent to treasury.
 
 | Account | Part |
 | -------- | ----- |
-| Treasury | 25% |
-| Validator(block producer) | 75% |
+| Treasury | 100% |
+| Validator(block producer) | 0% |
 | Burn | 0% |
 
 Fees are distributed each block.
+
+### From transaction tips
+
+| Account | Part |
+| -------- | ----- |
+| Treasury | 25% |
+| Validator(block producer) | 75% |
+| Burn | 0% |
 
 ### Current state
 

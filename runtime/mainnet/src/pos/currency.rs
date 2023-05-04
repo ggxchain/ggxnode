@@ -1,3 +1,5 @@
+// TODO: benchmark and set proper weight for calls
+
 use core::marker::PhantomData;
 
 use frame_support::{
@@ -9,10 +11,11 @@ use sp_runtime::{traits::AtLeast32BitUnsigned, Perbill};
 pub use pallet::*;
 
 parameter_types! {
-	pub(crate) const DefaultInflation: Perbill = Perbill::from_percent(16);
+	pub(crate) const DefaultInflationPercent: Perbill = Perbill::from_percent(16);
 	pub(crate) const DefaultInflationDecay: Perbill = Perbill::from_perthousand(67); // 6.7% per year
 	pub(crate) const DefaultTreasuryCommission: Perbill = Perbill::from_percent(10);
-	pub(crate) const DefaultTreasuryCommissionFromFee: Perbill = Perbill::from_percent(25);
+	pub(crate) const DefaultTreasuryCommissionFromFee: Perbill = Perbill::from_percent(100);
+	pub(crate) const DefaultTreasuryCommissionFromTips: Perbill = Perbill::from_percent(25);
 }
 
 // 1 julian year to address leap years
@@ -57,10 +60,11 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
-		InflationChanged(Perbill),
+		InflationPercentChanged(Perbill),
 		InflationDecayChanged(Perbill),
 		TreasuryCommissionChanged(Perbill),
 		TreasuryCommissionFromFeeChanged(Perbill),
+		TreasuryCommissionFromTipsChanged(Perbill),
 	}
 
 	#[pallet::error]
@@ -71,7 +75,7 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn inflation_percent)]
 	pub(crate) type InflationPercent<T: Config> =
-		StorageValue<_, Perbill, ValueQuery, DefaultInflation>;
+		StorageValue<_, Perbill, ValueQuery, DefaultInflationPercent>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn inflation_decay)]
@@ -91,6 +95,11 @@ pub mod pallet {
 	pub(crate) type TreasuryCommissionFromFee<T: Config> =
 		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommissionFromFee>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn treasury_commission_from_tips)]
+	pub(crate) type TreasuryCommissionFromTips<T: Config> =
+		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommissionFromTips>;
+
 	#[pallet::genesis_config]
 	#[derive(Default)]
 	pub struct GenesisConfig {}
@@ -107,10 +116,13 @@ pub mod pallet {
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
 		#[pallet::weight(100_000)]
-		pub fn change_inflation(origin: OriginFor<T>, new_inflation: Perbill) -> DispatchResult {
+		pub fn change_inflation_percent(
+			origin: OriginFor<T>,
+			new_inflation: Perbill,
+		) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			InflationPercent::<T>::put(new_inflation);
-			Self::deposit_event(Event::InflationChanged(new_inflation));
+			Self::deposit_event(Event::InflationPercentChanged(new_inflation));
 
 			Ok(())
 		}
@@ -142,7 +154,7 @@ pub mod pallet {
 
 			InflationPercent::<T>::put(new_inflation);
 			LastInflationDecay::<T>::put(now);
-			Self::deposit_event(Event::InflationChanged(new_inflation));
+			Self::deposit_event(Event::InflationPercentChanged(new_inflation));
 			Ok(())
 		}
 
@@ -167,6 +179,18 @@ pub mod pallet {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			TreasuryCommissionFromFee::<T>::put(new_commission);
 			Self::deposit_event(Event::TreasuryCommissionFromFeeChanged(new_commission));
+			Ok(())
+		}
+
+		#[pallet::call_index(5)]
+		#[pallet::weight(100_000)]
+		pub fn change_treasury_commission_from_tips(
+			origin: OriginFor<T>,
+			new_commission: Perbill,
+		) -> DispatchResult {
+			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
+			TreasuryCommissionFromTips::<T>::put(new_commission);
+			Self::deposit_event(Event::TreasuryCommissionFromTipsChanged(new_commission));
 			Ok(())
 		}
 	}
@@ -227,7 +251,10 @@ type NegativeImbalance<T> = <pallet_balances::Pallet<T> as Currency<
 impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Pallet<T> {
 	fn on_unbalanceds<B>(fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>) {
 		let fee_comission = TreasuryCommissionFromFee::<T>::get();
-		if let Some((comission, reward)) = fee_processing_impl(fee_comission, fees_then_tips) {
+		let tips_comission = TreasuryCommissionFromTips::<T>::get();
+		if let Some((comission, reward)) =
+			fee_processing_impl(fee_comission, tips_comission, fees_then_tips)
+		{
 			T::FeeComissionRecipient::on_unbalanced(comission);
 			Author::<T>::on_unbalanced(reward);
 		}
@@ -243,17 +270,19 @@ impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
 	}
 }
 
+/// Function calculates the treasury comission from the fees and tips.
+/// Returns reward for the treasury and reward for the author.
 fn fee_processing_impl<T: Config>(
 	fee_comission: Perbill,
+	tips_comission: Perbill,
 	mut fees_then_tips: impl Iterator<Item = NegativeImbalance<T>>,
 ) -> Option<(NegativeImbalance<T>, NegativeImbalance<T>)> {
 	if let Some(fees) = fees_then_tips.next() {
-		let calculate_comission = |amount: &NegativeImbalance<T>| fee_comission * amount.peek();
-		let comission = calculate_comission(&fees);
+		let comission = fee_comission * fees.peek();
 		let mut split = fees.split(comission);
 
 		if let Some(tips) = fees_then_tips.next() {
-			let comission = calculate_comission(&tips);
+			let comission = tips_comission * tips.peek();
 			tips.split_merge_into(comission, &mut split);
 		}
 		Some((split.0, split.1))
@@ -289,8 +318,9 @@ mod tests {
 	use sp_runtime::Perbill;
 
 	use super::{
-		era_payout_impl, fee_processing_impl, DefaultInflation, DefaultInflationDecay,
-		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee, Event, YEAR_IN_MILLIS,
+		era_payout_impl, fee_processing_impl, DefaultInflationDecay, DefaultInflationPercent,
+		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
+		DefaultTreasuryCommissionFromTips, Event, YEAR_IN_MILLIS,
 	};
 
 	#[test]
@@ -344,67 +374,35 @@ mod tests {
 	#[test]
 	fn test_changing_params() {
 		mock::test_runtime().execute_with(|| {
-			assert_eq!(
-				mock::CurrencyManager::inflation_percent(),
-				DefaultInflation::get()
-			);
-			assert_eq!(
-				mock::CurrencyManager::inflation_decay(),
-				DefaultInflationDecay::get()
-			);
-			assert_eq!(
-				mock::CurrencyManager::treasury_commission(),
-				DefaultTreasuryCommission::get()
-			);
-			assert_eq!(
-				mock::CurrencyManager::treasury_commission_from_fee(),
-				DefaultTreasuryCommissionFromFee::get()
-			);
+			macro_rules! test_changing_params {
+				($camelCase:ident, $snake_case:ident) => {
+					paste::paste! {
+						assert_eq!(
+							mock::CurrencyManager::$snake_case(),
+							[<Default $camelCase>]::get(),
+							"failed to verify default value for mock::CurrencyManager::{}", stringify!($snake_case)
+						);
 
-			// Changing inflation
-			let new_inflation = Perbill::from_percent(10);
-			assert_ne!(new_inflation, DefaultInflation::get());
-			assert_ok!(mock::CurrencyManager::change_inflation(
-				mock::RuntimeOrigin::root(),
-				new_inflation
-			));
-			mock::System::assert_has_event(Event::InflationChanged(new_inflation).into());
-			assert_eq!(mock::CurrencyManager::inflation_percent(), new_inflation);
+						let new_percent = [<Default $camelCase>]::get() - Perbill::from_percent(1);
+						assert_ne!(new_percent, [<Default $camelCase>]::get(), "new value is not different from default");
+						assert_ok!(mock::CurrencyManager::[<change_ $snake_case>](
+							mock::RuntimeOrigin::root(),
+							new_percent,
+						));
+						mock::System::assert_has_event(Event::[<$camelCase Changed>](new_percent).into());
+						assert_eq!(mock::CurrencyManager::$snake_case(), new_percent, "failed to verify that value has changed for mock::CurrencyManager::{}", stringify!($snake_case));
+					}
+				};
+			}
+			#[allow(unused_imports)]
+			use super::pallet::{InflationDecay, InflationPercent, TreasuryCommission,
+			TreasuryCommissionFromFee, TreasuryCommissionFromTips};
 
-			// Changing inflation decay
-			let new_decoy = Perbill::from_percent(10);
-			assert_ne!(new_decoy, DefaultInflationDecay::get());
-			assert_ok!(mock::CurrencyManager::change_inflation_decay(
-				mock::RuntimeOrigin::root(),
-				new_decoy
-			));
-			mock::System::assert_has_event(Event::InflationDecayChanged(new_decoy).into());
-			assert_eq!(mock::CurrencyManager::inflation_decay(), new_decoy);
-
-			// Changing treasury commission
-			let new_commission = Perbill::from_percent(15);
-			assert_ne!(new_commission, DefaultTreasuryCommission::get());
-			assert_ok!(mock::CurrencyManager::change_treasury_commission(
-				mock::RuntimeOrigin::root(),
-				new_commission
-			));
-			mock::System::assert_has_event(Event::TreasuryCommissionChanged(new_commission).into());
-			assert_eq!(mock::CurrencyManager::treasury_commission(), new_commission);
-
-			// Changing treasury commission
-			let new_commission = Perbill::from_percent(15);
-			assert_ne!(new_commission, DefaultTreasuryCommissionFromFee::get());
-			assert_ok!(mock::CurrencyManager::change_treasury_commission_from_fee(
-				mock::RuntimeOrigin::root(),
-				new_commission
-			));
-			mock::System::assert_has_event(
-				Event::TreasuryCommissionFromFeeChanged(new_commission).into(),
-			);
-			assert_eq!(
-				mock::CurrencyManager::treasury_commission_from_fee(),
-				new_commission
-			);
+			test_changing_params!(InflationPercent, inflation_percent);
+			test_changing_params!(InflationDecay, inflation_decay);
+			test_changing_params!(TreasuryCommission, treasury_commission);
+			test_changing_params!(TreasuryCommissionFromFee, treasury_commission_from_fee);
+			test_changing_params!(TreasuryCommissionFromTips, treasury_commission_from_tips);
 		});
 	}
 
@@ -481,16 +479,17 @@ mod tests {
 	#[test]
 	fn test_fee_cut() {
 		mock::test_runtime().execute_with(|| {
-			let fee_percent = Perbill::from_percent(25);
+			let fee_percent = Perbill::from_percent(100);
+			let tips_percent = Perbill::from_percent(25);
 			let vector = vec![
 				NegativeImbalance::<mock::Test>::new(80),
 				NegativeImbalance::<mock::Test>::new(20),
 			];
 			assert_eq!(
-				fee_processing_impl(fee_percent, vector.into_iter()),
+				fee_processing_impl(fee_percent, tips_percent, vector.into_iter()),
 				Some((
-					NegativeImbalance::<mock::Test>::new(25),
-					NegativeImbalance::<mock::Test>::new(75)
+					NegativeImbalance::<mock::Test>::new(85),
+					NegativeImbalance::<mock::Test>::new(15)
 				))
 			);
 		});
@@ -501,7 +500,10 @@ mod tests {
 		mock::test_runtime().execute_with(|| {
 			let fee_percent = Perbill::from_percent(25);
 			let vector: Vec<NegativeImbalance<mock::Test>> = vec![];
-			assert_eq!(fee_processing_impl(fee_percent, vector.into_iter()), None);
+			assert_eq!(
+				fee_processing_impl(fee_percent, fee_percent, vector.into_iter()),
+				None
+			);
 		});
 	}
 
@@ -509,12 +511,34 @@ mod tests {
 	fn test_only_fee() {
 		mock::test_runtime().execute_with(|| {
 			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
 			let vector = vec![NegativeImbalance::<mock::Test>::new(100)];
 			assert_eq!(
-				fee_processing_impl(fee_percent, vector.into_iter()),
+				fee_processing_impl(fee_percent, tips_percent, vector.into_iter()),
 				Some((
 					NegativeImbalance::<mock::Test>::new(50),
 					NegativeImbalance::<mock::Test>::new(50)
+				))
+			);
+		});
+	}
+
+	#[test]
+	fn test_only_tips() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
+			let vector = vec![
+				NegativeImbalance::<mock::Test>::new(0),
+				NegativeImbalance::<mock::Test>::new(100),
+			];
+			assert_eq!(
+				fee_processing_impl(fee_percent, tips_percent, vector.into_iter()),
+				Some((
+					NegativeImbalance::<mock::Test>::new(25),
+					NegativeImbalance::<mock::Test>::new(75)
 				))
 			);
 		});
