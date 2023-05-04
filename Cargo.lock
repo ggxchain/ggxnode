@@ -2857,6 +2857,7 @@ dependencies = [
 name = "golden-gate-runtime-mainnet"
 version = "0.0.0"
 dependencies = [
+ "fp-evm",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",

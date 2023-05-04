@@ -68,6 +68,7 @@ pallet-vesting = { workspace = true }
 pallet-whitelist = { workspace = true }
 
 # Frontier
+fp-evm = { workspace = true }
 fp-rpc = { workspace = true }
 fp-self-contained = { workspace = true }
 
@@ -155,6 +156,7 @@ std = [
 	"pallet-vesting/std",
 	"pallet-whitelist/std",
 	# Frontier
+	"fp-evm/std",
 	"fp-rpc/std",
 	"fp-self-contained/std",
 	# Frontier FRAME

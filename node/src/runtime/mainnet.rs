@@ -1,5 +1,4 @@
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
-use std::collections::BTreeMap;
 
 use rand::SeedableRng;
 use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
@@ -54,6 +53,12 @@ pub fn testnet_genesis(
 	let stash: Balance = endowment / 2;
 
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+
+	// This is supposed the be the simplest bytecode to revert without returning any data.
+	// We will pre-deploy it under all of our precompiles to ensure they can be called from
+	// within contracts.
+	// (PUSH1 0x00 PUSH1 0x00 REVERT)
+	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
 
 	GenesisConfig {
 		// System
@@ -125,7 +130,22 @@ pub fn testnet_genesis(
 
 		// EVM compatibility
 		evm: EVMConfig {
-			accounts: { BTreeMap::new() },
+			// We need _some_ code inserted at the precompile address so that
+			// the evm will actually call the address.
+			accounts: Precompiles::used_addresses()
+				.map(|addr| {
+					(
+						addr.into(),
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: revert_bytecode.clone(),
+						},
+					)
+				})
+				.into_iter()
+				.collect(),
 		},
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),

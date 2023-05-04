@@ -25,6 +25,8 @@ pub use version::VERSION;
 
 use core::cmp::Ordering;
 
+#[cfg(feature = "std")]
+pub use fp_evm::GenesisAccount;
 use frame_support::pallet_prelude::TransactionPriority;
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
@@ -78,6 +80,9 @@ pub use pallet_timestamp::Call as TimestampCall;
 
 pub use pallet_staking::StakerStatus;
 pub use runtime_common::chain_spec::{self, RuntimeConfig};
+
+pub use runtime_common::precompiles::GoldenGatePrecompiles;
+pub type Precompiles = GoldenGatePrecompiles<Runtime>;
 
 /// Import the permissioned ledger pallet.
 pub use account_filter;
