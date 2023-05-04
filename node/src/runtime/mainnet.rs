@@ -1,4 +1,5 @@
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
+use std::collections::BTreeMap;
 
 use rand::SeedableRng;
 use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
@@ -121,6 +122,14 @@ pub fn testnet_genesis(
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
+
+		// EVM compatibility
+		evm: EVMConfig {
+			accounts: { BTreeMap::new() },
+		},
+		ethereum: Default::default(),
+		dynamic_fee: Default::default(),
+		base_fee: Default::default(),
 
 		account_filter: AccountFilterConfig {
 			allowed_accounts: endowed_accounts.into_iter().map(|e| (e, ())).collect(),
