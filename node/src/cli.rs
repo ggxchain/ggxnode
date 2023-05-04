@@ -17,7 +17,7 @@ impl Default for Sealing {
 
 #[allow(missing_docs)]
 #[derive(Debug, clap::Parser)]
-pub struct RunCmd {
+pub struct CmdRunner {
 	#[allow(missing_docs)]
 	#[command(flatten)]
 	pub base: sc_cli::RunCmd,
@@ -49,7 +49,7 @@ pub struct Cli {
 	pub subcommand: Option<Subcommand>,
 
 	#[command(flatten)]
-	pub run: RunCmd,
+	pub run: CmdRunner,
 }
 
 #[derive(Debug, clap::Subcommand)]
