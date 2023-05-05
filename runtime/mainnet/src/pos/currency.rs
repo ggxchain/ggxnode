@@ -6,7 +6,7 @@ use frame_support::{
 	parameter_types,
 	traits::{Currency, Imbalance, OnUnbalanced, UnixTime},
 };
-use pallet_session::SessionManager;
+use pallet_staking::BalanceOf;
 use sp_runtime::{traits::AtLeast32BitUnsigned, Perbill, SaturatedConversion};
 use sp_std::prelude::*;
 
@@ -33,6 +33,7 @@ pub mod pallet {
 		traits::{EnsureOrigin, OnUnbalanced},
 	};
 	use frame_system::pallet_prelude::*;
+	use pallet_staking::BalanceOf;
 	use sp_runtime::Perbill;
 
 	#[pallet::pallet]
@@ -73,6 +74,7 @@ pub mod pallet {
 		TreasuryCommissionFromFeeChanged(Perbill),
 		TreasuryCommissionFromTipsChanged(Perbill),
 		SessionPayout {
+			era_index: u32,
 			session_index: u32,
 			session_duration: u64,
 			validator_payout: <T as pallet_staking::Config>::CurrencyBalance,
@@ -116,6 +118,10 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn last_payout_time_in_millis)]
 	pub(crate) type LastPayoutTime<T: Config> = StorageValue<_, u64, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn eras_validator_reward)]
+	pub type ErasValidatorReward<T: Config> = StorageMap<_, Twox64Concat, u64, BalanceOf<T>>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -290,7 +296,7 @@ impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
 	}
 }
 
-/// Function calculates the treasury comission from the fees and tips.
+/// Function calculates the treasury comission from the /fees and tips.
 /// Returns reward for the treasury and reward for the author.
 fn fee_processing_impl<T: Config>(
 	fee_comission: Perbill,
@@ -333,6 +339,8 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 
 impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::ValidatorId>
 	for Pallet<T>
+where
+	T: pallet_balances::Config<Balance = BalanceOf<T>>,
 {
 	fn new_session(new_index: u32) -> Option<Vec<T::ValidatorId>> {
 		<T as pallet::Config>::SessionManager::new_session(new_index)
@@ -363,6 +371,7 @@ impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::Va
 		);
 
 		Self::deposit_event(Event::<T>::SessionPayout {
+			era_index: current_era,
 			session_index,
 			session_duration,
 			validator_payout,
@@ -370,16 +379,24 @@ impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::Va
 		});
 		LastPayoutTime::<T>::put(now_as_millis_u64);
 
-		// Somehow, we want to do this, to make sure that the validator&nominators gets the reward.
-		// pallet_staking::Pallet::<T>::ErasValidatorReward::insert(&current_era, validator_payout);
-		// T::FeeComissionRecipient::on_unbalanced(<T as pallet_staking::Config>::Currency::issue(remainder));
-
+		ErasValidatorReward::<T>::insert(
+			unique_session_index(current_era, session_index),
+			validator_payout,
+		);
+		T::FeeComissionRecipient::on_unbalanced(pallet_balances::Pallet::<T>::issue(remainder));
 		<T as pallet::Config>::SessionManager::end_session(session_index)
 	}
 
 	fn new_session_genesis(new_index: u32) -> Option<Vec<T::ValidatorId>> {
 		<T as pallet::Config>::SessionManager::new_session_genesis(new_index)
 	}
+}
+
+fn unique_session_index(era_index: u32, session_index: u32) -> u64 {
+	// Basically, we have 90 day long eras, with 4 hour long session,
+	// which gives us 540 sessions per era. We use 1000 as a multiplier
+	// to create a unique key for each session.
+	era_index as u64 * 1000 + session_index as u64
 }
 
 #[cfg(test)]
