@@ -6,9 +6,9 @@ use frame_support::{
 	parameter_types,
 	traits::{Currency, Imbalance, OnUnbalanced, UnixTime},
 };
-use sp_std::prelude::*;
 use pallet_session::SessionManager;
 use sp_runtime::{traits::AtLeast32BitUnsigned, Perbill, SaturatedConversion};
+use sp_std::prelude::*;
 
 pub use pallet::*;
 
@@ -42,11 +42,11 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config
-        + pallet_staking::Config
+		+ pallet_staking::Config
 		+ pallet_scheduler::Config
 		+ pallet_balances::Config
 		+ pallet_authorship::Config
-        + pallet_session::Config
+		+ pallet_session::Config
 		+ runtime_common::chain_spec::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -59,7 +59,9 @@ pub mod pallet {
 			+ IsType<<Self as pallet_scheduler::Config>::RuntimeCall>;
 
 		type FeeComissionRecipient: OnUnbalanced<NegativeImbalance<Self>>;
-        type SessionManager: pallet_session::SessionManager<<Self as pallet_session::Config>::ValidatorId>;
+		type SessionManager: pallet_session::SessionManager<
+			<Self as pallet_session::Config>::ValidatorId,
+		>;
 	}
 
 	#[pallet::event]
@@ -70,12 +72,12 @@ pub mod pallet {
 		TreasuryCommissionChanged(Perbill),
 		TreasuryCommissionFromFeeChanged(Perbill),
 		TreasuryCommissionFromTipsChanged(Perbill),
-        SessionPayout{
-            session_index: u32,
-            session_duration: u64,
-            validator_payout: <T as pallet_staking::Config>::CurrencyBalance,
-            remainder: <T as pallet_staking::Config>::CurrencyBalance,
-        }
+		SessionPayout {
+			session_index: u32,
+			session_duration: u64,
+			validator_payout: <T as pallet_staking::Config>::CurrencyBalance,
+			remainder: <T as pallet_staking::Config>::CurrencyBalance,
+		},
 	}
 
 	#[pallet::error]
@@ -111,9 +113,9 @@ pub mod pallet {
 	pub(crate) type TreasuryCommissionFromTips<T: Config> =
 		StorageValue<_, Perbill, ValueQuery, DefaultTreasuryCommissionFromTips>;
 
-    #[pallet::storage]
-    #[pallet::getter(fn last_payout_time_in_millis)]
-    pub(crate) type LastPayoutTime<T: Config> = StorageValue<_, u64, ValueQuery>;
+	#[pallet::storage]
+	#[pallet::getter(fn last_payout_time_in_millis)]
+	pub(crate) type LastPayoutTime<T: Config> = StorageValue<_, u64, ValueQuery>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -122,7 +124,9 @@ pub mod pallet {
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
 		fn build(&self) {
-            LastPayoutTime::<T>::put(<T as pallet_staking::Config>::UnixTime::now().as_millis() as u64);
+			LastPayoutTime::<T>::put(
+				<T as pallet_staking::Config>::UnixTime::now().as_millis() as u64
+			);
 			Pallet::<T>::init_inflation_decay().expect("CurrencyManager decay init failed");
 			{}
 		}
@@ -327,51 +331,55 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 	)
 }
 
-
-impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::ValidatorId> for Pallet<T>
+impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::ValidatorId>
+	for Pallet<T>
 {
-    fn new_session(new_index: u32) -> Option<Vec<T::ValidatorId>> {
-        <T as pallet::Config>::SessionManager::new_session(new_index)
-    }
+	fn new_session(new_index: u32) -> Option<Vec<T::ValidatorId>> {
+		<T as pallet::Config>::SessionManager::new_session(new_index)
+	}
 
-    fn start_session(new_index: u32) {
-        <T as pallet::Config>::SessionManager::start_session(new_index)
-    }
+	fn start_session(new_index: u32) {
+		<T as pallet::Config>::SessionManager::start_session(new_index)
+	}
 
-    fn end_session(session_index: u32) {
-        // Make payout at the end of each session.
-        let year_inflation = InflationPercent::<T>::get();
-        let treasury_commission = TreasuryCommission::<T>::get();
-        
-        let now_as_millis_u64 = <T as pallet_staking::Config>::UnixTime::now().as_millis() as u64;
-        let last_payout = LastPayoutTime::<T>::get();
-        let session_duration = (now_as_millis_u64 - last_payout).saturated_into::<u64>();
-        
+	fn end_session(session_index: u32) {
+		// Make payout at the end of each session.
+		let year_inflation = InflationPercent::<T>::get();
+		let treasury_commission = TreasuryCommission::<T>::get();
 
-        let current_era = pallet_staking::Pallet::<T>::current_era().unwrap_or(0);
-        let staked = pallet_staking::Pallet::<T>::eras_total_stake(&current_era);
-        let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
-        let (validator_payout, remainder) =
-            era_payout_impl(staked, issuance, session_duration, year_inflation, treasury_commission);
+		let now_as_millis_u64 = <T as pallet_staking::Config>::UnixTime::now().as_millis() as u64;
+		let last_payout = LastPayoutTime::<T>::get();
+		let session_duration = (now_as_millis_u64 - last_payout).saturated_into::<u64>();
 
-        Self::deposit_event(Event::<T>::SessionPayout {
-            session_index,
-            session_duration,
-            validator_payout,
-            remainder,
-        });
-        LastPayoutTime::<T>::put(now_as_millis_u64);
+		let current_era = pallet_staking::Pallet::<T>::current_era().unwrap_or(0);
+		let staked = pallet_staking::Pallet::<T>::eras_total_stake(&current_era);
+		let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
+		let (validator_payout, remainder) = era_payout_impl(
+			staked,
+			issuance,
+			session_duration,
+			year_inflation,
+			treasury_commission,
+		);
 
-        // Somehow, we want to do this, to make sure that the validator&nominators gets the reward.
-        // pallet_staking::Pallet::<T>::ErasValidatorReward::insert(&current_era, validator_payout);
-        // T::FeeComissionRecipient::on_unbalanced(<T as pallet_staking::Config>::Currency::issue(remainder));
+		Self::deposit_event(Event::<T>::SessionPayout {
+			session_index,
+			session_duration,
+			validator_payout,
+			remainder,
+		});
+		LastPayoutTime::<T>::put(now_as_millis_u64);
 
-        <T as pallet::Config>::SessionManager::end_session(session_index)
-    }
+		// Somehow, we want to do this, to make sure that the validator&nominators gets the reward.
+		// pallet_staking::Pallet::<T>::ErasValidatorReward::insert(&current_era, validator_payout);
+		// T::FeeComissionRecipient::on_unbalanced(<T as pallet_staking::Config>::Currency::issue(remainder));
 
-    fn new_session_genesis(new_index: u32) -> Option<Vec<T::ValidatorId>> {
-        <T as pallet::Config>::SessionManager::new_session_genesis(new_index)
-    }
+		<T as pallet::Config>::SessionManager::end_session(session_index)
+	}
+
+	fn new_session_genesis(new_index: u32) -> Option<Vec<T::ValidatorId>> {
+		<T as pallet::Config>::SessionManager::new_session_genesis(new_index)
+	}
 }
 
 #[cfg(test)]

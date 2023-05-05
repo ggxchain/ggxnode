@@ -527,5 +527,5 @@ impl currency::Config for Runtime {
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
-    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 }
