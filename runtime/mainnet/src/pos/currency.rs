@@ -7,6 +7,7 @@ use frame_support::{
 	traits::{Currency, Imbalance, OnUnbalanced, UnixTime},
 };
 use sp_std::prelude::*;
+use pallet_session::SessionManager;
 use sp_runtime::{traits::AtLeast32BitUnsigned, Perbill, SaturatedConversion};
 
 pub use pallet::*;
@@ -71,6 +72,7 @@ pub mod pallet {
 		TreasuryCommissionFromTipsChanged(Perbill),
         SessionPayout{
             session_index: u32,
+            session_duration: u64,
             validator_payout: <T as pallet_staking::Config>::CurrencyBalance,
             remainder: <T as pallet_staking::Config>::CurrencyBalance,
         }
@@ -343,24 +345,26 @@ impl<T: Config> pallet_session::SessionManager<<T as pallet_session::Config>::Va
         
         let now_as_millis_u64 = <T as pallet_staking::Config>::UnixTime::now().as_millis() as u64;
         let last_payout = LastPayoutTime::<T>::get();
-        let era_duration = (now_as_millis_u64 - last_payout).saturated_into::<u64>();
+        let session_duration = (now_as_millis_u64 - last_payout).saturated_into::<u64>();
         
+
         let current_era = pallet_staking::Pallet::<T>::current_era().unwrap_or(0);
         let staked = pallet_staking::Pallet::<T>::eras_total_stake(&current_era);
         let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
         let (validator_payout, remainder) =
-            era_payout_impl(staked, issuance, era_duration, year_inflation, treasury_commission);
+            era_payout_impl(staked, issuance, session_duration, year_inflation, treasury_commission);
 
         Self::deposit_event(Event::<T>::SessionPayout {
             session_index,
+            session_duration,
             validator_payout,
             remainder,
         });
         LastPayoutTime::<T>::put(now_as_millis_u64);
 
-        // Set ending era reward.
-        // <ErasValidatorReward<T>>::insert(&active_era.index, validator_payout);
-        // T::RewardRemainder::on_unbalanced(T::Currency::issue(remainder));
+        // Somehow, we want to do this, to make sure that the validator&nominators gets the reward.
+        // pallet_staking::Pallet::<T>::ErasValidatorReward::insert(&current_era, validator_payout);
+        // T::FeeComissionRecipient::on_unbalanced(<T as pallet_staking::Config>::Currency::issue(remainder));
 
         <T as pallet::Config>::SessionManager::end_session(session_index)
     }
