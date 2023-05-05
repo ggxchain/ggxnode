@@ -76,9 +76,8 @@ Slashed amounts are sent to treasury.
 ### Current state
 
 * 1 year withdrawal lock is implemented
-* Session period is 4 hours. Era period is 24 hours. Payout at the end of era rather than session.
-(configured by EpochDurationInBlocks, SessionsPerEra).
-This can be hard to configure using Parity toolchain, cause they use era as payout and validator rotation point.
+* Session period is 4 hours. Era period is quarter. Payout at the end of era rather than session.
+(configured by EpochDurationInBlocks, SessionsPerEra). We have to think how to payout more often than end of era.
 * Fixed comission is not implemented yet. Currently, validator can set any comission it wants.
 * 10% Treasury comission is implemented. (configured by runtime/mainnet/src/pos/currency.rs TreasuryCommission)
 
@@ -88,11 +87,19 @@ This can be hard to configure using Parity toolchain, cause they use era as payo
 
 | Account | Part |
 | -------- | ----- |
-| Treasury | 25% |
-| Validator(block producer) | 75% |
+| Treasury | 100% |
+| Validator(block producer) | 0% |
 | Burn | 0% |
 
 Fees are distributed each block.
+
+### From transaction tips
+
+| Account | Part |
+| -------- | ----- |
+| Treasury | 25% |
+| Validator(block producer) | 75% |
+| Burn | 0% |
 
 ### Current state
 

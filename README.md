@@ -29,6 +29,13 @@ sudo apt install protobuf-compiler
 cargo install cargo-dylint dylint-link
 ```
 
+#### Nix example
+
+```bash
+# Downloads all necessary dependendencies
+nix develop --impure
+```
+
 #### Docker example
 
 You can use the Docker image with all the dependencies installed.
@@ -44,10 +51,16 @@ cargo run --release -- --dev --ws-external --rpc-external # start the node
 
 ```bash
 cargo build --release
+# or using nix
+nix build .#node
 ```
 
 #### Run
 
 ```bash
 cargo run --release -- --dev
+# or using nix
+nix run .#single-fast # to run an one node network
+nix run .#multi-fast # to run 3-node network
+nix run .#prune-running # to stop nodes
 ```
