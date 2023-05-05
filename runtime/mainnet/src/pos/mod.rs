@@ -153,7 +153,7 @@ impl pallet_session::Config for Runtime {
 	type ValidatorIdOf = pallet_staking::StashOf<Self>;
 	type ShouldEndSession = PeriodicSessions;
 	type NextSessionRotation = PeriodicSessions;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionManager = CurrencyManager;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -527,4 +527,5 @@ impl currency::Config for Runtime {
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
+    type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 }
