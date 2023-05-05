@@ -1,23 +1,23 @@
 [package]
 name = "runtime-common"
 version = "0.1.0"
-authors = { workspace = true }
-edition = { workspace = true }
-repository = { workspace = true }
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
 
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
 scale-codec = { package = "parity-scale-codec", workspace = true }
-scale-info = { workspace = true }
+scale-info.workspace = true
 serde = { workspace = true, optional = true }
 
-frame-support = { workspace = true }
-frame-system = { workspace = true }
+frame-support.workspace = true
+frame-system.workspace = true
 pallet-session = { workspace = true, features = ["historical"] }
-sp-core = { workspace = true }
-sp-staking = { workspace = true }
-sp-std = { workspace = true }
+sp-core.workspace = true
+sp-staking.workspace = true
+sp-std.workspace = true
 
 pallet-contracts = { workspace = true, optional = true }
 pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"], optional = true }
@@ -33,8 +33,8 @@ pallet-evm-precompile-xvm = { workspace = true, optional = true }
 pallet-xvm = { workspace = true, optional = true }
 
 [dev-dependencies]
-proptest = { workspace = true }
-test-strategy = { workspace = true }
+proptest.workspace = true
+test-strategy.workspace = true
 
 [features]
 default = ["std"]
