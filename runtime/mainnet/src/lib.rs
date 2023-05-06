@@ -452,6 +452,7 @@ construct_runtime!(
 		// POS and other general purpose pallets. Please, note that order of declaration is important.
 		System: frame_system,
 		Timestamp: pallet_timestamp,
+		RuntimeSpecification: chain_spec,
 		Balances: pallet_balances,
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
@@ -491,7 +492,6 @@ construct_runtime!(
 
 		// GGX pallets
 		AccountFilter: account_filter,
-		RuntimeSpecification: chain_spec,
 		CurrencyManager: currency,
 
 		// Wasm contracts
