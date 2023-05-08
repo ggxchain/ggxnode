@@ -88,8 +88,8 @@ parameter_types! {
 	pub const MaxCandidateIntake: u32 = 1;
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
-	// Six sessions in an era (90 * 6 * 4 hours = 90 days eras).
-	pub const SessionsPerEra: SessionIndex = 90 * 6;
+	// Six sessions in an era (6 * 4 hours = 24 hours).
+	pub const SessionsPerEra: SessionIndex = 6;
 
 	// 365 eras for unbonding (1 year).
 	pub const BondingDuration: sp_staking::EraIndex = 365;
