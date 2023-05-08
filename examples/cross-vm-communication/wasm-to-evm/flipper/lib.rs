@@ -1,13 +1,12 @@
 #![cfg_attr(not(feature = "std"), no_std)]
-
-use ink_lang as ink;
+#![feature(default_alloc_error_handler)]
 
 mod xvm_environment;
 
 #[ink::contract(env = crate::xvm_environment::XvmDefaultEnvironment)]
 mod flipper_wrapper {
 	use hex_literal::hex;
-	use ink_prelude::vec::Vec;
+	use ink::prelude::vec::Vec;
 
 	const FLIP_SELECTOR: [u8; 4] = hex!["cde4efa9"];
 
