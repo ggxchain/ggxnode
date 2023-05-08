@@ -486,6 +486,7 @@ construct_runtime!(
 		// EVM pallets
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
+		EVMChainId: pallet_evm_chain_id,
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,

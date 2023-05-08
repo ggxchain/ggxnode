@@ -47,7 +47,7 @@ pub fn testnet_genesis(
 	sudo_key: AccountId,
 	endowed_accounts: Vec<AccountId>,
 	initial_authorities: Vec<ValidatorIdentity>,
-	_chain_id: u64,
+	chain_id: u64,
 	token_supply_in_ggx: u64,
 ) -> GenesisConfig {
 	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
@@ -130,6 +130,7 @@ pub fn testnet_genesis(
 		grandpa: GrandpaConfig::default(),
 
 		// EVM compatibility
+		evm_chain_id: EVMChainIdConfig { chain_id },
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
