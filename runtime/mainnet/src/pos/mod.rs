@@ -9,6 +9,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_election_provider_multi_phase::SolutionAccuracyOf;
+use runtime_common::prod_or_fast;
 use sp_runtime::traits::ConvertInto;
 use sp_staking::SessionIndex;
 
@@ -88,11 +89,11 @@ parameter_types! {
 	pub const MaxCandidateIntake: u32 = 1;
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
-	// Six sessions in an era (6 * 4 hours = 24 hours).
-	pub const SessionsPerEra: SessionIndex = 6;
+	// Six sessions in an era (90 * 6 * 4 hours = 24 hours).
+	pub const SessionsPerEra: SessionIndex = prod_or_fast!(90 * 6, 6);
 
-	// 365 eras for unbonding (1 year).
-	pub const BondingDuration: sp_staking::EraIndex = 365;
+	// 4 eras for unbonding (90 * 4 = 360 days).
+	pub const BondingDuration: sp_staking::EraIndex = 4;
 	pub const SlashDeferDuration: sp_staking::EraIndex = BondingDuration::get() / 4;
 	pub const MaxNominatorRewardedPerValidator: u32 = 512;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
