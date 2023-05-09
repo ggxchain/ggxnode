@@ -68,17 +68,17 @@ pallet-vesting.workspace = true
 pallet-whitelist.workspace = true
 
 # Frontier
-fp-evm = { workspace = true }
-fp-rpc = { workspace = true }
-fp-self-contained = { workspace = true }
+fp-evm.workspace = true
+fp-rpc.workspace = true
+fp-self-contained.workspace = true
 
 # Frontier FRAME
-pallet-base-fee = { workspace = true }
-pallet-dynamic-fee = { workspace = true }
-pallet-ethereum = { workspace = true }
+pallet-base-fee.workspace = true
+pallet-dynamic-fee.workspace = true
+pallet-ethereum.workspace = true
 pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"] }
-pallet-evm-chain-id = { workspace = true }
-pallet-hotfix-sufficients = { workspace = true }
+pallet-evm-chain-id.workspace = true
+pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
@@ -170,7 +170,7 @@ std = [
 	# GGX
 	"account-filter/std",
 	"runtime-common/std",
-		# Astar
+	# Astar
 	"pallet-chain-extension-xvm/std",
 	"pallet-xvm/std",
 	# Wasm contracts
