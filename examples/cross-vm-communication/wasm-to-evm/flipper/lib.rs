@@ -13,6 +13,12 @@ mod flipper_wrapper {
 	#[ink(storage)]
 	pub struct FlipperWrapper {}
 
+	impl Default for FlipperWrapper {
+		fn default() -> Self {
+			Self::new()
+		}
+	}
+
 	impl FlipperWrapper {
 		/// Constructor that initializes the `bool` value to the given `init_value`.
 		#[ink(constructor)]
