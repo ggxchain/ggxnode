@@ -27,4 +27,4 @@ FROM debian:sid
 
 # Copy the node binary.
 COPY --from=builder /app/target/release/golden-gate-node /app/target/release/golden-gate-node
-COPY --from=builder /app/customSpecRaw.json /
+COPY --from=builder /app/chainspecs/brooklyn/customSpecRaw.json /
