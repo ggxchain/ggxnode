@@ -3714,7 +3714,7 @@ dependencies = [
  "pallet-vesting",
  "pallet-whitelist",
  "pallet-xvm",
- "parity-scale-codec",
+ "parity-scale-codec 3.4.0",
  "paste",
  "runtime-common",
  "scale-info",

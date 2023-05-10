@@ -102,6 +102,8 @@ sp-io.workspace = true
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
 
+fast-runtime = []
+
 std = [
 	"scale-codec/std",
 	"scale-info/std",
