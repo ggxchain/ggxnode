@@ -19,6 +19,11 @@ use ethers::{
 	utils,
 };
 
+#[cfg(feature = "mainnet")]
+const CHAIN_ID: u64 = 8888u64;
+#[cfg(feature = "testnet")]
+const CHAIN_ID: u64 = 8866u64;
+
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
 // Sends some native currency
@@ -85,7 +90,7 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 
 	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
 		.parse::<LocalWallet>()?
-		.with_chain_id(8866u64); // Change to correct network
+		.with_chain_id(CHAIN_ID); // Change to correct network
 	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
 
 	let (_, max_priority_fee_per_gas) = provider.estimate_eip1559_fees(None).await?;
