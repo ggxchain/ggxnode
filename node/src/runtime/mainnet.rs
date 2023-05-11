@@ -138,7 +138,7 @@ pub fn testnet_genesis(
 				let mut map: BTreeMap<H160, GenesisAccount> = Precompiles::used_addresses()
 					.map(|addr| {
 						(
-							addr.into(),
+							addr,
 							GenesisAccount {
 								nonce: Default::default(),
 								balance: Default::default(),

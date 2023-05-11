@@ -27,14 +27,11 @@ async fn send_transaction(
 	address_from: &Address,
 	address_to: &Address,
 ) -> Result<TransactionReceipt, Box<dyn std::error::Error>> {
-	println!(
-		"Beginning transfer of 10000 native currency {} to {}.",
-		address_from, address_to
-	);
+	println!("Beginning transfer of 10000 native currency {address_from} to {address_to}.");
 	let tx = Eip1559TransactionRequest::new()
-		.to(address_to.clone())
-		.value(U256::from(utils::parse_ether(10000)?))
-		.from(address_from.clone());
+		.to(*address_to)
+		.value((utils::parse_ether(10000)?))
+		.from(*address_from);
 	let tx = client.send_transaction(tx, None).await?.await?;
 
 	println!("Transaction Receipt: {}", serde_json::to_string(&tx)?);
@@ -48,11 +45,11 @@ async fn _print_balances(
 	address_from: &Address,
 	address_to: &Address,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	let balance_from = provider.get_balance(address_from.clone(), None).await?;
-	let balance_to = provider.get_balance(address_to.clone(), None).await?;
+	let balance_from = provider.get_balance(*address_from, None).await?;
+	let balance_to = provider.get_balance(*address_to, None).await?;
 
-	println!("{} has {}", address_from, balance_from);
-	println!("{} has {}", address_to, balance_to);
+	println!("{address_from} has {balance_from}");
+	println!("{address_to} has {balance_to}");
 	Ok(())
 }
 
@@ -64,7 +61,7 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
-		.args(&["--dev"])
+		.args(["--dev"])
 		.arg("-d")
 		.arg(base_path.path())
 		.spawn()
