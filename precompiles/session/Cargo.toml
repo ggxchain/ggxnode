@@ -1,0 +1,58 @@
+[package]
+name = "pallet-evm-precompile-session"
+description = "A Precompile to make pallet-session accessible to pallet-evm"
+version = "0.0.0"
+license = "Unlicense"
+publish = false
+authors.workspace = true
+edition.workspace = true
+repository.workspace = true
+
+
+[dependencies]
+log = "0.4"
+num_enum = { version = "0.5.3", default-features = false }
+
+# Moonbeam
+precompile-utils = { path = "../utils", default-features = false }
+
+# Substrate
+scale-codec = { package = "parity-scale-codec", workspace = true, features = [ "max-encoded-len" ] }
+frame-support.workspace = true
+frame-system.workspace = true
+sp-core.workspace = true
+sp-io.workspace = true
+sp-std.workspace = true
+pallet-session.workspace = true
+
+# Frontier
+fp-evm.workspace = true
+pallet-evm.workspace = true
+
+[dev-dependencies]
+derive_more = { version = "0.99" }
+hex-literal = "0.3.4"
+libsecp256k1 = "0.7"
+serde = { version = "1.0.100" }
+sha3 = "0.8"
+
+scale-codec = { package = "parity-scale-codec", workspace = true }
+pallet-timestamp.workspace = true
+sp-runtime.workspace = true
+sp-staking.workspace = true
+pallet-balances.workspace = true
+
+[features]
+default = [ "std" ]
+std = [
+	"scale-codec/std",
+	"fp-evm/std",
+	"frame-support/std",
+	"frame-system/std",
+	"pallet-evm/std",
+	"precompile-utils/std",
+	"sp-core/std",
+	"sp-io/std",
+	"sp-std/std",
+	"pallet-session/std",
+]

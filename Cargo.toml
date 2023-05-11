@@ -1,6 +1,7 @@
 [workspace]
 members = [
 	"node",
+	"precompiles/session",
 	"runtime/mainnet",
 	"runtime/testnet",
 	"runtime/runtime-common",
@@ -24,17 +25,24 @@ clap = { version = "4.1", features = ["derive"] }
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
 hex = "0.4"
+hex-literal = "0.3.1"
+impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
 log = "0.4.17"
 nix = { version = "0.26.1", features = ["signal"] }
+num_enum = { version = "0.5.3", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
 paste = "1.0"
+proc-macro2 = "1.0"
 proptest = "1.1"
+quote = "1.0"
 rand = "0.8.4"
 scale-codec = { package = "parity-scale-codec", version = "3.4.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0", default-features = false }
 serde_json = "1.0.68"
+sha3 = "0.8"
+syn = { version = "1.0", features = [ "extra-traits", "fold", "full", "visit" ] }
 tempfile = "3.1.0"
 test-strategy = "0.3.0"
 tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
@@ -162,6 +170,7 @@ account-filter = { package = "substrate-account-filter", git = "https://github.c
 golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
 golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
+pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 
 # Astar
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "polkadot-v0.9.39", default-features = false }

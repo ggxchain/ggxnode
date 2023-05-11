@@ -31,6 +31,7 @@ pallet-evm-precompile-sr25519 = { workspace = true, optional = true }
 pallet-evm-precompile-substrate-ecdsa = { workspace = true, optional = true }
 pallet-evm-precompile-xvm = { workspace = true, optional = true }
 pallet-xvm = { workspace = true, optional = true }
+pallet-evm-precompile-session = { workspace = true, optional = true }
 
 [dev-dependencies]
 proptest.workspace = true
@@ -50,6 +51,7 @@ xvm = [
 	"pallet-evm-precompile-sr25519",
 	"pallet-evm-precompile-substrate-ecdsa",
 	"pallet-evm-precompile-xvm",
+	"pallet-evm-precompile-session",
 	"pallet-xvm",
 ]
 std = [
@@ -74,5 +76,6 @@ std = [
 	"pallet-evm-precompile-sr25519?/std",
 	"pallet-evm-precompile-substrate-ecdsa?/std",
 	"pallet-evm-precompile-xvm?/std",
+	"pallet-evm-precompile-session?/std",
 	"pallet-xvm?/std",
 ]
