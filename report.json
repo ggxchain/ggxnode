@@ -1,0 +1,395 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.alice": 51,
+      "vusers.created": 100,
+      "ws.messages_sent": 247,
+      "vusers.failed": 0,
+      "vusers.completed": 100,
+      "vusers.created_by_name.headers_blocks": 49
+    },
+    "rates": {
+      "ws.send_rate": 4
+    },
+    "firstCounterAt": 1683804076506,
+    "firstHistogramAt": 1683804076591,
+    "lastCounterAt": 1683804135943,
+    "lastHistogramAt": 1683804135943,
+    "firstMetricAt": 1683804076506,
+    "lastMetricAt": 1683804135943,
+    "period": 1683804130000,
+    "summaries": {
+      "vusers.session_length": {
+        "min": 34.6,
+        "max": 85,
+        "count": 100,
+        "p50": 40,
+        "median": 40,
+        "p75": 42.5,
+        "p90": 47,
+        "p95": 51.9,
+        "p99": 58.6,
+        "p999": 58.6
+      }
+    },
+    "histograms": {
+      "vusers.session_length": {
+        "min": 34.6,
+        "max": 85,
+        "count": 100,
+        "p50": 40,
+        "median": 40,
+        "p75": 42.5,
+        "p90": 47,
+        "p95": 51.9,
+        "p99": 58.6,
+        "p999": 58.6
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.alice": 4,
+        "vusers.created": 6,
+        "ws.messages_sent": 12,
+        "vusers.failed": 0,
+        "vusers.completed": 6,
+        "vusers.created_by_name.headers_blocks": 2
+      },
+      "rates": {
+        "ws.send_rate": 4
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804076506,
+      "firstHistogramAt": 1683804076591,
+      "lastCounterAt": 1683804079546,
+      "lastHistogramAt": 1683804079546,
+      "firstMetricAt": 1683804076506,
+      "lastMetricAt": 1683804079546,
+      "period": "1683804070000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 39.5,
+          "max": 85,
+          "count": 6,
+          "p50": 45.2,
+          "median": 45.2,
+          "p75": 51.9,
+          "p90": 58.6,
+          "p95": 58.6,
+          "p99": 58.6,
+          "p999": 58.6
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 39.5,
+          "max": 85,
+          "count": 6,
+          "p50": 45.2,
+          "median": 45.2,
+          "p75": 51.9,
+          "p90": 58.6,
+          "p95": 58.6,
+          "p99": 58.6,
+          "p999": 58.6
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.headers_blocks": 8,
+        "vusers.created": 17,
+        "ws.messages_sent": 41,
+        "vusers.failed": 0,
+        "vusers.completed": 17,
+        "vusers.created_by_name.alice": 9
+      },
+      "rates": {
+        "ws.send_rate": 4
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804080105,
+      "firstHistogramAt": 1683804080148,
+      "lastCounterAt": 1683804089746,
+      "lastHistogramAt": 1683804089746,
+      "firstMetricAt": 1683804080105,
+      "lastMetricAt": 1683804089746,
+      "period": "1683804080000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 34.7,
+          "max": 46.5,
+          "count": 17,
+          "p50": 40,
+          "median": 40,
+          "p75": 40.9,
+          "p90": 41.7,
+          "p95": 42.5,
+          "p99": 42.5,
+          "p999": 42.5
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 34.7,
+          "max": 46.5,
+          "count": 17,
+          "p50": 40,
+          "median": 40,
+          "p75": 40.9,
+          "p90": 41.7,
+          "p95": 42.5,
+          "p99": 42.5,
+          "p999": 42.5
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.alice": 11,
+        "vusers.created": 17,
+        "ws.messages_sent": 35,
+        "vusers.failed": 0,
+        "vusers.completed": 17,
+        "vusers.created_by_name.headers_blocks": 6
+      },
+      "rates": {
+        "ws.send_rate": 4
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804090305,
+      "firstHistogramAt": 1683804090348,
+      "lastCounterAt": 1683804099945,
+      "lastHistogramAt": 1683804099945,
+      "firstMetricAt": 1683804090305,
+      "lastMetricAt": 1683804099945,
+      "period": "1683804090000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 35.6,
+          "max": 50.2,
+          "count": 17,
+          "p50": 38.5,
+          "median": 38.5,
+          "p75": 42.5,
+          "p90": 47,
+          "p95": 47.9,
+          "p99": 47.9,
+          "p999": 47.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 35.6,
+          "max": 50.2,
+          "count": 17,
+          "p50": 38.5,
+          "median": 38.5,
+          "p75": 42.5,
+          "p90": 47,
+          "p95": 47.9,
+          "p99": 47.9,
+          "p999": 47.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.alice": 9,
+        "vusers.created": 16,
+        "ws.messages_sent": 37,
+        "vusers.failed": 0,
+        "vusers.completed": 16,
+        "vusers.created_by_name.headers_blocks": 7
+      },
+      "rates": {
+        "ws.send_rate": 4
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804100505,
+      "firstHistogramAt": 1683804100545,
+      "lastCounterAt": 1683804109544,
+      "lastHistogramAt": 1683804109544,
+      "firstMetricAt": 1683804100505,
+      "lastMetricAt": 1683804109544,
+      "period": "1683804100000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 37.2,
+          "max": 46.7,
+          "count": 16,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 42.5,
+          "p90": 43.4,
+          "p95": 43.4,
+          "p99": 43.4,
+          "p999": 43.4
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 37.2,
+          "max": 46.7,
+          "count": 16,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 42.5,
+          "p90": 43.4,
+          "p95": 43.4,
+          "p99": 43.4,
+          "p999": 43.4
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.alice": 6,
+        "vusers.created": 17,
+        "ws.messages_sent": 50,
+        "vusers.failed": 0,
+        "vusers.completed": 17,
+        "vusers.created_by_name.headers_blocks": 11
+      },
+      "rates": {
+        "ws.send_rate": 5
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804110105,
+      "firstHistogramAt": 1683804110143,
+      "lastCounterAt": 1683804119745,
+      "lastHistogramAt": 1683804119745,
+      "firstMetricAt": 1683804110105,
+      "lastMetricAt": 1683804119745,
+      "period": "1683804110000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 34.6,
+          "max": 51.8,
+          "count": 17,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 42.5,
+          "p90": 44.3,
+          "p95": 51.9,
+          "p99": 51.9,
+          "p999": 51.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 34.6,
+          "max": 51.8,
+          "count": 17,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 42.5,
+          "p90": 44.3,
+          "p95": 51.9,
+          "p99": 51.9,
+          "p999": 51.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.headers_blocks": 9,
+        "vusers.created": 17,
+        "ws.messages_sent": 44,
+        "vusers.failed": 0,
+        "vusers.completed": 17,
+        "vusers.created_by_name.alice": 8
+      },
+      "rates": {
+        "ws.send_rate": 5
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804120305,
+      "firstHistogramAt": 1683804120362,
+      "lastCounterAt": 1683804129944,
+      "lastHistogramAt": 1683804129944,
+      "firstMetricAt": 1683804120305,
+      "lastMetricAt": 1683804129944,
+      "period": "1683804120000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 36.2,
+          "max": 56.6,
+          "count": 17,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 45.2,
+          "p90": 47,
+          "p95": 51.9,
+          "p99": 51.9,
+          "p999": 51.9
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 36.2,
+          "max": 56.6,
+          "count": 17,
+          "p50": 39.3,
+          "median": 39.3,
+          "p75": 45.2,
+          "p90": 47,
+          "p95": 51.9,
+          "p99": 51.9,
+          "p999": 51.9
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.headers_blocks": 6,
+        "vusers.created": 10,
+        "ws.messages_sent": 28,
+        "vusers.failed": 0,
+        "vusers.completed": 10,
+        "vusers.created_by_name.alice": 4
+      },
+      "rates": {
+        "ws.send_rate": 5
+      },
+      "ws.send_rate": null,
+      "firstCounterAt": 1683804130505,
+      "firstHistogramAt": 1683804130545,
+      "lastCounterAt": 1683804135943,
+      "lastHistogramAt": 1683804135943,
+      "firstMetricAt": 1683804130505,
+      "lastMetricAt": 1683804135943,
+      "period": "1683804130000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 37.3,
+          "max": 57.1,
+          "count": 10,
+          "p50": 40,
+          "median": 40,
+          "p75": 40.9,
+          "p90": 43.4,
+          "p95": 43.4,
+          "p99": 43.4,
+          "p999": 43.4
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 37.3,
+          "max": 57.1,
+          "count": 10,
+          "p50": 40,
+          "median": 40,
+          "p75": 40.9,
+          "p90": 43.4,
+          "p95": 43.4,
+          "p99": 43.4,
+          "p999": 43.4
+        }
+      }
+    }
+  ]
+}
