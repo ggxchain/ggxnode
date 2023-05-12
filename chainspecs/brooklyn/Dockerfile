@@ -21,7 +21,7 @@ WORKDIR /app
 COPY  . .
 
 # Download Frontier repo
-RUN cargo build --release
+RUN cargo build --release --config net.git-fetch-with-cli=true
 
 FROM debian:sid
 
