@@ -380,8 +380,13 @@ where
 
 			let (base_fee, tip) = adjusted_paid.split(base_fee.unique_saturated_into());
 			// Handle base fee. Can be either burned, rationed, etc ...
-			T::FeeComissionRecipient::on_unbalanced(base_fee);
-			return Some(tip);
+
+			let base_fee_commission = TreasuryCommissionFromFee::<T>::get() * base_fee.peek();
+			let (base_fee_commission, base_fee_after_commission) =
+				base_fee.split(base_fee_commission);
+
+			T::FeeComissionRecipient::on_unbalanced(base_fee_commission);
+			return Some(tip.merge(base_fee_after_commission));
 		}
 		None
 	}
