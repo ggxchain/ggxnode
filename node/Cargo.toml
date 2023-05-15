@@ -106,7 +106,18 @@ testnet = [
 	"fp-storage",
 	"fc-storage",
 ]
-mainnet = ["golden-gate-runtime-mainnet"]
+mainnet = [
+	"golden-gate-runtime-mainnet",
+	"fc-consensus",
+	"fc-db",
+	"fc-mapping-sync",
+	"fc-rpc",
+	"fc-rpc-core",
+	"fp-dynamic-fee",
+	"fp-rpc",
+	"fc-storage",
+]
+
 aura = [
 	"sc-consensus-aura",
 	"golden-gate-runtime-testnet?/aura",

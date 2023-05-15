@@ -67,9 +67,30 @@ pallet-treasury.workspace = true
 pallet-vesting.workspace = true
 pallet-whitelist.workspace = true
 
+# Frontier
+fp-evm.workspace = true
+fp-rpc.workspace = true
+fp-self-contained.workspace = true
+
+# Frontier FRAME
+pallet-base-fee.workspace = true
+pallet-dynamic-fee.workspace = true
+pallet-ethereum.workspace = true
+pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"] }
+pallet-evm-chain-id.workspace = true
+pallet-hotfix-sufficients.workspace = true
+
 # GGX
 account-filter.workspace = true
-runtime-common.workspace = true
+runtime-common = { workspace = true, features = ["xvm"]  }
+
+# Astar
+pallet-chain-extension-xvm.workspace = true
+pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
+
+# Wasm contracts
+pallet-contracts-primitives.workspace = true
+pallet-contracts.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
@@ -137,9 +158,26 @@ std = [
 	"pallet-treasury/std",
 	"pallet-vesting/std",
 	"pallet-whitelist/std",
+	# Frontier
+	"fp-evm/std",
+	"fp-rpc/std",
+	"fp-self-contained/std",
+	# Frontier FRAME
+	"pallet-base-fee/std",
+	"pallet-dynamic-fee/std",
+	"pallet-ethereum/std",
+	"pallet-evm/std",
+	"pallet-evm-chain-id/std",
+	"pallet-hotfix-sufficients/std",
 	# GGX
 	"account-filter/std",
 	"runtime-common/std",
+	# Astar
+	"pallet-chain-extension-xvm/std",
+	"pallet-xvm/std",
+	# Wasm contracts
+	"pallet-contracts/std",
+	"pallet-contracts-primitives/std",
 ]
 aura = []
 manual-seal = ["with-rocksdb-weights"]

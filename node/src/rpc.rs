@@ -5,7 +5,7 @@ use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApiServer};
 use sc_rpc_api::DenyUnsafe;
 
 /// Full client dependencies.
-pub struct FullDeps<C, P, #[cfg(feature = "testnet")] A: sc_transaction_pool::ChainApi> {
+pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	/// The client instance to use.
 	pub client: Arc<C>,
 	/// Transaction pool instance.
@@ -13,6 +13,8 @@ pub struct FullDeps<C, P, #[cfg(feature = "testnet")] A: sc_transaction_pool::Ch
 	/// Whether to deny unsafe calls
 	pub deny_unsafe: DenyUnsafe,
 
+	#[cfg(feature = "mainnet")]
+	pub mainnet: crate::service::mainnet::MainNetParams<A>,
 	#[cfg(feature = "testnet")]
 	pub testnet: crate::service::testnet::TestNetParams<A>,
 	/// Manual seal command sink

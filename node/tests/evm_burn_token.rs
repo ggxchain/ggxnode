@@ -19,6 +19,11 @@ use ethers::{
 	utils,
 };
 
+#[cfg(feature = "mainnet")]
+const CHAIN_ID: u64 = 8866u64;
+#[cfg(feature = "testnet")]
+const CHAIN_ID: u64 = 888866u64;
+
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
 // Sends some native currency
@@ -27,14 +32,11 @@ async fn send_transaction(
 	address_from: &Address,
 	address_to: &Address,
 ) -> Result<TransactionReceipt, Box<dyn std::error::Error>> {
-	println!(
-		"Beginning transfer of 10000 native currency {} to {}.",
-		address_from, address_to
-	);
+	println!("Beginning transfer of 10000 native currency {address_from} to {address_to}.");
 	let tx = Eip1559TransactionRequest::new()
-		.to(address_to.clone())
-		.value(U256::from(utils::parse_ether(10000)?))
-		.from(address_from.clone());
+		.to(*address_to)
+		.value((utils::parse_ether(10000)?))
+		.from(*address_from);
 	let tx = client.send_transaction(tx, None).await?.await?;
 
 	println!("Transaction Receipt: {}", serde_json::to_string(&tx)?);
@@ -48,11 +50,11 @@ async fn _print_balances(
 	address_from: &Address,
 	address_to: &Address,
 ) -> Result<(), Box<dyn std::error::Error>> {
-	let balance_from = provider.get_balance(address_from.clone(), None).await?;
-	let balance_to = provider.get_balance(address_to.clone(), None).await?;
+	let balance_from = provider.get_balance(*address_from, None).await?;
+	let balance_to = provider.get_balance(*address_to, None).await?;
 
-	println!("{} has {}", address_from, balance_from);
-	println!("{} has {}", address_to, balance_to);
+	println!("{address_from} has {balance_from}");
+	println!("{address_to} has {balance_to}");
 	Ok(())
 }
 
@@ -64,7 +66,7 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
-		.args(&["--dev"])
+		.args(["--dev"])
 		.arg("-d")
 		.arg(base_path.path())
 		.spawn()
@@ -88,7 +90,7 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 
 	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
 		.parse::<LocalWallet>()?
-		.with_chain_id(8866u64); // Change to correct network
+		.with_chain_id(CHAIN_ID); // Change to correct network
 	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
 
 	let (_, max_priority_fee_per_gas) = provider.estimate_eip1559_fees(None).await?;
