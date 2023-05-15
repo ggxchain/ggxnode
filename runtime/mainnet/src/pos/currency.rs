@@ -488,7 +488,7 @@ fn evm_fee_processing_impl<T: Config>(
 
 		return (Some(comission), Some(reward));
 	}
-	return (None, None);
+	(None, None)
 }
 
 #[cfg(test)]
