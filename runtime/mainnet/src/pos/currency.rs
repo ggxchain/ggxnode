@@ -16,6 +16,7 @@ use sp_runtime::{
 	traits::{AtLeast32BitUnsigned, Saturating, UniqueSaturatedInto, Zero},
 	Perbill,
 };
+use sp_std::vec;
 
 parameter_types! {
 	pub(crate) const DefaultInflationPercent: Perbill = Perbill::from_percent(16);
@@ -283,6 +284,10 @@ impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
 	}
 }
 
+type LiquidityInfoOf<T> = <<T as pallet_evm::Config>::Currency as Currency<
+	<T as frame_system::Config>::AccountId,
+>>::NegativeImbalance;
+
 impl<T> OnChargeEVMTransaction<T> for Pallet<T>
 where
 	T: pallet_evm::Config + frame_system::Config + pallet_balances::Config + pallet::Config,
@@ -295,12 +300,7 @@ where
 		>,
 {
 	// Kept type as Option to satisfy bound of Default
-	type LiquidityInfo =
-		Option<
-			<<T as pallet_evm::Config>::Currency as Currency<
-				<T as frame_system::Config>::AccountId,
-			>>::NegativeImbalance,
-		>;
+	type LiquidityInfo = Option<LiquidityInfoOf<T>>;
 
 	fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
 		if fee.is_zero() {
@@ -381,12 +381,22 @@ where
 			let (base_fee, tip) = adjusted_paid.split(base_fee.unique_saturated_into());
 			// Handle base fee. Can be either burned, rationed, etc ...
 
-			let base_fee_commission = TreasuryCommissionFromFee::<T>::get() * base_fee.peek();
-			let (base_fee_commission, base_fee_after_commission) =
-				base_fee.split(base_fee_commission);
+			let fee_comission = TreasuryCommissionFromFee::<T>::get();
+			let tips_comission = TreasuryCommissionFromTips::<T>::get();
 
-			T::FeeComissionRecipient::on_unbalanced(base_fee_commission);
-			return Some(tip.merge(base_fee_after_commission));
+			let (comission, reward): (Self::LiquidityInfo, Self::LiquidityInfo) =
+				evm_fee_processing_impl::<T>(
+					fee_comission,
+					tips_comission,
+					Some(base_fee),
+					Some(tip),
+				);
+
+			if let Some(comission) = comission {
+				T::FeeComissionRecipient::on_unbalanced(comission);
+			}
+
+			return reward;
 		}
 		None
 	}
@@ -398,14 +408,8 @@ where
 				pallet_evm::Pallet::<T>::find_author(),
 			);
 
-			let tip_commission = TreasuryCommissionFromTips::<T>::get() * tip.peek();
-			let (tip_commission, tip_after_commission) = tip.split(tip_commission);
-			T::FeeComissionRecipient::on_unbalanced(tip_commission);
-
-			let _ = <T as pallet_evm::Config>::Currency::deposit_into_existing(
-				&account_id,
-				tip_after_commission.peek(),
-			);
+			let _ =
+				<T as pallet_evm::Config>::Currency::deposit_into_existing(&account_id, tip.peek());
 		}
 	}
 }
@@ -451,6 +455,42 @@ fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
 	)
 }
 
+/// Function calculates the treasury comission from the fees and tips.
+/// Returns reward for the treasury and reward for the author.
+fn evm_fee_processing_impl<T: Config>(
+	fee_comission: Perbill,
+	tips_comission: Perbill,
+	base_fee: Option<LiquidityInfoOf<T>>,
+	tip: Option<LiquidityInfoOf<T>>,
+) -> (Option<LiquidityInfoOf<T>>, Option<LiquidityInfoOf<T>>) {
+	let (mut comission, mut reward) = (
+		LiquidityInfoOf::<T>::default(),
+		LiquidityInfoOf::<T>::default(),
+	);
+
+	if base_fee.is_some() || tip.is_some() {
+		if let Some(base_fee) = base_fee {
+			let base_fee_commission = fee_comission * base_fee.peek();
+			let (base_fee_commission, base_fee_after_commission) =
+				base_fee.split(base_fee_commission);
+
+			comission = comission.merge(base_fee_commission);
+			reward = reward.merge(base_fee_after_commission);
+		}
+
+		if let Some(tip) = tip {
+			let tip_commission = tips_comission * tip.peek();
+			let (tip_commission, tip_after_commission) = tip.split(tip_commission);
+
+			comission = comission.merge(tip_commission);
+			reward = reward.merge(tip_after_commission);
+		}
+
+		return (Some(comission), Some(reward));
+	}
+	return (None, None);
+}
+
 #[cfg(test)]
 mod tests {
 	use frame_support::{assert_ok, pallet_prelude::DispatchResult};
@@ -458,8 +498,8 @@ mod tests {
 	use sp_runtime::Perbill;
 
 	use super::{
-		era_payout_impl, fee_processing_impl, DefaultInflationDecay, DefaultInflationPercent,
-		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
+		era_payout_impl, evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
+		DefaultInflationPercent, DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
 		DefaultTreasuryCommissionFromTips, Event, YEAR_IN_MILLIS,
 	};
 
@@ -680,6 +720,79 @@ mod tests {
 					NegativeImbalance::<mock::Test>::new(25),
 					NegativeImbalance::<mock::Test>::new(75)
 				))
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_fee_cut() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(100);
+			let tips_percent = Perbill::from_percent(25);
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(80)),
+					Some(NegativeImbalance::<mock::Test>::new(20)),
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(85)),
+					Some(NegativeImbalance::<mock::Test>::new(15))
+				)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_none() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(25);
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(fee_percent, fee_percent, None, None),
+				(None, None)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_only_fee() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(100)),
+					None
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(50)),
+					Some(NegativeImbalance::<mock::Test>::new(50))
+				)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_only_tips() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(0)),
+					Some(NegativeImbalance::<mock::Test>::new(100)),
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(25)),
+					Some(NegativeImbalance::<mock::Test>::new(75))
+				)
 			);
 		});
 	}
