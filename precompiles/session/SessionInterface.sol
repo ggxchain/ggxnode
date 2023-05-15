@@ -5,7 +5,7 @@ pragma solidity >=0.8.0;
  * @title Pallet Session Interface
  *
  * The interface through which solidity contracts will interact with pallet-session
- * Address :    0x0000000000000000000000000000000000000804
+ * Address :    0x0000000000000000000000000000000000002052
  */
 
 interface Session {
