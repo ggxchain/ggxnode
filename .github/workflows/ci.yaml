@@ -10,8 +10,8 @@ on:
     #branches: [main]
 
 jobs:
-  if: github.ref == 'refs/heads/main'
   docker-build-push:
+    if: github.ref == 'refs/heads/main'
     runs-on: ubuntu-20.04-16core
     steps:
       #- name: Configure AWS Credentials
