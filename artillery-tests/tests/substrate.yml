@@ -4,7 +4,7 @@ config:
   phases:
     - duration: 60
       arrivalRate: 10
-      rampTo: 60
+      maxVusers: 100
       name: "Getting connections"
   engines:
     substrate: { }
@@ -13,25 +13,19 @@ scenarios:
     name: Infinite substrate transfer funds
     flow:
       - function: "createTestAccount"
-      - think: 5
       - loop:
         - function: "transferFunds"
   - engine: substrate
     name: "Infinite ink contract deployment"
-    beforeScenario: "createTestAccount"
     flow:
       - function: "createTestAccount"
-      - think: 5
       - loop:
         - function: "deployInkErc20"
   - engine: substrate
     name: "Infinite erc20 calls"
-    beforeScenario: "createTestAccount"
     flow:
       - function: "createTestAccount"
-      - think: 5
       - function: "deployInkErc20"
-      - think: 5
       - loop:
         - function: "transferErc20Funds"
 

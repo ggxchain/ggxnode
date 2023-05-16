@@ -3,22 +3,20 @@ const { CodePromise, ContractPromise } = require('@polkadot/api-contract');
 const { mnemonicGenerate } = require('@polkadot/util-crypto');
 const contract_file = require('./data/erc20.contract.json');
 
-module.exports = { transferFunds, deployInkErc20, transferErc20Funds, createTestAccount, returnFunds };
-
+module.exports = { transferFunds, deployInkErc20, transferErc20Funds, createTestAccount };
 
 async function transferFunds(userContext, events, done) {
     const receiver = userContext.vars.receiver;
     const sender = userContext.vars.sender;
     extrinstic = userContext.api.tx.balances.transfer(receiver, userContext.funcs.$randomNumber(1));
-    extrinstic.signAndSend(sender, { nonce: userContext.vars.$loopCount });
-
+    await extrinstic.signAndSend(sender, { nonce: userContext.vars.$loopCount });
     return done();
 }
 
 function createGasLimit(api) {
     return api.registry.createType('WeightV2', {
-        refTime: 3000n * 1000000n,
-        proofSize: 512 * 1024,
+        refTime: BigInt(1 * 1e10), // we have 18 decimals, so 1e10 is 0.00000001
+        proofSize: 1024 * 1024 * 1, // pretty big proof for contract deployment
     });
 }
 
@@ -37,15 +35,12 @@ async function deployInkErc20(userContext, events, done) {
         storageDepositLimit
     }, initBalance);
 
-    let address;
-    const unsub = await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, ({ contract, status }) => {
-        if (status.isInBlock || status.isFinalized) {
-            address = contract.address.toString();
-            unsub();
+    await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, ({ contract, status }) => {
+        if (status.isFinalized) {
+            userContext.vars.inkErc20Address = contract.address.toString();
+            done();
         }
     })
-    userContext.vars.inkErc20Address = address;
-    return done();
 }
 
 async function transferErc20Funds(userContext, events, done) {
@@ -53,12 +48,13 @@ async function transferErc20Funds(userContext, events, done) {
     const receiver = userContext.vars.receiver;
     const address = userContext.vars.inkErc20Address;
 
-
     // Contracts usage
     const contract = new ContractPromise(userContext.api, contract_file, address);
     const gasLimit = createGasLimit(userContext.api);
     const storageDepositLimit = null;
-    await contract.tx.transfer({ gasLimit, storageDepositLimit }, receiver, 100).signAndSend(sender, { nonce: userContext.vars.$loopCount });
+    // +1 because we used the nonce for the contract deployment
+    await contract.tx.transfer({ gasLimit, storageDepositLimit }, receiver, 100).signAndSend(sender, { nonce: userContext.vars.$loopCount + 1 });
+
     return done();
 }
 
@@ -70,21 +66,22 @@ async function createTestAccount(userContext, events, done) {
     userContext.vars.receiver = keyring.addFromUri('//Bob').address;
     userContext.vars.alice = alice.address;
 
-    // Alice supposed to whitelist the sender and transfer some funds to it
-    await userContext.api.tx.balances.transfer(userContext.vars.sender.address, BigInt(1000 * 1e18)).signAndSend(alice, { nonce: -1 });
-    await userContext.api.tx.sudo.sudo(userContext.api.tx.accountFilter.addAccount(userContext.vars.sender.address)).signAndSend(alice, { nonce: -1 });
+    // Might fail because of nonce issue (due to parallelism).
+    try {
+        const unsub = await userContext.api.tx.balances.transfer(userContext.vars.sender.address, BigInt(1000 * 1e18)).signAndSend(alice, { nonce: -1 }, (result) => {
+            if (result.status.isFinalized) {
+                // Alice supposed to transfer some funds to it
+                unsub();
+            }
+        });
+        // Alice supposed to whitelist the account
+        await userContext.api.tx.sudo.sudo(userContext.api.tx.accountFilter.addAccount(userContext.vars.sender.address)).signAndSend(alice, { nonce: -1 }, (result) => {
+            if (result.status.isFinalized) {
+                done();
+            }
+        });
 
-    return done();
-}
-
-async function returnFunds(userContext, events, done) {
-    // Return balance to Alice
-    const system_account = await userContext.api.query.system.account(userContext.vars.sender.address);
-    const balance = system_account.data.free.toBigInt();
-
-    const alice = userContext.vars.alice;
-    /// -10000 to cover the tx fee
-    await userContext.api.tx.balances.transfer(alice, balance - 10000n).signAndSend(userContext.vars.sender, { nonce: -1 });
-
-    return done();
+    } catch (e) {
+        return null;
+    }
 }
