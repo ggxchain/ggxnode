@@ -1,0 +1,53 @@
+name: GGX-Substrate-Node
+
+# The ref given is fully-formed, meaning that for branches the format is refs/heads/<branch_name>, for pull requests it is refs/pull/<pr_number>/merge, and for tags it is refs/tags/<tag_name>
+on:
+  push:
+    branches: [main, pipeline-refactor]
+    tags: [release**]
+  #pull_request:
+    # The branches below must be a subset of the branches above
+    #branches: [main]
+
+jobs:
+  if: github.ref == 'refs/heads/main'
+  docker-build-push:
+    runs-on: ubuntu-20.04-16core
+    steps:
+      #- name: Configure AWS Credentials
+      #  uses: aws-actions/configure-aws-credentials@v1
+      #  with:
+      #    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+      #    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+      #    aws-region: us-east-1
+
+      #- name: Log in to Amazon ECR
+      #  id: login-ecr
+      #  uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Check out code
+        uses: actions/checkout@v2
+
+      - name: Set Image Tag
+        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
+      - name: Build, tag, and upload the docker image
+        env:
+          ##REGISTRY: ${{ steps.login-ecr.outputs.registry }}
+          REGISTRY: ghcr.io/boostylabs
+          REPOSITORY: golden-gate-test-node
+        run: |
+          docker build -t $REGISTRY/$REPOSITORY:$SHORT_SHA -f Dockerfile .
+          ##docker push $REGISTRY/$REPOSITORY:$SHORT_SHA
+
+      #- name: Store Image Tag on AWS S3
+      #  env:
+      #    S3_BUCKET: kaminari-docker-image-tags
+      #  run: |
+      #    echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
+      #    echo "$SHORT_SHA" > latest.txt
+      #    aws s3 cp latest.txt s3://$S3_BUCKET/latest.txt
+      #    echo "This image will be used in future staging and production deployments.."
+
+      #- name: Log out of Amazon ECR
+      #  run: docker logout ${{ steps.login-ecr.outputs.registry }}
