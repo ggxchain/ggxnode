@@ -12,7 +12,7 @@ on:
 jobs:
   docker-build-push:
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/pipeline-refactor'
-    runs-on: ubuntu-20.04-16core
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       #- name: Configure AWS Credentials
       #  uses: aws-actions/configure-aws-credentials@v1
