@@ -36,7 +36,7 @@ jobs:
             system-features = kvm
             http2 = true
       - name: cachix-cachix-action
-        uses: cachix/cachix-action@298387a7aea14d6564aa5d6ead79272878339c8b
+        uses: cachix/cachix-action@586bf280495080c5a6d4868237ad28a860e4b309
         with:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           name: ${{ env.CACHIX_NAME }}
@@ -75,7 +75,7 @@ jobs:
             system-features = kvm
             http2 = true
       - name: cachix-cachix-action
-        uses: cachix/cachix-action@298387a7aea14d6564aa5d6ead79272878339c8b
+        uses: cachix/cachix-action@586bf280495080c5a6d4868237ad28a860e4b309
         with:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           name: ${{ env.CACHIX_NAME }}
