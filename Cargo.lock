@@ -3956,6 +3956,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7f24254aa9a54b5c858eaee2f5bccdb46aaf0e486a595ed5fd8f86ba55232a70"
 
 [[package]]
+name = "hex-literal"
+version = "0.3.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
+
+[[package]]
 name = "hkdf"
 version = "0.12.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -6425,6 +6431,33 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompile-session"
+version = "0.0.0"
+dependencies = [
+ "derive_more",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "libsecp256k1",
+ "log",
+ "num_enum 0.5.11",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec 3.4.0",
+ "precompile-utils 0.1.0",
+ "serde",
+ "sha3 0.8.2",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
 source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#7030ab484b0449b1a29a2d2181195a322a97b321"
@@ -6453,7 +6486,7 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils",
+ "precompile-utils 0.4.3",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -6469,7 +6502,7 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils",
+ "precompile-utils 0.4.3",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -6488,7 +6521,7 @@ dependencies = [
  "pallet-evm",
  "pallet-xvm",
  "parity-scale-codec 3.4.0",
- "precompile-utils",
+ "precompile-utils 0.4.3",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -7388,6 +7421,26 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "precompile-utils"
+version = "0.1.0"
+dependencies = [
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex-literal",
+ "impl-trait-for-tuples",
+ "log",
+ "num_enum 0.5.11",
+ "pallet-evm",
+ "parity-scale-codec 3.4.0",
+ "precompile-utils-macro 0.1.0",
+ "sha3 0.8.2",
+ "sp-core",
+ "sp-io",
+ "sp-std",
+]
+
+[[package]]
+name = "precompile-utils"
 version = "0.4.3"
 source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
@@ -7400,13 +7453,24 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils-macro",
+ "precompile-utils-macro 0.1.0 (git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39)",
  "sha3 0.10.6",
  "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
  "xcm",
+]
+
+[[package]]
+name = "precompile-utils-macro"
+version = "0.1.0"
+dependencies = [
+ "num_enum 0.5.11",
+ "proc-macro2",
+ "quote",
+ "sha3 0.8.2",
+ "syn 1.0.109",
 ]
 
 [[package]]
@@ -8207,6 +8271,7 @@ dependencies = [
  "pallet-evm-precompile-bn128",
  "pallet-evm-precompile-ed25519",
  "pallet-evm-precompile-modexp",
+ "pallet-evm-precompile-session",
  "pallet-evm-precompile-sha3fips",
  "pallet-evm-precompile-simple",
  "pallet-evm-precompile-sr25519",
@@ -9802,6 +9867,19 @@ dependencies = [
  "cfg-if",
  "cpufeatures",
  "digest 0.10.6",
+]
+
+[[package]]
+name = "sha3"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "dd26bc0e7a2e3a7c959bc494caf58b72ee0c71d67704e9520f736ca7e4853ecf"
+dependencies = [
+ "block-buffer 0.7.3",
+ "byte-tools",
+ "digest 0.8.1",
+ "keccak",
+ "opaque-debug 0.2.3",
 ]
 
 [[package]]
