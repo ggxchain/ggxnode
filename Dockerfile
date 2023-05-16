@@ -20,7 +20,7 @@ COPY  . .
 RUN cargo build --locked --release --config net.git-fetch-with-cli=true
 
 
-FROM debian:sid as production
+FROM debian:11 as production
 
 ENV HOME /usr/src/app
 WORKDIR $HOME
