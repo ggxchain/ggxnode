@@ -1,14 +1,14 @@
 config:
   target: "ws://127.0.0.1:9944"
   processor: "../common.js"
-  phases:
-    - duration: 60
-      arrivalRate: 10
-      maxVusers: 100
+  phases: # defines phases that it will run in loop (if one will repeat)
+    - duration: 60  # time
+      arrivalRate: 10 # how much new users coming every second
+      maxVusers: 100 # max amount
       name: "Getting connections"
   engines:
     substrate: { }
-scenarios:
+scenarios: # the user will hang in one of the loops
   - engine: substrate
     name: Infinite substrate transfer funds
     flow:

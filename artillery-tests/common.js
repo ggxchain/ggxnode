@@ -5,11 +5,15 @@ const contract_file = require('./data/erc20.contract.json');
 
 module.exports = { transferFunds, deployInkErc20, transferErc20Funds, createTestAccount };
 
+/// Transfer funds from the precreated account in (@createTestAccount) to another.
 async function transferFunds(userContext, events, done) {
     const receiver = userContext.vars.receiver;
     const sender = userContext.vars.sender;
     extrinstic = userContext.api.tx.balances.transfer(receiver, userContext.funcs.$randomNumber(1));
-    await extrinstic.signAndSend(sender, { nonce: userContext.vars.$loopCount });
+    try {
+        await extrinstic.signAndSend(sender, { nonce: userContext.vars.$loopCount });
+    }
+    catch (e) { } // The error can happen if transaction pool is full, so we just ignore it and keep going
     return done();
 }
 
@@ -20,6 +24,8 @@ function createGasLimit(api) {
     });
 }
 
+
+/// Deploy ERC20 contract and save its address to the context. Uses the precreated account from (@createTestAccount).
 async function deployInkErc20(userContext, events, done) {
     const sender = userContext.vars.sender;
 
@@ -34,15 +40,19 @@ async function deployInkErc20(userContext, events, done) {
         gasLimit,
         storageDepositLimit
     }, initBalance);
-
-    await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, ({ contract, status }) => {
-        if (status.isFinalized) {
-            userContext.vars.inkErc20Address = contract.address.toString();
-            done();
-        }
-    })
+    try {
+        await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, ({ contract, status }) => {
+            if (status.isFinalized) {
+                userContext.vars.inkErc20Address = contract.address.toString();
+                done();
+            }
+        })
+    }
+    catch (e) { } // The error can happen if transaction pool is full, so we just ignore it and keep going
 }
 
+
+/// Transfer funds from the precreated account in (@createTestAccount) to another using ERC20 contract that was deployed in (@deployInkErc20).
 async function transferErc20Funds(userContext, events, done) {
     const sender = userContext.vars.sender;
     const receiver = userContext.vars.receiver;
@@ -53,11 +63,14 @@ async function transferErc20Funds(userContext, events, done) {
     const gasLimit = createGasLimit(userContext.api);
     const storageDepositLimit = null;
     // +1 because we used the nonce for the contract deployment
-    await contract.tx.transfer({ gasLimit, storageDepositLimit }, receiver, 100).signAndSend(sender, { nonce: userContext.vars.$loopCount + 1 });
-
+    try {
+        await contract.tx.transfer({ gasLimit, storageDepositLimit }, receiver, 100).signAndSend(sender, { nonce: userContext.vars.$loopCount + 1 });
+    }
+    catch (e) { } // The error can happen if transaction pool is full, so we just ignore it and keep going
     return done();
 }
 
+/// Creates a spam account and whitelist it. The account is used for stress testing.
 async function createTestAccount(userContext, events, done) {
     const keyring = new Keyring({ type: 'sr25519' });
     mnemonic = mnemonicGenerate(12);
