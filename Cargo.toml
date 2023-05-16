@@ -22,12 +22,14 @@ repository = "https://github.com/paritytech/frontier/"
 assert_cmd = "2.0.2"
 async-trait = "0.1"
 clap = { version = "4.1", features = ["derive"] }
+derive_more = { version = "0.99" }
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
 hex = "0.4"
 hex-literal = "0.3.1"
 impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
+libsecp256k1 = "0.7"
 log = "0.4.17"
 nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }

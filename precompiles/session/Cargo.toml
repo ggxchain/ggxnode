@@ -10,8 +10,8 @@ repository.workspace = true
 
 
 [dependencies]
-log = "0.4"
-num_enum = { version = "0.5.3", default-features = false }
+log.workspace = true
+num_enum.workspace = true
 
 # Moonbeam
 precompile-utils = { path = "../utils", default-features = false }
@@ -30,11 +30,11 @@ fp-evm.workspace = true
 pallet-evm.workspace = true
 
 [dev-dependencies]
-derive_more = { version = "0.99" }
-hex-literal = "0.3.4"
-libsecp256k1 = "0.7"
-serde = { version = "1.0.100" }
-sha3 = "0.8"
+derive_more.workspace = true
+hex-literal.workspace = true
+libsecp256k1.workspace = true
+serde.workspace = true
+sha3.workspace = true
 
 scale-codec = { package = "parity-scale-codec", workspace = true }
 pallet-timestamp.workspace = true

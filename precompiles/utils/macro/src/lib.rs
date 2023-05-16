@@ -30,7 +30,7 @@ impl ::std::fmt::Debug for Bytes {
 		if !data.is_empty() {
 			write!(f, "{:#04x}u8", data[0])?;
 			for unit in data.iter().skip(1) {
-				write!(f, ", {:#04x}", unit)?;
+				write!(f, ", {unit:#04x}")?;
 			}
 		}
 		write!(f, "]")
@@ -44,7 +44,7 @@ pub fn keccak256(input: TokenStream) -> TokenStream {
 	let hash = Keccak256::digest(lit_str.value().as_ref());
 
 	let bytes = Bytes(hash.to_vec());
-	let eval_str = format!("{:?}", bytes);
+	let eval_str = format!("{bytes:?}");
 	let eval_ts: proc_macro2::TokenStream = eval_str.parse().unwrap_or_else(|_| {
 		panic!(
 			"Failed to parse the string \"{}\" to TokenStream.",
@@ -63,8 +63,8 @@ pub fn keccak256(input: TokenStream) -> TokenStream {
 /// ```ignore
 /// #[generate_function_selector]
 /// enum Action {
-/// 	Toto = "toto()",
-/// 	Tata = "tata()",
+///     Toto = "toto()",
+///     Tata = "tata()",
 /// }
 /// ```
 ///
@@ -73,8 +73,8 @@ pub fn keccak256(input: TokenStream) -> TokenStream {
 /// ```rust
 /// #[repr(u32)]
 /// enum Action {
-/// 	Toto = 119097542u32,
-/// 	Tata = 1414311903u32,
+///     Toto = 119097542u32,
+///     Tata = 1414311903u32,
 /// }
 /// ```
 ///

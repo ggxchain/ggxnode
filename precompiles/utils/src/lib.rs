@@ -196,7 +196,7 @@ where
 		let used_weight = call
 			.dispatch(origin)
 			.map_err(|e| {
-				gasometer.revert(alloc::format!("Dispatched call failed with error: {:?}", e))
+				gasometer.revert(alloc::format!("Dispatched call failed with error: {e:?}"))
 			})?
 			.actual_weight;
 
@@ -268,7 +268,6 @@ impl Gasometer {
 	}
 
 	/// Record cost, and return error if it goes out of gas.
-	#[must_use]
 	pub fn record_cost(&mut self, cost: u64) -> EvmResult {
 		self.used_gas = self
 			.used_gas
@@ -287,7 +286,6 @@ impl Gasometer {
 
 	/// Record cost of a log manualy.
 	/// This can be useful to record log costs early when their content have static size.
-	#[must_use]
 	pub fn record_log_costs_manual(&mut self, topics: usize, data_len: usize) -> EvmResult {
 		// Cost calculation is copied from EVM code that is not publicly exposed by the crates.
 		// https://github.com/rust-blockchain/evm/blob/master/gasometer/src/costs.rs#L148
@@ -316,7 +314,6 @@ impl Gasometer {
 	}
 
 	/// Record cost of logs.
-	#[must_use]
 	pub fn record_log_costs(&mut self, logs: &[Log]) -> EvmResult {
 		for log in logs {
 			self.record_log_costs_manual(log.topics.len(), log.data.len())?;
@@ -328,7 +325,6 @@ impl Gasometer {
 	/// Compute remaining gas.
 	/// Returns error if out of gas.
 	/// Returns None if no gas limit.
-	#[must_use]
 	pub fn remaining_gas(&self) -> EvmResult<Option<u64>> {
 		Ok(match self.target_gas {
 			None => None,
@@ -355,7 +351,6 @@ impl Gasometer {
 		}
 	}
 
-	#[must_use]
 	/// Check that a function call is compatible with the context it is
 	/// called into.
 	pub fn check_function_modifier(

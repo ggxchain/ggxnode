@@ -19,9 +19,9 @@ use std::process::{self};
 pub mod common;
 
 #[cfg(feature = "mainnet")]
-const CHAIN_ID: u64 = 8888u64;
-#[cfg(feature = "testnet")]
 const CHAIN_ID: u64 = 8866u64;
+#[cfg(feature = "testnet")]
+const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
