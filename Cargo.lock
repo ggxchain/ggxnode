@@ -721,7 +721,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a071c348a5ef6da1d3a87166b408170b46002382b1dda83992b5c2208cefb370"
 dependencies = [
  "log",
- "parity-scale-codec 3.4.0",
+ "parity-scale-codec",
  "scale-info",
  "serde",
 ]
