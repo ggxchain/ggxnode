@@ -23,7 +23,7 @@ npm install -g
 ```bash
 npm install # install dependencies
 
-artillery run --output report.json tests/substrate.yml
+artillery run tests/substrate.yml
 ```
 
 ### Possible area of improvements

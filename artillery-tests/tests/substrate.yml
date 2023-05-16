@@ -1,9 +1,9 @@
 config:
   target: "ws://127.0.0.1:9944"
   processor: "../common.js"
-  phases: # defines phases that it will run in loop (if one will repeat)
-    - duration: 60  # time
-      arrivalRate: 10 # how much new users coming every second
+  phases:
+    - duration: 100  # time
+      arrivalRate: 5 # how much new users coming every second
       maxVusers: 100 # max amount
       name: "Getting connections"
   engines:
@@ -15,12 +15,16 @@ scenarios: # the user will hang in one of the loops
       - function: "createTestAccount"
       - loop:
         - function: "transferFunds"
+        count: 100
+      - function: "returnFunds"
   - engine: substrate
     name: "Infinite ink contract deployment"
     flow:
       - function: "createTestAccount"
       - loop:
         - function: "deployInkErc20"
+        count: 10
+      - function: "returnFunds"    
   - engine: substrate
     name: "Infinite erc20 calls"
     flow:
@@ -28,4 +32,6 @@ scenarios: # the user will hang in one of the loops
       - function: "deployInkErc20"
       - loop:
         - function: "transferErc20Funds"
+        count: 100
+      - function: "returnFunds"    
 
