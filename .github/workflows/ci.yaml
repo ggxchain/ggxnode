@@ -3,7 +3,7 @@ name: GGX-Substrate-Node
 # The ref given is fully-formed, meaning that for branches the format is refs/heads/<branch_name>, for pull requests it is refs/pull/<pr_number>/merge, and for tags it is refs/tags/<tag_name>
 on:
   push:
-    branches: [main, pipeline-refactor]
+    branches: [main]
     tags: [release**]
   #pull_request:
     # The branches below must be a subset of the branches above
@@ -11,7 +11,7 @@ on:
 
 jobs:
   docker-build-push:
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/pipeline-refactor'
+    if: github.ref == 'refs/heads/main'
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       #- name: Configure AWS Credentials
@@ -42,7 +42,7 @@ jobs:
 
       #- name: Store Image Tag on AWS S3
       #  env:
-      #    S3_BUCKET: kaminari-docker-image-tags
+      #    S3_BUCKET: docker-release-tags
       #  run: |
       #    echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
       #    echo "$SHORT_SHA" > latest.txt
