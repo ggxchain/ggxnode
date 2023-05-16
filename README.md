@@ -36,7 +36,7 @@ cargo install cargo-dylint dylint-link
 nix develop --impure
 ```
 
-## DOCKER
+## Docker
 
 Due to the highly CPU dependent nature of 'cargo build' command, it's strongly recommended that you have at least 8 core enabled for this method.
 It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
