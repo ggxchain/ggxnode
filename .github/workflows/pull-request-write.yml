@@ -49,7 +49,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - run: nix build .#lint-all
+      - run: nix build --log-lines 100 .#lint-all
 
   build-and-publish-draft:
       # as soon as it will be slow, can 
@@ -91,7 +91,7 @@ jobs:
       - name: building-targets
         run: |          
           mkdir out
-          nix build .#release --print-build-logs --show-trace --no-update-lock-file
+          nix build --log-lines 100 .#release --print-build-logs --show-trace --no-update-lock-file
           cp ./result/lib/* ./result/bin/* ./out
       - name: action-gh-release
         # so we do not allow non team members to do releases
