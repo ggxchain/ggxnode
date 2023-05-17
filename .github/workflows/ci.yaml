@@ -19,6 +19,8 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: us-east-1
+          ## This has to be either 'us-east-1' or 'us-west-2' for public ECR
 
       - name: Log in to Amazon ECR
         id: login-ecr-public
@@ -51,7 +53,7 @@ jobs:
           echo "This image will be used in the future deployments.."
 
       - name: Log out of Amazon ECR
-        run: docker logout ${{ steps.login-ecr.outputs.registry }}
+        run: docker logout ${{ steps.login-ecr-public.outputs.registry }}
 
   deploy-dev:
     if: github.ref == 'refs/heads/main'
