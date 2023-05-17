@@ -14,9 +14,12 @@ function createGasLimit(api) {
 
 function signWrapper(done, userContext, callback) {
     function wrapper(result) {
-        if (result.isError) {
+        // Unfortunately, we can receive a double error here, and we don't want to call two times the done callback.
+        // The best way is to call unsub, but we can't move it here cause it will be undefined.
+        // And I don't want to make repetitive code, so hacky but working.
+        if (result.isError && userContext.vars.dead !== true) {
             userContext.vars.dead = true;
-            return done();
+            done();
         }
         if (result.status.isFinalized) {
             callback(result);
@@ -160,6 +163,6 @@ async function returnFunds(userContext, events, done) {
         }));
     }
     catch (e) {
-        return await returnFunds(userContext, events, done) // Keep trying
+        return await returnFunds(userContext, events, done); // Keep trying
     } // The error can happen if transaction pool is full, so we just ignore it and keep going
 }
