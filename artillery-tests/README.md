@@ -23,9 +23,18 @@ npm install -g
 ```bash
 npm install # install dependencies
 
-artillery run tests/substrate.yml
+artillery run --output report.json tests/substrate.yml
+```
+
+### Generating report
+
+```bash
+artillery report report.json
 ```
 
 ### Possible area of improvements
 
-* Implement EVM stress testing as well, so we can stress node from all directions
+* Implement EVM stress testing as well, so we can stress the node from all directions
+* Reports are useless because our scenario setup can fail, so we skip processing and instantly finish the run.
+Unfortunately, this can't be handled because the Substrate plugin API prevents you from failing.
+The `done` callback carries success. Though it's easy to do for them.

@@ -5,12 +5,31 @@ const contract_file = require('./data/erc20.contract.json');
 
 module.exports = { transferFunds, deployInkErc20, transferErc20Funds, createTestAccount, returnFunds };
 
+function createGasLimit(api) {
+    return api.registry.createType('WeightV2', {
+        refTime: BigInt(1 * 1e10), // we have 18 decimals, so 1e10 is 0.00000001
+        proofSize: 1024 * 1024 * 1, // pretty big proof for contract deployment
+    });
+}
+
+function signWrapper(done, userContext, callback) {
+    function wrapper(result) {
+        if (result.isError) {
+            userContext.vars.dead = true;
+            return done();
+        }
+        if (result.status.isFinalized) {
+            callback(result);
+        }
+    }
+    return wrapper;
+}
+
 /// Transfer funds from the precreated account in (@createTestAccount) to another.
 async function transferFunds(userContext, events, done) {
     if (userContext.vars.dead) {
         return done();
     }
-
     const receiver = userContext.vars.receiver;
     const sender = userContext.vars.sender;
     extrinstic = userContext.api.tx.balances.transfer(receiver, userContext.funcs.$randomNumber(1));
@@ -20,14 +39,6 @@ async function transferFunds(userContext, events, done) {
     catch (e) { } // The error can happen if transaction pool is full, so we just ignore it and keep going
     return done();
 }
-
-function createGasLimit(api) {
-    return api.registry.createType('WeightV2', {
-        refTime: BigInt(1 * 1e10), // we have 18 decimals, so 1e10 is 0.00000001
-        proofSize: 1024 * 1024 * 1, // pretty big proof for contract deployment
-    });
-}
-
 
 /// Deploy ERC20 contract and save its address to the context. Uses the precreated account from (@createTestAccount).
 async function deployInkErc20(userContext, events, done) {
@@ -53,13 +64,11 @@ async function deployInkErc20(userContext, events, done) {
             await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount });
             return done();
         } else {
-            const unsub = await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, ({ contract, status }) => {
-                if (status.isFinalized) {
-                    userContext.vars.inkErc20Address = contract.address.toString();
-                    unsub();
-                    done();
-                }
-            })
+            const unsub = await tx.signAndSend(sender, { nonce: userContext.vars.$loopCount }, signWrapper(done, userContext, (result) => {
+                userContext.vars.inkErc20Address = result.contract.address.toString();
+                unsub();
+                done();
+            }));
         }
     }
     catch (e) {
@@ -102,28 +111,25 @@ async function createTestAccount(userContext, events, done) {
     // Might fail because of nonce issue (due to parallelism).
     try {
         var transfered = false;
-        // Alice supposed to transfer some funds to it
-        const unsub = await userContext.api.tx.balances.transfer(userContext.vars.sender.address, BigInt(1000 * 1e18)).signAndSend(alice, { nonce: -1 }, (result) => {
-            if (result.status.isFinalized) {
-                transfered = true;
-                unsub();
-                if (transfered && whitelisted) {
-                    done();
-                }
-            }
-        });
-
         var whitelisted = false;
-        // Alice supposed to whitelist the account
-        const unsub2 = await userContext.api.tx.sudo.sudo(userContext.api.tx.accountFilter.addAccount(userContext.vars.sender.address)).signAndSend(alice, { nonce: -1 }, (result) => {
-            if (result.status.isFinalized) {
-                whitelisted = true;
-                unsub2();
-                if (transfered && whitelisted) {
-                    done();
-                }
+
+        // Alice supposed to transfer some funds to it
+        const unsub = await userContext.api.tx.balances.transfer(userContext.vars.sender.address, BigInt(1000 * 1e18)).signAndSend(alice, { nonce: -1 }, signWrapper(done, userContext, (result) => {
+            transfered = true;
+            unsub();
+            if (transfered && whitelisted) {
+                done();
             }
-        });
+        }));
+
+        // Alice supposed to whitelist the account
+        const unsub2 = await userContext.api.tx.sudo.sudo(userContext.api.tx.accountFilter.addAccount(userContext.vars.sender.address)).signAndSend(alice, { nonce: -1 }, signWrapper(done, userContext, (result) => {
+            whitelisted = true;
+            unsub2();
+            if (transfered && whitelisted) {
+                done();
+            }
+        }));
     } catch (e) {
         userContext.vars.dead = true;
         return done(); // Well, unlucky, another one will be created
@@ -148,13 +154,10 @@ async function returnFunds(userContext, events, done) {
 
     try {
         /// -1e18 to cover the tx fee
-        const unsub = await userContext.api.tx.balances.transfer(alice, balance - BigInt(1e18)).signAndSend(sender, { nonce: -1 }, (result) => {
-            if (result.status.isFinalized) {
-                unsub();
-                done();
-            }
-
-        });
+        const unsub = await userContext.api.tx.balances.transfer(alice, balance - BigInt(1e18)).signAndSend(sender, { nonce: -1 }, signWrapper(done, userContext, (result) => {
+            unsub();
+            done();
+        }));
     }
     catch (e) {
         return await returnFunds(userContext, events, done) // Keep trying
