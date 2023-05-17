@@ -19,7 +19,6 @@ jobs:
         with:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
 
       - name: Log in to Amazon ECR
         id: login-ecr-public
@@ -48,7 +47,7 @@ jobs:
         run: |
           echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
           echo "$SHORT_SHA" > latest
-          aws s3 cp latest s3://$S3_BUCKET/latest
+          aws --region eu-central-1 s3 cp latest s3://$S3_BUCKET/latest
           echo "This image will be used in the future deployments.."
 
       - name: Log out of Amazon ECR
