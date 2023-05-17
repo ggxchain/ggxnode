@@ -3,27 +3,29 @@ name: GGX-Substrate-Node
 # The ref given is fully-formed, meaning that for branches the format is refs/heads/<branch_name>, for pull requests it is refs/pull/<pr_number>/merge, and for tags it is refs/tags/<tag_name>
 on:
   push:
-    branches: [main]
+    branches: [main, pipeline-refactor]
     tags: [release**]
-  #pull_request:
+  pull_request:
     # The branches below must be a subset of the branches above
-    #branches: [main]
+    branches: [main]
 
 jobs:
   docker-build-push:
-    if: github.ref == 'refs/heads/main'
+    if: github.base_ref == 'refs/heads/main' || github.ref == 'refs/heads/pipeline-refactor'
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
-      #- name: Configure AWS Credentials
-      #  uses: aws-actions/configure-aws-credentials@v1
-      #  with:
-      #    aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-      #    aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-      #    aws-region: us-east-1
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
 
-      #- name: Log in to Amazon ECR
-      #  id: login-ecr
-      #  uses: aws-actions/amazon-ecr-login@v1
+      - name: Log in to Amazon ECR
+        id: login-ecr-public
+        uses: aws-actions/amazon-ecr-login@v1
+        with:
+          registry-type: public
 
       - name: Check out code
         uses: actions/checkout@v2
@@ -33,21 +35,67 @@ jobs:
 
       - name: Build, tag, and upload the docker image
         env:
-          ##REGISTRY: ${{ steps.login-ecr.outputs.registry }}
-          REGISTRY: ghcr.io/boostylabs
-          REPOSITORY: golden-gate-test-node
+          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
+          REGISTRY_ALIAS: f8n4k6v0
+          REPOSITORY: golden-gate-node
         run: |
-          docker build -t $REGISTRY/$REPOSITORY:$SHORT_SHA -f Dockerfile .
-          ##docker push $REGISTRY/$REPOSITORY:$SHORT_SHA
+          docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$SHORT_SHA -f Dockerfile .
+          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:$SHORT_SHA
 
-      #- name: Store Image Tag on AWS S3
-      #  env:
-      #    S3_BUCKET: docker-release-tags
-      #  run: |
-      #    echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
-      #    echo "$SHORT_SHA" > latest.txt
-      #    aws s3 cp latest.txt s3://$S3_BUCKET/latest.txt
-      #    echo "This image will be used in future staging and production deployments.."
+      - name: Store Image Tag on AWS S3
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+        run: |
+          echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
+          echo "$SHORT_SHA" > latest
+          aws s3 cp latest s3://$S3_BUCKET/latest
+          echo "This image will be used in the future deployments.."
 
-      #- name: Log out of Amazon ECR
-      #  run: docker logout ${{ steps.login-ecr.outputs.registry }}
+      - name: Log out of Amazon ECR
+        run: docker logout ${{ steps.login-ecr.outputs.registry }}
+
+  deploy-dev:
+    if: github.ref == 'refs/heads/main'
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Get Image Tag
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+        run: |
+          aws s3 cp s3://$S3_BUCKET/latest latest
+          echo "TAG=$(cat latest)" >> $GITHUB_ENV
+
+      - name: ArgoCD Deployment
+        run: |
+          echo "Docker Image for this deployment is: $TAG"
+          echo "will be impletemented after EKS provisioning"
+
+  deploy-prod:
+    if: startsWith(github.ref, 'refs/tags/release')
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Get Image Tag
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+        run: |
+          aws s3 cp s3://$S3_BUCKET/latest latest
+          echo "TAG=$(cat latest)" >> $GITHUB_ENV
+
+      - name: ArgoCD Deployment
+        run: |
+          echo "Docker Image for this deployment is: $TAG"
+          echo "will be impletemented after EKS provisioning"
