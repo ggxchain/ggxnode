@@ -26,4 +26,3 @@ ENV HOME /usr/src/app
 WORKDIR $HOME
 
 COPY --from=builder $HOME/target/release/golden-gate-node ./target/release/golden-gate-node
-COPY --from=builder $HOME/customSpecRaw.json .
