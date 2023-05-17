@@ -625,7 +625,7 @@
                           jq
                           subkey
                         ]
-                        ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
+                        ++ rust-native-build-inputs ++ darwin ++ cloud-tools ++ [openssl];
                       env = rust-env;
                       # can do systemd/docker stuff here
                       enterShell = ''

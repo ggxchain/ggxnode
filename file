@@ -1,0 +1,2125 @@
+golden-gate-runtime-testnet v0.0.0 (/mnt/work/ggx/golden-gate/runtime/testnet)
+├── fp-rpc v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── ethereum-types v0.14.1
+│   │   ├── ethbloom v0.13.0
+│   │   │   ├── fixed-hash v0.8.0
+│   │   │   │   ├── byteorder v1.4.3
+│   │   │   │   ├── rustc-hex v2.1.0
+│   │   │   │   └── static_assertions feature "default"
+│   │   │   │       └── static_assertions v1.1.0
+│   │   │   ├── impl-codec v0.6.0
+│   │   │   │   └── parity-scale-codec feature "max-encoded-len"
+│   │   │   │       ├── parity-scale-codec v3.5.0
+│   │   │   │       │   ├── arrayvec v0.7.2
+│   │   │   │       │   ├── byte-slice-cast v1.2.2
+│   │   │   │       │   ├── bytes v1.4.0
+│   │   │   │       │   │   └── serde feature "alloc"
+│   │   │   │       │   │       └── serde v1.0.163
+│   │   │   │       │   │           └── serde_derive feature "default"
+│   │   │   │       │   │               └── serde_derive v1.0.163 (proc-macro)
+│   │   │   │       │   │                   ├── proc-macro2 feature "default"
+│   │   │   │       │   │                   │   ├── proc-macro2 v1.0.57
+│   │   │   │       │   │                   │   │   └── unicode-ident feature "default"
+│   │   │   │       │   │                   │   │       └── unicode-ident v1.0.8
+│   │   │   │       │   │                   │   └── proc-macro2 feature "proc-macro"
+│   │   │   │       │   │                   │       └── proc-macro2 v1.0.57 (*)
+│   │   │   │       │   │                   ├── quote feature "default"
+│   │   │   │       │   │                   │   ├── quote v1.0.27
+│   │   │   │       │   │                   │   │   └── proc-macro2 v1.0.57 (*)
+│   │   │   │       │   │                   │   └── quote feature "proc-macro"
+│   │   │   │       │   │                   │       ├── quote v1.0.27 (*)
+│   │   │   │       │   │                   │       └── proc-macro2 feature "proc-macro" (*)
+│   │   │   │       │   │                   └── syn feature "default"
+│   │   │   │       │   │                       ├── syn v2.0.16
+│   │   │   │       │   │                       │   ├── proc-macro2 v1.0.57 (*)
+│   │   │   │       │   │                       │   ├── quote v1.0.27 (*)
+│   │   │   │       │   │                       │   └── unicode-ident feature "default" (*)
+│   │   │   │       │   │                       ├── syn feature "clone-impls"
+│   │   │   │       │   │                       │   └── syn v2.0.16 (*)
+│   │   │   │       │   │                       ├── syn feature "derive"
+│   │   │   │       │   │                       │   └── syn v2.0.16 (*)
+│   │   │   │       │   │                       ├── syn feature "parsing"
+│   │   │   │       │   │                       │   └── syn v2.0.16 (*)
+│   │   │   │       │   │                       ├── syn feature "printing"
+│   │   │   │       │   │                       │   ├── syn v2.0.16 (*)
+│   │   │   │       │   │                       │   └── syn feature "quote"
+│   │   │   │       │   │                       │       └── syn v2.0.16 (*)
+│   │   │   │       │   │                       └── syn feature "proc-macro"
+│   │   │   │       │   │                           ├── syn v2.0.16 (*)
+│   │   │   │       │   │                           ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │       │   │                           ├── quote feature "proc-macro" (*)
+│   │   │   │       │   │                           └── syn feature "quote" (*)
+│   │   │   │       │   ├── parity-scale-codec-derive v3.1.4 (proc-macro)
+│   │   │   │       │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │       │   │   ├── quote feature "default" (*)
+│   │   │   │       │   │   ├── syn feature "default"
+│   │   │   │       │   │   │   ├── syn v1.0.109
+│   │   │   │       │   │   │   │   ├── proc-macro2 v1.0.57 (*)
+│   │   │   │       │   │   │   │   ├── quote v1.0.27 (*)
+│   │   │   │       │   │   │   │   └── unicode-ident feature "default" (*)
+│   │   │   │       │   │   │   ├── syn feature "clone-impls"
+│   │   │   │       │   │   │   │   └── syn v1.0.109 (*)
+│   │   │   │       │   │   │   ├── syn feature "derive"
+│   │   │   │       │   │   │   │   └── syn v1.0.109 (*)
+│   │   │   │       │   │   │   ├── syn feature "parsing"
+│   │   │   │       │   │   │   │   └── syn v1.0.109 (*)
+│   │   │   │       │   │   │   ├── syn feature "printing"
+│   │   │   │       │   │   │   │   ├── syn v1.0.109 (*)
+│   │   │   │       │   │   │   │   └── syn feature "quote"
+│   │   │   │       │   │   │   │       └── syn v1.0.109 (*)
+│   │   │   │       │   │   │   └── syn feature "proc-macro"
+│   │   │   │       │   │   │       ├── syn v1.0.109 (*)
+│   │   │   │       │   │   │       ├── proc-macro2 feature "proc-macro" (*)
+│   │   │   │       │   │   │       ├── quote feature "proc-macro" (*)
+│   │   │   │       │   │   │       └── syn feature "quote" (*)
+│   │   │   │       │   │   ├── syn feature "full"
+│   │   │   │       │   │   │   └── syn v1.0.109 (*)
+│   │   │   │       │   │   ├── syn feature "visit"
+│   │   │   │       │   │   │   └── syn v1.0.109 (*)
+│   │   │   │       │   │   └── proc-macro-crate feature "default"
+│   │   │   │       │   │       └── proc-macro-crate v1.1.3
+│   │   │   │       │   │           ├── thiserror feature "default"
+│   │   │   │       │   │           │   └── thiserror v1.0.40
+│   │   │   │       │   │           │       └── thiserror-impl feature "default"
+│   │   │   │       │   │           │           └── thiserror-impl v1.0.40 (proc-macro)
+│   │   │   │       │   │           │               ├── proc-macro2 feature "default" (*)
+│   │   │   │       │   │           │               ├── quote feature "default" (*)
+│   │   │   │       │   │           │               └── syn feature "default" (*)
+│   │   │   │       │   │           └── toml feature "default"
+│   │   │   │       │   │               └── toml v0.5.11
+│   │   │   │       │   │                   └── serde feature "default"
+│   │   │   │       │   │                       ├── serde v1.0.163
+│   │   │   │       │   │                       │   └── serde_derive feature "default" (*)
+│   │   │   │       │   │                       └── serde feature "std"
+│   │   │   │       │   │                           └── serde v1.0.163 (*)
+│   │   │   │       │   └── impl-trait-for-tuples feature "default"
+│   │   │   │       │       └── impl-trait-for-tuples v0.2.2 (proc-macro)
+│   │   │   │       │           ├── proc-macro2 feature "default" (*)
+│   │   │   │       │           ├── quote feature "default" (*)
+│   │   │   │       │           ├── syn feature "default" (*)
+│   │   │   │       │           ├── syn feature "extra-traits"
+│   │   │   │       │           │   └── syn v1.0.109 (*)
+│   │   │   │       │           ├── syn feature "fold"
+│   │   │   │       │           │   └── syn v1.0.109 (*)
+│   │   │   │       │           ├── syn feature "full" (*)
+│   │   │   │       │           └── syn feature "visit" (*)
+│   │   │   │       ├── parity-scale-codec feature "parity-scale-codec-derive"
+│   │   │   │       │   └── parity-scale-codec v3.5.0 (*)
+│   │   │   │       └── parity-scale-codec-derive feature "max-encoded-len"
+│   │   │   │           └── parity-scale-codec-derive v3.1.4 (proc-macro) (*)
+│   │   │   ├── impl-rlp v0.3.0
+│   │   │   │   └── rlp v0.5.2
+│   │   │   │       ├── bytes v1.4.0 (*)
+│   │   │   │       ├── rustc-hex v2.1.0
+│   │   │   │       └── rlp-derive feature "default"
+│   │   │   │           └── rlp-derive v0.1.0 (proc-macro)
+│   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │               ├── quote feature "default" (*)
+│   │   │   │               └── syn feature "default" (*)
+│   │   │   ├── crunchy feature "limit_256"
+│   │   │   │   └── crunchy v0.2.2
+│   │   │   ├── scale-info feature "derive"
+│   │   │   │   ├── scale-info v2.7.0
+│   │   │   │   │   ├── scale-info-derive v2.6.0 (proc-macro)
+│   │   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │   ├── syn feature "default" (*)
+│   │   │   │   │   │   ├── syn feature "derive" (*)
+│   │   │   │   │   │   ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   ├── syn feature "visit" (*)
+│   │   │   │   │   │   ├── syn feature "visit-mut"
+│   │   │   │   │   │   │   └── syn v1.0.109 (*)
+│   │   │   │   │   │   └── proc-macro-crate feature "default" (*)
+│   │   │   │   │   ├── parity-scale-codec feature "derive"
+│   │   │   │   │   │   ├── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   └── parity-scale-codec feature "parity-scale-codec-derive" (*)
+│   │   │   │   │   ├── cfg-if feature "default"
+│   │   │   │   │   │   └── cfg-if v1.0.0
+│   │   │   │   │   └── derive_more feature "from"
+│   │   │   │   │       ├── derive_more v0.99.17 (proc-macro)
+│   │   │   │   │       │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │       │   ├── quote feature "default" (*)
+│   │   │   │   │       │   └── syn feature "default" (*)
+│   │   │   │   │       └── syn feature "extra-traits" (*)
+│   │   │   │   └── scale-info feature "scale-info-derive"
+│   │   │   │       └── scale-info v2.7.0 (*)
+│   │   │   ├── tiny-keccak feature "default"
+│   │   │   │   └── tiny-keccak v2.0.2
+│   │   │   │       └── crunchy feature "default"
+│   │   │   │           ├── crunchy v0.2.2
+│   │   │   │           └── crunchy feature "limit_128"
+│   │   │   │               └── crunchy v0.2.2
+│   │   │   └── tiny-keccak feature "keccak"
+│   │   │       └── tiny-keccak v2.0.2 (*)
+│   │   ├── impl-codec v0.6.0 (*)
+│   │   ├── impl-rlp v0.3.0 (*)
+│   │   ├── uint v0.9.5
+│   │   │   ├── byteorder v1.4.3
+│   │   │   ├── crunchy v0.2.2
+│   │   │   ├── hex v0.4.3
+│   │   │   └── static_assertions feature "default" (*)
+│   │   ├── fixed-hash feature "byteorder"
+│   │   │   └── fixed-hash v0.8.0 (*)
+│   │   ├── fixed-hash feature "rustc-hex"
+│   │   │   └── fixed-hash v0.8.0 (*)
+│   │   ├── scale-info feature "derive" (*)
+│   │   ├── primitive-types feature "byteorder"
+│   │   │   ├── primitive-types v0.12.1
+│   │   │   │   ├── fixed-hash v0.8.0 (*)
+│   │   │   │   ├── impl-codec v0.6.0 (*)
+│   │   │   │   ├── impl-rlp v0.3.0 (*)
+│   │   │   │   ├── impl-serde v0.4.0
+│   │   │   │   │   └── serde feature "alloc" (*)
+│   │   │   │   ├── uint v0.9.5 (*)
+│   │   │   │   └── scale-info feature "derive" (*)
+│   │   │   └── fixed-hash feature "byteorder" (*)
+│   │   └── primitive-types feature "rustc-hex"
+│   │       ├── primitive-types v0.12.1 (*)
+│   │       └── fixed-hash feature "rustc-hex" (*)
+│   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── frame-support-procedural v4.0.0-dev (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   ├── syn feature "default" (*)
+│   │   │   │   ├── syn feature "full" (*)
+│   │   │   │   ├── Inflector feature "default"
+│   │   │   │   │   ├── Inflector v0.11.4
+│   │   │   │   │   │   ├── lazy_static feature "default"
+│   │   │   │   │   │   │   └── lazy_static v1.4.0
+│   │   │   │   │   │   └── regex feature "default"
+│   │   │   │   │   │       ├── regex v1.8.1
+│   │   │   │   │   │       │   ├── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── aho-corasick feature "default"
+│   │   │   │   │   │       │   │   ├── aho-corasick v1.0.1
+│   │   │   │   │   │       │   │   │   └── memchr v2.5.0
+│   │   │   │   │   │       │   │   ├── aho-corasick feature "perf-literal"
+│   │   │   │   │   │       │   │   │   └── aho-corasick v1.0.1 (*)
+│   │   │   │   │   │       │   │   └── aho-corasick feature "std"
+│   │   │   │   │   │       │   │       ├── aho-corasick v1.0.1 (*)
+│   │   │   │   │   │       │   │       └── memchr feature "std"
+│   │   │   │   │   │       │   │           └── memchr v2.5.0
+│   │   │   │   │   │       │   └── memchr feature "default"
+│   │   │   │   │   │       │       ├── memchr v2.5.0
+│   │   │   │   │   │       │       └── memchr feature "std" (*)
+│   │   │   │   │   │       ├── regex feature "perf"
+│   │   │   │   │   │       │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   ├── regex feature "perf-cache"
+│   │   │   │   │   │       │   │   └── regex v1.8.1 (*)
+│   │   │   │   │   │       │   ├── regex feature "perf-dfa"
+│   │   │   │   │   │       │   │   └── regex v1.8.1 (*)
+│   │   │   │   │   │       │   ├── regex feature "perf-inline"
+│   │   │   │   │   │       │   │   └── regex v1.8.1 (*)
+│   │   │   │   │   │       │   └── regex feature "perf-literal"
+│   │   │   │   │   │       │       ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │       ├── regex feature "aho-corasick"
+│   │   │   │   │   │       │       │   └── regex v1.8.1 (*)
+│   │   │   │   │   │       │       └── regex feature "memchr"
+│   │   │   │   │   │       │           └── regex v1.8.1 (*)
+│   │   │   │   │   │       ├── regex feature "std"
+│   │   │   │   │   │       │   └── regex v1.8.1 (*)
+│   │   │   │   │   │       ├── regex feature "unicode"
+│   │   │   │   │   │       │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   ├── regex feature "unicode-age"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-age"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-bool"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-bool"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-case"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-case"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-gencat"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-gencat"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-perl"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-perl"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-script"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-script"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   ├── regex feature "unicode-segment"
+│   │   │   │   │   │       │   │   ├── regex v1.8.1 (*)
+│   │   │   │   │   │       │   │   └── regex-syntax feature "unicode-segment"
+│   │   │   │   │   │       │   │       └── regex-syntax v0.7.1
+│   │   │   │   │   │       │   └── regex-syntax feature "unicode"
+│   │   │   │   │   │       │       ├── regex-syntax v0.7.1
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-age" (*)
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-bool" (*)
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-case" (*)
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-gencat" (*)
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-perl" (*)
+│   │   │   │   │   │       │       ├── regex-syntax feature "unicode-script" (*)
+│   │   │   │   │   │       │       └── regex-syntax feature "unicode-segment" (*)
+│   │   │   │   │   │       └── regex-syntax feature "default"
+│   │   │   │   │   │           ├── regex-syntax v0.7.1
+│   │   │   │   │   │           ├── regex-syntax feature "std"
+│   │   │   │   │   │           │   └── regex-syntax v0.7.1
+│   │   │   │   │   │           └── regex-syntax feature "unicode" (*)
+│   │   │   │   │   └── Inflector feature "heavyweight"
+│   │   │   │   │       ├── Inflector v0.11.4 (*)
+│   │   │   │   │       ├── Inflector feature "lazy_static"
+│   │   │   │   │       │   └── Inflector v0.11.4 (*)
+│   │   │   │   │       └── Inflector feature "regex"
+│   │   │   │   │           └── Inflector v0.11.4 (*)
+│   │   │   │   ├── cfg-expr feature "default"
+│   │   │   │   │   └── cfg-expr v0.10.3
+│   │   │   │   │       └── smallvec feature "default"
+│   │   │   │   │           └── smallvec v1.10.0
+│   │   │   │   ├── derive-syn-parse feature "default"
+│   │   │   │   │   └── derive-syn-parse v0.1.5 (proc-macro)
+│   │   │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │       ├── quote feature "default" (*)
+│   │   │   │   │       ├── syn feature "default" (*)
+│   │   │   │   │       ├── syn feature "derive" (*)
+│   │   │   │   │       └── syn feature "parsing" (*)
+│   │   │   │   ├── frame-support-procedural-tools feature "default"
+│   │   │   │   │   └── frame-support-procedural-tools v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │       ├── quote feature "default" (*)
+│   │   │   │   │       ├── syn feature "default" (*)
+│   │   │   │   │       ├── syn feature "extra-traits" (*)
+│   │   │   │   │       ├── syn feature "full" (*)
+│   │   │   │   │       ├── syn feature "visit" (*)
+│   │   │   │   │       ├── proc-macro-crate feature "default" (*)
+│   │   │   │   │       └── frame-support-procedural-tools-derive feature "default"
+│   │   │   │   │           └── frame-support-procedural-tools-derive v3.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │               ├── quote feature "proc-macro" (*)
+│   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │               ├── syn feature "extra-traits" (*)
+│   │   │   │   │               ├── syn feature "full" (*)
+│   │   │   │   │               ├── syn feature "parsing" (*)
+│   │   │   │   │               └── syn feature "proc-macro" (*)
+│   │   │   │   └── itertools feature "default"
+│   │   │   │       ├── itertools v0.10.5
+│   │   │   │       │   └── either v1.8.1
+│   │   │   │       └── itertools feature "use_std"
+│   │   │   │           ├── itertools v0.10.5 (*)
+│   │   │   │           ├── itertools feature "use_alloc"
+│   │   │   │           │   └── itertools v0.10.5 (*)
+│   │   │   │           └── either feature "use_std"
+│   │   │   │               └── either v1.8.1
+│   │   │   ├── log v0.4.17
+│   │   │   │   └── cfg-if feature "default" (*)
+│   │   │   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── log v0.4.17 (*)
+│   │   │   │   ├── parity-scale-codec v3.5.0 (*)
+│   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── bounded-collections v0.1.7
+│   │   │   │   │   │   ├── log v0.4.17 (*)
+│   │   │   │   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   │   │   │   └── scale-info feature "derive" (*)
+│   │   │   │   │   ├── hash-db v0.15.2
+│   │   │   │   │   ├── hash256-std-hasher v0.15.2
+│   │   │   │   │   │   └── crunchy feature "default" (*)
+│   │   │   │   │   ├── log v0.4.17 (*)
+│   │   │   │   │   ├── secrecy v0.8.0
+│   │   │   │   │   │   └── zeroize v1.6.0
+│   │   │   │   │   │       └── zeroize_derive feature "default"
+│   │   │   │   │   │           └── zeroize_derive v1.4.2 (proc-macro)
+│   │   │   │   │   │               ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │               ├── quote feature "default" (*)
+│   │   │   │   │   │               ├── syn feature "default" (*)
+│   │   │   │   │   │               ├── syn feature "extra-traits"
+│   │   │   │   │   │               │   └── syn v2.0.16 (*)
+│   │   │   │   │   │               ├── syn feature "full"
+│   │   │   │   │   │               │   └── syn v2.0.16 (*)
+│   │   │   │   │   │               └── syn feature "visit"
+│   │   │   │   │   │                   └── syn v2.0.16 (*)
+│   │   │   │   │   ├── sp-debug-derive v5.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │   └── syn feature "default" (*)
+│   │   │   │   │   ├── sp-runtime-interface v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── bytes v1.4.0 (*)
+│   │   │   │   │   │   ├── primitive-types v0.12.1 (*)
+│   │   │   │   │   │   ├── sp-externalities v0.13.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── environmental v1.1.4
+│   │   │   │   │   │   │   ├── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   └── sp-storage v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │       ├── sp-debug-derive v5.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   │       ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │       ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   │       └── ref-cast feature "default"
+│   │   │   │   │   │   │           └── ref-cast v1.0.16
+│   │   │   │   │   │   │               └── ref-cast-impl feature "default"
+│   │   │   │   │   │   │                   └── ref-cast-impl v1.0.16 (proc-macro)
+│   │   │   │   │   │   │                       ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   │                       ├── quote feature "default" (*)
+│   │   │   │   │   │   │                       └── syn feature "default" (*)
+│   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── sp-storage v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   ├── sp-tracing v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── tracing v0.1.37
+│   │   │   │   │   │   │   │   ├── tracing-core v0.1.31
+│   │   │   │   │   │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   │   │   │   └── pin-project-lite feature "default"
+│   │   │   │   │   │   │   │       └── pin-project-lite v0.2.9
+│   │   │   │   │   │   │   ├── tracing-core v0.1.31
+│   │   │   │   │   │   │   └── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   ├── sp-wasm-interface v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   │   └── impl-trait-for-tuples feature "default" (*)
+│   │   │   │   │   │   ├── static_assertions feature "default" (*)
+│   │   │   │   │   │   ├── parity-scale-codec feature "bytes"
+│   │   │   │   │   │   │   └── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   │   │   │   │   └── sp-runtime-interface-proc-macro feature "default"
+│   │   │   │   │   │       └── sp-runtime-interface-proc-macro v6.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │   │           ├── syn feature "default" (*)
+│   │   │   │   │   │           ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │           ├── syn feature "fold" (*)
+│   │   │   │   │   │           ├── syn feature "full" (*)
+│   │   │   │   │   │           ├── syn feature "visit" (*)
+│   │   │   │   │   │           ├── proc-macro-crate feature "default" (*)
+│   │   │   │   │   │           └── Inflector feature "default" (*)
+│   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── sp-storage v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   ├── ss58-registry v1.40.0
+│   │   │   │   │   │   [build-dependencies]
+│   │   │   │   │   │   ├── Inflector v0.11.4 (*)
+│   │   │   │   │   │   ├── quote v1.0.27 (*)
+│   │   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   ├── serde feature "derive"
+│   │   │   │   │   │   │   ├── serde v1.0.163 (*)
+│   │   │   │   │   │   │   └── serde feature "serde_derive"
+│   │   │   │   │   │   │       └── serde v1.0.163 (*)
+│   │   │   │   │   │   ├── serde feature "std" (*)
+│   │   │   │   │   │   ├── serde_json feature "std"
+│   │   │   │   │   │   │   ├── serde_json v1.0.96
+│   │   │   │   │   │   │   │   ├── serde v1.0.163 (*)
+│   │   │   │   │   │   │   │   ├── itoa feature "default"
+│   │   │   │   │   │   │   │   │   └── itoa v1.0.6
+│   │   │   │   │   │   │   │   └── ryu feature "default"
+│   │   │   │   │   │   │   │       └── ryu v1.0.13
+│   │   │   │   │   │   │   └── serde feature "std" (*)
+│   │   │   │   │   │   └── unicode-xid feature "default"
+│   │   │   │   │   │       └── unicode-xid v0.2.4
+│   │   │   │   │   ├── zeroize v1.6.0 (*)
+│   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   ├── primitive-types feature "codec"
+│   │   │   │   │   │   ├── primitive-types v0.12.1 (*)
+│   │   │   │   │   │   └── primitive-types feature "impl-codec"
+│   │   │   │   │   │       └── primitive-types v0.12.1 (*)
+│   │   │   │   │   ├── primitive-types feature "scale-info"
+│   │   │   │   │   │   ├── primitive-types v0.12.1 (*)
+│   │   │   │   │   │   ├── primitive-types feature "codec" (*)
+│   │   │   │   │   │   └── primitive-types feature "scale-info-crate"
+│   │   │   │   │   │       └── primitive-types v0.12.1 (*)
+│   │   │   │   │   └── bitflags feature "default"
+│   │   │   │   │       └── bitflags v1.3.2
+│   │   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── either v1.8.1
+│   │   │   │   │   ├── hash256-std-hasher v0.15.2 (*)
+│   │   │   │   │   ├── log v0.4.17 (*)
+│   │   │   │   │   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── bytes v1.4.0 (*)
+│   │   │   │   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   │   ├── sp-externalities v0.13.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   │   ├── sp-runtime-interface v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   │   ├── sp-tracing v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   │   ├── tracing v0.1.37 (*)
+│   │   │   │   │   │   │   ├── tracing-core v0.1.31
+│   │   │   │   │   │   │   └── parity-scale-codec feature "bytes" (*)
+│   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   └── scale-info feature "derive" (*)
+│   │   │   │   │   ├── sp-arithmetic v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── num-traits v0.2.15
+│   │   │   │   │   │   │   [build-dependencies]
+│   │   │   │   │   │   │   └── autocfg feature "default"
+│   │   │   │   │   │   │       └── autocfg v1.1.0
+│   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── static_assertions feature "default" (*)
+│   │   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   │   └── integer-sqrt feature "default"
+│   │   │   │   │   │       └── integer-sqrt v0.1.5
+│   │   │   │   │   │           └── num-traits v0.2.15 (*)
+│   │   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── sp-arithmetic v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   ├── sp-debug-derive v5.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   │   └── smallvec feature "default"
+│   │   │   │   │   │       └── smallvec v1.10.0
+│   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   └── paste feature "default"
+│   │   │   │   │       └── paste v1.0.12 (proc-macro)
+│   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── sp-version v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   ├── sp-version-proc-macro v4.0.0-dev (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   │   ├── syn feature "default" (*)
+│   │   │   │   │   │   ├── syn feature "extra-traits" (*)
+│   │   │   │   │   │   ├── syn feature "fold" (*)
+│   │   │   │   │   │   ├── syn feature "full" (*)
+│   │   │   │   │   │   ├── syn feature "visit" (*)
+│   │   │   │   │   │   ├── parity-scale-codec feature "default"
+│   │   │   │   │   │   │   ├── parity-scale-codec v3.5.0
+│   │   │   │   │   │   │   │   ├── arrayvec v0.7.2
+│   │   │   │   │   │   │   │   ├── byte-slice-cast v1.2.2
+│   │   │   │   │   │   │   │   ├── parity-scale-codec-derive v3.1.4 (proc-macro) (*)
+│   │   │   │   │   │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   │   │   │   │   │   │   └── serde feature "default" (*)
+│   │   │   │   │   │   │   └── parity-scale-codec feature "std"
+│   │   │   │   │   │   │       ├── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   │       ├── parity-scale-codec feature "chain-error"
+│   │   │   │   │   │   │       │   └── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   │       ├── parity-scale-codec feature "serde"
+│   │   │   │   │   │   │       │   └── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │   │       └── byte-slice-cast feature "std"
+│   │   │   │   │   │   │           └── byte-slice-cast v1.2.2
+│   │   │   │   │   │   └── parity-scale-codec feature "derive"
+│   │   │   │   │   │       ├── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   │       └── parity-scale-codec feature "parity-scale-codec-derive"
+│   │   │   │   │   │           └── parity-scale-codec v3.5.0 (*)
+│   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   └── sp-core-hashing-proc-macro feature "default"
+│   │   │   │   │       └── sp-core-hashing-proc-macro v5.0.0 (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │           ├── sp-core-hashing v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │           │   ├── blake2 v0.10.6
+│   │   │   │   │           │   │   ├── digest feature "default"
+│   │   │   │   │           │   │   │   ├── digest v0.10.6
+│   │   │   │   │           │   │   │   │   ├── subtle v2.4.1
+│   │   │   │   │           │   │   │   │   ├── block-buffer feature "default"
+│   │   │   │   │           │   │   │   │   │   └── block-buffer v0.10.4
+│   │   │   │   │           │   │   │   │   │       └── generic-array feature "default"
+│   │   │   │   │           │   │   │   │   │           └── generic-array v0.14.7
+│   │   │   │   │           │   │   │   │   │               └── typenum feature "default"
+│   │   │   │   │           │   │   │   │   │                   └── typenum v1.16.0
+│   │   │   │   │           │   │   │   │   │               [build-dependencies]
+│   │   │   │   │           │   │   │   │   │               └── version_check feature "default"
+│   │   │   │   │           │   │   │   │   │                   └── version_check v0.9.4
+│   │   │   │   │           │   │   │   │   └── crypto-common feature "default"
+│   │   │   │   │           │   │   │   │       └── crypto-common v0.1.6
+│   │   │   │   │           │   │   │   │           ├── generic-array feature "default" (*)
+│   │   │   │   │           │   │   │   │           ├── generic-array feature "more_lengths"
+│   │   │   │   │           │   │   │   │           │   └── generic-array v0.14.7 (*)
+│   │   │   │   │           │   │   │   │           └── typenum feature "default" (*)
+│   │   │   │   │           │   │   │   └── digest feature "core-api"
+│   │   │   │   │           │   │   │       ├── digest v0.10.6 (*)
+│   │   │   │   │           │   │   │       └── digest feature "block-buffer"
+│   │   │   │   │           │   │   │           └── digest v0.10.6 (*)
+│   │   │   │   │           │   │   └── digest feature "mac"
+│   │   │   │   │           │   │       ├── digest v0.10.6 (*)
+│   │   │   │   │           │   │       └── digest feature "subtle"
+│   │   │   │   │           │   │           └── digest v0.10.6 (*)
+│   │   │   │   │           │   ├── byteorder v1.4.3
+│   │   │   │   │           │   ├── digest v0.10.6 (*)
+│   │   │   │   │           │   ├── sha2 v0.10.6
+│   │   │   │   │           │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │           │   │   ├── digest feature "default" (*)
+│   │   │   │   │           │   │   └── cpufeatures feature "default"
+│   │   │   │   │           │   │       └── cpufeatures v0.2.7
+│   │   │   │   │           │   ├── sha3 v0.10.8
+│   │   │   │   │           │   │   ├── digest feature "default" (*)
+│   │   │   │   │           │   │   └── keccak feature "default"
+│   │   │   │   │           │   │       └── keccak v0.1.4
+│   │   │   │   │           │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   │           │   └── twox-hash feature "digest_0_10"
+│   │   │   │   │           │       └── twox-hash v1.6.3
+│   │   │   │   │           │           ├── cfg-if v1.0.0
+│   │   │   │   │           │           ├── digest v0.10.6 (*)
+│   │   │   │   │           │           └── static_assertions v1.1.0
+│   │   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │   │           ├── quote feature "default" (*)
+│   │   │   │   │           ├── syn feature "default" (*)
+│   │   │   │   │           ├── syn feature "full" (*)
+│   │   │   │   │           └── syn feature "parsing" (*)
+│   │   │   │   └── sp-api-proc-macro feature "default"
+│   │   │   │       ├── sp-api-proc-macro v4.0.0-dev (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │       │   ├── blake2 v0.10.6 (*)
+│   │   │   │       │   ├── proc-macro2 feature "default" (*)
+│   │   │   │       │   ├── quote feature "default" (*)
+│   │   │   │       │   ├── syn feature "default" (*)
+│   │   │   │       │   ├── syn feature "extra-traits" (*)
+│   │   │   │       │   ├── syn feature "fold" (*)
+│   │   │   │       │   ├── syn feature "full" (*)
+│   │   │   │       │   ├── syn feature "visit" (*)
+│   │   │   │       │   └── proc-macro-crate feature "default" (*)
+│   │   │   │       └── sp-api-proc-macro feature "std"
+│   │   │   │           └── sp-api-proc-macro v4.0.0-dev (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-arithmetic v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   │   │   └── scale-info feature "derive" (*)
+│   │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   └── scale-info feature "derive" (*)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-tracing v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   │   ├── scale-info feature "derive" (*)
+│   │   │   ├── bitflags feature "default" (*)
+│   │   │   ├── frame-metadata feature "v14"
+│   │   │   │   ├── frame-metadata v15.1.0
+│   │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   │   │   ├── scale-info feature "derive" (*)
+│   │   │   │   │   └── cfg-if feature "default" (*)
+│   │   │   │   └── frame-metadata feature "scale-info"
+│   │   │   │       └── frame-metadata v15.1.0 (*)
+│   │   │   ├── k256 feature "ecdsa"
+│   │   │   │   ├── k256 v0.11.6
+│   │   │   │   │   ├── sha2 v0.10.6 (*)
+│   │   │   │   │   ├── cfg-if feature "default" (*)
+│   │   │   │   │   ├── ecdsa feature "der"
+│   │   │   │   │   │   └── ecdsa v0.14.8
+│   │   │   │   │   │       ├── der feature "default"
+│   │   │   │   │   │       │   └── der v0.6.1
+│   │   │   │   │   │       │       └── const-oid feature "default"
+│   │   │   │   │   │       │           └── const-oid v0.9.2
+│   │   │   │   │   │       ├── elliptic-curve feature "digest"
+│   │   │   │   │   │       │   └── elliptic-curve v0.12.3
+│   │   │   │   │   │       │       ├── ff v0.12.1
+│   │   │   │   │   │       │       │   ├── rand_core v0.6.4
+│   │   │   │   │   │       │       │   └── subtle feature "i128"
+│   │   │   │   │   │       │       │       └── subtle v2.4.1
+│   │   │   │   │   │       │       ├── generic-array v0.14.7 (*)
+│   │   │   │   │   │       │       ├── group v0.12.1
+│   │   │   │   │   │       │       │   ├── ff v0.12.1 (*)
+│   │   │   │   │   │       │       │   ├── rand_core v0.6.4
+│   │   │   │   │   │       │       │   └── subtle v2.4.1
+│   │   │   │   │   │       │       ├── rand_core v0.6.4
+│   │   │   │   │   │       │       ├── subtle v2.4.1
+│   │   │   │   │   │       │       ├── zeroize v1.6.0 (*)
+│   │   │   │   │   │       │       ├── digest feature "default" (*)
+│   │   │   │   │   │       │       ├── der feature "oid"
+│   │   │   │   │   │       │       │   ├── der v0.6.1 (*)
+│   │   │   │   │   │       │       │   └── der feature "const-oid"
+│   │   │   │   │   │       │       │       └── der v0.6.1 (*)
+│   │   │   │   │   │       │       ├── base16ct feature "default"
+│   │   │   │   │   │       │       │   └── base16ct v0.1.1
+│   │   │   │   │   │       │       ├── crypto-bigint feature "generic-array"
+│   │   │   │   │   │       │       │   └── crypto-bigint v0.4.9
+│   │   │   │   │   │       │       │       ├── subtle v2.4.1
+│   │   │   │   │   │       │       │       ├── zeroize v1.6.0 (*)
+│   │   │   │   │   │       │       │       ├── generic-array feature "default" (*)
+│   │   │   │   │   │       │       │       └── rand_core feature "default"
+│   │   │   │   │   │       │       │           └── rand_core v0.6.4
+│   │   │   │   │   │       │       ├── crypto-bigint feature "rand_core"
+│   │   │   │   │   │       │       │   └── crypto-bigint v0.4.9 (*)
+│   │   │   │   │   │       │       ├── crypto-bigint feature "zeroize"
+│   │   │   │   │   │       │       │   └── crypto-bigint v0.4.9 (*)
+│   │   │   │   │   │       │       ├── sec1 feature "default"
+│   │   │   │   │   │       │       │   ├── sec1 v0.3.0
+│   │   │   │   │   │       │       │   │   ├── base16ct v0.1.1
+│   │   │   │   │   │       │       │   │   ├── generic-array v0.14.7 (*)
+│   │   │   │   │   │       │       │   │   ├── subtle v2.4.1
+│   │   │   │   │   │       │       │   │   ├── zeroize v1.6.0 (*)
+│   │   │   │   │   │       │       │   │   ├── der feature "default" (*)
+│   │   │   │   │   │       │       │   │   └── der feature "oid" (*)
+│   │   │   │   │   │       │       │   ├── sec1 feature "der"
+│   │   │   │   │   │       │       │   │   └── sec1 v0.3.0 (*)
+│   │   │   │   │   │       │       │   └── sec1 feature "point"
+│   │   │   │   │   │       │       │       ├── sec1 v0.3.0 (*)
+│   │   │   │   │   │       │       │       ├── sec1 feature "base16ct"
+│   │   │   │   │   │       │       │       │   └── sec1 v0.3.0 (*)
+│   │   │   │   │   │       │       │       └── sec1 feature "generic-array"
+│   │   │   │   │   │       │       │           └── sec1 v0.3.0 (*)
+│   │   │   │   │   │       │       ├── sec1 feature "subtle"
+│   │   │   │   │   │       │       │   └── sec1 v0.3.0 (*)
+│   │   │   │   │   │       │       └── sec1 feature "zeroize"
+│   │   │   │   │   │       │           └── sec1 v0.3.0 (*)
+│   │   │   │   │   │       ├── elliptic-curve feature "sec1"
+│   │   │   │   │   │       │   └── elliptic-curve v0.12.3 (*)
+│   │   │   │   │   │       ├── rfc6979 feature "default"
+│   │   │   │   │   │       │   └── rfc6979 v0.3.1
+│   │   │   │   │   │       │       ├── zeroize v1.6.0 (*)
+│   │   │   │   │   │       │       ├── crypto-bigint feature "generic-array" (*)
+│   │   │   │   │   │       │       ├── crypto-bigint feature "zeroize" (*)
+│   │   │   │   │   │       │       └── hmac feature "reset"
+│   │   │   │   │   │       │           └── hmac v0.12.1
+│   │   │   │   │   │       │               ├── digest feature "default" (*)
+│   │   │   │   │   │       │               └── digest feature "mac" (*)
+│   │   │   │   │   │       ├── signature feature "hazmat-preview"
+│   │   │   │   │   │       │   └── signature v1.6.4
+│   │   │   │   │   │       │       ├── digest v0.10.6 (*)
+│   │   │   │   │   │       │       └── rand_core v0.6.4
+│   │   │   │   │   │       └── signature feature "rand-preview"
+│   │   │   │   │   │           ├── signature v1.6.4 (*)
+│   │   │   │   │   │           └── signature feature "rand_core"
+│   │   │   │   │   │               └── signature v1.6.4 (*)
+│   │   │   │   │   ├── elliptic-curve feature "hazmat"
+│   │   │   │   │   │   └── elliptic-curve v0.12.3 (*)
+│   │   │   │   │   └── elliptic-curve feature "sec1" (*)
+│   │   │   │   ├── k256 feature "arithmetic"
+│   │   │   │   │   ├── k256 v0.11.6 (*)
+│   │   │   │   │   └── elliptic-curve feature "arithmetic"
+│   │   │   │   │       ├── elliptic-curve v0.12.3 (*)
+│   │   │   │   │       ├── elliptic-curve feature "ff"
+│   │   │   │   │       │   └── elliptic-curve v0.12.3 (*)
+│   │   │   │   │       └── elliptic-curve feature "group"
+│   │   │   │   │           └── elliptic-curve v0.12.3 (*)
+│   │   │   │   ├── k256 feature "ecdsa-core"
+│   │   │   │   │   └── k256 v0.11.6 (*)
+│   │   │   │   ├── k256 feature "sha256"
+│   │   │   │   │   ├── k256 v0.11.6 (*)
+│   │   │   │   │   ├── k256 feature "digest"
+│   │   │   │   │   │   ├── k256 v0.11.6 (*)
+│   │   │   │   │   │   ├── k256 feature "ecdsa-core" (*)
+│   │   │   │   │   │   ├── ecdsa feature "digest"
+│   │   │   │   │   │   │   ├── ecdsa v0.14.8 (*)
+│   │   │   │   │   │   │   └── signature feature "digest-preview"
+│   │   │   │   │   │   │       ├── signature v1.6.4 (*)
+│   │   │   │   │   │   │       └── signature feature "digest"
+│   │   │   │   │   │   │           └── signature v1.6.4 (*)
+│   │   │   │   │   │   └── ecdsa feature "hazmat"
+│   │   │   │   │   │       └── ecdsa v0.14.8 (*)
+│   │   │   │   │   └── k256 feature "sha2"
+│   │   │   │   │       └── k256 v0.11.6 (*)
+│   │   │   │   ├── ecdsa feature "sign"
+│   │   │   │   │   ├── ecdsa v0.14.8 (*)
+│   │   │   │   │   ├── ecdsa feature "arithmetic"
+│   │   │   │   │   │   ├── ecdsa v0.14.8 (*)
+│   │   │   │   │   │   └── elliptic-curve feature "arithmetic" (*)
+│   │   │   │   │   ├── ecdsa feature "digest" (*)
+│   │   │   │   │   ├── ecdsa feature "hazmat" (*)
+│   │   │   │   │   └── ecdsa feature "rfc6979"
+│   │   │   │   │       └── ecdsa v0.14.8 (*)
+│   │   │   │   └── ecdsa feature "verify"
+│   │   │   │       ├── ecdsa v0.14.8 (*)
+│   │   │   │       ├── ecdsa feature "arithmetic" (*)
+│   │   │   │       ├── ecdsa feature "digest" (*)
+│   │   │   │       └── ecdsa feature "hazmat" (*)
+│   │   │   ├── paste feature "default" (*)
+│   │   │   ├── smallvec feature "default" (*)
+│   │   │   ├── sp-core-hashing-proc-macro feature "default" (*)
+│   │   │   └── tt-call feature "default"
+│   │   │       └── tt-call v1.0.9
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   └── evm feature "with-codec"
+│   │       ├── evm v0.37.0
+│   │       │   ├── ethereum v0.14.0
+│   │       │   │   ├── bytes v1.4.0 (*)
+│   │       │   │   ├── hash-db v0.15.2
+│   │       │   │   ├── hash256-std-hasher v0.15.2 (*)
+│   │       │   │   ├── sha3 v0.10.8 (*)
+│   │       │   │   ├── triehash v0.8.4
+│   │       │   │   │   ├── hash-db v0.15.2
+│   │       │   │   │   └── rlp v0.5.2 (*)
+│   │       │   │   ├── ethereum-types feature "codec"
+│   │       │   │   │   ├── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethereum-types feature "ethbloom"
+│   │       │   │   │   │   └── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethereum-types feature "impl-codec"
+│   │       │   │   │   │   └── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethereum-types feature "scale-info"
+│   │       │   │   │   │   └── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethbloom feature "codec"
+│   │       │   │   │   │   ├── ethbloom v0.13.0 (*)
+│   │       │   │   │   │   ├── ethbloom feature "impl-codec"
+│   │       │   │   │   │   │   └── ethbloom v0.13.0 (*)
+│   │       │   │   │   │   └── ethbloom feature "scale-info"
+│   │       │   │   │   │       └── ethbloom v0.13.0 (*)
+│   │       │   │   │   └── primitive-types feature "scale-info" (*)
+│   │       │   │   ├── ethereum-types feature "rlp"
+│   │       │   │   │   ├── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethereum-types feature "ethbloom" (*)
+│   │       │   │   │   ├── ethereum-types feature "impl-rlp"
+│   │       │   │   │   │   └── ethereum-types v0.14.1 (*)
+│   │       │   │   │   ├── ethbloom feature "rlp"
+│   │       │   │   │   │   ├── ethbloom v0.13.0 (*)
+│   │       │   │   │   │   └── ethbloom feature "impl-rlp"
+│   │       │   │   │   │       └── ethbloom v0.13.0 (*)
+│   │       │   │   │   └── primitive-types feature "rlp"
+│   │       │   │   │       ├── primitive-types v0.12.1 (*)
+│   │       │   │   │       └── primitive-types feature "impl-rlp"
+│   │       │   │   │           └── primitive-types v0.12.1 (*)
+│   │       │   │   ├── parity-scale-codec feature "derive" (*)
+│   │       │   │   ├── rlp feature "derive"
+│   │       │   │   │   ├── rlp v0.5.2 (*)
+│   │       │   │   │   └── rlp feature "rlp-derive"
+│   │       │   │   │       └── rlp v0.5.2 (*)
+│   │       │   │   └── scale-info feature "derive" (*)
+│   │       │   ├── evm-core v0.37.0
+│   │       │   │   ├── primitive-types v0.12.1 (*)
+│   │       │   │   ├── parity-scale-codec feature "derive" (*)
+│   │       │   │   ├── parity-scale-codec feature "full"
+│   │       │   │   │   └── parity-scale-codec v3.5.0 (*)
+│   │       │   │   └── scale-info feature "derive" (*)
+│   │       │   ├── evm-gasometer v0.37.0
+│   │       │   │   ├── evm-core v0.37.0 (*)
+│   │       │   │   ├── evm-runtime v0.37.0
+│   │       │   │   │   ├── evm-core v0.37.0 (*)
+│   │       │   │   │   ├── primitive-types v0.12.1 (*)
+│   │       │   │   │   ├── sha3 v0.10.8 (*)
+│   │       │   │   │   └── auto_impl feature "default"
+│   │       │   │   │       └── auto_impl v1.1.0 (proc-macro)
+│   │       │   │   │           ├── proc-macro2 feature "default" (*)
+│   │       │   │   │           ├── quote feature "default" (*)
+│   │       │   │   │           ├── syn feature "default" (*)
+│   │       │   │   │           ├── syn feature "full" (*)
+│   │       │   │   │           ├── syn feature "visit" (*)
+│   │       │   │   │           ├── syn feature "visit-mut" (*)
+│   │       │   │   │           └── proc-macro-error feature "default"
+│   │       │   │   │               ├── proc-macro-error v1.0.4
+│   │       │   │   │               │   ├── syn v1.0.109 (*)
+│   │       │   │   │               │   ├── proc-macro2 feature "default" (*)
+│   │       │   │   │               │   ├── quote feature "default" (*)
+│   │       │   │   │               │   └── proc-macro-error-attr feature "default"
+│   │       │   │   │               │       └── proc-macro-error-attr v1.0.4 (proc-macro)
+│   │       │   │   │               │           ├── proc-macro2 feature "default" (*)
+│   │       │   │   │               │           └── quote feature "default" (*)
+│   │       │   │   │               │           [build-dependencies]
+│   │       │   │   │               │           └── version_check feature "default" (*)
+│   │       │   │   │               │   [build-dependencies]
+│   │       │   │   │               │   └── version_check feature "default" (*)
+│   │       │   │   │               └── proc-macro-error feature "syn-error"
+│   │       │   │   │                   ├── proc-macro-error v1.0.4 (*)
+│   │       │   │   │                   └── proc-macro-error feature "syn"
+│   │       │   │   │                       └── proc-macro-error v1.0.4 (*)
+│   │       │   │   └── primitive-types v0.12.1 (*)
+│   │       │   ├── evm-runtime v0.37.0 (*)
+│   │       │   ├── log v0.4.17 (*)
+│   │       │   ├── rlp v0.5.2 (*)
+│   │       │   ├── sha3 v0.10.8 (*)
+│   │       │   ├── parity-scale-codec feature "derive" (*)
+│   │       │   ├── scale-info feature "derive" (*)
+│   │       │   ├── primitive-types feature "rlp" (*)
+│   │       │   └── auto_impl feature "default" (*)
+│   │       ├── ethereum feature "with-codec"
+│   │       │   ├── ethereum v0.14.0 (*)
+│   │       │   ├── ethereum feature "codec"
+│   │       │   │   └── ethereum v0.14.0 (*)
+│   │       │   ├── ethereum feature "scale-info"
+│   │       │   │   └── ethereum v0.14.0 (*)
+│   │       │   └── ethereum-types feature "codec" (*)
+│   │       ├── primitive-types feature "codec" (*)
+│   │       ├── primitive-types feature "scale-info" (*)
+│   │       ├── evm feature "scale-codec"
+│   │       │   └── evm v0.37.0 (*)
+│   │       ├── evm feature "scale-info"
+│   │       │   └── evm v0.37.0 (*)
+│   │       └── evm-core feature "with-codec"
+│   │           ├── evm-core v0.37.0 (*)
+│   │           ├── primitive-types feature "impl-codec" (*)
+│   │           ├── evm-core feature "scale-codec"
+│   │           │   └── evm-core v0.37.0 (*)
+│   │           └── evm-core feature "scale-info"
+│   │               └── evm-core v0.37.0 (*)
+│   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── ethereum feature "with-codec" (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── fp-self-contained v1.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── frame-executive v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── sp-version v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── sp-tracing v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── frame-system-rpc-runtime-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec v3.5.0 (*)
+│   └── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── pallet-aura v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── pallet-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── sp-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   └── parity-scale-codec feature "derive" (*)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-consensus-aura v0.10.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec v3.5.0 (*)
+│   │   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-consensus-slots v0.10.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   │   └── scale-info feature "derive" (*)
+│   │   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── sp-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-authorship v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── impl-trait-for-tuples feature "default" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-balances v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-base-fee v1.0.0 (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-bounties v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── pallet-treasury v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── pallet-balances v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-chain-extension-xvm v0.1.0 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── num-traits v0.2.15 (*)
+│   ├── pallet-contracts v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── pallet-contracts-primitives v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   ├── scale-info feature "derive" (*)
+│   │   │   └── bitflags feature "default" (*)
+│   │   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── wasm-instrument v0.4.0
+│   │   │   └── parity-wasm v0.45.0
+│   │   ├── wasmi v0.20.0
+│   │   │   ├── wasmi_arena v0.1.0
+│   │   │   ├── wasmi_core v0.5.0
+│   │   │   │   ├── downcast-rs v1.2.0
+│   │   │   │   ├── num-traits v0.2.15 (*)
+│   │   │   │   └── libm feature "default"
+│   │   │   │       └── libm v0.2.7
+│   │   │   ├── wasmparser-nostd v0.91.0
+│   │   │   │   └── indexmap-nostd v0.4.0
+│   │   │   ├── spin feature "mutex"
+│   │   │   │   └── spin v0.9.8
+│   │   │   └── spin feature "spin_mutex"
+│   │   │       ├── spin v0.9.8
+│   │   │       └── spin feature "mutex" (*)
+│   │   ├── wasmparser-nostd v0.91.0 (*)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   ├── scale-info feature "derive" (*)
+│   │   ├── bitflags feature "default" (*)
+│   │   ├── smallvec feature "const_generics"
+│   │   │   └── smallvec v1.10.0
+│   │   └── pallet-contracts-proc-macro feature "default"
+│   │       └── pallet-contracts-proc-macro v4.0.0-dev (proc-macro) (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │           ├── proc-macro2 feature "default" (*)
+│   │           ├── quote feature "default" (*)
+│   │           ├── syn feature "default" (*)
+│   │           └── syn feature "full" (*)
+│   ├── pallet-contracts-primitives v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── pallet-contracts v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   ├── scale-info feature "derive" (*)
+│   │   └── pallet-evm feature "forbid-evm-reentrancy"
+│   │       └── pallet-evm v6.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │           ├── environmental v1.1.4
+│   │           ├── fp-account v1.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │           │   ├── hex v0.4.3
+│   │           │   ├── impl-serde v0.4.0 (*)
+│   │           │   ├── libsecp256k1 v0.7.1
+│   │           │   │   ├── base64 v0.13.1
+│   │           │   │   ├── libsecp256k1-core v0.3.0
+│   │           │   │   │   ├── subtle v2.4.1
+│   │           │   │   │   ├── crunchy feature "default" (*)
+│   │           │   │   │   └── digest feature "default"
+│   │           │   │   │       └── digest v0.9.0
+│   │           │   │   │           └── generic-array feature "default" (*)
+│   │           │   │   ├── rand v0.8.5
+│   │           │   │   │   └── rand_core feature "default" (*)
+│   │           │   │   ├── serde feature "derive"
+│   │           │   │   │   ├── serde v1.0.163 (*)
+│   │           │   │   │   └── serde feature "serde_derive"
+│   │           │   │   │       └── serde v1.0.163 (*)
+│   │           │   │   ├── arrayref feature "default"
+│   │           │   │   │   └── arrayref v0.3.7
+│   │           │   │   └── digest feature "default" (*)
+│   │           │   │   [build-dependencies]
+│   │           │   │   ├── libsecp256k1-gen-ecmult feature "default"
+│   │           │   │   │   └── libsecp256k1-gen-ecmult v0.3.0
+│   │           │   │   │       └── libsecp256k1-core feature "default"
+│   │           │   │   │           ├── libsecp256k1-core v0.3.0
+│   │           │   │   │           │   ├── subtle v2.4.1
+│   │           │   │   │           │   ├── digest feature "default" (*)
+│   │           │   │   │           │   └── crunchy feature "default"
+│   │           │   │   │           │       ├── crunchy v0.2.2
+│   │           │   │   │           │       └── crunchy feature "limit_128"
+│   │           │   │   │           │           └── crunchy v0.2.2
+│   │           │   │   │           └── libsecp256k1-core feature "std"
+│   │           │   │   │               ├── libsecp256k1-core v0.3.0 (*)
+│   │           │   │   │               └── subtle feature "std"
+│   │           │   │   │                   └── subtle v2.4.1
+│   │           │   │   └── libsecp256k1-gen-genmult feature "default"
+│   │           │   │       └── libsecp256k1-gen-genmult v0.3.0
+│   │           │   │           └── libsecp256k1-core feature "default" (*)
+│   │           │   ├── log v0.4.17 (*)
+│   │           │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │           │   ├── serde feature "default"
+│   │           │   │   ├── serde v1.0.163 (*)
+│   │           │   │   └── serde feature "std"
+│   │           │   │       └── serde v1.0.163 (*)
+│   │           │   ├── serde feature "derive" (*)
+│   │           │   ├── parity-scale-codec feature "derive" (*)
+│   │           │   └── scale-info feature "derive" (*)
+│   │           ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   │           ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── log v0.4.17 (*)
+│   │           ├── pallet-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── rlp v0.5.2 (*)
+│   │           ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │           ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │           ├── parity-scale-codec feature "derive" (*)
+│   │           ├── impl-trait-for-tuples feature "default" (*)
+│   │           ├── scale-info feature "derive" (*)
+│   │           ├── hex feature "alloc"
+│   │           │   └── hex v0.4.3
+│   │           └── evm feature "with-codec" (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── xvm-chain-extension-types v0.1.0 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-contracts v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── pallet-contracts-primitives v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── pallet-dynamic-fee v4.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── fp-dynamic-fee v1.0.0 (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   └── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-ethereum v4.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── environmental v1.1.4
+│   ├── ethereum-types v0.14.1 (*)
+│   ├── fp-consensus v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── ethereum feature "with-codec" (*)
+│   │   └── parity-scale-codec feature "derive" (*)
+│   ├── fp-ethereum v1.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │   ├── ethereum-types v0.14.1 (*)
+│   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── num_enum v0.5.11
+│   │   │   └── num_enum_derive v0.5.11 (proc-macro)
+│   │   │       ├── proc-macro2 feature "default" (*)
+│   │   │       ├── quote feature "default" (*)
+│   │   │       ├── syn feature "default" (*)
+│   │   │       └── syn feature "parsing" (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── ethereum feature "with-codec" (*)
+│   │   └── parity-scale-codec feature "derive" (*)
+│   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── fp-rpc v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── fp-storage v2.0.0 (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   │   └── parity-scale-codec feature "derive" (*)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── pallet-evm v6.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── pallet-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── ethereum feature "with-codec" (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── scale-info feature "derive" (*)
+│   └── evm feature "with-codec" (*)
+├── pallet-evm-chain-id v1.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-grandpa v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── pallet-authorship v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── pallet-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── pallet-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── parity-scale-codec feature "derive" (*)
+│   │   │   └── scale-info feature "derive" (*)
+│   │   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── sp-trie v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── hash-db v0.15.2
+│   │   │   ├── memory-db v0.31.0
+│   │   │   │   ├── hash-db v0.15.2
+│   │   │   │   └── hashbrown feature "ahash"
+│   │   │   │       └── hashbrown v0.12.3
+│   │   │   │           └── ahash v0.7.6
+│   │   │   │               ├── getrandom feature "default"
+│   │   │   │               │   └── getrandom v0.2.9
+│   │   │   │               │       ├── libc v0.2.144
+│   │   │   │               │       └── cfg-if feature "default" (*)
+│   │   │   │               └── once_cell feature "alloc"
+│   │   │   │                   ├── once_cell v1.17.1
+│   │   │   │                   └── once_cell feature "race"
+│   │   │   │                       └── once_cell v1.17.1
+│   │   │   │               [build-dependencies]
+│   │   │   │               └── version_check feature "default" (*)
+│   │   │   ├── parity-scale-codec v3.5.0 (*)
+│   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   │   ├── trie-db v0.25.1
+│   │   │   │   ├── hash-db v0.15.2
+│   │   │   │   ├── log feature "default"
+│   │   │   │   │   └── log v0.4.17 (*)
+│   │   │   │   ├── smallvec feature "const_new"
+│   │   │   │   │   ├── smallvec v1.10.0
+│   │   │   │   │   └── smallvec feature "const_generics" (*)
+│   │   │   │   ├── smallvec feature "default" (*)
+│   │   │   │   ├── smallvec feature "union"
+│   │   │   │   │   └── smallvec v1.10.0
+│   │   │   │   └── hashbrown feature "ahash"
+│   │   │   │       └── hashbrown v0.13.2
+│   │   │   │           └── ahash v0.8.3
+│   │   │   │               ├── cfg-if feature "default" (*)
+│   │   │   │               ├── once_cell feature "alloc" (*)
+│   │   │   │               └── once_cell feature "unstable"
+│   │   │   │                   └── once_cell v1.17.1
+│   │   │   │               [build-dependencies]
+│   │   │   │               └── version_check feature "default" (*)
+│   │   │   ├── trie-root v0.17.0
+│   │   │   │   └── hash-db v0.15.2
+│   │   │   └── scale-info feature "derive" (*)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── impl-trait-for-tuples feature "default" (*)
+│   │   └── scale-info feature "derive" (*)
+│   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-finality-grandpa v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── log v0.4.17 (*)
+│   │   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── scale-info feature "derive" (*)
+│   │   └── finality-grandpa feature "derive-codec"
+│   │       ├── finality-grandpa v0.16.2
+│   │       │   ├── either v1.8.1
+│   │       │   ├── futures v0.3.28
+│   │       │   │   ├── futures-core v0.3.28
+│   │       │   │   ├── futures-io v0.3.28
+│   │       │   │   ├── futures-sink v0.3.28
+│   │       │   │   ├── futures-task v0.3.28
+│   │       │   │   ├── futures-channel feature "sink"
+│   │       │   │   │   ├── futures-channel v0.3.28
+│   │       │   │   │   │   ├── futures-core v0.3.28
+│   │       │   │   │   │   └── futures-sink v0.3.28
+│   │       │   │   │   └── futures-channel feature "futures-sink"
+│   │       │   │   │       └── futures-channel v0.3.28 (*)
+│   │       │   │   └── futures-util feature "sink"
+│   │       │   │       ├── futures-util v0.3.28
+│   │       │   │       │   ├── futures-core v0.3.28
+│   │       │   │       │   ├── futures-sink v0.3.28
+│   │       │   │       │   ├── futures-task v0.3.28
+│   │       │   │       │   ├── pin-project-lite feature "default" (*)
+│   │       │   │       │   └── pin-utils feature "default"
+│   │       │   │       │       └── pin-utils v0.1.0
+│   │       │   │       └── futures-util feature "futures-sink"
+│   │       │   │           └── futures-util v0.3.28 (*)
+│   │       │   ├── num-traits v0.2.15 (*)
+│   │       │   ├── parity-scale-codec feature "derive" (*)
+│   │       │   └── scale-info feature "derive" (*)
+│   │       ├── finality-grandpa feature "parity-scale-codec"
+│   │       │   └── finality-grandpa v0.16.2 (*)
+│   │       └── finality-grandpa feature "scale-info"
+│   │           └── finality-grandpa v0.16.2 (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-hotfix-sufficients v1.0.0 (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── pallet-evm v6.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-ibc v4.0.0-dev (https://github.com/octopus-network/substrate-ibc?branch=polkadot-v0.9.39#f273a18d)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── ibc-support v0.1.0 (https://github.com/octopus-network/substrate-ibc?branch=polkadot-v0.9.39#f273a18d)
+│   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── ibc-proto v0.25.0
+│   │   │   ├── borsh v0.10.3
+│   │   │   │   ├── hashbrown feature "default"
+│   │   │   │   │   ├── hashbrown v0.13.2 (*)
+│   │   │   │   │   ├── hashbrown feature "ahash" (*)
+│   │   │   │   │   └── hashbrown feature "inline-more"
+│   │   │   │   │       └── hashbrown v0.13.2 (*)
+│   │   │   │   └── borsh-derive feature "default"
+│   │   │   │       └── borsh-derive v0.10.3 (proc-macro)
+│   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │           ├── syn feature "default" (*)
+│   │   │   │           ├── syn feature "fold" (*)
+│   │   │   │           ├── syn feature "full" (*)
+│   │   │   │           ├── borsh-derive-internal feature "default"
+│   │   │   │           │   └── borsh-derive-internal v0.10.3
+│   │   │   │           │       ├── proc-macro2 feature "default" (*)
+│   │   │   │           │       ├── quote feature "default" (*)
+│   │   │   │           │       ├── syn feature "default" (*)
+│   │   │   │           │       ├── syn feature "fold" (*)
+│   │   │   │           │       └── syn feature "full" (*)
+│   │   │   │           ├── borsh-schema-derive-internal feature "default"
+│   │   │   │           │   └── borsh-schema-derive-internal v0.10.3
+│   │   │   │           │       ├── proc-macro2 feature "default" (*)
+│   │   │   │           │       ├── quote feature "default" (*)
+│   │   │   │           │       ├── syn feature "default" (*)
+│   │   │   │           │       ├── syn feature "fold" (*)
+│   │   │   │           │       └── syn feature "full" (*)
+│   │   │   │           └── proc-macro-crate feature "default"
+│   │   │   │               └── proc-macro-crate v0.1.5
+│   │   │   │                   └── toml feature "default" (*)
+│   │   │   ├── bytes v1.4.0 (*)
+│   │   │   ├── flex-error v0.4.4
+│   │   │   │   └── paste feature "default" (*)
+│   │   │   ├── prost v0.11.9
+│   │   │   │   ├── bytes v1.4.0 (*)
+│   │   │   │   └── prost-derive feature "default"
+│   │   │   │       └── prost-derive v0.11.9 (proc-macro)
+│   │   │   │           ├── proc-macro2 feature "default" (*)
+│   │   │   │           ├── quote feature "default" (*)
+│   │   │   │           ├── syn feature "default" (*)
+│   │   │   │           ├── syn feature "extra-traits" (*)
+│   │   │   │           ├── itertools feature "use_alloc" (*)
+│   │   │   │           └── anyhow feature "default"
+│   │   │   │               ├── anyhow v1.0.71
+│   │   │   │               └── anyhow feature "std"
+│   │   │   │                   └── anyhow v1.0.71
+│   │   │   ├── serde v1.0.163 (*)
+│   │   │   ├── subtle-encoding v0.5.1
+│   │   │   │   └── zeroize v1.6.0 (*)
+│   │   │   ├── tendermint-proto v0.28.0
+│   │   │   │   ├── flex-error v0.4.4 (*)
+│   │   │   │   ├── num-derive v0.3.3 (proc-macro)
+│   │   │   │   │   ├── proc-macro2 feature "default" (*)
+│   │   │   │   │   ├── quote feature "default" (*)
+│   │   │   │   │   └── syn feature "default" (*)
+│   │   │   │   ├── num-traits v0.2.15 (*)
+│   │   │   │   ├── prost v0.11.9 (*)
+│   │   │   │   ├── prost-types v0.11.9
+│   │   │   │   │   └── prost feature "prost-derive"
+│   │   │   │   │       └── prost v0.11.9 (*)
+│   │   │   │   ├── bytes feature "serde"
+│   │   │   │   │   └── bytes v1.4.0 (*)
+│   │   │   │   ├── serde feature "derive" (*)
+│   │   │   │   ├── subtle-encoding feature "alloc"
+│   │   │   │   │   └── subtle-encoding v0.5.1 (*)
+│   │   │   │   ├── subtle-encoding feature "base64"
+│   │   │   │   │   ├── subtle-encoding v0.5.1 (*)
+│   │   │   │   │   └── subtle-encoding feature "zeroize"
+│   │   │   │   │       └── subtle-encoding v0.5.1 (*)
+│   │   │   │   ├── subtle-encoding feature "hex"
+│   │   │   │   │   └── subtle-encoding v0.5.1 (*)
+│   │   │   │   ├── serde_bytes feature "alloc"
+│   │   │   │   │   ├── serde_bytes v0.11.9
+│   │   │   │   │   │   └── serde v1.0.163 (*)
+│   │   │   │   │   └── serde feature "alloc" (*)
+│   │   │   │   ├── time feature "macros"
+│   │   │   │   │   └── time v0.3.17
+│   │   │   │   │       ├── time-core feature "default"
+│   │   │   │   │       │   └── time-core v0.1.0
+│   │   │   │   │       └── time-macros feature "default"
+│   │   │   │   │           └── time-macros v0.2.6 (proc-macro)
+│   │   │   │   │               └── time-core feature "default" (*)
+│   │   │   │   └── time feature "parsing"
+│   │   │   │       ├── time v0.3.17 (*)
+│   │   │   │       └── time-macros feature "parsing"
+│   │   │   │           └── time-macros v0.2.6 (proc-macro) (*)
+│   │   │   ├── parity-scale-codec feature "full" (*)
+│   │   │   ├── scale-info feature "derive" (*)
+│   │   │   └── base64 feature "alloc"
+│   │   │       └── base64 v0.13.1
+│   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   │   ├── parity-scale-codec feature "derive" (*)
+│   │   ├── scale-info feature "derive" (*)
+│   │   └── ibc feature "parity-scale-codec"
+│   │       └── ibc v0.28.0
+│   │           ├── bytes v1.4.0 (*)
+│   │           ├── displaydoc v0.2.4 (proc-macro)
+│   │           │   ├── proc-macro2 feature "default" (*)
+│   │           │   ├── quote feature "default" (*)
+│   │           │   └── syn feature "default" (*)
+│   │           ├── num-traits v0.2.15 (*)
+│   │           ├── prost v0.11.9 (*)
+│   │           ├── safe-regex v0.2.5
+│   │           │   └── safe-regex-macro feature "default"
+│   │           │       └── safe-regex-macro v0.2.5 (proc-macro)
+│   │           │           ├── safe-proc-macro2 feature "default"
+│   │           │           │   ├── safe-proc-macro2 v1.0.36
+│   │           │           │   │   └── unicode-xid feature "default" (*)
+│   │           │           │   └── safe-proc-macro2 feature "proc-macro"
+│   │           │           │       └── safe-proc-macro2 v1.0.36 (*)
+│   │           │           └── safe-regex-compiler feature "default"
+│   │           │               └── safe-regex-compiler v0.2.5
+│   │           │                   ├── safe-proc-macro2 feature "default" (*)
+│   │           │                   └── safe-quote feature "default"
+│   │           │                       ├── safe-quote v1.0.15
+│   │           │                       │   └── safe-proc-macro2 v1.0.36 (*)
+│   │           │                       └── safe-quote feature "proc-macro"
+│   │           │                           ├── safe-quote v1.0.15 (*)
+│   │           │                           └── safe-proc-macro2 feature "proc-macro" (*)
+│   │           ├── serde v1.0.163 (*)
+│   │           ├── serde_derive v1.0.163 (proc-macro) (*)
+│   │           ├── serde_json v1.0.96
+│   │           │   ├── serde v1.0.163 (*)
+│   │           │   ├── itoa feature "default" (*)
+│   │           │   └── ryu feature "default" (*)
+│   │           ├── sha2 v0.10.6 (*)
+│   │           ├── subtle-encoding v0.5.1 (*)
+│   │           ├── tendermint v0.28.0
+│   │           │   ├── ed25519 v1.5.3
+│   │           │   │   └── signature v1.6.4 (*)
+│   │           │   ├── flex-error v0.4.4 (*)
+│   │           │   ├── futures v0.3.28 (*)
+│   │           │   ├── num-traits v0.2.15 (*)
+│   │           │   ├── once_cell v1.17.1
+│   │           │   ├── prost v0.11.9 (*)
+│   │           │   ├── prost-types v0.11.9 (*)
+│   │           │   ├── serde_bytes v0.11.9 (*)
+│   │           │   ├── serde_repr v0.1.12 (proc-macro)
+│   │           │   │   ├── proc-macro2 feature "default" (*)
+│   │           │   │   ├── quote feature "default" (*)
+│   │           │   │   └── syn feature "default" (*)
+│   │           │   ├── sha2 v0.9.9
+│   │           │   │   ├── cfg-if feature "default" (*)
+│   │           │   │   ├── cpufeatures feature "default" (*)
+│   │           │   │   ├── digest feature "default" (*)
+│   │           │   │   ├── block-buffer feature "default"
+│   │           │   │   │   └── block-buffer v0.9.0
+│   │           │   │   │       └── generic-array feature "default" (*)
+│   │           │   │   └── opaque-debug feature "default"
+│   │           │   │       └── opaque-debug v0.3.0
+│   │           │   ├── signature v1.6.4 (*)
+│   │           │   ├── subtle v2.4.1
+│   │           │   ├── tendermint-proto v0.28.0 (*)
+│   │           │   ├── bytes feature "serde" (*)
+│   │           │   ├── serde feature "derive" (*)
+│   │           │   ├── zeroize feature "alloc"
+│   │           │   │   └── zeroize v1.6.0 (*)
+│   │           │   ├── zeroize feature "zeroize_derive"
+│   │           │   │   └── zeroize v1.6.0 (*)
+│   │           │   ├── subtle-encoding feature "bech32-preview"
+│   │           │   │   ├── subtle-encoding v0.5.1 (*)
+│   │           │   │   ├── subtle-encoding feature "alloc" (*)
+│   │           │   │   └── subtle-encoding feature "zeroize" (*)
+│   │           │   ├── time feature "macros" (*)
+│   │           │   ├── time feature "parsing" (*)
+│   │           │   ├── serde_json feature "alloc"
+│   │           │   │   ├── serde_json v1.0.96 (*)
+│   │           │   │   └── serde feature "alloc" (*)
+│   │           │   └── ed25519-dalek feature "u64_backend"
+│   │           │       ├── ed25519-dalek v1.0.1
+│   │           │       │   ├── curve25519-dalek v3.2.0
+│   │           │       │   │   ├── digest v0.9.0 (*)
+│   │           │       │   │   ├── rand_core v0.5.1
+│   │           │       │   │   ├── subtle v2.4.1
+│   │           │       │   │   ├── zeroize v1.6.0 (*)
+│   │           │       │   │   └── byteorder feature "i128"
+│   │           │       │   │       └── byteorder v1.4.3
+│   │           │       │   ├── ed25519 v1.5.3 (*)
+│   │           │       │   ├── rand v0.7.3
+│   │           │       │   │   ├── rand_chacha v0.2.2
+│   │           │       │   │   │   ├── rand_core feature "default"
+│   │           │       │   │   │   │   └── rand_core v0.5.1
+│   │           │       │   │   │   └── ppv-lite86 feature "simd"
+│   │           │       │   │   │       └── ppv-lite86 v0.2.17
+│   │           │       │   │   └── rand_core feature "default" (*)
+│   │           │       │   ├── sha2 v0.9.9 (*)
+│   │           │       │   └── zeroize feature "zeroize_derive" (*)
+│   │           │       └── curve25519-dalek feature "u64_backend"
+│   │           │           └── curve25519-dalek v3.2.0 (*)
+│   │           ├── tendermint-light-client-verifier v0.28.0
+│   │           │   ├── flex-error v0.4.4 (*)
+│   │           │   ├── serde v1.0.163 (*)
+│   │           │   ├── tendermint v0.28.0 (*)
+│   │           │   ├── time v0.3.17 (*)
+│   │           │   └── derive_more feature "display"
+│   │           │       ├── derive_more v0.99.17 (proc-macro) (*)
+│   │           │       └── syn feature "extra-traits" (*)
+│   │           ├── tendermint-proto v0.28.0 (*)
+│   │           ├── time v0.3.17 (*)
+│   │           ├── tracing v0.1.37 (*)
+│   │           ├── uint v0.9.5 (*)
+│   │           ├── parity-scale-codec feature "full" (*)
+│   │           ├── scale-info feature "derive" (*)
+│   │           ├── cfg-if feature "default" (*)
+│   │           ├── derive_more feature "display" (*)
+│   │           ├── derive_more feature "from" (*)
+│   │           ├── derive_more feature "into"
+│   │           │   ├── derive_more v0.99.17 (proc-macro) (*)
+│   │           │   └── syn feature "extra-traits" (*)
+│   │           ├── primitive-types feature "serde_no_std"
+│   │           │   ├── primitive-types v0.12.1 (*)
+│   │           │   └── primitive-types feature "impl-serde"
+│   │           │       └── primitive-types v0.12.1 (*)
+│   │           ├── dyn-clone feature "default"
+│   │           │   └── dyn-clone v1.0.11
+│   │           ├── erased-serde feature "alloc"
+│   │           │   ├── erased-serde v0.3.25
+│   │           │   │   └── serde v1.0.163 (*)
+│   │           │   └── serde feature "alloc" (*)
+│   │           ├── ibc-proto feature "borsh"
+│   │           │   └── ibc-proto v0.25.0 (*)
+│   │           ├── ibc-proto feature "parity-scale-codec"
+│   │           │   └── ibc-proto v0.25.0 (*)
+│   │           └── ics23 feature "host-functions"
+│   │               ├── ics23 v0.9.0
+│   │               │   ├── anyhow v1.0.71
+│   │               │   ├── bytes v1.4.0 (*)
+│   │               │   ├── ripemd v0.1.3
+│   │               │   │   └── digest feature "default" (*)
+│   │               │   ├── sha2 v0.10.6 (*)
+│   │               │   ├── sha3 v0.10.8 (*)
+│   │               │   ├── hex feature "alloc" (*)
+│   │               │   └── prost feature "prost-derive" (*)
+│   │               ├── ics23 feature "ripemd"
+│   │               │   └── ics23 v0.9.0 (*)
+│   │               ├── ics23 feature "sha2"
+│   │               │   └── ics23 v0.9.0 (*)
+│   │               └── ics23 feature "sha3"
+│   │                   └── ics23 v0.9.0 (*)
+│   ├── log v0.4.17 (*)
+│   ├── serde v1.0.163 (*)
+│   ├── serde_json v1.0.96 (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── sp-tracing v6.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── scale-info feature "derive" (*)
+│   ├── ibc feature "mocks-no-std"
+│   │   ├── ibc v0.28.0 (*)
+│   │   └── ibc feature "cfg-if"
+│   │       └── ibc v0.28.0 (*)
+│   ├── ibc feature "parity-scale-codec" (*)
+│   ├── ibc feature "serde"
+│   │   ├── ibc v0.28.0 (*)
+│   │   ├── ibc feature "erased-serde"
+│   │   │   └── ibc v0.28.0 (*)
+│   │   └── ibc feature "serde_json"
+│   │       └── ibc v0.28.0 (*)
+│   └── ibc-proto feature "parity-scale-codec" (*)
+├── pallet-identity v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   ├── scale-info feature "derive" (*)
+│   └── enumflags2 feature "default"
+│       └── enumflags2 v0.7.7
+│           └── enumflags2_derive feature "default"
+│               └── enumflags2_derive v0.7.7 (proc-macro)
+│                   ├── proc-macro2 feature "default" (*)
+│                   ├── quote feature "default" (*)
+│                   ├── syn feature "default" (*)
+│                   └── syn feature "full" (*)
+├── pallet-im-online v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── pallet-authorship v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-application-crypto v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-indices v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-insecure-randomness-collective-flip v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── safe-mix v1.0.1
+│   │   [build-dependencies]
+│   │   └── rustc_version feature "default"
+│   │       └── rustc_version v0.2.3
+│   │           └── semver feature "default"
+│   │               └── semver v0.9.0
+│   │                   └── semver-parser feature "default"
+│   │                       └── semver-parser v0.7.0
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-multisig v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── parity-scale-codec v3.5.0 (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   └── scale-info feature "derive" (*)
+├── pallet-offences v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── pallet-balances v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-proxy v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "max-encoded-len" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-sudo v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-timestamp v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── pallet-transaction-payment v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── pallet-transaction-payment-rpc-runtime-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── pallet-transaction-payment v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   └── parity-scale-codec feature "derive" (*)
+├── pallet-treasury v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── pallet-vesting v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── log v0.4.17 (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-block-builder v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec v3.5.0 (*)
+│   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   └── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+├── sp-consensus-aura v0.10.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-inherents v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-offchain v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   └── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+├── sp-transaction-pool v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── sp-api v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   └── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── sp-version v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+├── substrate-account-filter v4.0.0 (https://github.com/GoldenGateGGX/ggx-frames?branch=polkadot-v0.9.39#e3e96f5e)
+│   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+│   ├── parity-scale-codec feature "derive" (*)
+│   └── scale-info feature "derive" (*)
+├── parity-scale-codec feature "derive" (*)
+├── scale-info feature "derive" (*)
+├── pallet-xvm feature "evm"
+│   ├── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+│   └── pallet-xvm feature "pallet-evm"
+│       └── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+├── pallet-xvm feature "wasm"
+│   ├── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+│   └── pallet-xvm feature "pallet-contracts"
+│       └── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+├── pallet-evm feature "forbid-evm-reentrancy" (*)
+├── pallet-session feature "historical"
+│   ├── pallet-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+│   └── pallet-session feature "sp-trie"
+│       └── pallet-session v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+└── runtime-common feature "xvm"
+    ├── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common)
+    │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── pallet-contracts v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── pallet-evm-precompile-blake2 v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   └── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   ├── pallet-evm-precompile-bn128 v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   └── substrate-bn v0.6.0
+    │   │       ├── rand v0.8.5 (*)
+    │   │       ├── rustc-hex v2.1.0
+    │   │       ├── crunchy feature "default" (*)
+    │   │       ├── byteorder feature "i128" (*)
+    │   │       ├── lazy_static feature "default"
+    │   │       │   └── lazy_static v1.4.0
+    │   │       │       └── spin feature "default"
+    │   │       │           └── spin v0.5.2
+    │   │       └── lazy_static feature "spin_no_std"
+    │   │           ├── lazy_static v1.4.0 (*)
+    │   │           └── lazy_static feature "spin"
+    │   │               └── lazy_static v1.4.0 (*)
+    │   ├── pallet-evm-precompile-ed25519 v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── ed25519-dalek feature "alloc"
+    │   │   │   ├── ed25519-dalek v1.0.1 (*)
+    │   │   │   ├── zeroize feature "alloc" (*)
+    │   │   │   ├── ed25519-dalek feature "rand"
+    │   │   │   │   └── ed25519-dalek v1.0.1 (*)
+    │   │   │   ├── curve25519-dalek feature "alloc"
+    │   │   │   │   ├── curve25519-dalek v3.2.0 (*)
+    │   │   │   │   └── zeroize feature "alloc" (*)
+    │   │   │   └── rand feature "alloc"
+    │   │   │       ├── rand v0.7.3 (*)
+    │   │   │       └── rand_core feature "alloc"
+    │   │   │           └── rand_core v0.5.1
+    │   │   └── ed25519-dalek feature "u64_backend" (*)
+    │   ├── pallet-evm-precompile-modexp v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   └── num feature "alloc"
+    │   │       ├── num v0.4.0
+    │   │       │   ├── num-bigint v0.4.3
+    │   │       │   │   ├── num-traits feature "i128"
+    │   │       │   │   │   └── num-traits v0.2.15 (*)
+    │   │       │   │   └── num-integer feature "i128"
+    │   │       │   │       ├── num-integer v0.1.45
+    │   │       │   │       │   └── num-traits v0.2.15 (*)
+    │   │       │   │       │   [build-dependencies]
+    │   │       │   │       │   └── autocfg feature "default" (*)
+    │   │       │   │       └── num-traits feature "i128" (*)
+    │   │       │   │   [build-dependencies]
+    │   │       │   │   └── autocfg feature "default" (*)
+    │   │       │   ├── num-complex v0.4.3
+    │   │       │   │   └── num-traits feature "i128" (*)
+    │   │       │   ├── num-rational v0.4.1
+    │   │       │   │   ├── num-bigint v0.4.3 (*)
+    │   │       │   │   ├── num-traits feature "i128" (*)
+    │   │       │   │   └── num-integer feature "i128" (*)
+    │   │       │   │   [build-dependencies]
+    │   │       │   │   └── autocfg feature "default" (*)
+    │   │       │   ├── num-traits feature "i128" (*)
+    │   │       │   ├── num-integer feature "i128" (*)
+    │   │       │   └── num-iter feature "i128"
+    │   │       │       ├── num-iter v0.1.43
+    │   │       │       │   ├── num-integer v0.1.45 (*)
+    │   │       │       │   └── num-traits v0.2.15 (*)
+    │   │       │       │   [build-dependencies]
+    │   │       │       │   └── autocfg feature "default" (*)
+    │   │       │       ├── num-traits feature "i128" (*)
+    │   │       │       └── num-integer feature "i128" (*)
+    │   │       ├── num feature "num-bigint"
+    │   │       │   └── num v0.4.0 (*)
+    │   │       └── num-rational feature "num-bigint"
+    │   │           └── num-rational v0.4.1 (*)
+    │   ├── pallet-evm-precompile-sha3fips v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── tiny-keccak feature "default" (*)
+    │   │   └── tiny-keccak feature "fips202"
+    │   │       ├── tiny-keccak v2.0.2 (*)
+    │   │       ├── tiny-keccak feature "keccak" (*)
+    │   │       ├── tiny-keccak feature "sha3"
+    │   │       │   └── tiny-keccak v2.0.2 (*)
+    │   │       └── tiny-keccak feature "shake"
+    │   │           └── tiny-keccak v2.0.2 (*)
+    │   ├── pallet-evm-precompile-simple v2.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── ripemd v0.1.3 (*)
+    │   │   └── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── pallet-evm-precompile-sr25519 v1.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── log v0.4.17 (*)
+    │   │   ├── num_enum v0.5.11 (*)
+    │   │   ├── precompile-utils v0.4.3 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+    │   │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   ├── log v0.4.17 (*)
+    │   │   │   ├── num_enum v0.5.11 (*)
+    │   │   │   ├── sha3 v0.10.8 (*)
+    │   │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+    │   │   │   ├── xcm v0.9.39-1 (https://github.com/paritytech/polkadot?branch=release-v0.9.39#c22e1c41)
+    │   │   │   │   ├── bounded-collections v0.1.7 (*)
+    │   │   │   │   ├── log v0.4.17 (*)
+    │   │   │   │   ├── sp-weights v4.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   │   │   ├── parity-scale-codec feature "derive" (*)
+    │   │   │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+    │   │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+    │   │   │   │   ├── scale-info feature "derive" (*)
+    │   │   │   │   ├── derivative feature "use_core"
+    │   │   │   │   │   └── derivative v2.2.0 (proc-macro)
+    │   │   │   │   │       ├── proc-macro2 feature "default" (*)
+    │   │   │   │   │       ├── quote feature "default" (*)
+    │   │   │   │   │       ├── syn feature "default" (*)
+    │   │   │   │   │       ├── syn feature "extra-traits" (*)
+    │   │   │   │   │       └── syn feature "visit" (*)
+    │   │   │   │   └── xcm-procedural feature "default"
+    │   │   │   │       └── xcm-procedural v0.9.39-1 (proc-macro) (https://github.com/paritytech/polkadot?branch=release-v0.9.39#c22e1c41)
+    │   │   │   │           ├── proc-macro2 feature "default" (*)
+    │   │   │   │           ├── quote feature "default" (*)
+    │   │   │   │           ├── syn feature "default" (*)
+    │   │   │   │           └── Inflector feature "default" (*)
+    │   │   │   ├── parity-scale-codec feature "derive" (*)
+    │   │   │   ├── impl-trait-for-tuples feature "default" (*)
+    │   │   │   ├── pallet-evm feature "forbid-evm-reentrancy" (*)
+    │   │   │   ├── assert_matches feature "default"
+    │   │   │   │   └── assert_matches v1.5.0
+    │   │   │   └── precompile-utils-macro feature "default"
+    │   │   │       └── precompile-utils-macro v0.1.0 (proc-macro) (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+    │   │   │           ├── num_enum v0.5.11 (*)
+    │   │   │           ├── sha3 v0.10.8 (*)
+    │   │   │           ├── proc-macro2 feature "default" (*)
+    │   │   │           ├── quote feature "default" (*)
+    │   │   │           ├── syn feature "default" (*)
+    │   │   │           ├── syn feature "extra-traits" (*)
+    │   │   │           ├── syn feature "fold" (*)
+    │   │   │           ├── syn feature "full" (*)
+    │   │   │           └── syn feature "visit" (*)
+    │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+    │   │   ├── parity-scale-codec feature "derive" (*)
+    │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+    │   │   └── pallet-evm feature "forbid-evm-reentrancy" (*)
+    │   ├── pallet-evm-precompile-substrate-ecdsa v1.2.2 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── log v0.4.17 (*)
+    │   │   ├── num_enum v0.5.11 (*)
+    │   │   ├── precompile-utils v0.4.3 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+    │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+    │   │   ├── parity-scale-codec feature "derive" (*)
+    │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+    │   │   └── pallet-evm feature "forbid-evm-reentrancy" (*)
+    │   ├── pallet-evm-precompile-xvm v0.1.0 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95)
+    │   │   ├── fp-evm v3.0.0-dev (https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.39#873d9f5e) (*)
+    │   │   ├── frame-support v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── frame-system v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── log v0.4.17 (*)
+    │   │   ├── num_enum v0.5.11 (*)
+    │   │   ├── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+    │   │   ├── precompile-utils v0.4.3 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+    │   │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-io v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-runtime v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+    │   │   ├── parity-scale-codec feature "derive" (*)
+    │   │   ├── parity-scale-codec feature "max-encoded-len" (*)
+    │   │   └── pallet-evm feature "forbid-evm-reentrancy" (*)
+    │   ├── pallet-xvm v0.2.1 (https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#c8749e95) (*)
+    │   ├── sp-core v7.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── sp-staking v4.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452) (*)
+    │   ├── sp-std v5.0.0 (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+    │   ├── parity-scale-codec feature "derive" (*)
+    │   ├── scale-info feature "derive" (*)
+    │   ├── pallet-evm feature "forbid-evm-reentrancy" (*)
+    │   └── pallet-session feature "historical" (*)
+    ├── runtime-common feature "pallet-contracts"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-blake2"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-bn128"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-ed25519"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-modexp"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-sha3fips"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-simple"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-sr25519"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-substrate-ecdsa"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    ├── runtime-common feature "pallet-evm-precompile-xvm"
+    │   └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+    └── runtime-common feature "pallet-xvm"
+        └── runtime-common v0.1.0 (/mnt/work/ggx/golden-gate/runtime/runtime-common) (*)
+[build-dependencies]
+└── substrate-wasm-builder feature "default"
+    └── substrate-wasm-builder v5.0.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+        ├── toml feature "default" (*)
+        ├── ansi_term feature "default"
+        │   └── ansi_term v0.12.1
+        ├── build-helper feature "default"
+        │   └── build-helper v0.1.1
+        │       └── semver feature "default"
+        │           └── semver v0.6.0
+        │               └── semver-parser feature "default" (*)
+        ├── cargo_metadata feature "default"
+        │   └── cargo_metadata v0.15.4
+        │       ├── thiserror feature "default" (*)
+        │       ├── serde feature "default" (*)
+        │       ├── serde feature "derive" (*)
+        │       ├── serde_json feature "default"
+        │       │   ├── serde_json v1.0.96 (*)
+        │       │   └── serde_json feature "std" (*)
+        │       ├── serde_json feature "unbounded_depth"
+        │       │   └── serde_json v1.0.96 (*)
+        │       ├── camino feature "default"
+        │       │   └── camino v1.1.4
+        │       │       ├── serde feature "default" (*)
+        │       │       └── serde feature "derive" (*)
+        │       ├── camino feature "serde1"
+        │       │   ├── camino v1.1.4 (*)
+        │       │   └── camino feature "serde"
+        │       │       └── camino v1.1.4 (*)
+        │       ├── cargo-platform feature "default"
+        │       │   └── cargo-platform v0.1.2
+        │       │       ├── serde feature "default" (*)
+        │       │       └── serde feature "derive" (*)
+        │       ├── semver feature "default"
+        │       │   ├── semver v1.0.17
+        │       │   │   └── serde v1.0.163 (*)
+        │       │   └── semver feature "std"
+        │       │       └── semver v1.0.17 (*)
+        │       └── semver feature "serde"
+        │           └── semver v1.0.17 (*)
+        ├── filetime feature "default"
+        │   └── filetime v0.2.21
+        │       ├── cfg-if feature "default" (*)
+        │       └── libc feature "default"
+        │           ├── libc v0.2.144
+        │           └── libc feature "std"
+        │               └── libc v0.2.144
+        ├── sp-maybe-compressed-blob feature "default"
+        │   └── sp-maybe-compressed-blob v4.1.0-dev (https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b8452)
+        │       ├── zstd v0.11.2+zstd.1.5.2
+        │       │   └── zstd-safe feature "std"
+        │       │       ├── zstd-safe v5.0.2+zstd.1.5.2
+        │       │       │   ├── zstd-sys v2.0.8+zstd.1.5.5
+        │       │       │   │   └── libc feature "default" (*)
+        │       │       │   │   [build-dependencies]
+        │       │       │   │   ├── cc feature "default"
+        │       │       │   │   │   └── cc v1.0.79
+        │       │       │   │   │       └── jobserver feature "default"
+        │       │       │   │   │           └── jobserver v0.1.26
+        │       │       │   │   │               └── libc feature "default" (*)
+        │       │       │   │   ├── cc feature "parallel"
+        │       │       │   │   │   ├── cc v1.0.79 (*)
+        │       │       │   │   │   └── cc feature "jobserver"
+        │       │       │   │   │       └── cc v1.0.79 (*)
+        │       │       │   │   └── pkg-config feature "default"
+        │       │       │   │       └── pkg-config v0.3.27
+        │       │       │   └── libc feature "default" (*)
+        │       │       └── zstd-sys feature "std"
+        │       │           └── zstd-sys v2.0.8+zstd.1.5.5 (*)
+        │       └── thiserror feature "default" (*)
+        ├── strum feature "default"
+        │   ├── strum v0.24.1
+        │   │   └── strum_macros feature "default"
+        │   │       └── strum_macros v0.24.3 (proc-macro)
+        │   │           ├── proc-macro2 feature "default" (*)
+        │   │           ├── quote feature "default" (*)
+        │   │           ├── syn feature "default" (*)
+        │   │           ├── syn feature "extra-traits" (*)
+        │   │           ├── syn feature "parsing" (*)
+        │   │           ├── heck feature "default"
+        │   │           │   └── heck v0.4.1
+        │   │           └── rustversion feature "default"
+        │   │               └── rustversion v1.0.12 (proc-macro)
+        │   └── strum feature "std"
+        │       └── strum v0.24.1 (*)
+        ├── strum feature "derive"
+        │   ├── strum v0.24.1 (*)
+        │   └── strum feature "strum_macros"
+        │       └── strum v0.24.1 (*)
+        ├── tempfile feature "default"
+        │   └── tempfile v3.5.0
+        │       ├── cfg-if feature "default" (*)
+        │       ├── fastrand feature "default"
+        │       │   └── fastrand v1.9.0
+        │       ├── rustix feature "default"
+        │       │   ├── rustix v0.37.19
+        │       │   │   ├── bitflags feature "default" (*)
+        │       │   │   ├── libc feature "default" (*)
+        │       │   │   ├── libc feature "extra_traits"
+        │       │   │   │   └── libc v0.2.144
+        │       │   │   ├── io-lifetimes feature "close"
+        │       │   │   │   ├── io-lifetimes v1.0.10
+        │       │   │   │   │   └── libc feature "default" (*)
+        │       │   │   │   ├── io-lifetimes feature "hermit-abi"
+        │       │   │   │   │   └── io-lifetimes v1.0.10 (*)
+        │       │   │   │   ├── io-lifetimes feature "libc"
+        │       │   │   │   │   └── io-lifetimes v1.0.10 (*)
+        │       │   │   │   └── io-lifetimes feature "windows-sys"
+        │       │   │   │       └── io-lifetimes v1.0.10 (*)
+        │       │   │   ├── linux-raw-sys feature "errno"
+        │       │   │   │   └── linux-raw-sys v0.3.7
+        │       │   │   ├── linux-raw-sys feature "general"
+        │       │   │   │   └── linux-raw-sys v0.3.7
+        │       │   │   ├── linux-raw-sys feature "ioctl"
+        │       │   │   │   └── linux-raw-sys v0.3.7
+        │       │   │   └── linux-raw-sys feature "no_std"
+        │       │   │       └── linux-raw-sys v0.3.7
+        │       │   ├── rustix feature "std"
+        │       │   │   ├── rustix v0.37.19 (*)
+        │       │   │   └── rustix feature "io-lifetimes"
+        │       │   │       └── rustix v0.37.19 (*)
+        │       │   └── rustix feature "use-libc-auxv"
+        │       │       ├── rustix v0.37.19 (*)
+        │       │       └── rustix feature "libc"
+        │       │           └── rustix v0.37.19 (*)
+        │       └── rustix feature "fs"
+        │           └── rustix v0.37.19 (*)
+        ├── walkdir feature "default"
+        │   └── walkdir v2.3.3
+        │       └── same-file feature "default"
+        │           └── same-file v1.0.6
+        └── wasm-opt feature "default"
+            └── wasm-opt v0.111.0
+                ├── thiserror feature "default" (*)
+                ├── anyhow feature "default" (*)
+                ├── libc feature "default" (*)
+                ├── strum feature "default" (*)
+                ├── strum_macros feature "default" (*)
+                ├── tempfile feature "default" (*)
+                ├── wasm-opt-cxx-sys feature "default"
+                │   └── wasm-opt-cxx-sys v0.111.0
+                │       ├── anyhow feature "default" (*)
+                │       ├── cxx feature "default"
+                │       │   ├── cxx v1.0.94
+                │       │   │   ├── cxxbridge-macro feature "default"
+                │       │   │   │   └── cxxbridge-macro v1.0.94 (proc-macro)
+                │       │   │   │       ├── proc-macro2 feature "default" (*)
+                │       │   │   │       ├── quote feature "default" (*)
+                │       │   │   │       ├── syn feature "default" (*)
+                │       │   │   │       └── syn feature "full" (*)
+                │       │   │   └── link-cplusplus feature "default"
+                │       │   │       └── link-cplusplus v1.0.8
+                │       │   │           [build-dependencies]
+                │       │   │           └── cc feature "default" (*)
+                │       │   │   [build-dependencies]
+                │       │   │   ├── cxxbridge-flags v1.0.94
+                │       │   │   └── cc feature "default" (*)
+                │       │   ├── cxx feature "std"
+                │       │   │   ├── cxx v1.0.94 (*)
+                │       │   │   └── cxx feature "alloc"
+                │       │   │       └── cxx v1.0.94 (*)
+                │       │   └── cxxbridge-flags feature "default"
+                │       │       └── cxxbridge-flags v1.0.94
+                │       └── wasm-opt-sys feature "default"
+                │           └── wasm-opt-sys v0.111.0
+                │               └── cxx feature "default" (*)
+                │               [build-dependencies]
+                │               ├── regex feature "default" (*)
+                │               ├── anyhow feature "default" (*)
+                │               ├── cc feature "default" (*)
+                │               ├── cc feature "parallel" (*)
+                │               └── cxx-build feature "default"
+                │                   └── cxx-build v1.0.94
+                │                       ├── quote v1.0.27 (*)
+                │                       ├── proc-macro2 feature "span-locations"
+                │                       │   └── proc-macro2 v1.0.57 (*)
+                │                       ├── syn feature "clone-impls" (*)
+                │                       ├── syn feature "full" (*)
+                │                       ├── syn feature "parsing" (*)
+                │                       ├── syn feature "printing" (*)
+                │                       ├── cc feature "default" (*)
+                │                       ├── codespan-reporting feature "default"
+                │                       │   └── codespan-reporting v0.11.1
+                │                       │       ├── termcolor feature "default"
+                │                       │       │   └── termcolor v1.2.0
+                │                       │       └── unicode-width feature "default"
+                │                       │           └── unicode-width v0.1.10
+                │                       ├── once_cell feature "default"
+                │                       │   ├── once_cell v1.17.1
+                │                       │   └── once_cell feature "std"
+                │                       │       ├── once_cell v1.17.1
+                │                       │       └── once_cell feature "alloc"
+                │                       │           ├── once_cell v1.17.1
+                │                       │           └── once_cell feature "race"
+                │                       │               └── once_cell v1.17.1
+                │                       └── scratch feature "default"
+                │                           └── scratch v1.0.5
+                │       [build-dependencies]
+                │       ├── anyhow feature "default" (*)
+                │       ├── cxx-build feature "default" (*)
+                │       └── cxx-build feature "parallel"
+                │           ├── cxx-build v1.0.94 (*)
+                │           └── cc feature "parallel" (*)
+                └── wasm-opt-sys feature "default" (*)

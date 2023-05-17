@@ -14,7 +14,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 [dependencies]
 scale-codec = { package = "parity-scale-codec", workspace = true }
 scale-info.workspace = true
-serde = { workspace = true, features = ["derive"] }
+serde = { workspace = true, features = ["derive"], default-features = false }
 
 # Substrate
 sp-api.workspace = true
@@ -82,7 +82,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["xvm"]  }
+runtime-common = { workspace = true, features = ["xvm"] }
 
 # Astar
 pallet-chain-extension-xvm.workspace = true
