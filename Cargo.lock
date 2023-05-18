@@ -6447,7 +6447,7 @@ dependencies = [
  "pallet-session",
  "pallet-timestamp",
  "parity-scale-codec 3.4.0",
- "precompile-utils 0.1.0",
+ "precompile-utils",
  "serde",
  "sha3 0.8.2",
  "sp-core",
@@ -6486,7 +6486,7 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils 0.4.3",
+ "precompile-utils",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -6502,7 +6502,7 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils 0.4.3",
+ "precompile-utils",
  "sp-core",
  "sp-io",
  "sp-std",
@@ -6521,7 +6521,7 @@ dependencies = [
  "pallet-evm",
  "pallet-xvm",
  "parity-scale-codec 3.4.0",
- "precompile-utils 0.4.3",
+ "precompile-utils",
  "sp-core",
  "sp-io",
  "sp-runtime",
@@ -7421,26 +7421,6 @@ checksum = "5b40af805b3121feab8a3c29f04d8ad262fa8e0561883e7653e024ae4479e6de"
 
 [[package]]
 name = "precompile-utils"
-version = "0.1.0"
-dependencies = [
- "fp-evm",
- "frame-support",
- "frame-system",
- "hex-literal",
- "impl-trait-for-tuples",
- "log",
- "num_enum 0.5.11",
- "pallet-evm",
- "parity-scale-codec 3.4.0",
- "precompile-utils-macro 0.1.0",
- "sha3 0.8.2",
- "sp-core",
- "sp-io",
- "sp-std",
-]
-
-[[package]]
-name = "precompile-utils"
 version = "0.4.3"
 source = "git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39#9bbcb8d6b16369ae3d9e7b7e7cc22f33dd55d80e"
 dependencies = [
@@ -7453,24 +7433,13 @@ dependencies = [
  "num_enum 0.5.11",
  "pallet-evm",
  "parity-scale-codec 3.4.0",
- "precompile-utils-macro 0.1.0 (git+https://github.com/AstarNetwork/astar-frame.git?branch=polkadot-v0.9.39)",
+ "precompile-utils-macro",
  "sha3 0.10.6",
  "sp-core",
  "sp-io",
  "sp-runtime",
  "sp-std",
  "xcm",
-]
-
-[[package]]
-name = "precompile-utils-macro"
-version = "0.1.0"
-dependencies = [
- "num_enum 0.5.11",
- "proc-macro2",
- "quote",
- "sha3 0.8.2",
- "syn 1.0.109",
 ]
 
 [[package]]

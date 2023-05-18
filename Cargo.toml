@@ -35,6 +35,7 @@ nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
 paste = "1.0"
+precompile-utils = { version = "0.4.3", git = "https://github.com/AstarNetwork/astar-frame", branch = "polkadot-v0.9.39", default-features = false }
 proc-macro2 = "1.0"
 proptest = "1.1"
 quote = "1.0"

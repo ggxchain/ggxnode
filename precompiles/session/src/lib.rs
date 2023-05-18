@@ -1,6 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-use fp_evm::{Context, ExitSucceed, PrecompileOutput};
+use fp_evm::PrecompileOutput;
 use frame_support::{
 	dispatch::{Dispatchable, GetDispatchInfo, PostDispatchInfo},
 	inherent::Vec,
@@ -8,16 +8,11 @@ use frame_support::{
 use pallet_evm::{AddressMapping, Precompile, PrecompileHandle};
 use pallet_session::Call as SessionCall;
 use precompile_utils::{
-	Bytes, EvmDataReader, EvmResult, FunctionModifier, Gasometer, RuntimeHelper,
+	revert, succeed, Bytes, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
+	RuntimeHelper,
 };
 use sp_core::{Decode, H256};
 use sp_std::{fmt::Debug, marker::PhantomData};
-
-// #[cfg(test)]
-// mod mock;
-
-// #[cfg(test)]
-// mod tests;
 
 #[precompile_utils::generate_function_selector]
 #[derive(Debug, PartialEq)]
@@ -40,22 +35,16 @@ where
 {
 	fn execute(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
 		log::trace!(target: "session-precompile", "In session wrapper");
-		let input = handle.input();
-		let target_gas = handle.gas_limit();
-		let context = handle.context();
-		let is_static = handle.is_static();
 
-		let mut gasometer = Gasometer::new(target_gas);
-		let gasometer = &mut gasometer;
+		let selector = handle.read_selector()?;
 
-		let (mut input, selector) = EvmDataReader::new_with_selector(gasometer, input)?;
-		let input = &mut input;
-
-		gasometer.check_function_modifier(context, is_static, FunctionModifier::NonPayable)?;
+		handle.check_function_modifier(match selector {
+			Action::SetKeys => FunctionModifier::NonPayable,
+		})?;
 
 		match selector {
 			// Dispatchables
-			Action::SetKeys => Self::set_keys(input, gasometer, context),
+			Action::SetKeys => Self::set_keys(handle),
 		}
 	}
 }
@@ -71,18 +60,12 @@ where
 	Runtime::Hash: From<H256>,
 {
 	// The dispatchable wrappers are next. They dispatch a Substrate inner Call.
-	fn set_keys(
-		input: &mut EvmDataReader,
-		gasometer: &mut Gasometer,
-		context: &Context,
-	) -> EvmResult<PrecompileOutput> {
-		input.expect_arguments(gasometer, 6)?;
+	fn set_keys(handle: &mut impl PrecompileHandle) -> EvmResult<PrecompileOutput> {
+		let mut input = handle.read_input()?;
+		input.expect_arguments(6)?;
 
-		// let keys: <Runtime as pallet_session::Config>::Keys = input.read(gasometer)?;
-		let keys = input.read::<Bytes>(gasometer)?;
-		let keys: Vec<u8> = keys.0;
-		let proof = input.read::<Bytes>(gasometer)?;
-		let proof: Vec<u8> = proof.0;
+		let keys: Vec<u8> = input.read::<Bytes>()?.into();
+		let proof: Vec<u8> = input.read::<Bytes>()?.into();
 
 		log::trace!(
 			target: "session-precompile",
@@ -92,15 +75,12 @@ where
 		);
 
 		let keys = <Runtime as pallet_session::Config>::Keys::decode(&mut keys.as_slice())
-			.map_err(|_| gasometer.revert("decode keys error"))?;
-		let origin = Runtime::AddressMapping::into_account_id(context.caller);
+			.map_err(|_| revert("decode keys error"))?;
+		let origin = Runtime::AddressMapping::into_account_id(handle.context().caller);
 		let call = SessionCall::<Runtime>::set_keys { keys, proof };
 
-		RuntimeHelper::<Runtime>::try_dispatch(Some(origin).into(), call, gasometer)?;
+		RuntimeHelper::<Runtime>::try_dispatch(handle, Some(origin).into(), call)?;
 
-		Ok(PrecompileOutput {
-			exit_status: ExitSucceed::Returned,
-			output: Default::default(),
-		})
+		Ok(succeed(EvmDataWriter::new().write(true).build()))
 	}
 }

@@ -14,7 +14,7 @@ log.workspace = true
 num_enum.workspace = true
 
 # Moonbeam
-precompile-utils = { path = "../utils", default-features = false }
+precompile-utils.workspace = true
 
 # Substrate
 scale-codec = { package = "parity-scale-codec", workspace = true, features = [ "max-encoded-len" ] }
