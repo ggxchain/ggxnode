@@ -36,15 +36,15 @@ cargo install cargo-dylint dylint-link
 nix develop --impure
 ```
 
-#### Docker example
+## Docker
 
-You can use the Docker image with all the dependencies installed.
+Due to the highly CPU dependent nature of 'cargo build' command, it's strongly recommended that you have at least 8 core enabled for this method.
+It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
 
+From the repository's root directory execute following commands in order:
 ```bash
-docker build -t golden-gate-env -f containers/enviroment . # build the docker image
-docker run -it -p 9944:9944 -p 9933:9933 -v $(pwd):/golden-gate golden-gate-env bash # run the docker image
-cd golden-gate # go to the root of the repository
-cargo run --release -- --dev --ws-external --rpc-external # start the node
+docker build -t golden-gate-node:local .
+docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd):/tmp golden-gate-node:local /usr/src/app/target/release/golden-gate-node --dev --ws-external --base-path=/data --chain /tmp/customSpecRaw.json
 ```
 
 #### Build
