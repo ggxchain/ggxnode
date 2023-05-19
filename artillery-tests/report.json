@@ -1,0 +1,622 @@
+{
+  "aggregate": {
+    "counters": {
+      "vusers.created_by_name.Infinite erc20 calls": 162,
+      "vusers.created": 500,
+      "vusers.created_by_name.Infinite ink contract deployment": 187,
+      "vusers.created_by_name.Infinite substrate transfer funds": 151,
+      "vusers.failed": 0,
+      "vusers.completed": 500
+    },
+    "rates": {},
+    "firstCounterAt": 1684351257357,
+    "firstHistogramAt": 1684351270798,
+    "lastCounterAt": 1684351406032,
+    "lastHistogramAt": 1684351406032,
+    "firstMetricAt": 1684351257357,
+    "lastMetricAt": 1684351406032,
+    "period": 1684351400000,
+    "summaries": {
+      "vusers.session_length": {
+        "min": 49.9,
+        "max": 76233,
+        "count": 500,
+        "p50": 1465.9,
+        "median": 1465.9,
+        "p75": 14332.3,
+        "p90": 32542.3,
+        "p95": 43928,
+        "p99": 61717.2,
+        "p999": 70992
+      }
+    },
+    "histograms": {
+      "vusers.session_length": {
+        "min": 49.9,
+        "max": 76233,
+        "count": 500,
+        "p50": 1465.9,
+        "median": 1465.9,
+        "p75": 14332.3,
+        "p90": 32542.3,
+        "p95": 43928,
+        "p99": 61717.2,
+        "p999": 70992
+      }
+    }
+  },
+  "intermediate": [
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite ink contract deployment": 7,
+        "vusers.created": 15,
+        "vusers.created_by_name.Infinite substrate transfer funds": 3,
+        "vusers.created_by_name.Infinite erc20 calls": 5
+      },
+      "rates": {},
+      "firstCounterAt": 1684351257357,
+      "lastCounterAt": 1684351259560,
+      "firstMetricAt": 1684351257357,
+      "lastMetricAt": 1684351259560,
+      "period": "1684351250000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite ink contract deployment": 14,
+        "vusers.created": 49,
+        "vusers.created_by_name.Infinite erc20 calls": 15,
+        "vusers.created_by_name.Infinite substrate transfer funds": 20
+      },
+      "rates": {},
+      "firstCounterAt": 1684351260356,
+      "lastCounterAt": 1684351269829,
+      "firstMetricAt": 1684351260356,
+      "lastMetricAt": 1684351269829,
+      "period": "1684351260000",
+      "summaries": {},
+      "histograms": {}
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite substrate transfer funds": 14,
+        "vusers.created": 48,
+        "vusers.failed": 0,
+        "vusers.completed": 19,
+        "vusers.created_by_name.Infinite ink contract deployment": 22,
+        "vusers.created_by_name.Infinite erc20 calls": 12
+      },
+      "rates": {},
+      "firstCounterAt": 1684351270415,
+      "firstHistogramAt": 1684351270798,
+      "lastCounterAt": 1684351279952,
+      "lastHistogramAt": 1684351279485,
+      "firstMetricAt": 1684351270415,
+      "lastMetricAt": 1684351279952,
+      "period": "1684351270000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 311.7,
+          "max": 17392,
+          "count": 19,
+          "p50": 2186.8,
+          "median": 2186.8,
+          "p75": 3134.5,
+          "p90": 15839.7,
+          "p95": 16486.1,
+          "p99": 16486.1,
+          "p999": 16486.1
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 311.7,
+          "max": 17392,
+          "count": 19,
+          "p50": 2186.8,
+          "median": 2186.8,
+          "p75": 3134.5,
+          "p90": 15839.7,
+          "p95": 16486.1,
+          "p99": 16486.1,
+          "p999": 16486.1
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite ink contract deployment": 19,
+        "vusers.created": 49,
+        "vusers.failed": 0,
+        "vusers.completed": 97,
+        "vusers.created_by_name.Infinite erc20 calls": 16,
+        "vusers.created_by_name.Infinite substrate transfer funds": 14
+      },
+      "rates": {},
+      "firstCounterAt": 1684351280117,
+      "firstHistogramAt": 1684351280288,
+      "lastCounterAt": 1684351289808,
+      "lastHistogramAt": 1684351289808,
+      "firstMetricAt": 1684351280117,
+      "lastMetricAt": 1684351289808,
+      "period": "1684351280000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 141,
+          "max": 31452.2,
+          "count": 97,
+          "p50": 4316.6,
+          "median": 4316.6,
+          "p75": 11501.8,
+          "p90": 20958.1,
+          "p95": 27181.5,
+          "p99": 31266.3,
+          "p999": 31266.3
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 141,
+          "max": 31452.2,
+          "count": 97,
+          "p50": 4316.6,
+          "median": 4316.6,
+          "p75": 11501.8,
+          "p90": 20958.1,
+          "p95": 27181.5,
+          "p99": 31266.3,
+          "p999": 31266.3
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 67,
+        "vusers.created_by_name.Infinite erc20 calls": 13,
+        "vusers.created": 54,
+        "vusers.created_by_name.Infinite substrate transfer funds": 22,
+        "vusers.created_by_name.Infinite ink contract deployment": 19
+      },
+      "rates": {},
+      "firstCounterAt": 1684351290001,
+      "firstHistogramAt": 1684351290210,
+      "lastCounterAt": 1684351299947,
+      "lastHistogramAt": 1684351299014,
+      "firstMetricAt": 1684351290001,
+      "lastMetricAt": 1684351299947,
+      "period": "1684351290000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 68.4,
+          "max": 40688.4,
+          "count": 67,
+          "p50": 1153.1,
+          "median": 1153.1,
+          "p75": 26643.2,
+          "p90": 30647.1,
+          "p95": 33199.7,
+          "p99": 37432.7,
+          "p999": 37432.7
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 68.4,
+          "max": 40688.4,
+          "count": 67,
+          "p50": 1153.1,
+          "median": 1153.1,
+          "p75": 26643.2,
+          "p90": 30647.1,
+          "p95": 33199.7,
+          "p99": 37432.7,
+          "p999": 37432.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite erc20 calls": 20,
+        "vusers.created": 48,
+        "vusers.created_by_name.Infinite substrate transfer funds": 15,
+        "vusers.created_by_name.Infinite ink contract deployment": 13,
+        "vusers.failed": 0,
+        "vusers.completed": 25
+      },
+      "rates": {},
+      "firstCounterAt": 1684351300010,
+      "firstHistogramAt": 1684351300010,
+      "lastCounterAt": 1684351309977,
+      "lastHistogramAt": 1684351309862,
+      "firstMetricAt": 1684351300010,
+      "lastMetricAt": 1684351309977,
+      "period": "1684351300000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 140.8,
+          "max": 50452.7,
+          "count": 25,
+          "p50": 1495.5,
+          "median": 1495.5,
+          "p75": 40550.5,
+          "p90": 43928,
+          "p95": 44815.4,
+          "p99": 49528.8,
+          "p999": 49528.8
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 140.8,
+          "max": 50452.7,
+          "count": 25,
+          "p50": 1495.5,
+          "median": 1495.5,
+          "p75": 40550.5,
+          "p90": 43928,
+          "p95": 44815.4,
+          "p99": 49528.8,
+          "p999": 49528.8
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite substrate transfer funds": 11,
+        "vusers.created": 51,
+        "vusers.failed": 0,
+        "vusers.completed": 75,
+        "vusers.created_by_name.Infinite ink contract deployment": 19,
+        "vusers.created_by_name.Infinite erc20 calls": 21
+      },
+      "rates": {},
+      "firstCounterAt": 1684351310063,
+      "firstHistogramAt": 1684351310063,
+      "lastCounterAt": 1684351319971,
+      "lastHistogramAt": 1684351319886,
+      "firstMetricAt": 1684351310063,
+      "lastMetricAt": 1684351319971,
+      "period": "1684351310000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 49.9,
+          "max": 53060.1,
+          "count": 75,
+          "p50": 1200.1,
+          "median": 1200.1,
+          "p75": 8868.4,
+          "p90": 43928,
+          "p95": 48548.1,
+          "p99": 52591.6,
+          "p999": 52591.6
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 49.9,
+          "max": 53060.1,
+          "count": 75,
+          "p50": 1200.1,
+          "median": 1200.1,
+          "p75": 8868.4,
+          "p90": 43928,
+          "p95": 48548.1,
+          "p99": 52591.6,
+          "p999": 52591.6
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite erc20 calls": 18,
+        "vusers.created": 51,
+        "vusers.failed": 0,
+        "vusers.completed": 66,
+        "vusers.created_by_name.Infinite ink contract deployment": 21,
+        "vusers.created_by_name.Infinite substrate transfer funds": 12
+      },
+      "rates": {},
+      "firstCounterAt": 1684351320097,
+      "firstHistogramAt": 1684351321376,
+      "lastCounterAt": 1684351329992,
+      "lastHistogramAt": 1684351329825,
+      "firstMetricAt": 1684351320097,
+      "lastMetricAt": 1684351329992,
+      "period": "1684351320000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 120.4,
+          "max": 64039,
+          "count": 66,
+          "p50": 1249.1,
+          "median": 1249.1,
+          "p75": 21813.5,
+          "p90": 28862.3,
+          "p95": 54738,
+          "p99": 61717.2,
+          "p999": 61717.2
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 120.4,
+          "max": 64039,
+          "count": 66,
+          "p50": 1249.1,
+          "median": 1249.1,
+          "p75": 21813.5,
+          "p90": 28862.3,
+          "p95": 54738,
+          "p99": 61717.2,
+          "p999": 61717.2
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite substrate transfer funds": 13,
+        "vusers.created": 49,
+        "vusers.created_by_name.Infinite erc20 calls": 16,
+        "vusers.created_by_name.Infinite ink contract deployment": 20,
+        "vusers.failed": 0,
+        "vusers.completed": 8
+      },
+      "rates": {},
+      "firstCounterAt": 1684351330524,
+      "firstHistogramAt": 1684351330688,
+      "lastCounterAt": 1684351339962,
+      "lastHistogramAt": 1684351339169,
+      "firstMetricAt": 1684351330524,
+      "lastMetricAt": 1684351339962,
+      "period": "1684351330000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 110.3,
+          "max": 34913.2,
+          "count": 8,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 34554.7,
+          "p90": 34554.7,
+          "p95": 34554.7,
+          "p99": 34554.7,
+          "p999": 34554.7
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 110.3,
+          "max": 34913.2,
+          "count": 8,
+          "p50": 1002.4,
+          "median": 1002.4,
+          "p75": 34554.7,
+          "p90": 34554.7,
+          "p95": 34554.7,
+          "p99": 34554.7,
+          "p999": 34554.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 66,
+        "vusers.created_by_name.Infinite ink contract deployment": 20,
+        "vusers.created": 48,
+        "vusers.created_by_name.Infinite erc20 calls": 15,
+        "vusers.created_by_name.Infinite substrate transfer funds": 13
+      },
+      "rates": {},
+      "firstCounterAt": 1684351340071,
+      "firstHistogramAt": 1684351340126,
+      "lastCounterAt": 1684351349779,
+      "lastHistogramAt": 1684351349779,
+      "firstMetricAt": 1684351340071,
+      "lastMetricAt": 1684351349779,
+      "period": "1684351340000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 60,
+          "max": 48756.9,
+          "count": 66,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 2018.7,
+          "p90": 11971.2,
+          "p95": 43058.1,
+          "p99": 47586.7,
+          "p999": 47586.7
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 60,
+          "max": 48756.9,
+          "count": 66,
+          "p50": 1022.7,
+          "median": 1022.7,
+          "p75": 2018.7,
+          "p90": 11971.2,
+          "p95": 43058.1,
+          "p99": 47586.7,
+          "p999": 47586.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.created_by_name.Infinite ink contract deployment": 13,
+        "vusers.created": 38,
+        "vusers.failed": 0,
+        "vusers.completed": 55,
+        "vusers.created_by_name.Infinite substrate transfer funds": 14,
+        "vusers.created_by_name.Infinite erc20 calls": 11
+      },
+      "rates": {},
+      "firstCounterAt": 1684351350108,
+      "firstHistogramAt": 1684351351340,
+      "lastCounterAt": 1684351359202,
+      "lastHistogramAt": 1684351359202,
+      "firstMetricAt": 1684351350108,
+      "lastMetricAt": 1684351359202,
+      "period": "1684351350000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 130.2,
+          "max": 31723.2,
+          "count": 55,
+          "p50": 1249.1,
+          "median": 1249.1,
+          "p75": 16486.1,
+          "p90": 24594.7,
+          "p95": 26115.6,
+          "p99": 28290.8,
+          "p999": 28290.8
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 130.2,
+          "max": 31723.2,
+          "count": 55,
+          "p50": 1249.1,
+          "median": 1249.1,
+          "p75": 16486.1,
+          "p90": 24594.7,
+          "p95": 26115.6,
+          "p99": 28290.8,
+          "p999": 28290.8
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 12
+      },
+      "rates": {},
+      "firstCounterAt": 1684351360493,
+      "firstHistogramAt": 1684351360493,
+      "lastCounterAt": 1684351366308,
+      "lastHistogramAt": 1684351366308,
+      "firstMetricAt": 1684351360493,
+      "lastMetricAt": 1684351366308,
+      "period": "1684351360000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 23546,
+          "max": 36752.1,
+          "count": 12,
+          "p50": 27181.5,
+          "median": 27181.5,
+          "p75": 32542.3,
+          "p90": 34554.7,
+          "p95": 34554.7,
+          "p99": 34554.7,
+          "p999": 34554.7
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 23546,
+          "max": 36752.1,
+          "count": 12,
+          "p50": 27181.5,
+          "median": 27181.5,
+          "p75": 32542.3,
+          "p90": 34554.7,
+          "p95": 34554.7,
+          "p99": 34554.7,
+          "p999": 34554.7
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 5
+      },
+      "rates": {},
+      "firstCounterAt": 1684351375412,
+      "firstHistogramAt": 1684351375412,
+      "lastCounterAt": 1684351377994,
+      "lastHistogramAt": 1684351377994,
+      "firstMetricAt": 1684351375412,
+      "lastMetricAt": 1684351377994,
+      "period": "1684351370000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 37946,
+          "max": 44825.1,
+          "count": 5,
+          "p50": 41369.7,
+          "median": 41369.7,
+          "p75": 43928,
+          "p90": 43928,
+          "p95": 43928,
+          "p99": 43928,
+          "p999": 43928
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 37946,
+          "max": 44825.1,
+          "count": 5,
+          "p50": 41369.7,
+          "median": 41369.7,
+          "p75": 43928,
+          "p90": 43928,
+          "p95": 43928,
+          "p99": 43928,
+          "p999": 43928
+        }
+      }
+    },
+    {
+      "counters": {
+        "vusers.failed": 0,
+        "vusers.completed": 1
+      },
+      "rates": {},
+      "firstCounterAt": 1684351383324,
+      "firstHistogramAt": 1684351383324,
+      "lastCounterAt": 1684351383324,
+      "lastHistogramAt": 1684351383324,
+      "firstMetricAt": 1684351383324,
+      "lastMetricAt": 1684351383324,
+      "period": "1684351380000",
+      "summaries": {
+        "vusers.session_length": {
+          "min": 35530.3,
+          "max": 35530.3,
+          "count": 1,
+          "p50": 35252.8,
+          "median": 35252.8,
+          "p75": 35252.8,
+          "p90": 35252.8,
+          "p95": 35252.8,
+          "p99": 35252.8,
+          "p999": 35252.8
+        }
+      },
+      "histograms": {
+        "vusers.session_length": {
+          "min": 35530.3,
+          "max": 35530.3,
+          "count": 1,
+          "p50": 35252.8,
+          "median": 35252.8,
+          "p75": 35252.8,
+          "p90": 35252.8,
+          "p95": 35252.8,
+          "p99": 35252.8,
+          "p999": 35252.8
+        }
+      }
+    }
+  ]
+}

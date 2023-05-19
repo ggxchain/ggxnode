@@ -1,0 +1,37 @@
+config:
+  target: "ws://127.0.0.1:9944"
+  processor: "../common.js"
+  phases:
+    - duration: 100  # time
+      arrivalRate: 5 # how much new users coming every second
+      maxVusers: 150 # max amount
+      name: "Getting connections"
+  engines:
+    substrate: { }
+scenarios: # the user will hang in one of the loops
+  - engine: substrate
+    name: Infinite substrate transfer funds
+    flow:
+      - function: "createTestAccount"
+      - loop:
+        - function: "transferFunds"
+        count: 1000
+      - function: "returnFunds"
+  - engine: substrate
+    name: "Infinite ink contract deployment"
+    flow:
+      - function: "createTestAccount"
+      - loop:
+        - function: "deployInkErc20"
+        count: 100
+      - function: "returnFunds"    
+  - engine: substrate
+    name: "Infinite erc20 calls"
+    flow:
+      - function: "createTestAccount"
+      - function: "deployInkErc20"
+      - loop:
+        - function: "transferErc20Funds"
+        count: 1000
+      - function: "returnFunds"    
+
