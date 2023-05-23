@@ -149,8 +149,10 @@ pub fn testnet_genesis(
 				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
+		assets: Default::default(),
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
+		ics_20_transfer: Default::default(),
 	}
 }

@@ -23,7 +23,7 @@ async-trait = "0.1"
 clap = { version = "4.1", features = ["derive"] }
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
-hex = "0.4"
+hex = { version = "0.4", default-features = false }
 jsonrpsee = "0.16.2"
 log = "0.4.17"
 nix = { version = "0.26.1", features = ["signal"] }
@@ -89,6 +89,7 @@ frame-support = { version = "4.0.0-dev", git = "https://github.com/paritytech/su
 frame-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 frame-system-benchmarking = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 frame-system-rpc-runtime-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-assets = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-aura = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-authorship = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-bags-list = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
@@ -177,6 +178,7 @@ pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-coll
 
 # IBC
 pallet-ibc = { default-features = false, git = "https://github.com/octopus-network/substrate-ibc.git", branch = "polkadot-v0.9.39" }
+pallet-ics20-transfer = { default-features = false, git = "https://github.com/octopus-network/substrate-ibc.git", branch = "polkadot-v0.9.39" }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

@@ -721,7 +721,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4114279215a005bc675e386011e594e1d9b800918cea18fcadadcce864a2046b"
 dependencies = [
  "borsh-derive",
- "hashbrown 0.12.3",
+ "hashbrown 0.13.2",
 ]
 
 [[package]]
@@ -3812,6 +3812,8 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "hex",
+ "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
@@ -3827,6 +3829,7 @@ dependencies = [
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
  "pallet-ibc",
+ "pallet-ics20-transfer",
  "pallet-identity",
  "pallet-im-online",
  "pallet-indices",
@@ -6267,6 +6270,21 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-assets"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b84520cee2d7de53cc33cb67605ce4efefba8"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec 3.4.0",
+ "scale-info",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.39#8c4b84520cee2d7de53cc33cb67605ce4efefba8"
@@ -6711,6 +6729,28 @@ dependencies = [
  "sp-runtime",
  "sp-std",
  "sp-tracing",
+]
+
+[[package]]
+name = "pallet-ics20-transfer"
+version = "4.0.0-dev"
+source = "git+https://github.com/octopus-network/substrate-ibc.git?branch=polkadot-v0.9.39#f273a18d51ce50732896efbca9ac77ccbaeec735"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "ibc",
+ "ibc-proto",
+ "ibc-support",
+ "log",
+ "pallet-ibc",
+ "parity-scale-codec 3.4.0",
+ "primitive-types 0.12.1",
+ "scale-info",
+ "sp-io",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]

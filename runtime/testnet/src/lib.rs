@@ -10,6 +10,7 @@
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
 pub mod ethereum;
+mod ibc;
 mod ink;
 pub mod poa;
 mod prelude;
@@ -431,6 +432,7 @@ construct_runtime!(
 		Grandpa: pallet_grandpa,
 		Treasury: pallet_treasury,
 		Bounties: pallet_bounties,
+		Assets: pallet_assets,
 		Vesting: pallet_vesting,
 		Indices: pallet_indices,
 		Proxy: pallet_proxy,
@@ -454,6 +456,9 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		// Astar
 		Xvm: pallet_xvm,
+		// IBC
+		Ibc: pallet_ibc,
+		Ics20Transfer: pallet_ics20_transfer,
 	}
 );
 
