@@ -81,7 +81,6 @@ pallet-contracts.workspace = true
 pallet-randomness-collective-flip.workspace = true
 
 # Ibc
-hex.workspace = true
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
 
@@ -159,7 +158,6 @@ std = [
 	# IBC
 	"pallet-ibc/std",
 	"pallet-ics20-transfer/std",
-	"hex/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

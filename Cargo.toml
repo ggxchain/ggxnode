@@ -23,7 +23,7 @@ async-trait = "0.1"
 clap = { version = "4.1", features = ["derive"] }
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
-hex = { version = "0.4", default-features = false }
+hex = "0.4"
 jsonrpsee = "0.16.2"
 log = "0.4.17"
 nix = { version = "0.26.1", features = ["signal"] }
