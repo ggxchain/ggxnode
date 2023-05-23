@@ -1,6 +1,0 @@
-FROM rust:1.67-slim
-RUN apt update && apt install -y pkg-config libssl-dev binaryen git protobuf-compiler clang make && rustup default nightly-2022-12-20 && rustup target add wasm32-unknown-unknown \
-    && rustup component add rust-src && rustup component add rust-src --toolchain nightly-2022-12-20-x86_64-unknown-linux-gnu && cargo install cargo-dylint dylint-link cargo-contract 
-ENV CARGO_NET_GIT_FETCH_WITH_CLI=true
-EXPOSE 9933 9944
-ENTRYPOINT bash

@@ -1,0 +1,12 @@
+{
+  "scripts": {
+    "artillery": "artillery run --output report.json tests/substrate.yml",
+    "artillery-report": "artillery report report.json"
+  },
+  "dependencies": {
+    "@polkadot/api-contract": "^10.6.1",
+    "@polkadot/keyring": "^12.1.2",
+    "artillery": "^2.0.0-32",
+    "artillery-engine-substrate": "^1.0.7"
+  }
+}
