@@ -238,7 +238,7 @@ impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
 	}
 }
 
-/// Function calculates the treasury comission from the /fees and tips.
+/// Function calculates the treasury comission from the fees and tips.
 /// Returns reward for the treasury and reward for the author.
 fn fee_processing_impl<T: Config>(
 	fee_comission: Perbill,

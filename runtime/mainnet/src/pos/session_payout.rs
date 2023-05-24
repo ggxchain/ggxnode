@@ -39,9 +39,6 @@ pub mod pallet {
 		+ pallet_session::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-
-		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
-
 		type RewardRemainder: OnUnbalanced<NegativeImbalance<Self>>;
 		type WrappedSessionManager: pallet_session::SessionManager<
 			<Self as pallet_session::Config>::ValidatorId,

@@ -541,7 +541,6 @@ impl currency::Config for Runtime {
 
 impl session_payout::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type WrappedSessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 	type RewardRemainder = Treasury;
 	type TimeProvider = Timestamp;
