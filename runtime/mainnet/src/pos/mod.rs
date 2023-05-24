@@ -15,6 +15,7 @@ use sp_staking::SessionIndex;
 use super::*;
 
 pub mod currency;
+pub mod session_payout;
 
 pub use opaque::SessionKeys;
 
@@ -89,7 +90,7 @@ parameter_types! {
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
 	// Six sessions in an era (90 * 6 * 4 hours = 90 days eras).
-	pub const SessionsPerEra: SessionIndex = 90 * 6;
+	pub const SessionsPerEra: SessionIndex = 8;
 
 	// 365 eras for unbonding (1 year).
 	pub const BondingDuration: sp_staking::EraIndex = 365;
@@ -153,7 +154,7 @@ impl pallet_session::Config for Runtime {
 	type ValidatorIdOf = pallet_staking::StashOf<Self>;
 	type ShouldEndSession = PeriodicSessions;
 	type NextSessionRotation = PeriodicSessions;
-	type SessionManager = CurrencyManager;
+	type SessionManager = SessionPayout;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -267,7 +268,7 @@ impl pallet_staking::Config for Runtime {
 	type SlashDeferDuration = SlashDeferDuration;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
-	type EraPayout = CurrencyManager;
+	type EraPayout = (); // We pay out per session, not per era.
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
@@ -522,10 +523,26 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type WeightInfo = pallet_election_provider_multi_phase::weights::SubstrateWeight<Self>;
 }
 
+// 1 julian year to address leap years
+const YEAR_IN_MILLIS: u64 = 1000 * 3600 * 24 * 36525 / 100;
+
+parameter_types! {
+	pub storage DecayPeriod: BlockNumber = ((YEAR_IN_MILLIS
+		/ RuntimeSpecification::chain_spec().block_time_in_millis) as BlockNumber);
+}
+
 impl currency::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type DecayPeriod = DecayPeriod;
+}
+
+impl session_payout::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PrivilegedOrigin = EnsureRoot<AccountId>;
+	type WrappedSessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type RewardRemainder = Treasury;
+	type TimeProvider = Timestamp;
 }
