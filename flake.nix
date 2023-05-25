@@ -157,23 +157,30 @@
             # do not consier target to be part of source
             rust-src = pkgs.lib.cleanSourceWith {
               src = pkgs.lib.cleanSource ./.;
-              filter = pkgs.nix-gitignore.gitignoreFilterPure
-                (name: type:
-                  # nix files are not used as part of build
-                  (
-                    (type == "regular" && pkgs.lib.strings.hasSuffix ".nix" name)
-                    == false
-                    &&
-                    (type == "directory" && ".github" == name) == false
-                    && (type == "directory" && "terraform" == name) == false
+              filter = let
+                isNixFile = name: type:
+                  type == "regular" && pkgs.lib.strings.hasSuffix ".nix" name;
+                isGithubDir = name: type:
+                  type == "directory" && ".github" == name;
+                isTerraformDir = name: type:
+                  type == "directory" && "terraform" == name;
 
-                    # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
-                    && (type == "regular" && pkgs.lib.strings.hasSuffix ".md" name) == false
-                    && (type == "regular" && pkgs.lib.strings.hasSuffix ".json" name) == false
-                    && (type == "regular" && pkgs.lib.strings.hasSuffix ".gitignore" name) == false
-                  )
-                )
-                [ ./.gitignore ] ./.;
+                # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
+                isMarkdownFile = name: type:
+                  type == "regular" && pkgs.lib.strings.hasSuffix ".md" name;
+                isJsonFile = name: type:
+                  type == "regular" && pkgs.lib.strings.hasSuffix ".json" name;
+                isGitIgnoreFile = name: type:
+                  type == "regular" && pkgs.lib.strings.hasSuffix ".gitignore" name;
+                customFilter = name: type:
+                  ! builtins.any (fun: fun name type) [
+                    isNixFile
+                    isGithubDir
+                    isTerraformDir
+                    isMarkdownFile
+                    isJsonFile
+                  ];
+              in pkgs.nix-gitignore.gitignoreFilterPure customFilter [ ./.gitignore ] ./.;
             };
 
             common-native-release-attrs = common-attrs // rec {

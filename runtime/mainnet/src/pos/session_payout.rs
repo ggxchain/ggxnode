@@ -16,9 +16,10 @@ pub use pallet::*;
 
 use super::YEAR_IN_MILLIS;
 
-type PositiveImbalanceOf<T> = <<T as pallet_staking::Config>::Currency as Currency<
-	<T as frame_system::Config>::AccountId,
->>::PositiveImbalance;
+type PositiveImbalanceOf<T> =
+	<CurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::PositiveImbalance;
+
+type CurrencyOf<T> = <T as pallet_staking::Config>::Currency;
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -54,8 +55,8 @@ pub mod pallet {
 			era_index: u32,
 			session_index: u32,
 			session_duration: u64,
-			validator_payout: <T as pallet_staking::Config>::CurrencyBalance,
-			remainder: <T as pallet_staking::Config>::CurrencyBalance,
+			validator_payout: T::CurrencyBalance,
+			remainder: T::CurrencyBalance,
 		},
 		Rewarded {
 			stash: T::AccountId,
@@ -195,18 +196,18 @@ where
 		let dest = pallet_staking::Pallet::<T>::payee(stash);
 		match dest {
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
-				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
-			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
+				.map(|controller| CurrencyOf::<T>::deposit_creating(&controller, amount)),
+			RewardDestination::Stash => CurrencyOf::<T>::deposit_into_existing(stash, amount).ok(),
 			RewardDestination::Staked => {
 				// We can't update staking internal fields, so we supposed to do like that...
 				log::error!(
 					target: "runtime::session_payout",
 					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to controller.");
 				pallet_staking::Pallet::<T>::bonded(stash)
-					.map(|controller| T::Currency::deposit_creating(&controller, amount))
+					.map(|controller| CurrencyOf::<T>::deposit_creating(&controller, amount))
 			}
 			RewardDestination::Account(dest_account) => {
-				Some(T::Currency::deposit_creating(&dest_account, amount))
+				Some(CurrencyOf::<T>::deposit_creating(&dest_account, amount))
 			}
 			RewardDestination::None => None,
 		}

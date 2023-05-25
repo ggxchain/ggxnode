@@ -4,9 +4,16 @@ use core::marker::PhantomData;
 
 use frame_support::{
 	parameter_types,
-	traits::{Currency, Imbalance, OnUnbalanced},
+	traits::{
+		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, WithdrawReasons,
+	},
 };
-use sp_runtime::Perbill;
+use pallet_evm::{AddressMapping, OnChargeEVMTransaction};
+use sp_core::{H160, U256};
+use sp_runtime::{
+	traits::{Saturating, UniqueSaturatedInto, Zero},
+	Perbill,
+};
 use sp_std::prelude::*;
 
 pub use pallet::*;
@@ -41,6 +48,7 @@ pub mod pallet {
 		+ pallet_scheduler::Config
 		+ pallet_balances::Config
 		+ pallet_authorship::Config
+		+ pallet_evm::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -51,7 +59,12 @@ pub mod pallet {
 			+ IsType<<Self as frame_system::Config>::RuntimeCall>
 			+ IsType<<Self as pallet_scheduler::Config>::RuntimeCall>;
 
-		type FeeComissionRecipient: OnUnbalanced<NegativeImbalance<Self>>;
+		type FeeComissionRecipient: OnUnbalanced<NegativeImbalance<Self>>
+			+ OnUnbalanced<
+				<<Self as pallet_evm::Config>::Currency as Currency<
+					<Self as frame_system::Config>::AccountId,
+				>>::NegativeImbalance,
+			>;
 		type DecayPeriod: Get<Self::BlockNumber>;
 	}
 
@@ -238,6 +251,136 @@ impl<T: Config> OnUnbalanced<NegativeImbalance<T>> for Author<T> {
 	}
 }
 
+type LiquidityInfoOf<T> = <<T as pallet_evm::Config>::Currency as Currency<
+	<T as frame_system::Config>::AccountId,
+>>::NegativeImbalance;
+
+impl<T> OnChargeEVMTransaction<T> for Pallet<T>
+where
+	T: pallet_evm::Config + frame_system::Config + pallet_balances::Config + pallet::Config,
+	//C: Currency<<T as frame_system::Config>::AccountId>,
+	U256:
+		UniqueSaturatedInto<
+			<<T as pallet_evm::Config>::Currency as Currency<
+				<T as frame_system::Config>::AccountId,
+			>>::Balance,
+		>,
+{
+	// Kept type as Option to satisfy bound of Default
+	type LiquidityInfo = Option<LiquidityInfoOf<T>>;
+
+	fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, pallet_evm::Error<T>> {
+		if fee.is_zero() {
+			return Ok(None);
+		}
+		let account_id = <T as pallet_evm::Config>::AddressMapping::into_account_id(*who);
+		let imbalance = <T as pallet_evm::Config>::Currency::withdraw(
+			&account_id,
+			fee.unique_saturated_into(),
+			WithdrawReasons::FEE,
+			ExistenceRequirement::AllowDeath,
+		)
+		.map_err(|_| pallet_evm::Error::<T>::BalanceLow)?;
+		Ok(Some(imbalance))
+	}
+
+	fn correct_and_deposit_fee(
+		who: &H160,
+		corrected_fee: U256,
+		base_fee: U256,
+		already_withdrawn: Self::LiquidityInfo,
+	) -> Self::LiquidityInfo {
+		if let Some(paid) = already_withdrawn {
+			let account_id = <T as pallet_evm::Config>::AddressMapping::into_account_id(*who);
+
+			// Calculate how much refund we should return
+			let refund_amount = paid
+				.peek()
+				.saturating_sub(corrected_fee.unique_saturated_into());
+			// refund to the account that paid the fees. If this fails, the
+			// account might have dropped below the existential balance. In
+			// that case we don't refund anything.
+			let refund_imbalance = <T as pallet_evm::Config>::Currency::deposit_into_existing(
+				&account_id,
+				refund_amount,
+			)
+			.unwrap_or_else(|_| {
+				<<T as pallet_evm::Config>::Currency as Currency<
+					<T as frame_system::Config>::AccountId,
+				>>::PositiveImbalance::zero()
+			});
+
+			// Make sure this works with 0 ExistentialDeposit
+			// https://github.com/paritytech/substrate/issues/10117
+			// If we tried to refund something, the account still empty and the ED is set to 0,
+			// we call `make_free_balance_be` with the refunded amount.
+			let refund_imbalance = if <<T as pallet_evm::Config>::Currency as Currency<
+				<T as frame_system::Config>::AccountId,
+			>>::minimum_balance()
+			.is_zero() && refund_amount
+				> <<T as pallet_evm::Config>::Currency as Currency<
+					<T as frame_system::Config>::AccountId,
+				>>::Balance::zero()
+				&& <T as pallet_evm::Config>::Currency::total_balance(&account_id).is_zero()
+			{
+				// Known bug: Substrate tried to refund to a zeroed AccountData, but
+				// interpreted the account to not exist.
+				match <T as pallet_evm::Config>::Currency::make_free_balance_be(
+					&account_id,
+					refund_amount,
+				) {
+					SignedImbalance::Positive(p) => p,
+					_ => <<T as pallet_evm::Config>::Currency as Currency<
+						<T as frame_system::Config>::AccountId,
+					>>::PositiveImbalance::zero(),
+				}
+			} else {
+				refund_imbalance
+			};
+
+			// merge the imbalance caused by paying the fees and refunding parts of it again.
+			let adjusted_paid = paid.offset(refund_imbalance).same().unwrap_or_else(|_| {
+				<<T as pallet_evm::Config>::Currency as Currency<
+					<T as frame_system::Config>::AccountId,
+				>>::NegativeImbalance::zero()
+			});
+
+			let (base_fee, tip) = adjusted_paid.split(base_fee.unique_saturated_into());
+			// Handle base fee. Can be either burned, rationed, etc ...
+
+			let fee_comission = TreasuryCommissionFromFee::<T>::get();
+			let tips_comission = TreasuryCommissionFromTips::<T>::get();
+
+			let (comission, reward): (Self::LiquidityInfo, Self::LiquidityInfo) =
+				evm_fee_processing_impl::<T>(
+					fee_comission,
+					tips_comission,
+					Some(base_fee),
+					Some(tip),
+				);
+
+			if let Some(comission) = comission {
+				T::FeeComissionRecipient::on_unbalanced(comission);
+			}
+
+			return reward;
+		}
+		None
+	}
+
+	fn pay_priority_fee(tip: Self::LiquidityInfo) {
+		// Default Ethereum behaviour: issue the tip to the block author.
+		if let Some(tip) = tip {
+			let account_id = <T as pallet_evm::Config>::AddressMapping::into_account_id(
+				pallet_evm::Pallet::<T>::find_author(),
+			);
+
+			let _ =
+				<T as pallet_evm::Config>::Currency::deposit_into_existing(&account_id, tip.peek());
+		}
+	}
+}
+
 /// Function calculates the treasury comission from the fees and tips.
 /// Returns reward for the treasury and reward for the author.
 fn fee_processing_impl<T: Config>(
@@ -258,6 +401,43 @@ fn fee_processing_impl<T: Config>(
 		None
 	}
 }
+
+/// Function calculates the treasury comission from the fees and tips.
+/// Returns reward for the treasury and reward for the author.
+fn evm_fee_processing_impl<T: Config>(
+	fee_comission: Perbill,
+	tips_comission: Perbill,
+	base_fee: Option<LiquidityInfoOf<T>>,
+	tip: Option<LiquidityInfoOf<T>>,
+) -> (Option<LiquidityInfoOf<T>>, Option<LiquidityInfoOf<T>>) {
+	let (mut comission, mut reward) = (
+		LiquidityInfoOf::<T>::default(),
+		LiquidityInfoOf::<T>::default(),
+	);
+
+	if base_fee.is_some() || tip.is_some() {
+		if let Some(base_fee) = base_fee {
+			let base_fee_commission = fee_comission * base_fee.peek();
+			let (base_fee_commission, base_fee_after_commission) =
+				base_fee.split(base_fee_commission);
+
+			comission = comission.merge(base_fee_commission);
+			reward = reward.merge(base_fee_after_commission);
+		}
+
+		if let Some(tip) = tip {
+			let tip_commission = tips_comission * tip.peek();
+			let (tip_commission, tip_after_commission) = tip.split(tip_commission);
+
+			comission = comission.merge(tip_commission);
+			reward = reward.merge(tip_after_commission);
+		}
+
+		return (Some(comission), Some(reward));
+	}
+	(None, None)
+}
+
 #[cfg(test)]
 mod tests {
 	use frame_support::{assert_ok, pallet_prelude::DispatchResult};
@@ -265,8 +445,8 @@ mod tests {
 	use sp_runtime::Perbill;
 
 	use super::{
-		era_payout_impl, fee_processing_impl, DefaultInflationDecay, DefaultInflationPercent,
-		DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
+		era_payout_impl, evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
+		DefaultInflationPercent, DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
 		DefaultTreasuryCommissionFromTips, Event, YEAR_IN_MILLIS,
 	};
 
@@ -491,6 +671,79 @@ mod tests {
 		});
 	}
 
+	#[test]
+	fn test_evm_fee_cut() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(100);
+			let tips_percent = Perbill::from_percent(25);
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(80)),
+					Some(NegativeImbalance::<mock::Test>::new(20)),
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(85)),
+					Some(NegativeImbalance::<mock::Test>::new(15))
+				)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_none() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(25);
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(fee_percent, fee_percent, None, None),
+				(None, None)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_only_fee() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(100)),
+					None
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(50)),
+					Some(NegativeImbalance::<mock::Test>::new(50))
+				)
+			);
+		});
+	}
+
+	#[test]
+	fn test_evm_only_tips() {
+		mock::test_runtime().execute_with(|| {
+			let fee_percent = Perbill::from_percent(50);
+			let tips_percent = Perbill::from_percent(25);
+
+			assert_eq!(
+				evm_fee_processing_impl::<mock::Test>(
+					fee_percent,
+					tips_percent,
+					Some(NegativeImbalance::<mock::Test>::new(0)),
+					Some(NegativeImbalance::<mock::Test>::new(100)),
+				),
+				(
+					Some(NegativeImbalance::<mock::Test>::new(25)),
+					Some(NegativeImbalance::<mock::Test>::new(75))
+				)
+			);
+		});
+	}
+
 	mod mock {
 
 		use super::super::pallet as currency;
@@ -498,12 +751,13 @@ mod tests {
 		use frame_support::{
 			pallet_prelude::Weight,
 			parameter_types,
-			traits::{EqualPrivilegeOnly, GenesisBuild, OnFinalize, OnInitialize},
+			traits::{EqualPrivilegeOnly, FindAuthor, GenesisBuild, OnFinalize, OnInitialize},
 			weights::constants::RocksDbWeight,
-			PalletId,
+			ConsensusEngineId, PalletId,
 		};
 		use frame_system::{EnsureRoot, EnsureWithSuccess};
-		use sp_core::{ConstU32, ConstU64, H256};
+		use pallet_evm::{AddressMapping, FeeCalculator};
+		use sp_core::{ConstU32, ConstU64, H160, H256, U256};
 		use sp_runtime::{
 			impl_opaque_keys,
 			testing::{Header, UintAuthorityId},
@@ -511,6 +765,7 @@ mod tests {
 			Perbill, Permill,
 		};
 		use sp_std::convert::{TryFrom, TryInto};
+		use std::str::FromStr;
 
 		use runtime_common::chain_spec as chain_specification;
 
@@ -537,6 +792,8 @@ mod tests {
 				Authorship: pallet_authorship,
 				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`
 				RuntimeSpecification: chain_specification,
+				Timestamp: pallet_timestamp,
+				EVM: pallet_evm,
 			}
 		);
 
@@ -635,11 +892,75 @@ mod tests {
 			type Preimages = ();
 		}
 
+		parameter_types! {
+			pub const MinimumPeriod: u64 = 1000;
+		}
+		impl pallet_timestamp::Config for Test {
+			type Moment = u64;
+			type OnTimestampSet = ();
+			type MinimumPeriod = MinimumPeriod;
+			type WeightInfo = ();
+		}
+
 		impl currency::Config for Test {
 			type RuntimeEvent = RuntimeEvent;
 			type RuntimeCall = RuntimeCall;
 			type PrivilegedOrigin = EnsureRoot<u32>;
 			type FeeComissionRecipient = Treasury;
+		}
+
+		pub struct FixedGasPrice;
+		impl FeeCalculator for FixedGasPrice {
+			fn min_gas_price() -> (U256, Weight) {
+				(1.into(), Weight::zero())
+			}
+		}
+
+		pub struct FindAuthorTruncated;
+		impl FindAuthor<H160> for FindAuthorTruncated {
+			fn find_author<'a, I>(_digests: I) -> Option<H160>
+			where
+				I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+			{
+				Some(H160::from_str("1234500000000000000000000000000000000000").unwrap())
+			}
+		}
+
+		pub struct HashedAddressMapping;
+		impl AddressMapping<u32> for HashedAddressMapping {
+			fn into_account_id(address: H160) -> u32 {
+				let mut data = [0u8; 4];
+				data[0..4].copy_from_slice(&address[..]);
+				u32::from_be_bytes(data)
+			}
+		}
+
+		parameter_types! {
+			pub BlockGasLimit: U256 = U256::max_value();
+			pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+		}
+
+		impl pallet_evm::Config for Test {
+			type FeeCalculator = FixedGasPrice;
+			type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+			type WeightPerGas = WeightPerGas;
+
+			type BlockHashMapping = pallet_evm::SubstrateBlockHashMapping<Self>;
+			type CallOrigin = pallet_evm::EnsureAddressRoot<Self::AccountId>;
+
+			type WithdrawOrigin = pallet_evm::EnsureAddressNever<Self::AccountId>;
+			type AddressMapping = HashedAddressMapping;
+			type Currency = Balances;
+
+			type RuntimeEvent = RuntimeEvent;
+			type PrecompilesType = ();
+			type PrecompilesValue = ();
+			type ChainId = ();
+			type BlockGasLimit = BlockGasLimit;
+			type Runner = pallet_evm::runner::stack::Runner<Self>;
+			type OnChargeTransaction = ();
+			type OnCreate = ();
+			type FindAuthor = FindAuthorTruncated;
 		}
 
 		impl chain_specification::Config for Test {}

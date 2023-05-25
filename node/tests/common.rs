@@ -34,6 +34,9 @@ use std::{
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
+#[cfg(feature = "mainnet")]
+use golden_gate_runtime_mainnet::{Balance, Hash, Header, Index};
+#[cfg(feature = "testnet")]
 use golden_gate_runtime_testnet::{Balance, Hash, Header, Index};
 use sc_client_api::StorageData;
 use scale_codec::DecodeAll;
@@ -57,7 +60,7 @@ pub fn wait_for(child: &mut Child, secs: u64) -> Result<ExitStatus, ()> {
 				return Ok(exit_status);
 			}
 		}
-		eprintln!("Took too long to exit (> {} seconds). Killing...", secs);
+		eprintln!("Took too long to exit (> {secs} seconds). Killing...");
 		let _ = child.kill();
 		child.wait().unwrap();
 		Err(())
@@ -115,7 +118,7 @@ pub async fn get_treasury_balance(url: &str) -> Result<u128, Box<dyn std::error:
 		.transpose()
 		.map_err(|decode_err| Err(decode_err.to_string()));
 
-	let free_balance = match data.clone().unwrap_or_default() {
+	let free_balance = match data.unwrap_or_default() {
 		Some(accountdata) => accountdata.data.free,
 		None => 0,
 	};
@@ -202,18 +205,18 @@ pub fn find_ws_url_from_output(read: impl Read + Send) -> (String, String) {
 			let line =
 				line.expect("failed to obtain next line from stdout for WS address discovery");
 			data.push_str(&line);
-			data.push_str("\n");
+			data.push('\n');
 
 			// does the line contain our port (we expect this specific output from substrate).
 			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
 				None => return None,
-				Some((_, after)) => after.split_once(",").unwrap().0,
+				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
 
-			Some(format!("ws://{}", sock_addr))
+			Some(format!("ws://{sock_addr}"))
 		})
 		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{}", data);
+			eprintln!("Observed node output:\n{data}");
 			panic!("We should get a WebSocket address")
 		});
 
@@ -230,18 +233,18 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 			let line =
 				line.expect("failed to obtain next line from stdout for WS address discovery");
 			data.push_str(&line);
-			data.push_str("\n");
+			data.push('\n');
 
 			// does the line contain our port (we expect this specific output from substrate).
 			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
 				None => return None,
-				Some((_, after)) => after.split_once(",").unwrap().0,
+				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
 
-			Some(format!("ws://{}", sock_addr))
+			Some(format!("ws://{sock_addr}"))
 		})
 		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{}", data);
+			eprintln!("Observed node output:\n{data}");
 			panic!("We should get a WebSocket address")
 		});
 
@@ -251,13 +254,13 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 			// does the line contain our port (we expect this specific output from substrate).
 			let sock_addr = match line.split_once("Running JSON-RPC HTTP server: addr=") {
 				None => return None,
-				Some((_, after)) => after.split_once(",").unwrap().0,
+				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
 
-			Some(format!("http://{}", sock_addr))
+			Some(format!("http://{sock_addr}"))
 		})
 		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{}", data);
+			eprintln!("Observed node output:\n{data}");
 			panic!("We should get a Http address")
 		});
 
