@@ -346,3 +346,58 @@ fn calculate_session_payout<Balance: sp_runtime::traits::AtLeast32BitUnsigned + 
 		total_inflation.saturating_sub(validator_reward),
 	)
 }
+
+#[cfg(test)]
+mod test {
+	use sp_runtime::Perbill;
+
+	use super::{calculate_session_payout, YEAR_IN_MILLIS};
+
+	#[test]
+	fn test_year_calculation() {
+		let total_staked: u64 = 1000;
+		let total_issuance: u64 = 10000;
+		let treasury_commission = Perbill::from_percent(10);
+		let year_inflation = Perbill::from_percent(16);
+
+		let (validator_reward, treasury_reward) = calculate_session_payout(
+			total_staked,
+			total_issuance,
+			YEAR_IN_MILLIS,
+			year_inflation,
+			treasury_commission,
+		);
+
+		// 1600 is total apy for year (16%)
+		// 160 is validator reward because staked is 10% of total issuance
+		// 16 is treasury comission from each validator reward, so validator reward is 160 - 16
+		assert_eq!(validator_reward, 160 - 16);
+		assert_eq!(treasury_reward, 1600 - 160 + 16);
+	}
+
+	#[test]
+	fn test_daily_session_reward() {
+		let total_staked: u64 = 100000;
+		let total_issuance: u64 = 1000000;
+		let era_duration_millis = 1000 * 3600 * 24; // 1 day in milliseconds
+		let year_inflation = Perbill::from_percent(10);
+		let treasury_commission = Perbill::from_percent(10);
+
+		let (validator_reward, treasury_reward) = calculate_session_payout(
+			total_staked,
+			total_issuance,
+			era_duration_millis,
+			year_inflation,
+			treasury_commission,
+		);
+
+		let percent = Perbill::from_rational(10u64, 36525u64); // (1/365.25 of 16%)
+		let validator_reward_expected =
+			(Perbill::one() - treasury_commission) * percent * total_staked;
+		assert_eq!(validator_reward, validator_reward_expected);
+		assert_eq!(
+			treasury_reward,
+			percent * total_issuance - validator_reward_expected
+		);
+	}
+}

@@ -445,58 +445,11 @@ mod tests {
 	use sp_runtime::Perbill;
 
 	use super::{
-		era_payout_impl, evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
+		evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
 		DefaultInflationPercent, DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
-		DefaultTreasuryCommissionFromTips, Event, YEAR_IN_MILLIS,
+		DefaultTreasuryCommissionFromTips, Event,
 	};
-
-	#[test]
-	fn test_year_calculation() {
-		let total_staked: u64 = 1000;
-		let total_issuance: u64 = 10000;
-		let treasury_commission = Perbill::from_percent(10);
-		let year_inflation = Perbill::from_percent(16);
-
-		let (validator_reward, treasury_reward) = era_payout_impl(
-			total_staked,
-			total_issuance,
-			YEAR_IN_MILLIS,
-			year_inflation,
-			treasury_commission,
-		);
-
-		// 1600 is total apy for year (16%)
-		// 160 is validator reward because staked is 10% of total issuance
-		// 16 is treasury comission from each validator reward, so validator reward is 160 - 16
-		assert_eq!(validator_reward, 160 - 16);
-		assert_eq!(treasury_reward, 1600 - 160 + 16);
-	}
-
-	#[test]
-	fn test_era_reward() {
-		let total_staked: u64 = 100000;
-		let total_issuance: u64 = 1000000;
-		let era_duration_millis = 1000 * 3600 * 24; // 1 day in milliseconds
-		let year_inflation = Perbill::from_percent(10);
-		let treasury_commission = Perbill::from_percent(10);
-
-		let (validator_reward, treasury_reward) = era_payout_impl(
-			total_staked,
-			total_issuance,
-			era_duration_millis,
-			year_inflation,
-			treasury_commission,
-		);
-
-		let percent = Perbill::from_rational(10u64, 36525u64); // (1/365.25 of 16%)
-		let validator_reward_expected =
-			(Perbill::one() - treasury_commission) * percent * total_staked;
-		assert_eq!(validator_reward, validator_reward_expected);
-		assert_eq!(
-			treasury_reward,
-			percent * total_issuance - validator_reward_expected
-		);
-	}
+	use mock::DecayPeriod;
 
 	#[test]
 	fn test_changing_params() {
@@ -539,7 +492,7 @@ mod tests {
 			assert_ok!(mock::CurrencyManager::init_inflation_decay());
 			let initial_inflation = mock::CurrencyManager::inflation_percent();
 			let decay = mock::CurrencyManager::inflation_decay();
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() + 1);
+			mock::run_to_block(DecayPeriod::get() + 1);
 			let inflation = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation, initial_inflation - (initial_inflation * decay));
 			let new_decoy = Perbill::from_percent(10);
@@ -547,7 +500,7 @@ mod tests {
 				mock::RuntimeOrigin::root(),
 				new_decoy
 			));
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() * 2 + 1);
+			mock::run_to_block(DecayPeriod::get() * 2 + 1);
 			let inflation_after_change = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation_after_change, inflation - (inflation * new_decoy));
 		});
@@ -556,7 +509,7 @@ mod tests {
 	#[test]
 	fn test_default_inflation_decay_ladder() {
 		fn inflation_after_year(year: u64) -> Perbill {
-			mock::run_to_block(year * super::Pallet::<mock::Test>::decay_period());
+			mock::run_to_block(year * DecayPeriod::get());
 			mock::CurrencyManager::inflation_percent()
 		}
 
@@ -590,11 +543,11 @@ mod tests {
 		mock::test_runtime().execute_with(|| {
 			check_err();
 
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() - 1);
+			mock::run_to_block(DecayPeriod::get() - 1);
 
 			check_err();
 
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period());
+			mock::run_to_block(DecayPeriod::get());
 			assert_ok!(mock::CurrencyManager::yearly_inflation_decay(
 				mock::RuntimeOrigin::root()
 			));
@@ -751,7 +704,7 @@ mod tests {
 		use frame_support::{
 			pallet_prelude::Weight,
 			parameter_types,
-			traits::{EqualPrivilegeOnly, FindAuthor, GenesisBuild, OnFinalize, OnInitialize},
+			traits::{EqualPrivilegeOnly, FindAuthor, OnFinalize, OnInitialize},
 			weights::constants::RocksDbWeight,
 			ConsensusEngineId, PalletId,
 		};
@@ -766,8 +719,6 @@ mod tests {
 		};
 		use sp_std::convert::{TryFrom, TryInto};
 		use std::str::FromStr;
-
-		use runtime_common::chain_spec as chain_specification;
 
 		impl_opaque_keys! {
 			pub struct MockSessionKeys {
@@ -790,9 +741,6 @@ mod tests {
 				CurrencyManager: currency,
 				Treasury: pallet_treasury,
 				Authorship: pallet_authorship,
-				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`
-				RuntimeSpecification: chain_specification,
-				Timestamp: pallet_timestamp,
 				EVM: pallet_evm,
 			}
 		);
@@ -902,11 +850,15 @@ mod tests {
 			type WeightInfo = ();
 		}
 
+		parameter_types! {
+			pub const DecayPeriod: u64 = 10; // 10 blocks for testing is pretty fine.
+		}
 		impl currency::Config for Test {
 			type RuntimeEvent = RuntimeEvent;
 			type RuntimeCall = RuntimeCall;
 			type PrivilegedOrigin = EnsureRoot<u32>;
 			type FeeComissionRecipient = Treasury;
+			type DecayPeriod = DecayPeriod;
 		}
 
 		pub struct FixedGasPrice;
@@ -963,23 +915,10 @@ mod tests {
 			type FindAuthor = FindAuthorTruncated;
 		}
 
-		impl chain_specification::Config for Test {}
-
 		pub fn test_runtime() -> sp_io::TestExternalities {
-			let mut t = frame_system::GenesisConfig::default()
+			let t = frame_system::GenesisConfig::default()
 				.build_storage::<Test>()
 				.unwrap();
-
-			<runtime_common::chain_spec::GenesisConfig as GenesisBuild<Test>>::assimilate_storage(
-				&RuntimeSpecificationConfig {
-					chain_spec: chain_specification::RuntimeConfig {
-						block_time_in_millis: 1000000, // Make it huge to speed up tests
-						..Default::default()
-					},
-				},
-				&mut t,
-			)
-			.unwrap();
 
 			let mut ext = sp_io::TestExternalities::new(t);
 			ext.execute_with(|| System::set_block_number(1));
