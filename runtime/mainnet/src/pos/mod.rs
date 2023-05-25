@@ -543,6 +543,7 @@ impl currency::Config for Runtime {
 impl session_payout::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WrappedSessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
-	type RewardRemainder = Treasury;
+	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
+	type CurrencyInfo = CurrencyManager;
 }

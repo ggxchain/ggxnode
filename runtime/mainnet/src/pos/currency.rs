@@ -26,6 +26,14 @@ parameter_types! {
 	pub(crate) const DefaultTreasuryCommissionFromTips: Perbill = Perbill::from_percent(25);
 }
 
+pub trait CurrencyInfo {
+	fn current_apy() -> Perbill;
+	fn yearly_apy_decay() -> Perbill;
+	fn treasury_commission_from_staking() -> Perbill;
+	fn treasury_commission_from_fee() -> Perbill;
+	fn treasury_commission_from_tips() -> Perbill;
+}
+
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -436,6 +444,24 @@ fn evm_fee_processing_impl<T: Config>(
 		return (Some(comission), Some(reward));
 	}
 	(None, None)
+}
+
+impl<T: Config> CurrencyInfo for Pallet<T> {
+	fn current_apy() -> Perbill {
+		InflationPercent::<T>::get()
+	}
+	fn yearly_apy_decay() -> Perbill {
+		InflationDecay::<T>::get()
+	}
+	fn treasury_commission_from_staking() -> Perbill {
+		TreasuryCommission::<T>::get()
+	}
+	fn treasury_commission_from_fee() -> Perbill {
+		TreasuryCommissionFromFee::<T>::get()
+	}
+	fn treasury_commission_from_tips() -> Perbill {
+		TreasuryCommissionFromTips::<T>::get()
+	}
 }
 
 #[cfg(test)]

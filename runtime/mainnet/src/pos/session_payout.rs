@@ -10,7 +10,7 @@ use sp_runtime::{traits::Zero, Perbill, SaturatedConversion};
 use sp_staking::EraIndex;
 use sp_std::prelude::*;
 
-use crate::pos::currency as pallet_currency;
+use crate::pos::currency::CurrencyInfo;
 
 pub use pallet::*;
 
@@ -35,17 +35,17 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config:
 		frame_system::Config
-		+ pallet_currency::Config
 		+ pallet_staking::Config
 		+ pallet_balances::Config
 		+ pallet_session::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
-		type RewardRemainder: OnUnbalanced<NegativeImbalance<Self>>;
+		type RemainderDestination: OnUnbalanced<NegativeImbalance<Self>>;
 		type WrappedSessionManager: pallet_session::SessionManager<
 			<Self as pallet_session::Config>::ValidatorId,
 		>;
 		type TimeProvider: UnixTime;
+		type CurrencyInfo: CurrencyInfo;
 	}
 
 	#[pallet::event]
@@ -196,18 +196,18 @@ where
 		let dest = pallet_staking::Pallet::<T>::payee(stash);
 		match dest {
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
-				.map(|controller| CurrencyOf::<T>::deposit_creating(&controller, amount)),
-			RewardDestination::Stash => CurrencyOf::<T>::deposit_into_existing(stash, amount).ok(),
+				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
+			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
 			RewardDestination::Staked => {
 				// We can't update staking internal fields, so we supposed to do like that...
 				log::error!(
 					target: "runtime::session_payout",
 					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to controller.");
 				pallet_staking::Pallet::<T>::bonded(stash)
-					.map(|controller| CurrencyOf::<T>::deposit_creating(&controller, amount))
+					.map(|controller| T::Currency::deposit_creating(&controller, amount))
 			}
 			RewardDestination::Account(dest_account) => {
-				Some(CurrencyOf::<T>::deposit_creating(&dest_account, amount))
+				Some(T::Currency::deposit_creating(&dest_account, amount))
 			}
 			RewardDestination::None => None,
 		}
@@ -288,8 +288,8 @@ where
 		log::debug!(target: "runtime::session_payout", "end_session: {}", session_index);
 
 		// Make payout at the end of each session.
-		let year_inflation = pallet_currency::Pallet::<T>::inflation_percent();
-		let treasury_commission = pallet_currency::Pallet::<T>::treasury_commission();
+		let year_inflation = T::CurrencyInfo::current_apy();
+		let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
 
 		let now_as_millis_u64 = T::TimeProvider::now().as_millis() as u64;
 		let last_payout = SessionStartTime::<T>::get();
@@ -315,7 +315,7 @@ where
 			remainder,
 		});
 
-		T::FeeComissionRecipient::on_unbalanced(pallet_balances::Pallet::<T>::issue(remainder));
+		T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(remainder));
 		Self::make_validators_payout(validator_payout, current_era);
 
 		SessionStartTime::<T>::put(now_as_millis_u64);
