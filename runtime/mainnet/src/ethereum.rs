@@ -51,6 +51,7 @@ impl pallet_evm::Config for Runtime {
 	type OnChargeTransaction = CurrencyManager;
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type OnCreate = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {
