@@ -2,9 +2,15 @@ name: ci-lint
 
 on: push
 
+env:
+  NIX_VERSION: nix-2.13.2
+  NIXPKGS_CHANNEL: nixos-22.11
+  CACHIX_NAME: golden-gate-ggx
+  OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
+
 jobs:
   lint-check:
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     steps:
       - name: cachix-install-nix-action
         uses: cachix/install-nix-action@35806937f12c927d9c7223431c7261e2eb2a33ef
