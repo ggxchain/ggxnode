@@ -4,7 +4,7 @@ on: push
 
 jobs:
   lint-check:
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: cachix-install-nix-action
         uses: cachix/install-nix-action@35806937f12c927d9c7223431c7261e2eb2a33ef
