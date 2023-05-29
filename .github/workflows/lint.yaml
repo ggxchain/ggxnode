@@ -1,0 +1,33 @@
+name: ci-lint
+
+on: push
+
+jobs:
+  lint-check:
+    runs-on: ubuntu-latest
+    steps:
+      - name: cachix-install-nix-action
+        uses: cachix/install-nix-action@35806937f12c927d9c7223431c7261e2eb2a33ef
+        with:
+          install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
+          nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
+          extra_nix_config: |
+            sandbox = relaxed
+            narinfo-cache-negative-ttl = 0      
+            system-features = kvm
+            http2 = true
+      - name: cachix-cachix-action
+        uses: cachix/cachix-action@298387a7aea14d6564aa5d6ead79272878339c8b
+        with:
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          name: ${{ env.CACHIX_NAME }}
+      - name: nix-channel-env
+        run: |  
+          nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
+          nix-channel --update
+          nix profile install nixpkgs#git
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - run: nix build --log-lines 100 .#lint-all
