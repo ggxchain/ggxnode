@@ -9,10 +9,48 @@ on:
     # The branches below must be a subset of the branches above
     branches: [main]
 
+env:
+  NIX_VERSION: nix-2.13.2
+  NIXPKGS_CHANNEL: nixos-22.11
+  CACHIX_NAME: golden-gate-ggx
+  OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
+
 jobs:
+  build-lint-all:
+    if: github.event_name == 'pull_request'
+    ## Run only if a PR is made for the main branch
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    steps:
+      - name: cachix-install-nix-action
+        uses: cachix/install-nix-action@35806937f12c927d9c7223431c7261e2eb2a33ef
+        with:
+          install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
+          nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
+          extra_nix_config: |
+            sandbox = relaxed
+            narinfo-cache-negative-ttl = 0      
+            system-features = kvm
+            http2 = true
+      - name: cachix-cachix-action
+        uses: cachix/cachix-action@298387a7aea14d6564aa5d6ead79272878339c8b
+        with:
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          name: ${{ env.CACHIX_NAME }}
+      - name: nix-channel-env
+        run: |  
+          nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
+          nix-channel --update
+          nix profile install nixpkgs#git
+      - uses: actions/checkout@v3
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - run: nix build --log-lines 100 .#lint-all
+
   docker-build-push:
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
+    needs: build-lint-all
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Configure AWS Credentials
@@ -79,6 +117,15 @@ jobs:
           echo "Docker Image for this deployment is: $TAG"
           echo "will be impletemented after EKS provisioning"
 
+      - name: Store Image Tag on AWS S3
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+        run: |
+          echo "$TAG" > release 
+          aws s3 cp release s3://$S3_BUCKET/release
+          echo "This image will be used in future production deployments.."
+
+
   deploy-prod:
     if: startsWith(github.ref, 'refs/tags/release')
     runs-on: ubuntu-latest
@@ -94,8 +141,8 @@ jobs:
         env:
           S3_BUCKET: ggx-docker-image-tags
         run: |
-          aws s3 cp s3://$S3_BUCKET/latest latest
-          echo "TAG=$(cat latest)" >> $GITHUB_ENV
+          aws s3 cp s3://$S3_BUCKET/release release
+          echo "TAG=$(cat release)" >> $GITHUB_ENV
 
       - name: ArgoCD Deployment
         run: |
