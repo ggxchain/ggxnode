@@ -6,8 +6,10 @@ use frame_support::{
 };
 use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
 use sp_core::Get;
-use sp_runtime::{traits::Zero, Perbill, SaturatedConversion};
-use sp_staking::EraIndex;
+use sp_runtime::{
+	traits::Zero, DispatchError, DispatchResultWithInfo, Perbill, SaturatedConversion,
+};
+use sp_staking::{EraIndex, StakingInterface};
 use sp_std::prelude::*;
 
 use crate::pos::currency::CurrencyInfo;
@@ -52,14 +54,15 @@ pub mod pallet {
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		SessionPayout {
-			era_index: u32,
 			session_index: u32,
-			session_duration: u64,
 			validator_payout: T::CurrencyBalance,
 			remainder: T::CurrencyBalance,
 		},
 		Rewarded {
 			stash: T::AccountId,
+			amount: T::CurrencyBalance,
+		},
+		YearRewardPoolAllocated {
 			amount: T::CurrencyBalance,
 		},
 	}
@@ -70,16 +73,23 @@ pub mod pallet {
 		NotController,
 	}
 
+	/// Start time to calculate session reward percentage.
 	#[pallet::storage]
 	#[pallet::getter(fn last_payout_time_in_millis)]
-	pub(crate) type SessionStartTime<T: Config> = StorageValue<_, u64, ValueQuery>;
+	pub type SessionStartTime<T: Config> = StorageValue<_, u128, ValueQuery>;
 
+	/// Tracks session points change per each validator.
 	#[pallet::storage]
-	pub(crate) type LastEraPoints<T: Config> =
-		StorageValue<_, EraRewardPoints<T::AccountId>, ValueQuery>;
+	pub type LastEraPoints<T: Config> = StorageValue<_, EraRewardPoints<T::AccountId>, ValueQuery>;
 
+	/// Tracks current era to know when to rotate LastEraPoints.
 	#[pallet::storage]
-	pub(crate) type LastEra<T: Config> = StorageValue<_, EraIndex, ValueQuery>;
+	pub type LastEra<T: Config> = StorageValue<_, EraIndex, ValueQuery>;
+
+	/// Year reward pool amount to prevent compounding. It updates every year.
+	#[pallet::storage]
+	#[pallet::getter(fn year_reward)]
+	pub type YearReward<T: Config> = StorageValue<_, (T::CurrencyBalance, u128), ValueQuery>;
 }
 
 impl<T> Pallet<T>
@@ -91,6 +101,7 @@ where
 	/// * We maintain custom session points per each validator during era.
 	/// * We don't need era history cause we make payout automatically for all validators and nominators at the end of the session.
 	/// * We have cut reward callback cause we don't need it.
+	/// * Added return for actual payout to not "burn/forgot" remainder
 	///
 	/// Possible area of improvement:
 	/// * We can make static comission for each validator here if we want.
@@ -101,7 +112,7 @@ where
 		account_id: T::AccountId,
 		session_points: &EraRewardPoints<T::AccountId>,
 		era: EraIndex,
-	) -> DispatchResult {
+	) -> Result<T::CurrencyBalance, DispatchError> {
 		let total_reward_points = session_points.total;
 
 		log::debug!(
@@ -132,7 +143,7 @@ where
 				target: "runtime::session_payout::do_validator_payout",
 				"validator_reward_points is zero");
 			// Nothing to do here, validator didn't participate in this session.
-			return Ok(());
+			return Ok(Zero::zero());
 		}
 
 		let validator_total_reward_part =
@@ -148,12 +159,14 @@ where
 		// This is how much validator + nominators are entitled to after validator commission.
 		let validator_leftover_payout = validator_total_payout - validator_commission_payout;
 
+		let mut payout = Zero::zero();
 		let validator_exposure_part = Perbill::from_rational(exposure.own, exposure.total);
 		let validator_staking_payout = validator_exposure_part * validator_leftover_payout;
 		if let Some(imbalance) = Self::make_payout(
 			&ledger.stash,
 			validator_staking_payout + validator_commission_payout,
 		) {
+			payout += imbalance.peek();
 			Self::deposit_event(Event::<T>::Rewarded {
 				stash: ledger.stash,
 				amount: imbalance.peek(),
@@ -180,11 +193,12 @@ where
 					amount: imbalance.peek(),
 				};
 				Self::deposit_event(e);
+				payout += imbalance.peek();
 			}
 		}
 
 		debug_assert!(nominator_payout_count <= T::MaxNominatorRewardedPerValidator::get());
-		Ok(())
+		Ok(payout)
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
@@ -200,11 +214,10 @@ where
 			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
 			RewardDestination::Staked => {
 				// We can't update staking internal fields, so we supposed to do like that...
-				log::error!(
+				log::warn!(
 					target: "runtime::session_payout",
-					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to controller.");
-				pallet_staking::Pallet::<T>::bonded(stash)
-					.map(|controller| T::Currency::deposit_creating(&controller, amount))
+					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
+				T::Currency::deposit_into_existing(stash, amount).ok()
 			}
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
@@ -215,21 +228,28 @@ where
 
 	/// This function is called at the end of the session
 	/// It makes payout for all validators and nominators.
-	fn make_validators_payout(validator_reward: T::CurrencyBalance, current_era: EraIndex) {
+	/// Returns total payout to validators that happened in this session.
+	fn make_validators_payout(
+		validator_reward: T::CurrencyBalance,
+		current_era: EraIndex,
+	) -> T::CurrencyBalance {
+		let mut total_payout = Zero::zero();
 		let session_points = Self::total_session_points(current_era);
 		for (validator, _) in <pallet_staking::Validators<T>>::iter() {
 			log::debug!(target: "runtime::session_payout", "make_validators_payout: validator: {:?}", validator);
 			let validator_payout = validator_reward;
-			if let Err(e) =
+			if let Ok(payout) =
 				Self::do_validator_payout(validator_payout, validator, &session_points, current_era)
 			{
-				log::error!(target: "runtime::session_payout", "make_validators_payout: error: {:?}", e);
-			} else {
-				log::debug!(target: "runtime::session_payout", "make_validators_payout: succeed");
+				total_payout += payout;
 			}
 		}
+		total_payout
 	}
 
+	/// Calculates session points for the previous session. If the latest era isn't that we stored, it means
+	/// that new era is happened and we need to clean up the old data.
+	/// Otherwise, it calculates difference between current and previous era points.
 	fn total_session_points(current_era: EraIndex) -> EraRewardPoints<T::AccountId> {
 		let last_era = LastEra::<T>::get();
 
@@ -249,6 +269,21 @@ where
 		LastEraPoints::<T>::set(era_reward_points);
 
 		session_points
+	}
+
+	///  Checks if year passed if so updates reward
+	fn update_year_reward(current_time: u128) {
+		let (_, last_update) = Self::year_reward();
+		let time_diff = current_time - last_update;
+		if time_diff > YEAR_IN_MILLIS {
+			let issuance = T::Currency::total_issuance();
+			let year_apy = T::CurrencyInfo::current_apy();
+			let year_reward = year_apy * issuance;
+			YearReward::<T>::set((year_reward, current_time));
+			Self::deposit_event(Event::<T>::YearRewardPoolAllocated {
+				amount: year_reward,
+			});
+		}
 	}
 }
 
@@ -281,44 +316,55 @@ where
 	fn end_session(session_index: u32) {
 		if session_index == 0 {
 			// First session is not payable, cause we can't set a timestamp for it. TimeProvider is not working yet.
-			SessionStartTime::<T>::put(T::TimeProvider::now().as_millis() as u64);
+			let now_as_millis = T::TimeProvider::now().as_millis();
+			SessionStartTime::<T>::put(now_as_millis);
+			Self::update_year_reward(now_as_millis);
 			return;
 		}
 
-		log::debug!(target: "runtime::session_payout", "end_session: {}", session_index);
+		let current_era = <pallet_staking::Pallet<T>>::current_era();
+		if current_era.is_none() {
+			log::warn!(target: "runtime::session_payout", "end_session: current_era is None");
+			return;
+		}
+		let current_era = current_era.unwrap();
 
 		// Make payout at the end of each session.
-		let year_inflation = T::CurrencyInfo::current_apy();
 		let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
 
-		let now_as_millis_u64 = T::TimeProvider::now().as_millis() as u64;
+		let now_as_millis = T::TimeProvider::now().as_millis();
 		let last_payout = SessionStartTime::<T>::get();
-		let session_duration = (now_as_millis_u64 - last_payout).saturated_into::<u64>();
-		log::debug!(target: "runtime::session_payout", "end_session: session_duration: {}, now_as_millis_u64: {now_as_millis_u64}, last_payout: {last_payout}", session_duration);
+		let session_duration = now_as_millis - last_payout;
 
-		let current_era = pallet_staking::Pallet::<T>::current_era().unwrap_or(0);
+		Self::update_year_reward(now_as_millis);
+
 		let staked = pallet_staking::Pallet::<T>::eras_total_stake(current_era);
 		let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
+		let (year_reward, _) = YearReward::<T>::get();
+
 		let (validator_payout, remainder) = calculate_session_payout(
 			staked,
 			issuance,
 			session_duration,
-			year_inflation,
+			year_reward,
 			treasury_commission,
 		);
 
 		Self::deposit_event(Event::<T>::SessionPayout {
-			era_index: current_era,
 			session_index,
-			session_duration,
 			validator_payout,
 			remainder,
 		});
+		log::debug!(target: "runtime::session_payout", "end_session: validator_payout: {:?}, remainder: {:?}", validator_payout, remainder);
 
-		T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(remainder));
-		Self::make_validators_payout(validator_payout, current_era);
+		let total_validator_payout = Self::make_validators_payout(validator_payout, current_era);
+		//  We can have a remainder due to rounding errors. Mostly, it's 1-3 units. But it's a lot on a large scale.
+		let failed_to_pay = validator_payout - total_validator_payout;
+		T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(
+			remainder + failed_to_pay,
+		));
 
-		SessionStartTime::<T>::put(now_as_millis_u64);
+		SessionStartTime::<T>::put(now_as_millis);
 		<T as pallet::Config>::WrappedSessionManager::end_session(session_index)
 	}
 
@@ -327,77 +373,30 @@ where
 	}
 }
 
-fn calculate_session_payout<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
+/// Calculates validator payout and remainder that will be transfered to treasury
+fn calculate_session_payout<
+	Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone + core::fmt::Debug,
+>(
 	total_staked: Balance,
 	total_issuance: Balance,
-	session_duration_in_millis: u64,
-	year_inflation: Perbill,
+	session_duration_in_millis: u128,
+	year_reward: Balance,
 	treasury_commission: Perbill,
 ) -> (Balance, Balance) {
-	let percent_per_session =
-		Perbill::from_rational(session_duration_in_millis, YEAR_IN_MILLIS) * year_inflation;
+	let percent_per_session = Perbill::from_rational(session_duration_in_millis, YEAR_IN_MILLIS);
+	let validator_cut = Perbill::from_rational(total_staked, total_issuance);
+	let validator_cut_after_comission = (Perbill::one() - treasury_commission) * validator_cut;
 
-	let validator_percent = Perbill::one() - treasury_commission;
-	let total_inflation = percent_per_session * total_issuance;
-	let validator_reward = validator_percent * percent_per_session * total_staked;
+	let reward = percent_per_session * year_reward;
+	let validator_reward = validator_cut_after_comission * reward.clone();
 
 	(
 		validator_reward.clone(),
-		total_inflation.saturating_sub(validator_reward),
+		reward.saturating_sub(validator_reward),
 	)
 }
 
 #[cfg(test)]
-mod test {
-	use sp_runtime::Perbill;
-
-	use super::{calculate_session_payout, YEAR_IN_MILLIS};
-
-	#[test]
-	fn test_year_calculation() {
-		let total_staked: u64 = 1000;
-		let total_issuance: u64 = 10000;
-		let treasury_commission = Perbill::from_percent(10);
-		let year_inflation = Perbill::from_percent(16);
-
-		let (validator_reward, treasury_reward) = calculate_session_payout(
-			total_staked,
-			total_issuance,
-			YEAR_IN_MILLIS,
-			year_inflation,
-			treasury_commission,
-		);
-
-		// 1600 is total apy for year (16%)
-		// 160 is validator reward because staked is 10% of total issuance
-		// 16 is treasury comission from each validator reward, so validator reward is 160 - 16
-		assert_eq!(validator_reward, 160 - 16);
-		assert_eq!(treasury_reward, 1600 - 160 + 16);
-	}
-
-	#[test]
-	fn test_daily_session_reward() {
-		let total_staked: u64 = 100000;
-		let total_issuance: u64 = 1000000;
-		let era_duration_millis = 1000 * 3600 * 24; // 1 day in milliseconds
-		let year_inflation = Perbill::from_percent(10);
-		let treasury_commission = Perbill::from_percent(10);
-
-		let (validator_reward, treasury_reward) = calculate_session_payout(
-			total_staked,
-			total_issuance,
-			era_duration_millis,
-			year_inflation,
-			treasury_commission,
-		);
-
-		let percent = Perbill::from_rational(10u64, 36525u64); // (1/365.25 of 16%)
-		let validator_reward_expected =
-			(Perbill::one() - treasury_commission) * percent * total_staked;
-		assert_eq!(validator_reward, validator_reward_expected);
-		assert_eq!(
-			treasury_reward,
-			percent * total_issuance - validator_reward_expected
-		);
-	}
-}
+mod mock;
+#[cfg(test)]
+mod test;

@@ -525,11 +525,11 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 }
 
 // 1 julian year to address leap years
-const YEAR_IN_MILLIS: u64 = 1000 * 3600 * 24 * 36525 / 100;
+const YEAR_IN_MILLIS: u128 = 1000 * 3600 * 24 * 36525 / 100;
 
 parameter_types! {
 	pub storage DecayPeriod: BlockNumber = ((YEAR_IN_MILLIS
-		/ RuntimeSpecification::chain_spec().block_time_in_millis) as BlockNumber);
+		/ RuntimeSpecification::chain_spec().block_time_in_millis as u128) as BlockNumber);
 }
 
 impl currency::Config for Runtime {
