@@ -1,15 +1,10 @@
 // TODO: benchmark and set proper weight for calls
 
-use frame_support::{
-	pallet_prelude::DispatchResult,
-	traits::{Currency, Imbalance, OnUnbalanced, UnixTime},
-};
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
 use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
 use sp_core::Get;
-use sp_runtime::{
-	traits::Zero, DispatchError, DispatchResultWithInfo, Perbill, SaturatedConversion,
-};
-use sp_staking::{EraIndex, StakingInterface};
+use sp_runtime::{traits::Zero, DispatchError, Perbill};
+use sp_staking::EraIndex;
 use sp_std::prelude::*;
 
 use crate::pos::currency::CurrencyInfo;
