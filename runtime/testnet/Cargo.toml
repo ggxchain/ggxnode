@@ -83,6 +83,7 @@ pallet-randomness-collective-flip.workspace = true
 # Ibc
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
+ibc-proto.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true

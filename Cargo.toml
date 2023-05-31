@@ -179,6 +179,7 @@ pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-coll
 # IBC
 pallet-ibc = { default-features = false, git = "https://github.com/octopus-network/substrate-ibc.git", branch = "polkadot-v0.9.39" }
 pallet-ics20-transfer = { default-features = false, git = "https://github.com/octopus-network/substrate-ibc.git", branch = "polkadot-v0.9.39" }
+ibc-proto = { version = "0.25.0", default-features = false, features = ["parity-scale-codec"] }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

@@ -3812,6 +3812,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "ibc-proto",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
