@@ -2,6 +2,8 @@
 
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
 use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
+use scale_codec::{Decode, Encode, MaxEncodedLen};
+use scale_info::TypeInfo;
 use sp_core::Get;
 use sp_runtime::{traits::Zero, DispatchError, Perbill};
 use sp_staking::EraIndex;
@@ -17,6 +19,35 @@ type PositiveImbalanceOf<T> =
 	<CurrencyOf<T> as Currency<<T as frame_system::Config>::AccountId>>::PositiveImbalance;
 
 type CurrencyOf<T> = <T as pallet_staking::Config>::Currency;
+
+#[derive(Encode, Decode, Default, Clone, TypeInfo, MaxEncodedLen)]
+#[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
+pub enum ValidatorCommissionAlgorithm {
+	Static(Perbill),
+	#[default]
+	Median,
+}
+
+impl ValidatorCommissionAlgorithm {
+	pub fn comission<T: Config>(&self, era: EraIndex) -> Option<Perbill> {
+		match &self {
+			Self::Static(comission) => Some(*comission),
+			Self::Median => {
+				let validator_preferences =
+					pallet_staking::ErasValidatorPrefs::<T>::iter_prefix_values(era);
+				let mut comissions: Vec<_> = validator_preferences
+					.map(|prefs| prefs.commission)
+					.collect();
+				if comissions.is_empty() {
+					return None;
+				}
+				comissions.sort_unstable();
+				let median = comissions[comissions.len() / 2];
+				Some(median)
+			}
+		}
+	}
+}
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -66,6 +97,7 @@ pub mod pallet {
 	pub enum Error<T> {
 		NotStash,
 		NotController,
+		NoValidators,
 	}
 
 	/// Start time to calculate session reward percentage.
@@ -85,6 +117,18 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn year_reward)]
 	pub type YearReward<T: Config> = StorageValue<_, (T::CurrencyBalance, u128), ValueQuery>;
+
+	/// Algorithm how to calculate validator percent comission to nominators.
+	#[pallet::storage]
+	#[pallet::getter(fn validator_commission_algorithm)]
+	pub type ValidatorToNominatorCommissionAlgorithm<T: Config> =
+		StorageValue<_, ValidatorCommissionAlgorithm, ValueQuery>;
+
+	/// Validator comission to nominators. Calculated each era by `ValidatorComissionAlgorithm`.
+	/// Please, note that we can't calculate more often, because pallet_staking updates preferences only on era start.
+	#[pallet::storage]
+	#[pallet::getter(fn validator_commission)]
+	pub type ValidatorCommission<T: Config> = StorageValue<_, Perbill, ValueQuery>;
 }
 
 impl<T> Pallet<T>
@@ -97,9 +141,9 @@ where
 	/// * We don't need era history cause we make payout automatically for all validators and nominators at the end of the session.
 	/// * We have cut reward callback cause we don't need it.
 	/// * Added return for actual payout to not "burn/forgot" remainder
+	/// * Fixed comission calculation for nominators.
 	///
 	/// Possible area of improvement:
-	/// * We can make static comission for each validator here if we want.
 	/// * Can we remove nominators reward cup?.
 	/// * We HAVE to add weight info for this call. See original implementation.
 	fn do_validator_payout(
@@ -146,9 +190,7 @@ where
 		// This is how much validator + nominators are entitled to.
 		let validator_total_payout = validator_total_reward_part * session_payout;
 
-		// We can make static comission for each validator here if we want.
-		let validator_prefs = pallet_staking::Pallet::<T>::eras_validator_prefs(era, &account_id);
-		let validator_commission = validator_prefs.commission;
+		let validator_commission = Self::validator_commission();
 		let validator_commission_payout = validator_commission * validator_total_payout;
 
 		// This is how much validator + nominators are entitled to after validator commission.
@@ -251,8 +293,8 @@ where
 		let era_reward_points = <pallet_staking::ErasRewardPoints<T>>::get(current_era);
 
 		let session_points = if last_era != current_era {
+			Self::on_era_change(current_era);
 			// This is the first session in this era, so we don't need to calculate difference
-			LastEra::<T>::set(current_era);
 			// We need to load it again to clone. Original type doesn't support it...
 			<pallet_staking::ErasRewardPoints<T>>::get(current_era)
 		} else {
@@ -279,6 +321,25 @@ where
 				amount: year_reward,
 			});
 		}
+	}
+
+	fn update_validator_commission(era: EraIndex) {
+		let validator_comission_calculator = Self::validator_commission_algorithm();
+
+		if let Some(value) = validator_comission_calculator.comission::<T>(era) {
+			ValidatorCommission::<T>::set(value);
+		} else {
+			log::warn!(
+				target: "runtime::session_payout",
+				"update_validator_commission: validator commission is not set for era: {:?}. Using value from previous era.",
+				era
+			);
+		}
+	}
+
+	fn on_era_change(new_era: EraIndex) {
+		LastEra::<T>::set(new_era);
+		Self::update_validator_commission(new_era);
 	}
 }
 
