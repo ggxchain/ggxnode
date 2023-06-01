@@ -1014,6 +1014,7 @@ mod tests {
 			type OnChargeTransaction = ();
 			type OnCreate = ();
 			type FindAuthor = FindAuthorTruncated;
+			type WeightInfo = ();
 		}
 
 		impl chain_specification::Config for Test {}
