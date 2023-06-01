@@ -1,6 +1,7 @@
 // TODO: benchmark and set proper weight for calls
 
 use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
+use frame_system::pallet_prelude::*;
 use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -20,7 +21,7 @@ type PositiveImbalanceOf<T> =
 
 type CurrencyOf<T> = <T as pallet_staking::Config>::Currency;
 
-#[derive(Encode, Decode, Default, Clone, TypeInfo, MaxEncodedLen)]
+#[derive(Encode, Decode, Default, Clone, TypeInfo, MaxEncodedLen, PartialEq, Eq, Debug)]
 #[cfg_attr(feature = "std", derive(serde::Serialize, serde::Deserialize))]
 pub enum ValidatorCommissionAlgorithm {
 	Static(Perbill),
@@ -69,6 +70,7 @@ pub mod pallet {
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 		type RemainderDestination: OnUnbalanced<NegativeImbalance<Self>>;
+		type PrivilegedOrigin: EnsureOrigin<Self::RuntimeOrigin>;
 		type WrappedSessionManager: pallet_session::SessionManager<
 			<Self as pallet_session::Config>::ValidatorId,
 		>;
@@ -128,6 +130,20 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn validator_commission)]
 	pub type ValidatorCommission<T: Config> = StorageValue<_, Perbill, ValueQuery>;
+
+	#[pallet::call]
+	impl<T: Config> Pallet<T> {
+		#[pallet::call_index(0)]
+		#[pallet::weight(100_000)]
+		pub fn change_validator_to_nominator_commission_algorithm(
+			origin: OriginFor<T>,
+			algorithm: ValidatorCommissionAlgorithm,
+		) -> DispatchResultWithPostInfo {
+			T::PrivilegedOrigin::ensure_origin(origin)?;
+			ValidatorToNominatorCommissionAlgorithm::<T>::put(algorithm);
+			Ok(().into())
+		}
+	}
 }
 
 impl<T> Pallet<T>
