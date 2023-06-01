@@ -1,7 +1,4 @@
-use frame_support::{
-	log::{error, trace},
-	pallet_prelude::Weight,
-};
+use frame_support::{log::trace, pallet_prelude::Weight};
 use frame_system::RawOrigin;
 use ibc_proto::google::protobuf::Any;
 use pallet_contracts::chain_extension::{
@@ -12,20 +9,26 @@ use sp_core::{crypto::UncheckedFrom, Get};
 use sp_runtime::DispatchError;
 use sp_std::vec;
 
+enum AssetsFunc {
+	Transfer,
+}
+
+impl TryFrom<u16> for AssetsFunc {
+	type Error = DispatchError;
+
+	fn try_from(value: u16) -> Result<Self, Self::Error> {
+		match value {
+			1 => Ok(AssetsFunc::Transfer),
+			_ => Err(DispatchError::Other(
+				"PalletAssetsExtension: Unimplemented func_id",
+			)),
+		}
+	}
+}
+
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct ICS20TransferInput {
 	msg: [u8; 4096],
-}
-
-fn _convert_err(err_msg: &'static str) -> impl FnOnce(DispatchError) -> DispatchError {
-	move |err| {
-		trace!(
-			target: "runtime",
-			"ICS20 Transfer failed:{:?}",
-			err
-		);
-		DispatchError::Other(err_msg)
-	}
 }
 
 fn raw_tranfer<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
@@ -83,13 +86,9 @@ where
 		E: Ext<T = T>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
 	{
-		let func_id = env.func_id();
+		let func_id = env.func_id().try_into()?;
 		match func_id {
-			1 => raw_tranfer::<T, E>(env)?,
-			_ => {
-				error!("Called an unregistered `func_id`: {:}", func_id);
-				return Err(DispatchError::Other("Unimplemented func_id"));
-			}
+			AssetsFunc::Transfer => raw_tranfer::<T, E>(env)?,
 		}
 		Ok(RetVal::Converging(0))
 	}

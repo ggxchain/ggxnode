@@ -1,5 +1,5 @@
 use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEvent, Timestamp};
-use crate::{deposit, prelude::*, Balance, BlockWeights};
+use crate::{chain_extensions::IBCISC20Extension, deposit, prelude::*, Balance, BlockWeights};
 
 pub use frame_support::dispatch::DispatchClass;
 use frame_support::weights::Weight;
@@ -10,6 +10,10 @@ use sp_core::{ConstBool, ConstU32};
 
 impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
 	const ID: u16 = 1;
+}
+
+impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
+	const ID: u16 = 2;
 }
 
 parameter_types! {
