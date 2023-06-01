@@ -1,9 +1,8 @@
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
 
 use rand::SeedableRng;
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519, H160, U256};
+use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
 use sp_runtime::traits::IdentifyAccount;
-use std::{collections::BTreeMap, str::FromStr};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -134,24 +133,20 @@ pub fn testnet_genesis(
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
-			accounts: {
-				let mut map: BTreeMap<H160, GenesisAccount> = Precompiles::used_addresses()
-					.map(|addr| {
-						(
-							addr,
-							GenesisAccount {
-								nonce: Default::default(),
-								balance: Default::default(),
-								storage: Default::default(),
-								code: revert_bytecode.clone(),
-							},
-						)
-					})
-					.into_iter()
-					.collect();
-
-				map
-			},
+			accounts: Precompiles::used_addresses()
+				.map(|addr| {
+					(
+						addr,
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: revert_bytecode.clone(),
+						},
+					)
+				})
+				.into_iter()
+				.collect(),
 		},
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),
@@ -163,7 +158,7 @@ pub fn testnet_genesis(
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,
-				session_time_in_seconds: 4 * 3600, // 4 hours
+				session_time_in_seconds: 8, // 4 hours
 			},
 		},
 		vesting: Default::default(),
