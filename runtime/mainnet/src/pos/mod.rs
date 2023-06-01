@@ -93,7 +93,7 @@ parameter_types! {
 	pub const SessionsPerEra: SessionIndex = prod_or_fast!(90 * 6, 6);
 
 	// 4 eras for unbonding (90 * 4 = 360 days).
-	pub const BondingDuration: sp_staking::EraIndex = 4;
+	pub const BondingDuration: sp_staking::EraIndex = prod_or_fast!(4, 360);
 	pub const SlashDeferDuration: sp_staking::EraIndex = BondingDuration::get() / 4;
 	pub const MaxNominatorRewardedPerValidator: u32 = 512;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
