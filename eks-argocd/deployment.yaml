@@ -1,0 +1,53 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: substrate-brooklyn
+  namespace: substrate-brooklyn
+spec:
+  selector:
+    matchLabels:
+      app: substrate-brooklyn
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: substrate-brooklyn
+    spec:
+      #nodeSelector:
+      #  environment: brooklyn # EKS worker-node-groups will be defined later on
+      initContainers:
+        - name: json-installer
+          image: busybox
+          imagePullPolicy: "IfNotPresent"
+          command: ["wget", "-O", "/chain-data/customSpecRaw.json", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/customSpecRaw.json" ]
+          volumeMounts: 
+            - name: substrate-brooklyn-data
+              mountPath: /chain-data
+      containers:
+        - name: substrate-brooklyn
+          image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
+          imagePullPolicy: "IfNotPresent"
+          command: [ "/usr/src/app/target/release/golden-gate-node" ]
+          args: ["--base-path=$(BASE_PATH)", "--name=$(NAME)", "--chain=/tmp/customSpecRaw.json", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
+          envFrom:
+            - configMapRef:
+                name: ggx-node-config
+            - secretRef:
+                name: ggx-node-secret
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2G
+            limits:
+              cpu: 4000m
+              memory: 8G
+          ports:
+            - containerPort: 9944
+            - containerPort: 9933
+            - containerPort: 30333
+          volumeMounts:
+            - name: substrate-brooklyn-data
+              mountPath: /tmp
+      volumes:
+        - name: substrate-brooklyn-data
+          emptyDir: {}
