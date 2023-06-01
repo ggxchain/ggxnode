@@ -97,7 +97,6 @@ pub mod pallet {
 	pub enum Error<T> {
 		NotStash,
 		NotController,
-		NoValidators,
 	}
 
 	/// Start time to calculate session reward percentage.
