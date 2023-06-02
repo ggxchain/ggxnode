@@ -83,11 +83,9 @@ pub fn testnet_genesis(
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
 		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32,
-			minimum_validator_count: 2,
-			max_validator_count: Some(100),
+			validator_count: 100,
+			minimum_validator_count: 1,
 			invulnerables: vec![],
-			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			stakers: endowed_accounts
 				.iter()
 				.map(|user| {
