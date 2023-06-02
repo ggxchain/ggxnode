@@ -57,7 +57,7 @@ pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
-use pos::currency;
+use pos::{currency, session_payout};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -496,6 +496,7 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		CurrencyManager: currency,
+		SessionPayout: session_payout,
 
 		// Wasm contracts
 		Contracts: pallet_contracts,

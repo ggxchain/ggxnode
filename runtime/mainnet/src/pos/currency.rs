@@ -8,15 +8,15 @@ use frame_support::{
 		Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, WithdrawReasons,
 	},
 };
-pub use pallet::*;
 use pallet_evm::{AddressMapping, OnChargeEVMTransaction};
-
 use sp_core::{H160, U256};
 use sp_runtime::{
-	traits::{AtLeast32BitUnsigned, Saturating, UniqueSaturatedInto, Zero},
+	traits::{Saturating, UniqueSaturatedInto, Zero},
 	Perbill,
 };
-use sp_std::vec;
+use sp_std::prelude::*;
+
+pub use pallet::*;
 
 parameter_types! {
 	pub(crate) const DefaultInflationPercent: Perbill = Perbill::from_percent(16);
@@ -26,8 +26,13 @@ parameter_types! {
 	pub(crate) const DefaultTreasuryCommissionFromTips: Perbill = Perbill::from_percent(25);
 }
 
-// 1 julian year to address leap years
-const YEAR_IN_MILLIS: u64 = 1000 * 3600 * 24 * 36525 / 100;
+pub trait CurrencyInfo {
+	fn current_apy() -> Perbill;
+	fn yearly_apy_decay() -> Perbill;
+	fn treasury_commission_from_staking() -> Perbill;
+	fn treasury_commission_from_fee() -> Perbill;
+	fn treasury_commission_from_tips() -> Perbill;
+}
 
 #[frame_support::pallet]
 pub mod pallet {
@@ -51,7 +56,6 @@ pub mod pallet {
 		+ pallet_scheduler::Config
 		+ pallet_balances::Config
 		+ pallet_authorship::Config
-		+ runtime_common::chain_spec::Config
 		+ pallet_evm::Config
 	{
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
@@ -69,6 +73,7 @@ pub mod pallet {
 					<Self as frame_system::Config>::AccountId,
 				>>::NegativeImbalance,
 			>;
+		type DecayPeriod: Get<Self::BlockNumber>;
 	}
 
 	#[pallet::event]
@@ -159,7 +164,7 @@ pub mod pallet {
 			let last_decay = LastInflationDecay::<T>::get();
 
 			ensure!(
-				now >= last_decay + Self::decay_period(),
+				now >= last_decay + T::DecayPeriod::get(),
 				Error::<T>::InflationAlreadyDecayedThisYear
 			);
 			let decay = InflationDecay::<T>::get();
@@ -213,48 +218,18 @@ pub mod pallet {
 		pub(super) fn init_inflation_decay() -> DispatchResult {
 			use frame_support::traits::OriginTrait;
 
-			let period = Self::decay_period();
+			let period = T::DecayPeriod::get();
 			let call =
 				<T as pallet::Config>::RuntimeCall::from(pallet::Call::yearly_inflation_decay {})
 					.into();
 			pallet_scheduler::Pallet::<T>::schedule(
 				<T as frame_system::Config>::RuntimeOrigin::root(),
 				period,
-				Some((period, 30)), // Once in 365.25 days for 30 years
+				Some((period, 30)),
 				0,
 				sp_std::boxed::Box::new(call),
 			)
 		}
-
-		pub fn decay_period() -> T::BlockNumber
-		where
-			T::BlockNumber: AtLeast32BitUnsigned,
-		{
-			((YEAR_IN_MILLIS
-				/ runtime_common::chain_spec::Pallet::<T>::chain_spec().block_time_in_millis) as u32)
-				.into()
-		}
-	}
-}
-
-impl<T: Config, Balance: AtLeast32BitUnsigned + Clone> pallet_staking::EraPayout<Balance>
-	for Pallet<T>
-{
-	fn era_payout(
-		total_staked: Balance,
-		total_issuance: Balance,
-		era_duration_millis: u64,
-	) -> (Balance, Balance) {
-		let year_inflation = InflationPercent::<T>::get();
-		let treasury_commission = TreasuryCommission::<T>::get();
-
-		era_payout_impl(
-			total_staked,
-			total_issuance,
-			era_duration_millis,
-			year_inflation,
-			treasury_commission,
-		)
 	}
 }
 
@@ -435,26 +410,6 @@ fn fee_processing_impl<T: Config>(
 	}
 }
 
-fn era_payout_impl<Balance: sp_runtime::traits::AtLeast32BitUnsigned + Clone>(
-	total_staked: Balance,
-	total_issuance: Balance,
-	era_duration_millis: u64,
-	year_inflation: Perbill,
-	treasury_commission: Perbill,
-) -> (Balance, Balance) {
-	let percent_per_era =
-		Perbill::from_rational(era_duration_millis, YEAR_IN_MILLIS) * year_inflation;
-
-	let validator_percent = Perbill::one() - treasury_commission;
-	let total_inflation = percent_per_era * total_issuance;
-	let validator_reward = validator_percent * percent_per_era * total_staked;
-
-	(
-		validator_reward.clone(),
-		total_inflation.saturating_sub(validator_reward),
-	)
-}
-
 /// Function calculates the treasury comission from the fees and tips.
 /// Returns reward for the treasury and reward for the author.
 fn evm_fee_processing_impl<T: Config>(
@@ -491,6 +446,24 @@ fn evm_fee_processing_impl<T: Config>(
 	(None, None)
 }
 
+impl<T: Config> CurrencyInfo for Pallet<T> {
+	fn current_apy() -> Perbill {
+		InflationPercent::<T>::get()
+	}
+	fn yearly_apy_decay() -> Perbill {
+		InflationDecay::<T>::get()
+	}
+	fn treasury_commission_from_staking() -> Perbill {
+		TreasuryCommission::<T>::get()
+	}
+	fn treasury_commission_from_fee() -> Perbill {
+		TreasuryCommissionFromFee::<T>::get()
+	}
+	fn treasury_commission_from_tips() -> Perbill {
+		TreasuryCommissionFromTips::<T>::get()
+	}
+}
+
 #[cfg(test)]
 mod tests {
 	use frame_support::{assert_ok, pallet_prelude::DispatchResult};
@@ -498,58 +471,11 @@ mod tests {
 	use sp_runtime::Perbill;
 
 	use super::{
-		era_payout_impl, evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
+		evm_fee_processing_impl, fee_processing_impl, DefaultInflationDecay,
 		DefaultInflationPercent, DefaultTreasuryCommission, DefaultTreasuryCommissionFromFee,
-		DefaultTreasuryCommissionFromTips, Event, YEAR_IN_MILLIS,
+		DefaultTreasuryCommissionFromTips, Event,
 	};
-
-	#[test]
-	fn test_year_calculation() {
-		let total_staked: u64 = 1000;
-		let total_issuance: u64 = 10000;
-		let treasury_commission = Perbill::from_percent(10);
-		let year_inflation = Perbill::from_percent(16);
-
-		let (validator_reward, treasury_reward) = era_payout_impl(
-			total_staked,
-			total_issuance,
-			YEAR_IN_MILLIS,
-			year_inflation,
-			treasury_commission,
-		);
-
-		// 1600 is total apy for year (16%)
-		// 160 is validator reward because staked is 10% of total issuance
-		// 16 is treasury comission from each validator reward, so validator reward is 160 - 16
-		assert_eq!(validator_reward, 160 - 16);
-		assert_eq!(treasury_reward, 1600 - 160 + 16);
-	}
-
-	#[test]
-	fn test_era_reward() {
-		let total_staked: u64 = 100000;
-		let total_issuance: u64 = 1000000;
-		let era_duration_millis = 1000 * 3600 * 24; // 1 day in milliseconds
-		let year_inflation = Perbill::from_percent(10);
-		let treasury_commission = Perbill::from_percent(10);
-
-		let (validator_reward, treasury_reward) = era_payout_impl(
-			total_staked,
-			total_issuance,
-			era_duration_millis,
-			year_inflation,
-			treasury_commission,
-		);
-
-		let percent = Perbill::from_rational(10u64, 36525u64); // (1/365.25 of 16%)
-		let validator_reward_expected =
-			(Perbill::one() - treasury_commission) * percent * total_staked;
-		assert_eq!(validator_reward, validator_reward_expected);
-		assert_eq!(
-			treasury_reward,
-			percent * total_issuance - validator_reward_expected
-		);
-	}
+	use mock::DecayPeriod;
 
 	#[test]
 	fn test_changing_params() {
@@ -592,7 +518,7 @@ mod tests {
 			assert_ok!(mock::CurrencyManager::init_inflation_decay());
 			let initial_inflation = mock::CurrencyManager::inflation_percent();
 			let decay = mock::CurrencyManager::inflation_decay();
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() + 1);
+			mock::run_to_block(DecayPeriod::get() + 1);
 			let inflation = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation, initial_inflation - (initial_inflation * decay));
 			let new_decoy = Perbill::from_percent(10);
@@ -600,7 +526,7 @@ mod tests {
 				mock::RuntimeOrigin::root(),
 				new_decoy
 			));
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() * 2 + 1);
+			mock::run_to_block(DecayPeriod::get() * 2 + 1);
 			let inflation_after_change = mock::CurrencyManager::inflation_percent();
 			assert_eq!(inflation_after_change, inflation - (inflation * new_decoy));
 		});
@@ -609,7 +535,7 @@ mod tests {
 	#[test]
 	fn test_default_inflation_decay_ladder() {
 		fn inflation_after_year(year: u64) -> Perbill {
-			mock::run_to_block(year * super::Pallet::<mock::Test>::decay_period());
+			mock::run_to_block(year * DecayPeriod::get());
 			mock::CurrencyManager::inflation_percent()
 		}
 
@@ -643,11 +569,11 @@ mod tests {
 		mock::test_runtime().execute_with(|| {
 			check_err();
 
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period() - 1);
+			mock::run_to_block(DecayPeriod::get() - 1);
 
 			check_err();
 
-			mock::run_to_block(super::Pallet::<mock::Test>::decay_period());
+			mock::run_to_block(DecayPeriod::get());
 			assert_ok!(mock::CurrencyManager::yearly_inflation_decay(
 				mock::RuntimeOrigin::root()
 			));
@@ -804,7 +730,7 @@ mod tests {
 		use frame_support::{
 			pallet_prelude::Weight,
 			parameter_types,
-			traits::{EqualPrivilegeOnly, FindAuthor, GenesisBuild, OnFinalize, OnInitialize},
+			traits::{EqualPrivilegeOnly, FindAuthor, OnFinalize, OnInitialize},
 			weights::constants::RocksDbWeight,
 			ConsensusEngineId, PalletId,
 		};
@@ -819,8 +745,6 @@ mod tests {
 		};
 		use sp_std::convert::{TryFrom, TryInto};
 		use std::str::FromStr;
-
-		use runtime_common::chain_spec as chain_specification;
 
 		impl_opaque_keys! {
 			pub struct MockSessionKeys {
@@ -843,9 +767,6 @@ mod tests {
 				CurrencyManager: currency,
 				Treasury: pallet_treasury,
 				Authorship: pallet_authorship,
-				// TODO: remove this, but currently it is needed because this pallet hard coupled to the `crate::Days` that calculated using `chain_specification`
-				RuntimeSpecification: chain_specification,
-				Timestamp: pallet_timestamp,
 				EVM: pallet_evm,
 			}
 		);
@@ -955,11 +876,15 @@ mod tests {
 			type WeightInfo = ();
 		}
 
+		parameter_types! {
+			pub const DecayPeriod: u64 = 10; // 10 blocks for testing is pretty fine.
+		}
 		impl currency::Config for Test {
 			type RuntimeEvent = RuntimeEvent;
 			type RuntimeCall = RuntimeCall;
 			type PrivilegedOrigin = EnsureRoot<u32>;
 			type FeeComissionRecipient = Treasury;
+			type DecayPeriod = DecayPeriod;
 		}
 
 		pub struct FixedGasPrice;
@@ -1017,23 +942,10 @@ mod tests {
 			type WeightInfo = ();
 		}
 
-		impl chain_specification::Config for Test {}
-
 		pub fn test_runtime() -> sp_io::TestExternalities {
-			let mut t = frame_system::GenesisConfig::default()
+			let t = frame_system::GenesisConfig::default()
 				.build_storage::<Test>()
 				.unwrap();
-
-			<runtime_common::chain_spec::GenesisConfig as GenesisBuild<Test>>::assimilate_storage(
-				&RuntimeSpecificationConfig {
-					chain_spec: chain_specification::RuntimeConfig {
-						block_time_in_millis: 1000000, // Make it huge to speed up tests
-						..Default::default()
-					},
-				},
-				&mut t,
-			)
-			.unwrap();
 
 			let mut ext = sp_io::TestExternalities::new(t);
 			ext.execute_with(|| System::set_block_number(1));
