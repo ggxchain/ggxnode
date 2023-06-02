@@ -156,7 +156,7 @@ where
 	/// * We don't need era history cause we make payout automatically for all validators and nominators at the end of the session.
 	/// * We have cut reward callback cause we don't need it.
 	/// * Added return for actual payout to not "burn/forgot" remainder
-	/// * Fixed comission calculation for nominators.
+	/// * Static/Median comission calculation for nominators.
 	///
 	/// Possible area of improvement:
 	/// * Can we remove nominators reward cup?.
@@ -337,7 +337,7 @@ where
 			});
 		}
 	}
-
+  
 	fn update_validator_commission(era: EraIndex) {
 		let validator_comission_calculator = Self::validator_commission_algorithm();
 

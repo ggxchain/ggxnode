@@ -167,6 +167,7 @@ impl pallet_evm::Config for Runtime {
 	type OnChargeTransaction = GGXEVMCurrencyAdapter<Balances, Treasury>;
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type OnCreate = ();
+	type WeightInfo = ();
 }
 
 parameter_types! {

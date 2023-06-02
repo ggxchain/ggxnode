@@ -939,6 +939,7 @@ mod tests {
 			type OnChargeTransaction = ();
 			type OnCreate = ();
 			type FindAuthor = FindAuthorTruncated;
+			type WeightInfo = ();
 		}
 
 		pub fn test_runtime() -> sp_io::TestExternalities {

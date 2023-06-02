@@ -17,7 +17,9 @@ mod prelude;
 mod version;
 pub use version::VERSION;
 
-use frame_support::pallet_prelude::TransactionPriority;
+use frame_support::{
+	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
+};
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -187,15 +189,15 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
+/// We allow for 1 seconds of compute with a 2 second average block time.
+const MAXIMUM_BLOCK_WEIGHT: Weight =
+	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND, 5 * WEIGHT_PROOF_SIZE_PER_MB);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
-	/// We allow for 1 seconds of compute with a 2 second average block time.
-	pub storage MaximumBlockWeight: Weight = Weight::from_parts(
-		(RuntimeSpecification::chain_spec().block_time_in_millis / 1000) * WEIGHT_REF_TIME_PER_SECOND,
-		u64::MAX,
-	);
+	pub const MaximumBlockWeight: Weight = MAXIMUM_BLOCK_WEIGHT;
+
 	pub BlockWeights: frame_system::limits::BlockWeights =  frame_system::limits::BlockWeights::builder()
 	.base_block(BlockExecutionWeight::get())
 	.for_class(DispatchClass::all(), |weights| {
