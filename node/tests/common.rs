@@ -111,10 +111,9 @@ pub async fn get_treasury_balance(url: &str) -> Result<u128, Box<dyn std::error:
 	let opt: Option<StorageData> =
 		StateApi::<Hash>::storage(&rpc, StorageKey(decoded), None).await?;
 
-	let data: Result<
-		std::option::Option<AccountInfo<Index, AccountData>>,
-		Result<AccountInfo<Index, AccountData>, std::string::String>,
-	> = opt.map(|encoded| AccountInfo::decode_all(&mut &encoded.0[..]))
+	type Info = AccountInfo<Index, AccountData>;
+	let data: Result<std::option::Option<Info>, Result<Info, std::string::String>> = opt
+		.map(|encoded| AccountInfo::decode_all(&mut &encoded.0[..]))
 		.transpose()
 		.map_err(|decode_err| Err(decode_err.to_string()));
 
