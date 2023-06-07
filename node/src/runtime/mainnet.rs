@@ -130,8 +130,6 @@ pub fn testnet_genesis(
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
-
-
 			accounts: Precompiles::used_addresses()
 				.map(|addr| {
 					(
@@ -146,7 +144,6 @@ pub fn testnet_genesis(
 				})
 				.into_iter()
 				.collect(),
-
 		},
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),

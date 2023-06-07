@@ -56,7 +56,7 @@ frame_support::construct_runtime!(
 impl pallet_aura::Config for Test {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
-	type MaxAuthorities = ConstU32<4>;
+	type MaxAuthorities = ConstU32<50>;
 }
 
 impl pallet_balances::Config for Test {
@@ -90,7 +90,7 @@ impl onchain::Config for OnChainSeqPhragmen {
 }
 
 impl pallet_staking::Config for Test {
-	type MaxNominations = ConstU32<16>;
+	type MaxNominations = ConstU32<50>;
 	type RewardRemainder = ();
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
 	type RuntimeEvent = RuntimeEvent;
@@ -315,7 +315,7 @@ pub fn new_test_ext_raw_authorities(authorities: Vec<AuthorityId>) -> sp_io::Tes
 			Staking::validate(
 				RuntimeOrigin::signed(i as u32),
 				ValidatorPrefs {
-					commission: Perbill::from_percent((10 * (i + 1)) as u32),
+					commission: Perbill::from_percent((i + 1) as u32),
 					..Default::default()
 				},
 			)
