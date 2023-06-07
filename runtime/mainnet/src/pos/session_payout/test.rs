@@ -1,6 +1,7 @@
 use super::*;
 
 #[test]
+
 fn test_year_calculation() {
 	let total_staked: u64 = 1000;
 	let total_issuance: u64 = 10000;
@@ -23,6 +24,7 @@ fn test_year_calculation() {
 }
 
 #[test]
+
 fn test_daily_session_reward() {
 	let total_staked: u64 = 100000;
 	let total_issuance: u64 = 1000000;
@@ -48,7 +50,6 @@ fn test_daily_session_reward() {
 }
 
 #[test]
-
 fn year_payout_issuance_change_is_correct() {
 	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
 	ext.execute_with(|| {
@@ -78,6 +79,7 @@ fn year_payout_issuance_change_is_correct() {
 }
 
 #[test]
+
 fn one_session_issuance_is_correct() {
 	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
 	ext.execute_with(|| {
@@ -112,5 +114,56 @@ fn reward_pool_is_allocating() {
 
 		assert_eq!(day364 - day363, day365 - day364);
 		assert_ne!(day365 - day364, day366 - day365);
+	});
+}
+
+#[test]
+fn one_session_validator_reward_is_correct() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
+	ext.execute_with(|| {
+		const VALIDATOR_ID: u32 = 0;
+		const NOMINATOR_ID: u32 = 2;
+		log::logger().flush();
+
+		let current_era = mock::Staking::active_era().unwrap().index;
+		let total_issuance = mock::Balances::total_issuance();
+		let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
+		let total_stake = mock::Staking::eras_total_stake(current_era);
+		assert!(
+			total_stake > 0,
+			"Total staked must be greater than 0 at {current_era} era"
+		);
+
+		let year_reward = mock::SessionPayout::year_reward().0;
+		let time_per_session = mock::SESSION_PERIOD * mock::BLOCK_TIME;
+		let total_session_reward = Perbill::from_rational(time_per_session, YEAR_IN_MILLIS as u64)
+			* (Perbill::one() - mock::CurrencyManager::treasury_commission_from_staking())
+			* year_reward;
+
+		let validator_reward = dbg!(
+			Perbill::from_rational(total_stake, total_issuance)
+			* Perbill::from_percent(50) // other 50% goes to other validator
+			* total_session_reward
+		);
+		let comission_reward = Perbill::from_percent(20) * validator_reward; // 10% + 20% = 20% median
+		let reward_after_comission = dbg!( Perbill::from_rational(stake.own, stake.total)) // Stake to nominator ratio
+			* (validator_reward - comission_reward);
+
+		let total_reward_expected = reward_after_comission + comission_reward;
+
+		let validator_balance = mock::Balances::free_balance(VALIDATOR_ID);
+
+		mock::skip_with_reward_n_sessions(1);
+
+		let validator_balance_after = mock::Balances::free_balance(VALIDATOR_ID);
+
+		assert!(total_reward_expected > 0);
+		assert_eq!(
+			total_reward_expected,
+			validator_balance_after - validator_balance,
+			"Validator didn't receive reward. Expected {} == received {}",
+			total_reward_expected,
+			validator_balance_after - validator_balance
+		);
 	});
 }

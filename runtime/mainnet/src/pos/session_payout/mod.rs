@@ -34,11 +34,13 @@ impl ValidatorCommissionAlgorithm {
 		match &self {
 			Self::Static(comission) => Some(*comission),
 			Self::Median => {
-				let validator_preferences =
-					pallet_staking::ErasValidatorPrefs::<T>::iter_prefix_values(era);
-				let mut comissions: Vec<_> = validator_preferences
-					.map(|prefs| prefs.commission)
-					.collect();
+				// to work out properly, we need to map all current validators to their actual comission (not the era one)
+				// TODO: Open question. MEDIAN of current ERA or current SESSION? Can validator change preferences during session? I think - yes, cause ERA is long.
+				let current_validators = pallet_staking::ErasStakers::<T>::iter_key_prefix(era);
+				let mut comissions = current_validators
+					.map(|id| pallet_staking::Validators::<T>::get(id).commission)
+					.collect::<Vec<_>>();
+
 				if comissions.is_empty() {
 					return None;
 				}
@@ -125,12 +127,6 @@ pub mod pallet {
 	pub type ValidatorToNominatorCommissionAlgorithm<T: Config> =
 		StorageValue<_, ValidatorCommissionAlgorithm, ValueQuery>;
 
-	/// Validator comission to nominators. Calculated each era by `ValidatorComissionAlgorithm`.
-	/// Please, note that we can't calculate more often, because pallet_staking updates preferences only on era start.
-	#[pallet::storage]
-	#[pallet::getter(fn validator_commission)]
-	pub type ValidatorCommission<T: Config> = StorageValue<_, Perbill, ValueQuery>;
-
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
@@ -205,7 +201,9 @@ where
 		// This is how much validator + nominators are entitled to.
 		let validator_total_payout = validator_total_reward_part * session_payout;
 
-		let validator_commission = Self::validator_commission();
+		let validator_commission = Self::validator_commission_algorithm()
+			.comission::<T>(era)
+			.unwrap_or_default();
 		let validator_commission_payout = validator_commission * validator_total_payout;
 
 		// This is how much validator + nominators are entitled to after validator commission.
@@ -260,6 +258,12 @@ where
 	/// * RewardDestination::Staked is not supported by us, so we will reward to controller.
 	fn make_payout(stash: &T::AccountId, amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
 		let dest = pallet_staking::Pallet::<T>::payee(stash);
+		log::debug!(
+			target: "runtime::session_payout::make_payout",
+			"stash: {:?}, amount: {:?}, dest: {:?}",
+			stash,
+			amount,
+			dest);
 		match dest {
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
 				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
@@ -287,7 +291,7 @@ where
 	) -> T::CurrencyBalance {
 		let mut total_payout = Zero::zero();
 		let session_points = Self::total_session_points(current_era);
-		for (validator, _) in <pallet_staking::Validators<T>>::iter() {
+		for validator in <pallet_staking::ErasStakers<T>>::iter_key_prefix(current_era) {
 			log::debug!(target: "runtime::session_payout", "make_validators_payout: validator: {:?}", validator);
 			let validator_payout = validator_reward;
 			if let Ok(payout) =
@@ -308,7 +312,7 @@ where
 		let era_reward_points = <pallet_staking::ErasRewardPoints<T>>::get(current_era);
 
 		let session_points = if last_era != current_era {
-			Self::on_era_change(current_era);
+			LastEra::<T>::set(current_era);
 			// This is the first session in this era, so we don't need to calculate difference
 			// We need to load it again to clone. Original type doesn't support it...
 			<pallet_staking::ErasRewardPoints<T>>::get(current_era)
@@ -337,25 +341,6 @@ where
 			});
 		}
 	}
-  
-	fn update_validator_commission(era: EraIndex) {
-		let validator_comission_calculator = Self::validator_commission_algorithm();
-
-		if let Some(value) = validator_comission_calculator.comission::<T>(era) {
-			ValidatorCommission::<T>::set(value);
-		} else {
-			log::warn!(
-				target: "runtime::session_payout",
-				"update_validator_commission: validator commission is not set for era: {:?}. Using value from previous era.",
-				era
-			);
-		}
-	}
-
-	fn on_era_change(new_era: EraIndex) {
-		LastEra::<T>::set(new_era);
-		Self::update_validator_commission(new_era);
-	}
 }
 
 fn substract_era_points<AccountId: Ord>(
@@ -380,67 +365,64 @@ where
 		<T as pallet::Config>::WrappedSessionManager::new_session(new_index)
 	}
 
+	fn new_session_genesis(new_index: u32) -> Option<Vec<T::ValidatorId>> {
+		<T as pallet::Config>::WrappedSessionManager::new_session_genesis(new_index)
+	}
+
 	fn start_session(new_index: u32) {
 		<T as pallet::Config>::WrappedSessionManager::start_session(new_index)
 	}
 
 	fn end_session(session_index: u32) {
+		let current_era = <pallet_staking::Pallet<T>>::current_era();
+		let now_as_millis = T::TimeProvider::now().as_millis();
+
 		if session_index == 0 {
 			// First session is not payable, cause we can't set a timestamp for it. TimeProvider is not working yet.
-			let now_as_millis = T::TimeProvider::now().as_millis();
-			SessionStartTime::<T>::put(now_as_millis);
 			Self::update_year_reward(now_as_millis);
-			return;
-		}
-
-		let current_era = <pallet_staking::Pallet<T>>::current_era();
-		if current_era.is_none() {
+		} else if current_era.is_none() {
 			log::warn!(target: "runtime::session_payout", "end_session: current_era is None");
-			return;
+		} else {
+			let current_era = current_era.unwrap();
+
+			// Make payout at the end of each session.
+			let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
+
+			let last_payout = SessionStartTime::<T>::get();
+			let session_duration = now_as_millis - last_payout;
+
+			Self::update_year_reward(now_as_millis);
+
+			let staked = pallet_staking::Pallet::<T>::eras_total_stake(current_era);
+			let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
+			let (year_reward, _) = YearReward::<T>::get();
+
+			let (validator_payout, remainder) = calculate_session_payout(
+				staked,
+				issuance,
+				session_duration,
+				year_reward,
+				treasury_commission,
+			);
+
+			Self::deposit_event(Event::<T>::SessionPayout {
+				session_index,
+				validator_payout,
+				remainder,
+			});
+			log::debug!(target: "runtime::session_payout", "end_session: validator_payout: {:?}, remainder: {:?}", validator_payout, remainder);
+
+			let total_validator_payout =
+				Self::make_validators_payout(validator_payout, current_era);
+			//  We can have a remainder due to rounding errors. Mostly, it's 1-3 units. But it's a lot on a large scale.
+			let failed_to_pay = validator_payout - total_validator_payout;
+			T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(
+				remainder + failed_to_pay,
+			));
 		}
-		let current_era = current_era.unwrap();
-
-		// Make payout at the end of each session.
-		let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
-
-		let now_as_millis = T::TimeProvider::now().as_millis();
-		let last_payout = SessionStartTime::<T>::get();
-		let session_duration = now_as_millis - last_payout;
-
-		Self::update_year_reward(now_as_millis);
-
-		let staked = pallet_staking::Pallet::<T>::eras_total_stake(current_era);
-		let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
-		let (year_reward, _) = YearReward::<T>::get();
-
-		let (validator_payout, remainder) = calculate_session_payout(
-			staked,
-			issuance,
-			session_duration,
-			year_reward,
-			treasury_commission,
-		);
-
-		Self::deposit_event(Event::<T>::SessionPayout {
-			session_index,
-			validator_payout,
-			remainder,
-		});
-		log::debug!(target: "runtime::session_payout", "end_session: validator_payout: {:?}, remainder: {:?}", validator_payout, remainder);
-
-		let total_validator_payout = Self::make_validators_payout(validator_payout, current_era);
-		//  We can have a remainder due to rounding errors. Mostly, it's 1-3 units. But it's a lot on a large scale.
-		let failed_to_pay = validator_payout - total_validator_payout;
-		T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(
-			remainder + failed_to_pay,
-		));
 
 		SessionStartTime::<T>::put(now_as_millis);
-		<T as pallet::Config>::WrappedSessionManager::end_session(session_index)
-	}
-
-	fn new_session_genesis(new_index: u32) -> Option<Vec<T::ValidatorId>> {
-		<T as pallet::Config>::WrappedSessionManager::new_session_genesis(new_index)
+		<T as pallet::Config>::WrappedSessionManager::end_session(session_index);
 	}
 }
 
