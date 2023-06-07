@@ -43,13 +43,13 @@ From the repository's root directory execute following commands in order:
 
 Brooklyn:
 ```bash
-docker build -t golden-gate-node-brooklyn:local .
-docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd):/tmp golden-gate-node:local /usr/src/app/target/release/golden-gate-node --dev --ws-external --base-path=/data --chain /tmp/customSpecRaw.json
+docker build -f Dockerfile.brooklyn -t golden-gate-node:brooklyn .
+docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd)/custom-spec-files:/tmp golden-gate-node:brooklyn /usr/src/app/target/release/golden-gate-node --dev --ws-external --base-path=/data-brooklyn --chain /tmp/brooklyn.json
 ```
 Sydney:
 ```bash
-docker build -f ./sydney/Dockerfile -t golden-gate-node-sydney:local .
-docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd):/tmp golden-gate-node-sydney:local /usr/src/app/target/release/golden-gate-node --ws-external --base-path=/data --chain /tmp/sydney/sydney.json --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWHAuH2gKDCgoAVYciPgaoejVwXckEsjknr8AHHPEfdzgS --telemetry-url "ws://3.127.40.214:8001/submit 0"
+docker build -f Dockerfile.sydney -t golden-gate-node:sydney .
+docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd)/custom-spec-files:/tmp golden-gate-node:sydney /usr/src/app/target/release/golden-gate-node --ws-external --base-path=/data-sydney --chain /tmp/sydney.json --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWHAuH2gKDCgoAVYciPgaoejVwXckEsjknr8AHHPEfdzgS --telemetry-url "ws://3.127.40.214:8001/submit 0"
 ```
 
 #### Build
