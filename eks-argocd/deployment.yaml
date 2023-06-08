@@ -19,16 +19,16 @@ spec:
         - name: json-installer
           image: busybox
           imagePullPolicy: "IfNotPresent"
-          command: ["wget", "-O", "/chain-data/customSpecRaw.json", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/customSpecRaw.json" ]
+          command: ["wget", "-O", "/tmp/customSpecRaw.json", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/customSpecRaw.json" ]
           volumeMounts: 
-            - name: substrate-brooklyn-data
-              mountPath: /chain-data
+            - name: chain-info
+              mountPath: /tmp
       containers:
         - name: substrate-brooklyn
           image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
           imagePullPolicy: "IfNotPresent"
           command: [ "/usr/src/app/target/release/golden-gate-node" ]
-          args: ["--base-path=$(BASE_PATH)", "--name=$(NAME)", "--chain=/tmp/customSpecRaw.json", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
+          args: ["--base-path=$(BASE_PATH)", "--name=$(NAME)", "--chain=/chain-info/customSpecRaw.json", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
           envFrom:
             - configMapRef:
                 name: ggx-node-config
@@ -47,7 +47,12 @@ spec:
             - containerPort: 30333
           volumeMounts:
             - name: substrate-brooklyn-data
-              mountPath: /tmp
+              mountPath: /chain-data
+            - name: chain-info
+              mountPath: /chain-info
       volumes:
         - name: substrate-brooklyn-data
+          persistentVolumeClaim:
+            claimName: brooklyn-pvc
+        - name: chain-info
           emptyDir: {}
