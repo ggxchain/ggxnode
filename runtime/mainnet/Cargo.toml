@@ -15,7 +15,6 @@ targets = ["x86_64-unknown-linux-gnu"]
 log.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
 scale-info.workspace = true
-serde = { workspace = true, features = ["derive"] }
 
 # Substrate
 sp-api.workspace = true
@@ -108,7 +107,6 @@ fast-runtime = []
 std = [
 	"scale-codec/std",
 	"scale-info/std",
-	"serde/std",
 	# Substrate
 	"sp-api/std",
 	"sp-arithmetic/std",
