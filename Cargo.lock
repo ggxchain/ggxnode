@@ -6405,7 +6405,7 @@ dependencies = [
  "pallet-evm",
  "pallet-session",
  "pallet-timestamp",
- "parity-scale-codec 3.4.0",
+ "parity-scale-codec 3.5.0",
  "precompile-utils",
  "serde",
  "sha3 0.8.2",
