@@ -631,6 +631,7 @@
                           nodePackages.markdownlint-cli2
                           jq
                           subkey
+                          openssl
                         ]
                         ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
                       env = rust-env;

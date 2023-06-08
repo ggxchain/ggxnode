@@ -6,6 +6,7 @@ use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_ed25519::Ed25519Verify;
 use pallet_evm_precompile_modexp::Modexp;
+use pallet_evm_precompile_session::SessionWrapper;
 use pallet_evm_precompile_sha3fips::Sha3FIPS256;
 use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripemd160, Sha256};
 use pallet_evm_precompile_sr25519::Sr25519Precompile;
@@ -42,7 +43,9 @@ pub mod consts {
 	/// 5005 is used in Astar, so preserve the address for contracts interoperability
 	pub const XVM: H160 = hash(0x5005);
 
-	pub const SUPPORTED_PRECOMPILES: [H160; 16] = [
+	pub const SESSION_WRAPPER: H160 = hash(0x2052);
+
+	pub const SUPPORTED_PRECOMPILES: [H160; 17] = [
 		EC_RECOVER,
 		SHA256,
 		RIPEMD160,
@@ -59,6 +62,7 @@ pub mod consts {
 		SR25519_VERIFY,
 		ECDSA_VERIFY,
 		XVM,
+		SESSION_WRAPPER,
 	];
 
 	const fn hash(a: u64) -> H160 {
@@ -116,7 +120,7 @@ impl<R> GoldenGatePrecompiles<R> {
 	/// * 0x5002 - is Sr25519 verify
 	/// * 0x5003 - is Ecdsa verify
 	/// * 0x5005 - is cross virtual machine (XVM)
-	pub fn used_addresses() -> [H160; 16] {
+	pub fn used_addresses() -> [H160; 17] {
 		consts::SUPPORTED_PRECOMPILES
 	}
 }
@@ -124,6 +128,7 @@ impl<R> GoldenGatePrecompiles<R> {
 impl<R> PrecompileSet for GoldenGatePrecompiles<R>
 where
 	XvmPrecompile<R>: Precompile,
+	SessionWrapper<R>: Precompile,
 	R: pallet_evm::Config + pallet_xvm::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
@@ -149,6 +154,7 @@ where
 			a if a == consts::ECDSA_VERIFY => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
 			// 0x5005 - is cross virtual machine (XVM)
 			a if a == consts::XVM => Some(XvmPrecompile::<R>::execute(handle)),
+			a if a == consts::SESSION_WRAPPER => Some(SessionWrapper::<R>::execute(handle)),
 			_ => None,
 		}
 	}

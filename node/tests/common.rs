@@ -111,10 +111,9 @@ pub async fn get_treasury_balance(url: &str) -> Result<u128, Box<dyn std::error:
 	let opt: Option<StorageData> =
 		StateApi::<Hash>::storage(&rpc, StorageKey(decoded), None).await?;
 
-	let data: Result<
-		std::option::Option<AccountInfo<Index, AccountData>>,
-		Result<AccountInfo<Index, AccountData>, std::string::String>,
-	> = opt.map(|encoded| AccountInfo::decode_all(&mut &encoded.0[..]))
+	type Info = AccountInfo<Index, AccountData>;
+	let data: Result<std::option::Option<Info>, Result<Info, std::string::String>> = opt
+		.map(|encoded| AccountInfo::decode_all(&mut &encoded.0[..]))
 		.transpose()
 		.map_err(|decode_err| Err(decode_err.to_string()));
 
@@ -124,6 +123,25 @@ pub async fn get_treasury_balance(url: &str) -> Result<u128, Box<dyn std::error:
 	};
 
 	Ok(free_balance)
+}
+
+/// get qWFeXVApgApnQCtqEKURfvRJUpvUA22bLiEyEA2iapF4vcuqS next session key
+pub async fn get_next_session_keys(url: &str) -> Result<Vec<u8>, Box<dyn std::error::Error>> {
+	use substrate_rpc_client::{ws_client, StateApi};
+	let rpc = ws_client(url).await.unwrap();
+
+	// 0xaaafB3972B05630fCceE866eC69CdADd9baC2771 ss58 address is qWFeXVApgApnQCtqEKURfvRJUpvUA22bLiEyEA2iapF4vcuqS)
+	// strorage key is encode from session.nextKeys(qWFeXVApgApnQCtqEKURfvRJUpvUA22bLiEyEA2iapF4vcuqS)
+	let key = "cec5070d609dd3497f72bde07fc96ba04c014e6bf8b8c2c011e7290b85696bb3a34f28f2a5dd476c93eac2793cb6d9e837b0f8da1a63dbc0db2ca848c05cbe66db139157922f78f9";
+	let decoded = hex::decode(key).expect("Decoding failed");
+
+	let opt: Option<StorageData> =
+		StateApi::<Hash>::storage(&rpc, StorageKey(decoded), None).await?;
+
+	let data = opt.unwrap_or_default().0;
+
+	println!("### get key is {:?}", data);
+	Ok(data)
 }
 
 /// Run the node for a while (3 blocks)
