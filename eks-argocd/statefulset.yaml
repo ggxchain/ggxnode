@@ -1,13 +1,14 @@
 apiVersion: apps/v1
-kind: Deployment
+kind: StatefulSet
 metadata:
   name: substrate-brooklyn
   namespace: substrate-brooklyn
 spec:
+  serviceName: substrate-brooklyn
   selector:
     matchLabels:
       app: substrate-brooklyn
-  replicas: 1
+  replicas: 3
   template:
     metadata:
       labels:
@@ -19,7 +20,10 @@ spec:
         - name: json-installer
           image: busybox
           imagePullPolicy: "IfNotPresent"
-          command: ["wget", "-O", "/tmp/customSpecRaw.json", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/customSpecRaw.json" ]
+          command: ["wget", "-O", "/tmp/$(CHAINSPEC)", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/$(CHAINSPEC)" ]
+          envFrom:
+            - configMapRef:
+                name: ggx-node-config
           volumeMounts: 
             - name: chain-info
               mountPath: /tmp
@@ -28,7 +32,7 @@ spec:
           image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
           imagePullPolicy: "IfNotPresent"
           command: [ "/usr/src/app/target/release/golden-gate-node" ]
-          args: ["--base-path=$(BASE_PATH)", "--name=$(NAME)", "--chain=/chain-info/customSpecRaw.json", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
+          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
           envFrom:
             - configMapRef:
                 name: ggx-node-config
@@ -51,8 +55,15 @@ spec:
             - name: chain-info
               mountPath: /chain-info
       volumes:
-        - name: substrate-brooklyn-data
-          persistentVolumeClaim:
-            claimName: brooklyn-pvc
         - name: chain-info
           emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: substrate-brooklyn-data
+      labels:
+        app: substrate-brooklyn
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Gi
