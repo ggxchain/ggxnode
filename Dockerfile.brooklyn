@@ -17,7 +17,7 @@ WORKDIR /usr/src/app
 
 COPY  . .
 
-RUN cargo build --locked --release --config net.git-fetch-with-cli=true
+RUN cargo build --release --config net.git-fetch-with-cli=true
 
 
 FROM debian:11 as production
