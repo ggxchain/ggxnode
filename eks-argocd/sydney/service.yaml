@@ -1,0 +1,21 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ggx-sydney-archive
+  namespace: ggx-sydney
+spec:
+  ports:
+    - name: p2p
+      protocol: TCP
+      port: 30333
+      targetPort: 30333
+    - name: websocket
+      protocol: TCP
+      port: 9944
+      targetPort: 9944
+    - name: rpc
+      protocol: TCP
+      port: 9933
+      targetPort: 9933
+  selector:
+    app: ggx-sydney-archive
