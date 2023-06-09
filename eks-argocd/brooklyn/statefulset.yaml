@@ -32,7 +32,7 @@ spec:
           image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
           imagePullPolicy: "IfNotPresent"
           command: [ "/usr/src/app/target/release/golden-gate-node" ]
-          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)"]
+          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)", "--bootnodes=$(BOOT_NODES)"]
           envFrom:
             - configMapRef:
                 name: ggx-node-config
