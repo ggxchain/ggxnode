@@ -8,7 +8,7 @@ spec:
   selector:
     matchLabels:
       app: substrate-brooklyn
-  replicas: 3
+  replicas: 1
   template:
     metadata:
       labels:
@@ -54,7 +54,13 @@ spec:
               mountPath: /chain-data
             - name: chain-info
               mountPath: /chain-info
+            - name: aura-gran-pair
+              mountPath: /chain-data/chains/local_testnet/keystore/
+              readOnly: true
       volumes:
+        - name: aura-gran-pair
+          secret:
+            secretName: ggx-node-keys
         - name: chain-info
           emptyDir: {}
   volumeClaimTemplates:
