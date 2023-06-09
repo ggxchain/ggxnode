@@ -2,10 +2,10 @@
 
 use frame_support::{
 	pallet_prelude::MaxEncodedLen,
-	traits::{InstanceFilter, WithdrawReasons},
+	traits::{AsEnsureOriginWithArg, InstanceFilter, WithdrawReasons},
 	PalletId, RuntimeDebug,
 };
-use frame_system::{EnsureRoot, EnsureWithSuccess};
+use frame_system::{EnsureRoot, EnsureSigned, EnsureWithSuccess};
 use sp_runtime::traits::ConvertInto;
 
 use super::*;
@@ -62,6 +62,13 @@ parameter_types! {
 	pub const MaxSubAccounts: u32 = 100;
 	pub const MaxAdditionalFields: u32 = 100;
 	pub const MaxRegistrars: u32 = 20;
+
+	// Assets
+	pub const AssetDeposit: Balance = 100 * GGX;
+	pub const ApprovalDeposit: Balance = 1 * GGX;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * GGX;
+	pub const MetadataDepositPerByte: Balance = 1 * GGX;
 }
 
 pub type PeriodicSessions = pallet_session::PeriodicSessions<SessionPeriod, SessionOffset>;
@@ -181,6 +188,29 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+impl pallet_assets::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = u128;
+	type AssetId = u32;
+	type AssetIdParameter = scale_codec::Compact<u32>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = ConstU128<GGX>;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type CallbackHandle = ();
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type RemoveItemsLimit = ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
+}
+
 /// The type used to represent the kinds of proxying allowed.
 #[derive(
 	Copy,
@@ -217,6 +247,7 @@ impl InstanceFilter<RuntimeCall> for ProxyType {
 				c,
 				RuntimeCall::System(..) |
 				RuntimeCall::Timestamp(..) |
+				RuntimeCall::Assets(..) |
 				RuntimeCall::Indices(pallet_indices::Call::claim{..}) |
 				RuntimeCall::Indices(pallet_indices::Call::free{..}) |
 				RuntimeCall::Indices(pallet_indices::Call::freeze{..}) |
