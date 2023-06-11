@@ -1,6 +1,6 @@
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "mainnet"))]
 pub mod testnet;
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "mainnet"))]
 use testnet as service;
 
 #[cfg(feature = "mainnet")]

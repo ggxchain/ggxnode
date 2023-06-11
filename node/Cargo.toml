@@ -25,7 +25,7 @@ scale-codec = { package = "parity-scale-codec", workspace = true }
 sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
-sc-consensus-aura = { workspace = true, optional = true }
+sc-consensus-aura = { workspace = true }
 sc-consensus-manual-seal = { workspace = true, optional = true }
 sc-consensus.workspace = true
 sc-executor.workspace = true
@@ -57,20 +57,20 @@ frame-system.workspace = true
 pallet-transaction-payment.workspace = true
 
 # Frontier
-fc-cli = { workspace = true, optional = true }
-fc-consensus = { workspace = true, optional = true }
-fc-db = { workspace = true, optional = true }
-fc-mapping-sync = { workspace = true, optional = true }
-fc-rpc = { workspace = true, optional = true }
-fc-rpc-core = { workspace = true, optional = true }
-fc-storage = { workspace = true, optional = true }
-fp-dynamic-fee = { workspace = true, features = ["std"], optional = true }
-fp-evm = { workspace = true, features = ["std"], optional = true }
-fp-rpc = { workspace = true, features = ["std"], optional = true }
-fp-storage = { workspace = true, features = ["std"], optional = true }
+fc-cli = { workspace = true }
+fc-consensus = { workspace = true }
+fc-db = { workspace = true }
+fc-mapping-sync = { workspace = true }
+fc-rpc = { workspace = true }
+fc-rpc-core = { workspace = true }
+fc-storage = { workspace = true }
+fp-dynamic-fee = { workspace = true, features = ["std"] }
+fp-evm = { workspace = true, features = ["std"] }
+fp-rpc = { workspace = true, features = ["std"] }
+fp-storage = { workspace = true, features = ["std"] }
 
 golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
-golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
+golden-gate-runtime-testnet = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -91,49 +91,23 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["aura", "with-rocksdb-weights", "testnet"]
-testnet = [
-	"golden-gate-runtime-testnet",
-	"fc-cli",
-	"fc-consensus",
-	"fc-db",
-	"fc-mapping-sync",
-	"fc-rpc",
-	"fc-rpc-core",
-	"fp-dynamic-fee",
-	"fp-evm",
-	"fp-rpc",
-	"fp-storage",
-	"fc-storage",
-]
+default = []
 mainnet = [
 	"golden-gate-runtime-mainnet",
-	"fc-consensus",
-	"fc-db",
-	"fc-mapping-sync",
-	"fc-rpc",
-	"fc-rpc-core",
-	"fp-dynamic-fee",
-	"fp-rpc",
-	"fc-storage",
-]
-
-aura = [
-	"sc-consensus-aura",
-	"golden-gate-runtime-testnet?/aura",
-	"golden-gate-runtime-mainnet?/aura",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"golden-gate-runtime-testnet?/manual-seal",
+	"golden-gate-runtime-testnet/manual-seal",
 	"golden-gate-runtime-mainnet?/manual-seal",
 ]
-with-rocksdb-weights = ["golden-gate-runtime-testnet?/with-rocksdb-weights", "golden-gate-runtime-mainnet?/with-rocksdb-weights"]
-with-paritydb-weights = ["golden-gate-runtime-testnet?/with-paritydb-weights", "golden-gate-runtime-mainnet?/with-paritydb-weights"]
+with-paritydb-weights = [
+	"golden-gate-runtime-testnet/with-paritydb-weights",
+	"golden-gate-runtime-mainnet?/with-paritydb-weights"
+]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"golden-gate-runtime-testnet?/runtime-benchmarks",
+	"golden-gate-runtime-testnet/runtime-benchmarks",
 	"golden-gate-runtime-mainnet?/runtime-benchmarks",
 ]

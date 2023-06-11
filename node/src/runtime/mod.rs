@@ -1,9 +1,9 @@
 use sp_core::{Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "mainnet"))]
 pub mod testnet;
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "mainnet"))]
 pub use testnet::*;
 
 #[cfg(feature = "mainnet")]
