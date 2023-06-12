@@ -1,5 +1,10 @@
 use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEvent, Timestamp};
-use crate::{chain_extensions::IBCISC20Extension, deposit, prelude::*, Balance, BlockWeights};
+use crate::{
+	chain_extensions::{IBCISC20Extension, Psp22Extension},
+	deposit,
+	prelude::*,
+	Balance, BlockWeights,
+};
 
 pub use frame_support::dispatch::DispatchClass;
 use frame_support::weights::Weight;
@@ -14,6 +19,10 @@ impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
 
 impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
 	const ID: u16 = 2;
+}
+
+impl RegisteredChainExtension<Runtime> for Psp22Extension {
+	const ID: u16 = 3;
 }
 
 parameter_types! {
