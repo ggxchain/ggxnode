@@ -1,15 +1,18 @@
 FROM rustlang/rust:nightly as builder
 
-RUN apt-get update -y && \
-    apt-get install -y libclang-dev && \
-    apt-get install -y libudev-dev && \
-    apt-get install -y libssl-dev && \
-    apt-get install -y pkg-config && \
-    apt-get install -y gcc && \
-    apt-get install -y cmake && \
-    apt-get install -y git && \
-    apt-get install -y gcc && \
-    apt-get install -y protobuf-compiler
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update --yes && \
+    apt-get install --yes --no-install-recommends \
+        libclang-dev \
+        libudev-dev \
+        libssl-dev \
+        pkg-config \
+        gcc \
+        cmake \
+        git \
+        gcc \
+        protobuf-compiler
 
 RUN rustup target add wasm32-unknown-unknown
 
