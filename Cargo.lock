@@ -3744,6 +3744,7 @@ dependencies = [
  "paste",
  "runtime-common",
  "scale-info",
+ "serde",
  "sp-api",
  "sp-arithmetic",
  "sp-block-builder",
