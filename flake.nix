@@ -450,7 +450,7 @@
                     WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
                     WS_PORT_BOB=''${WS_PORT_BOB:-9945}
                     WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
-                    ( $package --chain=local --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
+                    ( $package -o debug/alice --chain=local -ldkg=debug -ldkg_metadata=debug -lruntime::offchain=debug -ldkg_proposal_handler=debug -ldkg_proposals=debug --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
                     ( $package --chain=local --rpc-cors=all --bob --tmp --ws-port="$WS_PORT_BOB" &> bob.log ) &
                     ( $package --chain=local --rpc-cors=all --charlie --tmp --ws-port="$WS_PORT_CHARLIE" &> charlie.log ) &
                     echo https://test.explorer.ggxchain.io/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer

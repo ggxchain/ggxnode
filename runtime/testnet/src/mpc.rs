@@ -24,6 +24,8 @@ parameter_types! {
 parameter_types! {
 	pub const DecayPercentage: Percent = Percent::from_percent(50);
 	pub const UnsignedInterval: BlockNumber = 3;
+	pub const UnsignedPriority: u64 = 1 << 20;
+
 }
 
 /// Reputation type
@@ -46,7 +48,7 @@ impl pallet_dkg_metadata::Config for Runtime {
 	type OffChainAuthId = dkg_runtime_primitives::offchain::crypto::OffchainAuthId;
 	type NextSessionRotation = PeriodicSessions;
 	type RefreshDelay = RefreshDelay;
-	type UnsignedPriority = crate::ImOnlineUnsignedPriority;
+	type UnsignedPriority = UnsignedPriority;
 	type UnsignedInterval = UnsignedInterval;
 	type KeygenJailSentence = SessionPeriod;
 	type SigningJailSentence = SessionPeriod;
@@ -74,8 +76,8 @@ impl pallet_dkg_proposals::Config for Runtime {
 	type DKGId = DKGId;
 	type ChainIdentifier = ChainIdentifier;
 	type RuntimeEvent = RuntimeEvent;
+	type MaxProposalLength = MaxProposalLength;
 	type NextSessionRotation = PeriodicSessions;
-	type Proposal = frame_support::BoundedVec<u8, MaxProposalLength>;
 	type ProposalLifetime = ProposalLifetime;
 	type ProposalHandler = DKGProposalHandler;
 	type Period = SessionPeriod;

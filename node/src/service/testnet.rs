@@ -36,6 +36,7 @@ use fc_db::Backend as FrontierBackend;
 use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
+use sc_network::NetworkStateInfo;
 // Runtime
 #[cfg(feature = "manual-seal")]
 use crate::cli::Sealing;
@@ -366,7 +367,16 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			Some(keystore_container.sync_keystore()),
 		);
 
-		let dkg_params = dkg_gadget::DKGParams::<Block, FullBackend, FullClient> {
+		dkg_primitives::utils::insert_dkg_account_keys_into_keystore(
+			&config,
+			Some(keystore_container.sync_keystore()),
+		);
+		// setup debug logging
+		let local_peer_id = network.local_peer_id();
+		let debug_logger =
+			dkg_gadget::debug_logger::DebugLogger::new(local_peer_id, cli.output_path.clone())?;
+
+		let dkg_params = dkg_gadget::DKGParams {
 			client: client.clone(),
 			backend: backend.clone(),
 			key_store: Some(keystore_container.sync_keystore()),
@@ -374,6 +384,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			prometheus_registry: prometheus_registry.clone(),
 			local_keystore: keystore_container.local_keystore(),
 			_block: std::marker::PhantomData::<Block>,
+			debug_logger,
 		};
 
 		// Start the DKG gadget.

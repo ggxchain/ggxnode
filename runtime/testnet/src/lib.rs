@@ -938,7 +938,7 @@ impl_runtime_apis! {
 			<poa::PeriodicSessions as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
 		}
 
-		fn get_unsigned_proposals() -> Vec<dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>> {
+		fn get_unsigned_proposals() -> Vec<(dkg_runtime_primitives::UnsignedProposal<mpc::MaxProposalLength>, BlockNumber)> {
 			DKGProposalHandler::get_unsigned_proposals()
 		}
 

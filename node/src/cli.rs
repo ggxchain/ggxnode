@@ -50,6 +50,10 @@ pub struct Cli {
 
 	#[command(flatten)]
 	pub run: RunCmd,
+
+	#[cfg(not(feature = "mainnet"))]
+	#[arg(long, short = 'o')]
+	pub output_path: Option<std::path::PathBuf>,
 }
 
 #[derive(Debug, clap::Subcommand)]

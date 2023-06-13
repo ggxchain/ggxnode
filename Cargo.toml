@@ -162,19 +162,22 @@ pallet-contracts = { git = "https://github.com/paritytech/substrate", branch = "
 pallet-contracts-primitives = { git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-collective-flip", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.39", default-features = false }
 
-dkg-gadget = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-primitives = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-runtime-primitives = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-dkg-standalone-runtime = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+dkg-gadget = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
+dkg-primitives = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
+dkg-runtime-primitives = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
+dkg-standalone-runtime = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
 
 # these too pallets seems usable as is
-pallet-dkg-metadata = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
-pallet-dkg-proposal-handler = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-dkg-metadata = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
+pallet-dkg-proposal-handler = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
 
 # this to be heavilty modified to allow users to ask for signatures for some sort 
 # example, user owns tokens on btc/eth, and that is reflected on ggx chain, and if proposal to move BTC approved (user owns token),
 # than approved and signed (user should pay for transaction)
 # so main use case seems moving protocol locked token on BTC/ETH to new wallet
-pallet-dkg-proposals = { git = "https://github.com/webb-tools/dkg-substrate", branch = "polkadot-v0.9.39", default-features = false }
+pallet-dkg-proposals = { git = "https://github.com/webb-tools/dkg-substrate", rev = "53622c613a951afd90e278ab429e75ba3e5fe76b", default-features = false }
 
 # so here will need some ggx pallet just for user calls to sign DXG into queue
+
+[patch.crates-io]
+round-based = { git = "https://github.com/webb-tools/round-based-protocol", features = [] }
