@@ -111,7 +111,7 @@
 
             common-wasm-deps-attrs = common-attrs // {
               cargoExtraArgs =
-                "--package 'golden-gate-runtime-*' --target wasm32-unknown-unknown --no-default-features --features=aura,with-rocksdb-weights";
+                "--package 'golden-gate-runtime-*' --target wasm32-unknown-unknown --no-default-features";
               RUSTFLAGS =
                 "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
             };
@@ -184,18 +184,24 @@
             };
 
             common-native-release-attrs = common-attrs // rec {
-              cargoExtraArgs = ''--package ${pname}  --no-default-features --features="aura,with-rocksdb-weights,$RUNTIME"'';
+              runtime = "testnet";
+              cargoExtraArgs =
+                let features =
+                  if runtime == "mainnet"
+                  then "--features=${runtime}"
+                  else "";
+                in ''--package ${pname}  --no-default-features ${features}'';
               pname = "golden-gate-node";
               nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
             };
 
             common-native-mainnet-attrs = common-native-release-attrs // rec {
-              RUNTIME="mainnet";
+              runtime="mainnet";
               version = "0.1.0";
             };
 
             common-native-testnet-attrs = common-native-release-attrs // rec {
-              RUNTIME="testnet";
+              runtime="testnet";
               version = "0.2.0";
             };
 

@@ -15,7 +15,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 
 	#[cfg(feature = "mainnet")]
 	pub mainnet: crate::service::mainnet::MainNetParams<A>,
-	#[cfg(feature = "testnet")]
+	#[cfg(not(feature = "mainnet"))]
 	pub testnet: crate::service::testnet::TestNetParams<A>,
 	/// Manual seal command sink
 	#[cfg(feature = "manual-seal")]
