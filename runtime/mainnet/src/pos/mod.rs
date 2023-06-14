@@ -16,6 +16,7 @@ use sp_staking::SessionIndex;
 use super::*;
 
 pub mod currency;
+pub mod session_payout;
 
 pub use opaque::SessionKeys;
 
@@ -93,7 +94,7 @@ parameter_types! {
 	pub const SessionsPerEra: SessionIndex = prod_or_fast!(90 * 6, 6);
 
 	// 4 eras for unbonding (90 * 4 = 360 days).
-	pub const BondingDuration: sp_staking::EraIndex = 4;
+	pub const BondingDuration: sp_staking::EraIndex = prod_or_fast!(4, 360);
 	pub const SlashDeferDuration: sp_staking::EraIndex = BondingDuration::get() / 4;
 	pub const MaxNominatorRewardedPerValidator: u32 = 512;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
@@ -154,7 +155,7 @@ impl pallet_session::Config for Runtime {
 	type ValidatorIdOf = pallet_staking::StashOf<Self>;
 	type ShouldEndSession = PeriodicSessions;
 	type NextSessionRotation = PeriodicSessions;
-	type SessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type SessionManager = SessionPayout;
 	type SessionHandler = <SessionKeys as OpaqueKeys>::KeyTypeIdProviders;
 	type Keys = SessionKeys;
 	type WeightInfo = pallet_session::weights::SubstrateWeight<Runtime>;
@@ -268,7 +269,7 @@ impl pallet_staking::Config for Runtime {
 	type SlashDeferDuration = SlashDeferDuration;
 	type AdminOrigin = EnsureRoot<AccountId>;
 	type SessionInterface = Self;
-	type EraPayout = CurrencyManager;
+	type EraPayout = (); // We pay out per session, not per era.
 	type NextNewSession = Session;
 	type MaxNominatorRewardedPerValidator = MaxNominatorRewardedPerValidator;
 	type OffendingValidatorsThreshold = OffendingValidatorsThreshold;
@@ -523,9 +524,26 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type WeightInfo = pallet_election_provider_multi_phase::weights::SubstrateWeight<Self>;
 }
 
+// 1 julian year to address leap years
+const YEAR_IN_MILLIS: u128 = 1000 * 3600 * 24 * 36525 / 100;
+
+parameter_types! {
+	pub storage DecayPeriod: BlockNumber = ((YEAR_IN_MILLIS
+		/ RuntimeSpecification::chain_spec().block_time_in_millis as u128) as BlockNumber);
+}
+
 impl currency::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
+	type DecayPeriod = DecayPeriod;
+}
+
+impl session_payout::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WrappedSessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
+	type RemainderDestination = Treasury;
+	type TimeProvider = Timestamp;
+	type CurrencyInfo = CurrencyManager;
 }

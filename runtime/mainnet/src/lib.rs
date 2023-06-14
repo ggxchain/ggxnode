@@ -51,13 +51,13 @@ use sp_version::RuntimeVersion;
 // Substrate FRAME
 #[cfg(feature = "with-paritydb-weights")]
 use frame_support::weights::constants::ParityDbWeight as RuntimeDbWeight;
-#[cfg(feature = "with-rocksdb-weights")]
+#[cfg(not(feature = "with-paritydb-weights"))]
 use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
 pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
-use pos::currency;
+use pos::{currency, session_payout};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -356,7 +356,7 @@ parameter_types! {
 impl pallet_timestamp::Config for Runtime {
 	/// A timestamp: milliseconds since the unix epoch.
 	type Moment = u64;
-	#[cfg(feature = "aura")]
+	#[cfg(not(feature = "manual-seal"))]
 	type OnTimestampSet = Aura;
 	#[cfg(feature = "manual-seal")]
 	type OnTimestampSet = ();
@@ -496,6 +496,7 @@ construct_runtime!(
 		// GGX pallets
 		AccountFilter: account_filter,
 		CurrencyManager: currency,
+		SessionPayout: session_payout,
 
 		// Wasm contracts
 		Contracts: pallet_contracts,

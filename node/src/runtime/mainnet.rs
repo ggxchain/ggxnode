@@ -1,9 +1,8 @@
 pub use golden_gate_runtime_mainnet::{opaque::SessionKeys, *};
 
 use rand::SeedableRng;
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519, H160, U256};
+use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
 use sp_runtime::traits::IdentifyAccount;
-use std::{collections::BTreeMap, str::FromStr};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -84,11 +83,9 @@ pub fn testnet_genesis(
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
 		staking: StakingConfig {
-			validator_count: initial_authorities.len() as u32,
-			minimum_validator_count: 2,
-			max_validator_count: Some(100),
+			validator_count: 100,
+			minimum_validator_count: 1,
 			invulnerables: vec![],
-			slash_reward_fraction: sp_runtime::Perbill::from_percent(10),
 			stakers: endowed_accounts
 				.iter()
 				.map(|user| {
@@ -134,64 +131,20 @@ pub fn testnet_genesis(
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
-			accounts: {
-				let mut map: BTreeMap<H160, GenesisAccount> = Precompiles::used_addresses()
-					.map(|addr| {
-						(
-							addr,
-							GenesisAccount {
-								nonce: Default::default(),
-								balance: Default::default(),
-								storage: Default::default(),
-								code: revert_bytecode.clone(),
-							},
-						)
-					})
-					.into_iter()
-					.collect();
-
-				map.insert(
-					// H160 address of Alice dev account
-					// Derived from SS58 (42 prefix) address
-					// SS58: 5GrwvaEF5zXb26Fz9rcQpDWS57CtERHpNehXCPcNoHGKutQY
-					// hex: 0xd43593c715fdd31c61141abd04a99fd6822c8558854ccde39a5684e7a56da27d
-					// Using the full hex key, truncating to the first 20 bytes (the first 40 hex chars)
-					H160::from_str("d43593c715fdd31c61141abd04a99fd6822c8558")
-						.expect("internal H160 is valid; qed"),
-					GenesisAccount {
-						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map.insert(
-					// H160 address of CI test runner account
-					H160::from_str("6be02d1d3665660d22ff9624b7be0551ee1ac91b")
-						.expect("internal H160 is valid; qed"),
-					GenesisAccount {
-						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
-							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
-						nonce: Default::default(),
-						storage: Default::default(),
-					},
-				);
-				map.insert(
-					// H160 address for benchmark usage
-					H160::from_str("1000000000000000000000000000000000000001")
-						.expect("internal H160 is valid; qed"),
-					GenesisAccount {
-						nonce: U256::from(1),
-						balance: U256::from(1_000_000_000_000_000_000_000_000u128),
-						storage: Default::default(),
-						code: vec![0x00],
-					},
-				);
-
-				map
-			},
+			accounts: Precompiles::used_addresses()
+				.map(|addr| {
+					(
+						addr,
+						GenesisAccount {
+							nonce: Default::default(),
+							balance: Default::default(),
+							storage: Default::default(),
+							code: revert_bytecode.clone(),
+						},
+					)
+				})
+				.into_iter()
+				.collect(),
 		},
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),
@@ -203,7 +156,7 @@ pub fn testnet_genesis(
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,
-				session_time_in_seconds: 4 * 3600, // 4 hours
+				session_time_in_seconds: 8, // 4 hours
 			},
 		},
 		vesting: Default::default(),

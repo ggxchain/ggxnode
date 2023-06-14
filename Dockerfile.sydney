@@ -1,0 +1,31 @@
+FROM rustlang/rust:nightly as builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update --yes && \
+    apt-get install --yes --no-install-recommends \
+        libclang-dev \
+        libudev-dev \
+        libssl-dev \
+        pkg-config \
+        gcc \
+        cmake \
+        git \
+        gcc \
+        protobuf-compiler
+
+RUN rustup target add wasm32-unknown-unknown
+
+WORKDIR /usr/src/app
+
+COPY . .
+
+RUN cargo build --locked --release --package golden-gate-node --no-default-features "--features=mainnet" --config net.git-fetch-with-cli=true
+
+
+FROM debian:11 as production
+
+ENV HOME /usr/src/app
+WORKDIR $HOME
+
+COPY --from=builder $HOME/target/release/golden-gate-node ./target/release/golden-gate-node
