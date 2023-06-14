@@ -152,7 +152,7 @@ fn priviliged_origin_is_checked() {
 fn one_session_validator_reward_is_correct() {
 	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
 	ext.execute_with(|| {
-		let median = Perbill::from_percent(2); // 1%, 2%  - median is 2%
+		let median = Perbill::from_perthousand(15); // 1%, 2%  - median is 1.5%
 		test_one_session(2, median);
 	});
 }
@@ -161,7 +161,12 @@ fn one_session_validator_reward_is_correct() {
 fn median_of_several_validators() {
 	let (_, mut ext) = mock::new_test_ext_with_pairs(mock::SESSION_PERIOD as usize);
 	ext.execute_with(|| {
-		let median = Perbill::from_percent((mock::SESSION_PERIOD / 2 + 1) as u32); // Each validator has comission equal to index + 1
+		let half_percent = Perbill::from_perthousand(5);
+		let median = Perbill::from_percent((mock::SESSION_PERIOD / 2) as u32); // Each validator has comission equal to index + 1
+		let median = match mock::SESSION_PERIOD % 2 {
+			0 => half_percent + median,
+			_ => median,
+		};
 		test_one_session(mock::SESSION_PERIOD as u32, median);
 	});
 }

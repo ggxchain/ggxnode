@@ -6,7 +6,7 @@ use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_core::Get;
-use sp_runtime::{traits::Zero, DispatchError, Perbill};
+use sp_runtime::{traits::Zero, DispatchError, Perbill, Saturating};
 use sp_staking::EraIndex;
 use sp_std::prelude::*;
 
@@ -41,12 +41,17 @@ impl ValidatorCommissionAlgorithm {
 					.map(|id| pallet_staking::Validators::<T>::get(id).commission)
 					.collect::<Vec<_>>();
 
-				if comissions.is_empty() {
-					return None;
-				}
 				comissions.sort_unstable();
-				let median = comissions[comissions.len() / 2];
-				Some(median)
+				match comissions.len() {
+					0 => None,
+					even if even % 2 == 0 => {
+						//If the median value is 50% and 60%, then it will return 50% using the default (A + B) / 2 because Perbill is 100% capped
+						Some(
+							(comissions[even / 2 - 1] / 2).saturating_add(comissions[even / 2] / 2),
+						)
+					}
+					odd => Some(comissions[odd / 2]),
+				}
 			}
 		}
 	}
@@ -380,11 +385,7 @@ where
 		if session_index == 0 {
 			// First session is not payable, cause we can't set a timestamp for it. TimeProvider is not working yet.
 			Self::update_year_reward(now_as_millis);
-		} else if current_era.is_none() {
-			log::warn!(target: "runtime::session_payout", "end_session: current_era is None");
-		} else {
-			let current_era = current_era.unwrap();
-
+		} else if let Some(current_era) = current_era {
 			// Make payout at the end of each session.
 			let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
 
@@ -419,6 +420,8 @@ where
 			T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(
 				remainder + failed_to_pay,
 			));
+		} else {
+			log::warn!(target: "runtime::session_payout", "end_session: current_era is None");
 		}
 
 		SessionStartTime::<T>::put(now_as_millis);
