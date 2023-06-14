@@ -34,8 +34,7 @@ impl ValidatorCommissionAlgorithm {
 		match &self {
 			Self::Static(comission) => Some(*comission),
 			Self::Median => {
-				// to work out properly, we need to map all current validators to their actual comission (not the era one)
-				// TODO: Open question. MEDIAN of current ERA or current SESSION? Can validator change preferences during session? I think - yes, cause ERA is long.
+				// To work out properly, we need to map all current validators to their actual commission (not the era one, cause the era is long)
 				let current_validators = pallet_staking::ErasStakers::<T>::iter_key_prefix(era);
 				let mut comissions = current_validators
 					.map(|id| pallet_staking::Validators::<T>::get(id).commission)
