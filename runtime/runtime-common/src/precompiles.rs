@@ -1,4 +1,6 @@
-use pallet_evm::{Precompile, PrecompileHandle, PrecompileResult, PrecompileSet};
+use pallet_evm::{
+	IsPrecompileResult, Precompile, PrecompileHandle, PrecompileResult, PrecompileSet,
+};
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
@@ -120,8 +122,8 @@ impl<R> GoldenGatePrecompiles<R> {
 	/// * 0x5002 - is Sr25519 verify
 	/// * 0x5003 - is Ecdsa verify
 	/// * 0x5005 - is cross virtual machine (XVM)
-	pub fn used_addresses() -> [H160; 17] {
-		consts::SUPPORTED_PRECOMPILES
+	pub fn used_addresses() -> impl Iterator<Item = H160> {
+		consts::SUPPORTED_PRECOMPILES.into_iter()
 	}
 }
 
@@ -159,7 +161,10 @@ where
 		}
 	}
 
-	fn is_precompile(&self, address: H160) -> bool {
-		Self::used_addresses().contains(&address)
+	fn is_precompile(&self, address: H160, _gas: u64) -> IsPrecompileResult {
+		IsPrecompileResult::Answer {
+			is_precompile: Self::used_addresses().any(|x| x == address),
+			extra_cost: 0,
+		}
 	}
 }

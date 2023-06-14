@@ -21,6 +21,6 @@ impl pallet_ics20_transfer::Config for Runtime {
 	type AssetBalance = Balance;
 	type Fungibles = Assets;
 	type AssetIdByName = Ics20Transfer;
-	type AccountIdConversion = pallet_ics20_transfer::ics20_impl::IbcAccount;
+	type AccountIdConversion = pallet_ics20_transfer::impls::IbcAccount;
 	const NATIVE_TOKEN_NAME: &'static [u8] = b"GGX";
 }
