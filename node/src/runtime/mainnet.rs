@@ -113,7 +113,6 @@ pub fn testnet_genesis(
 				.collect::<Vec<_>>(),
 			..Default::default()
 		},
-
 		// Consensus
 		session: SessionConfig {
 			keys: initial_authorities

@@ -1,3 +1,5 @@
+use frame_support::assert_noop;
+
 use super::*;
 
 #[test]
@@ -48,7 +50,6 @@ fn test_daily_session_reward() {
 }
 
 #[test]
-
 fn year_payout_issuance_change_is_correct() {
 	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
 	ext.execute_with(|| {
@@ -113,4 +114,125 @@ fn reward_pool_is_allocating() {
 		assert_eq!(day364 - day363, day365 - day364);
 		assert_ne!(day365 - day364, day366 - day365);
 	});
+}
+
+#[test]
+fn can_change_algo() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
+	ext.execute_with(|| {
+		assert_eq!(
+			mock::SessionPayout::validator_commission_algorithm(),
+			super::ValidatorCommissionAlgorithm::Median
+		);
+		let new = super::ValidatorCommissionAlgorithm::Static(Perbill::from_percent(22));
+		mock::SessionPayout::change_validator_to_nominator_commission_algorithm(
+			mock::RuntimeOrigin::root(),
+			new.clone(),
+		)
+		.unwrap();
+		assert_eq!(mock::SessionPayout::validator_commission_algorithm(), new);
+	});
+}
+
+#[test]
+fn priviliged_origin_is_checked() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
+	ext.execute_with(|| {
+		assert_noop!(
+			mock::SessionPayout::change_validator_to_nominator_commission_algorithm(
+				mock::RuntimeOrigin::signed(1),
+				super::ValidatorCommissionAlgorithm::Median
+			),
+			DispatchError::BadOrigin
+		);
+	});
+}
+
+#[test]
+fn one_session_validator_reward_is_correct() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
+	ext.execute_with(|| {
+		let median = Perbill::from_perthousand(15); // 1%, 2%  - median is 1.5%
+		test_one_session(2, median);
+	});
+}
+
+#[test]
+fn median_of_several_validators() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(mock::SESSION_PERIOD as usize);
+	ext.execute_with(|| {
+		let half_percent = Perbill::from_perthousand(5);
+		let median = Perbill::from_percent((mock::SESSION_PERIOD / 2) as u32); // Each validator has comission equal to index + 1
+		let median = match mock::SESSION_PERIOD % 2 {
+			0 => half_percent + median,
+			_ => median,
+		};
+		test_one_session(mock::SESSION_PERIOD as u32, median);
+	});
+}
+
+#[test]
+fn static_validator_percent() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(2);
+	ext.execute_with(|| {
+		let commission = Perbill::from_percent(44);
+		mock::SessionPayout::change_validator_to_nominator_commission_algorithm(
+			mock::RuntimeOrigin::root(),
+			super::ValidatorCommissionAlgorithm::Static(commission),
+		)
+		.unwrap();
+		test_one_session(2, commission);
+	});
+}
+
+fn test_one_session(validator_count: u32, validator_comission: Perbill) {
+	const VALIDATOR_ID: u32 = 0;
+	let nominator_id: u32 = validator_count;
+
+	let current_era = mock::Staking::active_era().unwrap().index;
+	let total_issuance = mock::Balances::total_issuance();
+	let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
+	let total_stake = mock::Staking::eras_total_stake(current_era);
+	assert!(
+		total_stake > 0,
+		"Total staked must be greater than 0 at {current_era} era"
+	);
+
+	let year_reward = mock::SessionPayout::year_reward().0;
+	let time_per_session = mock::SESSION_PERIOD * mock::BLOCK_TIME;
+	let total_session_reward = Perbill::from_rational(time_per_session, YEAR_IN_MILLIS as u64)
+		* (Perbill::one() - mock::CurrencyManager::treasury_commission_from_staking())
+		* year_reward;
+
+	let validator_reward = Perbill::from_rational(total_stake, total_issuance)
+		* Perbill::from_rational(1, validator_count)
+		* total_session_reward;
+	let comission_reward = validator_comission * validator_reward;
+	let reward_after_comission = Perbill::from_rational(stake.own, stake.total) // Stake to nominator ratio
+			* (validator_reward - comission_reward);
+
+	let total_reward_expected = reward_after_comission + comission_reward;
+
+	let validator_balance = mock::Balances::free_balance(VALIDATOR_ID);
+	let nominator_balance = mock::Balances::free_balance(nominator_id);
+
+	mock::skip_with_reward_n_sessions(1);
+
+	let validator_balance_after = mock::Balances::free_balance(VALIDATOR_ID);
+	let nominator_balance_after = mock::Balances::free_balance(nominator_id);
+
+	assert!(total_reward_expected > 0);
+	assert_eq!(
+		total_reward_expected,
+		validator_balance_after - validator_balance,
+		"Validator didn't receive reward. Expected {} == received {}",
+		total_reward_expected,
+		validator_balance_after - validator_balance
+	);
+
+	// We can't check nominator reward as he receives it from different validators, so balance will be different
+	assert_ne!(
+		nominator_balance, nominator_balance_after,
+		"Nominator didn't receive reward."
+	);
 }

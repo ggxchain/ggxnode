@@ -1,7 +1,7 @@
 use super::pallet as pallet_session_payout;
 use crate::pos::currency as pallet_currency;
 
-use frame_election_provider_support::{onchain, NoElection, SequentialPhragmen};
+use frame_election_provider_support::{onchain, SequentialPhragmen};
 use frame_support::{
 	pallet_prelude::Weight,
 	parameter_types,
@@ -11,7 +11,7 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_session::historical::{self as pallet_session_historical};
-use pallet_staking::SessionInterface;
+use pallet_staking::ValidatorPrefs;
 use sp_consensus_aura::{
 	digests::CompatibleDigestItem,
 	ed25519::{AuthorityId as AuraId, AuthorityId, AuthorityPair},
@@ -46,17 +46,17 @@ frame_support::construct_runtime!(
 		Timestamp: pallet_timestamp,
 		Aura: pallet_aura,
 		Session: pallet_session,
+		Historical: pallet_session_historical,
 		Staking: pallet_staking,
 		Treasury: pallet_treasury,
 		SessionPayout: pallet_session_payout,
-		Historical: pallet_session_historical,
 	}
 );
 
 impl pallet_aura::Config for Test {
 	type AuthorityId = AuraId;
 	type DisabledValidators = ();
-	type MaxAuthorities = ConstU32<4>;
+	type MaxAuthorities = ConstU32<50>;
 }
 
 impl pallet_balances::Config for Test {
@@ -90,7 +90,7 @@ impl onchain::Config for OnChainSeqPhragmen {
 }
 
 impl pallet_staking::Config for Test {
-	type MaxNominations = ConstU32<16>;
+	type MaxNominations = ConstU32<50>;
 	type RewardRemainder = ();
 	type CurrencyToVote = frame_support::traits::SaturatingCurrencyToVote;
 	type RuntimeEvent = RuntimeEvent;
@@ -232,6 +232,7 @@ impl pallet_currency::CurrencyInfo for CurrencyManager {
 
 impl pallet_session_payout::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
+	type PrivilegedOrigin = EnsureRoot<u32>;
 	type WrappedSessionManager = pallet_session::historical::NoteHistoricalRoot<Self, Staking>;
 	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
@@ -239,8 +240,8 @@ impl pallet_session_payout::Config for Test {
 }
 
 pub const BALANCE: u64 = 10_000_000_000_000;
-pub const STAKE: u64 = 2_000_000_000_000;
-pub const NOMINATION: u64 = 1_000_000_000_000;
+pub const STAKE: u64 = 5_000_000_000_000;
+pub const NOMINATION: u64 = 5_000_000_000_000;
 
 pub fn new_test_ext_with_pairs(
 	authorities_len: usize,
@@ -265,17 +266,6 @@ pub fn new_test_ext_raw_authorities(authorities: Vec<AuthorityId>) -> sp_io::Tes
 		.collect();
 
 	pallet_balances::GenesisConfig::<Test> { balances }
-		.assimilate_storage(&mut t)
-		.unwrap();
-
-	// stashes are the index.
-	let session_keys: Vec<_> = authorities
-		.iter()
-		.enumerate()
-		.map(|(i, k)| (i as u32, i as u32, MockSessionKeys { dummy: k.clone() }))
-		.collect();
-
-	pallet_session::GenesisConfig::<Test> { keys: session_keys }
 		.assimilate_storage(&mut t)
 		.unwrap();
 
@@ -304,12 +294,33 @@ pub fn new_test_ext_raw_authorities(authorities: Vec<AuthorityId>) -> sp_io::Tes
 		validator_count: authorities.len() as u32,
 		..Default::default()
 	};
-
 	staking_config.assimilate_storage(&mut t).unwrap();
+
+	// stashes are the index.
+	let session_keys: Vec<_> = authorities
+		.iter()
+		.enumerate()
+		.map(|(i, k)| (i as u32, i as u32, MockSessionKeys { dummy: k.clone() }))
+		.collect();
+
+	pallet_session::GenesisConfig::<Test> { keys: session_keys }
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 	let mut ext = sp_io::TestExternalities::from(t);
 
 	ext.execute_with(|| {
+		Timestamp::set_timestamp(INIT_TIMESTAMP);
+		for i in 0..authorities.len() {
+			Staking::validate(
+				RuntimeOrigin::signed(i as u32),
+				ValidatorPrefs {
+					commission: Perbill::from_percent((i + 1) as u32),
+					..Default::default()
+				},
+			)
+			.unwrap();
+		}
 		skip_with_reward_n_sessions(1);
 	});
 
@@ -343,9 +354,9 @@ pub fn run_to_block(n: u64) {
 		let pre_digest = make_secondary_plain_pre_digest(slot.into());
 		System::reset_events();
 		System::initialize(&n, &parent_hash, &pre_digest);
-
 		Timestamp::set_timestamp(System::block_number() * BLOCK_TIME + INIT_TIMESTAMP);
-		Aura::on_initialize(i);
+
+		System::on_initialize(i);
 		Session::on_initialize(i);
 		Staking::on_initialize(i);
 		slot += 1;
