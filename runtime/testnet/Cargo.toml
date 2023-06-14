@@ -83,6 +83,7 @@ pallet-randomness-collective-flip.workspace = true
 # Ibc
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
+pallet-ibc-utils.workspace = true
 ibc-proto.workspace = true
 
 [build-dependencies]
@@ -159,6 +160,7 @@ std = [
 	# IBC
 	"pallet-ibc/std",
 	"pallet-ics20-transfer/std",
+	"pallet-ibc-utils/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

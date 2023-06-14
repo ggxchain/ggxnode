@@ -79,9 +79,13 @@ struct ICS20TransferInput {
 
 fn raw_tranfer<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
 where
-	T: pallet_assets::Config + pallet_contracts::Config + pallet_ics20_transfer::Config,
+	T: frame_system::Config
+		+ pallet_assets::Config
+		+ pallet_contracts::Config
+		+ pallet_ics20_transfer::Config,
 	<T as SysConfig>::AccountId: UncheckedFrom<<T as SysConfig>::Hash> + AsRef<[u8]>,
 	E: Ext<T = T>,
+	u64: From<<T as frame_system::Config>::BlockNumber>,
 {
 	let mut env = env.buf_in_buf_out();
 	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer();
@@ -124,13 +128,18 @@ pub struct IBCISC20Extension;
 
 impl<T> ChainExtension<T> for IBCISC20Extension
 where
-	T: pallet_assets::Config + pallet_contracts::Config + pallet_ics20_transfer::Config,
+	T: frame_system::Config
+		+ pallet_assets::Config
+		+ pallet_contracts::Config
+		+ pallet_ics20_transfer::Config,
 	<T as SysConfig>::AccountId: UncheckedFrom<<T as SysConfig>::Hash> + AsRef<[u8]>,
+	u64: From<<T as SysConfig>::BlockNumber>,
 {
 	fn call<E: Ext>(&mut self, env: Environment<E, InitState>) -> Result<RetVal, DispatchError>
 	where
 		E: Ext<T = T>,
 		<E::T as SysConfig>::AccountId: UncheckedFrom<<E::T as SysConfig>::Hash> + AsRef<[u8]>,
+		u64: From<<T as SysConfig>::BlockNumber>,
 	{
 		let func_id = env.func_id().try_into()?;
 		match func_id {
