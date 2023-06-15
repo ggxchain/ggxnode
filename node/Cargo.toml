@@ -32,6 +32,7 @@ sc-executor.workspace = true
 sc-consensus-grandpa.workspace = true
 sc-keystore.workspace = true
 sc-network.workspace = true
+sc-network-sync.workspace = true
 sc-rpc-api.workspace = true
 sc-rpc.workspace = true
 sc-service.workspace = true

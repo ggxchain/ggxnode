@@ -4,7 +4,7 @@ use super::*;
 
 use futures::{future, StreamExt};
 use jsonrpsee::RpcModule;
-use sp_api::ProvideRuntimeApi;
+use sp_api::{CallApiAt, ProvideRuntimeApi};
 use std::{
 	collections::BTreeMap,
 	path::PathBuf,
@@ -20,6 +20,7 @@ use sc_client_api::{
 use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_service::{
 	error::Error as ServiceError, BasePath, Configuration, TaskManager, TransactionPool,
@@ -347,17 +348,28 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		prometheus_registry.clone(),
 	));
 
+	// Sinks for pubsub notifications.
+	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a notification to the subscriber on receiving a message through this channel.
+	// This way we avoid race conditions when using native substrate block import notification stream.
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+
 	let rpc_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
 		let is_authority = role.is_authority();
 		let enable_dev_signer = cli.run.enable_dev_signer;
 		let network = network.clone();
+		let sync = sync_service.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides.clone();
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = cli.run.max_past_logs;
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -369,6 +381,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 					is_authority,
 					enable_dev_signer,
 					network: network.clone(),
+					sync: sync.clone(),
 					filter_pool: filter_pool.clone(),
 					backend: frontier_backend.clone(),
 					max_past_logs,
@@ -379,7 +392,12 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				},
 			};
 
-			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
+			crate::rpc::create_full(
+				deps,
+				subscription_task_executor,
+				pubsub_notification_sinks.clone(),
+			)
+			.map_err(Into::into)
 		})
 	};
 
@@ -392,6 +410,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		transaction_pool: transaction_pool.clone(),
 		rpc_builder,
 		network: network.clone(),
+		sync_service: sync_service.clone(),
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: telemetry.as_mut(),
@@ -406,6 +425,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		overrides,
 		fee_history_cache,
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 	);
 
 	let (block_import, grandpa_link) = consensus_result;
@@ -438,8 +459,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				select_chain,
 				block_import,
 				proposer_factory,
-				sync_oracle: network.clone(),
-				justification_sync_link: network.clone(),
+				sync_oracle: sync_service.clone(),
+				justification_sync_link: sync_service.clone(),
 				create_inherent_data_providers,
 				force_authoring,
 				backoff_authoring_blocks: Option::<()>::None,
@@ -489,6 +510,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				config: grandpa_config,
 				link: grandpa_link,
 				network,
+				sync: Arc::new(sync_service.clone()),
 				voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
 				prometheus_registry,
 				shared_voter_state: sc_consensus_grandpa::SharedVoterState::empty(),
@@ -572,6 +594,16 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		50,
 		prometheus_registry.clone(),
 	));
+
+	// Sinks for pubsub notifications.
+	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a notification to the subscriber on receiving a message through this channel.
+	// This way we avoid race conditions when using native substrate block import notification stream.
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+
 	// Channel for the rpc handler to communicate with the authorship task.
 	let (command_sink, commands_stream) = futures::channel::mpsc::channel(1000);
 
@@ -581,11 +613,13 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let is_authority = role.is_authority();
 		let enable_dev_signer = cli.run.enable_dev_signer;
 		let network = network.clone();
+		let sync = sync_service.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides.clone();
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = cli.run.max_past_logs;
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -635,6 +669,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		overrides,
 		fee_history_cache,
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 	);
 
 	if role.is_authority() {
@@ -730,6 +766,12 @@ fn spawn_frontier_tasks(
 	overrides: Arc<OverrideHandle<Block>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
+	sync_service: Arc<SyncingService<Block>>,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<Block>,
+		>,
+	>,
 ) {
 	task_manager.spawn_essential_handle().spawn(
 		"golden-gate-mapping-sync-worker",
@@ -744,6 +786,8 @@ fn spawn_frontier_tasks(
 			3,
 			0,
 			SyncStrategy::Normal,
+			sync_service.clone(),
+			pubsub_notification_sinks.clone(),
 		)
 		.for_each(|()| future::ready(())),
 	);
@@ -775,11 +819,17 @@ fn spawn_frontier_tasks(
 pub fn create_full_rpc<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: SubscriptionTaskExecutor,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<Block>,
+		>,
+	>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	BE: Backend<Block> + 'static,
 	BE::State: StateBackend<BlakeTwo256>,
 	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+	C: CallApiAt<Block>,
 	C: BlockchainEvents<Block>,
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C: Send + Sync + 'static,
@@ -805,6 +855,7 @@ where
 				is_authority,
 				enable_dev_signer,
 				network,
+				sync,
 				filter_pool,
 				backend,
 				max_past_logs,
@@ -835,7 +886,7 @@ where
 			pool.clone(),
 			graph,
 			Some(crate::runtime::ethereum::TransactionConverter),
-			network.clone(),
+			sync.clone(),
 			signers,
 			overrides.clone(),
 			backend.clone(),
@@ -867,9 +918,10 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			network.clone(),
+			sync.clone(),
 			subscription_task_executor,
 			overrides,
+			pubsub_notification_sinks,
 		)
 		.into_rpc(),
 	)?;
@@ -907,6 +959,8 @@ pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
 	pub enable_dev_signer: bool,
 	/// Network service
 	pub network: Arc<NetworkService<Block, Hash>>,
+	/// Chain syncing service
+	pub sync: Arc<SyncingService<Block>>,
 	/// EthFilterApi pool.
 	pub filter_pool: Option<FilterPool>,
 	/// Backend.

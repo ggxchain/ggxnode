@@ -89,7 +89,7 @@ where
 {
 	let mut env = env.buf_in_buf_out();
 	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer();
-	let base_weight = Weight::from_ref_time(10_000);
+	let base_weight = Weight::from_parts(10_000, 0);
 
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
@@ -295,11 +295,12 @@ where
 	let base_weight = <T as pallet_assets::Config>::WeightInfo::transfer();
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
-	let overhead = Weight::from_ref_time(
+	let overhead = Weight::from_parts(
 		<T as pallet_contracts::Config>::Schedule::get()
 			.host_fn_weights
 			.debug_message
 			.ref_time(),
+		0,
 	);
 	let charged_weight = env.charge_weight(base_weight.saturating_add(overhead))?;
 	trace!(
@@ -337,11 +338,12 @@ where
 	let base_weight = <T as pallet_assets::Config>::WeightInfo::transfer();
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
-	let overhead = Weight::from_ref_time(
+	let overhead = Weight::from_parts(
 		<T as pallet_contracts::Config>::Schedule::get()
 			.host_fn_weights
 			.debug_message
 			.ref_time(),
+		0,
 	);
 	let charged_amount = env.charge_weight(base_weight.saturating_add(overhead))?;
 	trace!(
@@ -377,11 +379,12 @@ where
 	let base_weight = <T as pallet_assets::Config>::WeightInfo::approve_transfer();
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
-	let overhead = Weight::from_ref_time(
+	let overhead = Weight::from_parts(
 		<T as pallet_contracts::Config>::Schedule::get()
 			.host_fn_weights
 			.debug_message
 			.ref_time(),
+		0,
 	);
 	let charged_weight = env.charge_weight(base_weight.saturating_add(overhead))?;
 	trace!(
@@ -422,11 +425,12 @@ where
 		.saturating_add(<T as pallet_assets::Config>::WeightInfo::approve_transfer());
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
-	let overhead = Weight::from_ref_time(
+	let overhead = Weight::from_parts(
 		<T as pallet_contracts::Config>::Schedule::get()
 			.host_fn_weights
 			.debug_message
 			.ref_time(),
+		0,
 	);
 	let charged_weight = env.charge_weight(base_weight.saturating_add(overhead))?;
 	trace!(
