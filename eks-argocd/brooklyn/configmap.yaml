@@ -4,7 +4,7 @@ metadata:
   name: ggx-node-config
   namespace: substrate-brooklyn
 data:
-  CHAINSPEC: "customSpecRaw.json"
+  CHAINSPEC: "brooklyn.json"
   TELEMETRY: "ws://52.57.198.64:8001/submit 0"
-  NAME: "ggx-leo"
+  NAME: "ggx-leo-01"
   BOOT_NODES: "/ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao"
