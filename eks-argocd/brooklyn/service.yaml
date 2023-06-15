@@ -3,13 +3,7 @@ kind: Service
 metadata:
   name: substrate-brooklyn
   namespace: substrate-brooklyn
-  annotations:
-    service.beta.kubernetes.io/aws-load-balancer-type: nlb
-    service.beta.kubernetes.io/aws-load-balancer-eip-allocations: eipalloc-00acb54a7f562d5e5
-    service.beta.kubernetes.io/aws-load-balancer-subnets: subnet-0c6aa2d940cf7b217
-    service.beta.kubernetes.io/aws-load-balancer-target-group-attributes: preserve_client_ip.enabled=true
 spec:
-  type: LoadBalancer
   ports:
     - name: p2p
       protocol: TCP
