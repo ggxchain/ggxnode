@@ -26,6 +26,7 @@ sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
+sp-consensus-beefy.workspace = true
 sc-consensus-manual-seal = { workspace = true, optional = true }
 sc-consensus.workspace = true
 sc-executor.workspace = true

@@ -2,7 +2,8 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use golden_gate_runtime_testnet::{opaque::SessionKeys, *};
 
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519, H160, U256};
+use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
+use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;
 
 use super::{get_from_seed, AccountPublic};
@@ -21,22 +22,26 @@ impl ValidatorIdentity {
 				aura: get_from_seed::<AuraId>(s),
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
+				beefy: get_from_seed::<BeefyId>(s),
 			},
 		}
 	}
 
-	pub fn from_pub(ed: &str, sr: &str) -> ValidatorIdentity {
+	pub fn from_pub(ed: &str, sr: &str, ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
 			.into_account()
 			.into();
 		let sr = sr25519::Public::from_ss58check(sr).unwrap().into_account();
+		let ecdsa = ecdsa::Public::from_ss58check(ecdsa).unwrap().into_account();
+
 		ValidatorIdentity {
 			id: sr.into(),
 			session_keys: SessionKeys {
 				aura: sr.into(),
 				grandpa: ed,
 				im_online: sr.into(),
+				beefy: ecdsa.into(),
 			},
 		}
 	}
@@ -86,6 +91,7 @@ pub fn testnet_genesis(
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
+		beefy: BeefyConfig::default(),
 
 		// EVM compatibility
 		evm_chain_id: EVMChainIdConfig { chain_id },
