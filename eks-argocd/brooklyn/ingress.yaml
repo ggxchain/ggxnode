@@ -1,0 +1,28 @@
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  annotations:
+    kubernetes.io/ingress.class: alb
+    alb.ingress.kubernetes.io/target-type: 'ip'
+    alb.ingress.kubernetes.io/scheme: internet-facing
+    alb.ingress.kubernetes.io/group.name: ggx-brooklyn-dev
+    ##alb.ingress.kubernetes.io/backend-protocol: HTTP
+    alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
+    ##alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:xxxxxxx:certificate/3eda694-e902
+    ##alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
+    #alb.ingress.kubernetes.io/success-codes: '200'
+  name: substrate-brooklyn-ingress
+  namespace: substrate-brooklyn
+spec:
+  ingressClassName: alb
+  rules:
+  - host: brooklyn-leo.dev.ggxchain.io
+    http:
+      paths:
+      - path: /
+        backend:
+          service:
+            name: substrate-brooklyn
+            port:
+              number: 9944
+        pathType: Prefix
