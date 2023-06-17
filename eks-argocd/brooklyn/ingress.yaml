@@ -6,7 +6,7 @@ metadata:
     alb.ingress.kubernetes.io/target-type: 'ip'
     alb.ingress.kubernetes.io/scheme: internet-facing
     alb.ingress.kubernetes.io/group.name: ggx-brooklyn-dev
-    ##alb.ingress.kubernetes.io/backend-protocol: HTTP
+    #alb.ingress.kubernetes.io/group.name: archive-brooklyn
     alb.ingress.kubernetes.io/listen-ports: '[{"HTTP":80}]'
     ##alb.ingress.kubernetes.io/certificate-arn: arn:aws:acm:us-east-1:xxxxxxx:certificate/3eda694-e902
     ##alb.ingress.kubernetes.io/healthcheck-path: /healthcheck
@@ -14,7 +14,7 @@ metadata:
   name: substrate-brooklyn-ingress
   namespace: substrate-brooklyn
 spec:
-  ingressClassName: alb
+  #ingressClassName: alb
   rules:
   - host: brooklyn-leo.dev.ggxchain.io
     http:
@@ -24,5 +24,5 @@ spec:
           service:
             name: substrate-brooklyn
             port:
-              number: 9944
+              number: 30333
         pathType: Prefix
