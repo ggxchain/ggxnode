@@ -1,0 +1,11 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: ggx-node-config-b
+  namespace: substrate-brooklyn
+data:
+  CHAINSPEC: "brooklyn.json"
+  TELEMETRY: "ws://52.57.198.64:8001/submit 0"
+  NAME: "ggx-leo-b"
+  #BOOT_NODES: "/dns/brooklyn-leo.dev.ggxchain.io/tcp/30333/p2p/12D3KooWDd1fx8C1Mmhsu8MPsKkcnz49U8yhearMxhAoiWMb45wp"
+  BOOT_NODES: "/dns/brooklyn-nlb.dev.ggxchain.io/tcp/30333/p2p/12D3KooWDd1fx8C1Mmhsu8MPsKkcnz49U8yhearMxhAoiWMb45wp"
