@@ -1,0 +1,75 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: substrate-brooklyn-b
+  namespace: substrate-brooklyn
+spec:
+  serviceName: substrate-brooklyn-b
+  selector:
+    matchLabels:
+      app: substrate-brooklyn-b
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: substrate-brooklyn-b
+    spec:
+      #nodeSelector:
+      #  environment: brooklyn # EKS worker-node-groups will be defined later on
+      initContainers:
+        - name: json-installer
+          image: busybox
+          imagePullPolicy: "IfNotPresent"
+          command: ["wget", "-O", "/tmp/$(CHAINSPEC)", "https://golden-gate-substrate-chain-spec-files.s3.eu-central-1.amazonaws.com/$(CHAINSPEC)" ]
+          envFrom:
+            - configMapRef:
+                name: ggx-node-config-b
+          volumeMounts: 
+            - name: chain-info-b
+              mountPath: /tmp
+      containers:
+        - name: substrate-brooklyn-b
+          image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
+          imagePullPolicy: "IfNotPresent"
+          command: [ "/usr/src/app/target/release/golden-gate-node" ]
+          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--validator", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)", "--bootnodes=$(BOOT_NODES)"]
+          envFrom:
+            - configMapRef:
+                name: ggx-node-config-b
+            - secretRef:
+                name: ggx-node-secret-b
+          resources:
+            requests:
+              cpu: 1000m
+              memory: 2G
+            limits:
+              cpu: 4000m
+              memory: 8G
+          ports:
+            - containerPort: 9944
+            - containerPort: 9933
+            - containerPort: 30333
+          volumeMounts:
+            - name: substrate-brooklyn-data-b
+              mountPath: /chain-data
+            - name: chain-info-b
+              mountPath: /chain-info
+            - name: aura-gran-pair-b
+              mountPath: /chain-data/chains/local_testnet/keystore/
+              readOnly: true
+      volumes:
+        - name: aura-gran-pair-b
+          secret:
+            secretName: ggx-node-keys-b
+        - name: chain-info-b
+          emptyDir: {}
+  volumeClaimTemplates:
+  - metadata:
+      name: substrate-brooklyn-data-b
+      labels:
+        app: substrate-brooklyn-b
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      resources:
+        requests:
+          storage: 100Gi
