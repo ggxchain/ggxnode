@@ -1,0 +1,19 @@
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: ggx-node
+spec:
+  serviceName: ggx-node
+  selector:
+    matchLabels:
+      app: ggx-node
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: ggx-node
+    spec:
+      containers:
+        - name: ggx-node
+          image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
+          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--pruning=archive", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)", "--bootnodes=$(BOOT_NODES)"]
