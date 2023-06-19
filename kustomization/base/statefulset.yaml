@@ -1,18 +1,17 @@
 apiVersion: apps/v1
 kind: StatefulSet
 metadata:
-  name: substrate-brooklyn
-  namespace: substrate-brooklyn
+  name: ggx-node
 spec:
-  serviceName: substrate-brooklyn
+  serviceName: ggx-node
   selector:
     matchLabels:
-      app: substrate-brooklyn
+      app: ggx-node
   replicas: 1
   template:
     metadata:
       labels:
-        app: substrate-brooklyn
+        app: ggx-node
     spec:
       #nodeSelector:
       #  environment: brooklyn # EKS worker-node-groups will be defined later on
@@ -28,7 +27,7 @@ spec:
             - name: chain-info
               mountPath: /tmp
       containers:
-        - name: substrate-brooklyn
+        - name: ggx-node
           image: public.ecr.aws/f8n4k6v0/golden-gate-node:e23018bd
           imagePullPolicy: "IfNotPresent"
           command: [ "/usr/src/app/target/release/golden-gate-node" ]
@@ -50,7 +49,7 @@ spec:
             - containerPort: 9933
             - containerPort: 30333
           volumeMounts:
-            - name: substrate-brooklyn-data
+            - name: ggx-node-data
               mountPath: /chain-data
             - name: chain-info
               mountPath: /chain-info
@@ -65,9 +64,9 @@ spec:
           emptyDir: {}
   volumeClaimTemplates:
   - metadata:
-      name: substrate-brooklyn-data
+      name: ggx-node-data
       labels:
-        app: substrate-brooklyn
+        app: ggx-node
     spec:
       accessModes: [ "ReadWriteOnce" ]
       resources:

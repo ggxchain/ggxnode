@@ -1,0 +1,13 @@
+commonLabels:
+  app: ggx-node
+resources:
+- statefulset.yaml
+- service.yaml
+# following is an example how to use configMapGenerator, using this in the base causing duplication problems
+# configMapGenerator: 
+# - name: ggx-node-config
+#   literals:
+#     - CHAINSPEC="customSpecRaw.json"
+#     - TELEMETRY="ws://52.57.198.64:8001/submit 0"
+#     - NAME="ggx-brooklyn-archive"
+#     - BOOT_NODES="/ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao"

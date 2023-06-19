@@ -1,0 +1,20 @@
+namePrefix: sydney-archive-
+namespace: sydney
+commonLabels:
+  testnet: sydney
+  app: sydney-testnet-archive
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - sydney-archive-args.yaml
+configMapGenerator:
+- name: ggx-node-config
+  literals:
+    - CHAINSPEC="sydney.json"
+    - TELEMETRY="ws://3.127.40.214:8001/submit 0"
+    - NAME="ggx-sydney-archive"
+    - BOOT_NODES="/ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n"
+secretGenerator: # should move this to something else to consume directly from secretsmanager
+  - name: ggx-node-secret
+    literals:
+      - PASSWORD=ggx
