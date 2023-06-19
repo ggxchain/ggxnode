@@ -4,7 +4,7 @@ commonLabels:
   testnet: brooklyn
   app: brooklyn-testnet-archive
 resources:
-  - ../../base
+  - ../../../base
 patchesStrategicMerge:
   - brooklyn-archive-args.yaml
 configMapGenerator:
