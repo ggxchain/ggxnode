@@ -308,6 +308,24 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			grandpa_protocol_name.clone(),
 		));
 
+	let (grandpa_block_import, _grandpa_link) =
+		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
+			client.clone(),
+			&(client.clone() as Arc<_>),
+			select_chain.clone(),
+			Vec::new(),
+			telemetry.as_ref().map(|x| x.handle()),
+		)?;
+	let _justification_import = grandpa_block_import.clone();
+
+	let (_beefy_block_import, _beefy_voter_links, beefy_rpc_links) =
+		sc_consensus_beefy::beefy_block_import_and_links(
+			grandpa_block_import,
+			backend.clone(),
+			client.clone(),
+			config.prometheus_registry().cloned(),
+		);
+
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
 		consensus_result.1.shared_authority_set().clone(),
@@ -371,34 +389,46 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let max_past_logs = cli.run.max_past_logs;
 		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
-			let deps = crate::rpc::FullDeps {
-				client: client.clone(),
-				pool: pool.clone(),
-				deny_unsafe,
-				testnet: TestNetParams {
-					graph: pool.pool().clone(),
-					is_authority,
-					enable_dev_signer,
-					network: network.clone(),
-					sync: sync.clone(),
-					filter_pool: filter_pool.clone(),
-					backend: frontier_backend.clone(),
-					max_past_logs,
-					fee_history_cache: fee_history_cache.clone(),
-					fee_history_cache_limit,
-					overrides: overrides.clone(),
-					block_data_cache: block_data_cache.clone(),
-				},
-			};
+		Box::new(
+			move |deny_unsafe,
+			      subscription_task_executor: polkadot_rpc::SubscriptionTaskExecutor| {
+				let deps = crate::rpc::FullDeps {
+					client: client.clone(),
+					pool: pool.clone(),
+					deny_unsafe,
+					testnet: TestNetParams {
+						graph: pool.pool().clone(),
+						is_authority,
+						enable_dev_signer,
+						network: network.clone(),
+						sync: sync.clone(),
+						filter_pool: filter_pool.clone(),
+						backend: frontier_backend.clone(),
+						max_past_logs,
+						fee_history_cache: fee_history_cache.clone(),
+						fee_history_cache_limit,
+						overrides: overrides.clone(),
+						block_data_cache: block_data_cache.clone(),
+						beefy: polkadot_rpc::BeefyDeps {
+							beefy_finality_proof_stream: beefy_rpc_links
+								.from_voter_justif_stream
+								.clone(),
+							beefy_best_block_stream: beefy_rpc_links
+								.from_voter_best_beefy_stream
+								.clone(),
+							subscription_executor: subscription_task_executor.clone(),
+						},
+					},
+				};
 
-			crate::rpc::create_full(
-				deps,
-				subscription_task_executor,
-				pubsub_notification_sinks.clone(),
-			)
-			.map_err(Into::into)
-		})
+				crate::rpc::create_full(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+				)
+				.map_err(Into::into)
+			},
+		)
 	};
 
 	let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -842,6 +872,7 @@ where
 	A: ChainApi<Block = Block> + 'static,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut io = RpcModule::new(());
@@ -863,6 +894,7 @@ where
 				fee_history_cache_limit,
 				overrides,
 				block_data_cache,
+				beefy,
 			},
 		#[cfg(feature = "manual-seal")]
 		command_sink,
@@ -946,6 +978,15 @@ where
 		)?;
 	}
 
+	io.merge(
+		Beefy::<Block>::new(
+			beefy.beefy_finality_proof_stream,
+			beefy.beefy_best_block_stream,
+			beefy.subscription_executor,
+		)?
+		.into_rpc(),
+	)?;
+
 	Ok(io)
 }
 
@@ -975,4 +1016,6 @@ pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
 	pub overrides: Arc<OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	/// BEEFY specific dependencies.
+	pub beefy: polkadot_rpc::BeefyDeps,
 }

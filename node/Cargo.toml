@@ -26,7 +26,8 @@ sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
-sp-consensus-beefy.workspace = true
+sc-consensus-beefy.workspace = true
+sc-consensus-beefy-rpc.workspace = true
 sc-consensus-manual-seal = { workspace = true, optional = true }
 sc-consensus.workspace = true
 sc-executor.workspace = true
@@ -43,6 +44,7 @@ sp-api = { workspace = true, features = ["std"] }
 sp-block-builder.workspace = true
 sp-blockchain.workspace = true
 sp-consensus-aura = { workspace = true, features = ["std"] }
+sp-consensus-beefy = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
 sp-inherents = { workspace = true, features = ["std"] }
 sp-keyring.workspace = true
@@ -56,6 +58,7 @@ frame-benchmarking = { workspace = true, optional = true }
 frame-benchmarking-cli = { workspace = true, optional = true }
 frame-system.workspace = true
 pallet-transaction-payment.workspace = true
+polkadot-rpc.workspace = true
 
 # Frontier
 fc-cli = { workspace = true }
