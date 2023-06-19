@@ -1,0 +1,20 @@
+namePrefix: brooklyn-archive-
+namespace: brooklyn
+commonLabels:
+  testnet: brooklyn
+  app: brooklyn-testnet-archive
+resources:
+  - ../../base
+patchesStrategicMerge:
+  - brooklyn-archive-args.yaml
+configMapGenerator:
+- name: ggx-node-config
+  literals:
+    - CHAINSPEC="brooklyn.json"
+    - TELEMETRY="ws://52.57.198.64:8001/submit 0"
+    - NAME="ggx-brooklyn-archive"
+    - BOOT_NODES="/dns/brooklyn-nlb.dev.ggxchain.io/tcp/30333/p2p/12D3KooWDd1fx8C1Mmhsu8MPsKkcnz49U8yhearMxhAoiWMb45wp"
+secretGenerator: # should move this to something else to consume directly from secretsmanager
+  - name: ggx-node-secret
+    literals:
+      - PASSWORD=ggx
