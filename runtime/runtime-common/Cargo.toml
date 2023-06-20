@@ -35,19 +35,19 @@ pallet-evm-precompile-session = { workspace = true, optional = true }
 
 # zk precompile
 hex = { version = "0.4", default-features = false }
-num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
+num-bigint = { workspace = true }
 # zksnark
-ark-crypto-primitives = { version = "0.4.0", default-features = false }
-ark-ec = { version = "0.4.1", default-features = false }
-ark-ff = { version = "0.4.1", default-features = false, features = ["asm"] }
-ark-std = { version = "0.4.0", default-features = false }
-ark-bn254 = { version = "0.4.0" }
-ark-groth16 = { version = "0.4.0", default-features = false }
-ark-poly = { version = "0.4.1", default-features = false }
-ark-relations = { version = "0.4.0", default-features = false }
-ark-serialize = { version = "0.4.1", default-features = false }
+ark-crypto-primitives = { workspace = true }
+ark-ec = { workspace = true }
+ark-ff = { workspace = true }
+ark-std = { workspace = true }
+ark-bn254 = { workspace = true }
+ark-groth16 = { workspace = true }
+ark-poly = { workspace = true }
+ark-relations = { workspace = true }
+ark-serialize = { workspace = true }
 # eth abi
-ethabi = { version = "18.0.0", default-features = false }
+ethabi = { workspace = true }
 
 [dev-dependencies]
 proptest.workspace = true

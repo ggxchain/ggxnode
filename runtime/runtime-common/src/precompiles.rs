@@ -15,9 +15,9 @@ use pallet_evm_precompile_sr25519::Sr25519Precompile;
 use pallet_evm_precompile_substrate_ecdsa::SubstrateEcdsaPrecompile;
 use pallet_evm_precompile_xvm::XvmPrecompile;
 
-pub mod testp;
+pub mod zk_verify;
 
-use crate::precompiles::testp::ZKGroth16Verify;
+use crate::precompiles::zk_verify::ZKGroth16Verify;
 
 #[derive(Default)]
 pub struct GoldenGatePrecompiles<R>(PhantomData<R>);

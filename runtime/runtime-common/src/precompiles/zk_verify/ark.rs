@@ -4,8 +4,8 @@ extern crate alloc;
 use alloc::vec::Vec;
 
 pub fn ark_bn254_g1(x: &[u8], y: &[u8]) -> ark_bn254::g1::G1Affine {
-	let x_int = BigUint::from_bytes_be(&x[..]);
-	let y_int = BigUint::from_bytes_be(&y[..]);
+	let x_int = BigUint::from_bytes_be(x);
+	let y_int = BigUint::from_bytes_be(y);
 
 	let ark_x = ark_ff::BigInt::try_from(x_int).unwrap();
 	let ark_y = ark_ff::BigInt::try_from(y_int).unwrap();
@@ -14,10 +14,10 @@ pub fn ark_bn254_g1(x: &[u8], y: &[u8]) -> ark_bn254::g1::G1Affine {
 }
 
 pub fn ark_bn254_g2(x1: &[u8], x2: &[u8], y1: &[u8], y2: &[u8]) -> ark_bn254::g2::G2Affine {
-	let x1_int = BigUint::from_bytes_be(&x1[..]);
-	let x2_int = BigUint::from_bytes_be(&x2[..]);
-	let y1_int = BigUint::from_bytes_be(&y1[..]);
-	let y2_int = BigUint::from_bytes_be(&y2[..]);
+	let x1_int = BigUint::from_bytes_be(x1);
+	let x2_int = BigUint::from_bytes_be(x2);
+	let y1_int = BigUint::from_bytes_be(y1);
+	let y2_int = BigUint::from_bytes_be(y2);
 
 	let ark_x1 = ark_ff::BigInt::try_from(x1_int).unwrap();
 	let ark_x2 = ark_ff::BigInt::try_from(x2_int).unwrap();
@@ -30,6 +30,7 @@ pub fn ark_bn254_g2(x1: &[u8], x2: &[u8], y1: &[u8], y2: &[u8]) -> ark_bn254::g2
 	)
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn ark_bn254_proof(
 	a_x: &[u8],
 	a_y: &[u8],
@@ -48,6 +49,7 @@ pub fn ark_bn254_proof(
 	ark_groth16::Proof { a, b, c }
 }
 
+#[allow(clippy::too_many_arguments)]
 pub fn ark_bn254_vk(
 	alpha_x: &[u8],
 	alpha_y: &[u8],
@@ -71,11 +73,7 @@ pub fn ark_bn254_vk(
 	let gamma_g2 = ark_bn254_g2(gamma_x1, gamma_x2, gamma_y1, gamma_y2);
 	let delta_g2 = ark_bn254_g2(delta_x1, delta_x2, delta_y1, delta_y2);
 
-	let mut gamma_abc_g1 = Vec::new();
-	for item in ic {
-		let g1_point = ark_bn254_g1(&item[0], &item[1]);
-		gamma_abc_g1.push(g1_point);
-	}
+	let gamma_abc_g1 = ic.iter().map(|p| ark_bn254_g1(&p[0], &p[1])).collect();
 
 	ark_groth16::VerifyingKey {
 		alpha_g1,
@@ -86,12 +84,6 @@ pub fn ark_bn254_vk(
 	}
 }
 
-pub fn ark_bn254_pub_inputs(i: Vec<Vec<u8>>) -> Vec<ark_bn254::Fr> {
-	i.iter()
-		.map(|w| -> ark_bn254::Fr {
-			let int = BigUint::from_bytes_be(&w);
-
-			ark_bn254::Fr::from(int)
-		})
-		.collect()
+pub fn ark_bn254_fr(b: &[u8]) -> ark_bn254::Fr {
+	ark_bn254::Fr::from(BigUint::from_bytes_be(b))
 }
