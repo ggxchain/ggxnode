@@ -82,8 +82,7 @@ pallet-evm-chain-id.workspace = true
 pallet-hotfix-sufficients.workspace = true
 
 # GGX
-account-filter.workspace = true
-runtime-common = { workspace = true, features = ["xvm"]  }
+runtime-common = { workspace = true, features = ["xvm"] }
 
 # Astar
 pallet-chain-extension-xvm.workspace = true
@@ -102,7 +101,6 @@ sp-io.workspace = true
 
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
-
 fast-runtime = []
 
 std = [
@@ -171,7 +169,6 @@ std = [
 	"pallet-evm-chain-id/std",
 	"pallet-hotfix-sufficients/std",
 	# GGX
-	"account-filter/std",
 	"runtime-common/std",
 	# Astar
 	"pallet-chain-extension-xvm/std",
