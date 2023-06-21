@@ -3711,6 +3711,8 @@ dependencies = [
  "hex",
  "jsonrpsee",
  "log",
+ "mmr-gadget",
+ "mmr-rpc",
  "nix 0.26.2",
  "pallet-balances",
  "pallet-transaction-payment",
@@ -3745,6 +3747,7 @@ dependencies = [
  "sp-core",
  "sp-inherents",
  "sp-keyring",
+ "sp-mmr-primitives",
  "sp-runtime",
  "sp-timestamp",
  "substrate-build-script-utils",
@@ -5672,6 +5675,25 @@ dependencies = [
  "libc",
  "wasi 0.11.0+wasi-snapshot-preview1",
  "windows-sys 0.48.0",
+]
+
+[[package]]
+name = "mmr-gadget"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
+dependencies = [
+ "futures",
+ "log",
+ "parity-scale-codec 3.5.0",
+ "sc-client-api",
+ "sc-offchain",
+ "sp-api",
+ "sp-blockchain",
+ "sp-consensus",
+ "sp-consensus-beefy",
+ "sp-core",
+ "sp-mmr-primitives",
+ "sp-runtime",
 ]
 
 [[package]]

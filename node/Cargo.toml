@@ -22,6 +22,9 @@ rand.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
 
 # Substrate
+mmr-gadget.workspace = true
+mmr-rpc.workspace = true
+sp-mmr-primitives.workspace = true
 sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true

@@ -12,6 +12,8 @@ use std::{
 	time::Duration,
 };
 // Substrate
+use mmr_gadget::MmrGadget;
+use mmr_rpc::{Mmr, MmrApiServer};
 use sc_cli::SubstrateCli;
 use sc_client_api::{
 	backend::{Backend, StateBackend},
@@ -43,7 +45,7 @@ use crate::cli::Sealing;
 use crate::{
 	cli::Cli,
 	rpc::FullDeps,
-	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
+	runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, RuntimeApi},
 };
 
 #[cfg(not(feature = "manual-seal"))]
@@ -263,6 +265,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 
 	// Use ethereum style for subscription ids
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	let is_offchain_indexing_enabled = config.offchain_worker.indexing_enabled;
 
 	let sc_service::PartialComponents {
 		client,
@@ -308,6 +311,35 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			grandpa_protocol_name.clone(),
 		));
 
+	let genesis_hash = client
+		.block_hash(0)
+		.ok()
+		.flatten()
+		.expect("Genesis block exists; qed");
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let beefy_gossip_proto_name =
+		sc_consensus_beefy::gossip_protocol_name(&genesis_hash, config.chain_spec.fork_id());
+	// `beefy_on_demand_justifications_handler` is given to `beefy-gadget` task to be run,
+	// while `beefy_req_resp_cfg` is added to `config.network.request_response_protocols`.
+	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
+		sc_consensus_beefy::communication::request_response::BeefyJustifsRequestHandler::new(
+			&genesis_hash,
+			config.chain_spec.fork_id(),
+			client.clone(),
+			prometheus_registry.clone(),
+		);
+
+	config
+		.network
+		.extra_sets
+		.push(sc_consensus_beefy::communication::beefy_peers_set_config(
+			beefy_gossip_proto_name.clone(),
+		));
+	config
+		.network
+		.request_response_protocols
+		.push(beefy_req_resp_cfg);
+
 	let (grandpa_block_import, _grandpa_link) =
 		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
 			client.clone(),
@@ -318,7 +350,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		)?;
 	let _justification_import = grandpa_block_import.clone();
 
-	let (_beefy_block_import, _beefy_voter_links, beefy_rpc_links) =
+	let (_beefy_block_import, beefy_voter_links, beefy_rpc_links) =
 		sc_consensus_beefy::beefy_block_import_and_links(
 			grandpa_block_import,
 			backend.clone(),
@@ -449,7 +481,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
-		backend,
+		backend.clone(),
 		frontier_backend,
 		filter_pool,
 		overrides,
@@ -485,7 +517,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(
 			sc_consensus_aura::StartAuraParams {
 				slot_duration,
-				client,
+				client: client.clone(),
 				select_chain,
 				block_import,
 				proposer_factory,
@@ -506,6 +538,54 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		task_manager
 			.spawn_essential_handle()
 			.spawn_blocking("aura", Some("block-authoring"), aura);
+	}
+
+	// if the node isn't actively participating in consensus then it doesn't
+	// need a keystore, regardless of which protocol we use below.
+	let keystore_opt = if role.is_authority() {
+		Some(keystore_container.sync_keystore())
+	} else {
+		None
+	};
+
+	let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
+	let network_params = sc_consensus_beefy::BeefyNetworkParams {
+		network: network.clone(),
+		sync: sync_service.clone(),
+		gossip_protocol_name: beefy_gossip_proto_name,
+		justifications_protocol_name,
+		_phantom: core::marker::PhantomData::<Block>,
+	};
+	let payload_provider = sp_consensus_beefy::mmr::MmrRootProvider::new(client.clone());
+	let beefy_params = sc_consensus_beefy::BeefyParams {
+		client: client.clone(),
+		backend: backend.clone(),
+		payload_provider,
+		runtime: client.clone(),
+		key_store: keystore_opt.clone(),
+		network_params,
+		min_block_delta: 2,
+		prometheus_registry: prometheus_registry.clone(),
+		links: beefy_voter_links,
+		on_demand_justifications_handler: beefy_on_demand_justifications_handler,
+	};
+
+	let gadget = sc_consensus_beefy::start_beefy_gadget::<_, _, _, _, _, _, _>(beefy_params);
+
+	task_manager
+		.spawn_handle()
+		.spawn_blocking("beefy-gadget", None, gadget);
+
+	if is_offchain_indexing_enabled {
+		task_manager.spawn_handle().spawn_blocking(
+			"mmr-gadget",
+			None,
+			MmrGadget::start(
+				client.clone(),
+				backend.clone(),
+				sp_mmr_primitives::INDEXING_PREFIX.to_vec(),
+			),
+		);
 	}
 
 	if enable_grandpa {
@@ -864,6 +944,7 @@ where
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
+	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
 	C::Api: BlockBuilder<Block>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
@@ -967,7 +1048,7 @@ where
 		)
 		.into_rpc(),
 	)?;
-	io.merge(Web3::new(client).into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
 
 	#[cfg(feature = "manual-seal")]
 	if let Some(command_sink) = command_sink {
@@ -978,6 +1059,7 @@ where
 		)?;
 	}
 
+	io.merge(Mmr::new(client.clone()).into_rpc())?;
 	io.merge(
 		Beefy::<Block>::new(
 			beefy.beefy_finality_proof_stream,

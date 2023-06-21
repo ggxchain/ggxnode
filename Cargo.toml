@@ -53,6 +53,8 @@ wait-timeout = "0.2"
 web3 = "0.18.0"
 
 # Substrate Client
+mmr-gadget = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
+mmr-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-basic-authorship = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-cli = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
 sc-client-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40" }
@@ -75,6 +77,7 @@ substrate-rpc-client = { version = "0.10.0-dev", git = "https://github.com/parit
 polkadot-rpc = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.40" }
 
 # Substrate Primitive
+sp-mmr-primitives = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 pallet-beefy = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 pallet-beefy-mmr = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
@@ -87,7 +90,6 @@ sp-consensus-beefy = { version = "4.0.0-dev", git = "https://github.com/parityte
 sp-core = { version = "7.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-inherents = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-io = { version = "7.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
-sp-mmr-primitives = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-keyring = { version = "7.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-offchain = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
 sp-runtime = { version = "7.0.0", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.40", default-features = false }
