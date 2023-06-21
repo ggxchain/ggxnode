@@ -3759,7 +3759,6 @@ dependencies = [
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
- "substrate-account-filter",
  "substrate-wasm-builder",
 ]
 
@@ -3822,7 +3821,6 @@ dependencies = [
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
- "substrate-account-filter",
  "substrate-wasm-builder",
 ]
 
@@ -11130,21 +11128,6 @@ dependencies = [
  "tokio",
  "url",
  "webrtc-util",
-]
-
-[[package]]
-name = "substrate-account-filter"
-version = "4.0.0"
-source = "git+https://github.com/GoldenGateGGX/ggx-frames?branch=polkadot-v0.9.39#e3e96f5e78fb67b7aafe00b2e278a08f2cb2bc9e"
-dependencies = [
- "frame-support",
- "frame-system",
- "parity-scale-codec 3.5.0",
- "scale-info",
- "serde",
- "sp-core",
- "sp-runtime",
- "sp-std",
 ]
 
 [[package]]

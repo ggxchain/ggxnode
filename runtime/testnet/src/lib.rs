@@ -75,9 +75,6 @@ pub use runtime_common::{
 	validator_manager,
 };
 
-/// Import the permissioned ledger pallet.
-pub use account_filter;
-
 /// Type of block number.
 pub type BlockNumber = u32;
 
@@ -148,7 +145,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	account_filter::AllowAccount<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
@@ -289,11 +285,6 @@ impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type MaxAuthorities = MaxAuthorities;
 	type DisabledValidators = ();
-}
-
-impl account_filter::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ValidateOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
 impl chain_spec::Config for Runtime {}
@@ -452,8 +443,6 @@ construct_runtime!(
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
-		// GGX pallets
-		AccountFilter: account_filter,
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
