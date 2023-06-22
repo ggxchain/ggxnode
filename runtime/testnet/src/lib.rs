@@ -340,17 +340,19 @@ parameter_types! {
 	pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
 }
 
-pub struct CustomBeefyDataProvider {}
+pub struct BeefyDummyDataProvider;
 
-impl BeefyDataProvider<()> for CustomBeefyDataProvider {
-	fn extra_data() -> () {}
+impl sp_consensus_beefy::mmr::BeefyDataProvider<H256> for BeefyDummyDataProvider {
+	fn extra_data() -> H256 {
+		Default::default()
+	}
 }
 
 impl pallet_beefy_mmr::Config for Runtime {
 	type LeafVersion = LeafVersion;
 	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-	type LeafExtra = ();
-	type BeefyDataProvider = CustomBeefyDataProvider;
+	type LeafExtra = H256;
+	type BeefyDataProvider = BeefyDummyDataProvider;
 }
 
 impl account_filter::Config for Runtime {
