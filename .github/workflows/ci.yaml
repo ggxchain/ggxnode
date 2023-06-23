@@ -76,7 +76,7 @@ jobs:
       - name: Build, tag, and upload the docker image
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: f8n4k6v0
+          REGISTRY_ALIAS: c6u3u5c0
           REPOSITORY: golden-gate-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA -f Dockerfile.sydney .
