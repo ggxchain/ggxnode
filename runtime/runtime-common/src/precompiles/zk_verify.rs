@@ -7,8 +7,9 @@ use core::ops::Range;
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
 
-use crate::precompiles::zk_verify::ark::{ark_bn254_fr, ark_bn254_proof, ark_bn254_vk};
+use crate::precompiles::zk_verify::ark::{ark_bn254_fr, ark_bn254_g1, ark_bn254_g2};
 use ethabi::Token;
+use frame_support::log;
 
 pub struct ZKGroth16Verify;
 
@@ -22,7 +23,8 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 		let input_stripped = &input[4..];
 		let mut i256_r = Int256Reader::new();
 
-		if input_stripped.len() < 704 {
+		const MIN_INPUT_LENGTH: usize = 24 * 32;
+		if input_stripped.len() < MIN_INPUT_LENGTH {
 			return Err(PrecompileFailure::from(ExitError::InvalidRange));
 		}
 
@@ -80,12 +82,8 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 			))), // vk ic
 			ethabi::ParamType::Array(Box::from(ethabi::ParamType::Uint(256))), // input
 		];
-		let decoded = match ethabi::decode(types, input_stripped) {
-			Ok(v) => v,
-			Err(_e) => {
-				return Err(PrecompileFailure::from(ExitError::InvalidRange));
-			}
-		};
+		let decoded = ethabi::decode(types, input_stripped)
+			.map_err(|_e| PrecompileFailure::from(ExitError::InvalidRange))?;
 
 		let pub_arr = match decoded[decoded.len() - 1].clone().into_array() {
 			Some(v) => v,
@@ -97,17 +95,19 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 			.map(|b| ark_bn254_fr(&b))
 			.collect();
 
-		let proof = ark_bn254_proof(
-			proof_a_x, proof_a_y, proof_b_x1, proof_b_x2, proof_b_y1, proof_b_y2, proof_c_x,
-			proof_c_y,
-		);
-
-		let mut vk_ic_: Vec<[Vec<u8>; 2]> = Vec::new();
+		let proof = ark_groth16::Proof {
+			a: ark_bn254_g1(proof_a_x, proof_a_y),
+			b: ark_bn254_g2(proof_b_x1, proof_b_x2, proof_b_y1, proof_b_y2),
+			c: ark_bn254_g1(proof_c_x, proof_c_y),
+		};
 
 		let ic_arr = match decoded[decoded.len() - 2].clone().into_array() {
 			Some(v) => v,
 			None => return Err(PrecompileFailure::from(ExitError::InvalidRange)),
 		};
+
+		let mut vk_ic_: Vec<_> = Vec::with_capacity(ic_arr.len());
+
 		for point in ic_arr {
 			let array = match point.clone().into_fixed_array() {
 				Some(v) => v,
@@ -120,33 +120,24 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 			let x = ethabi::encode(&[t1]);
 			let y = ethabi::encode(&[t2]);
 
-			vk_ic_.push([x, y]);
+			vk_ic_.push(ark_bn254_g1(&x, &y));
 		}
 
-		let vk = ark_bn254_vk(
-			vk_alpha_x,
-			vk_alpha_y,
-			vk_beta_x1,
-			vk_beta_x2,
-			vk_beta_y1,
-			vk_beta_y2,
-			vk_gamma_x1,
-			vk_gamma_x2,
-			vk_gamma_y1,
-			vk_gamma_y2,
-			vk_delta_x1,
-			vk_delta_x2,
-			vk_delta_y1,
-			vk_delta_y2,
-			vk_ic_,
-		);
-
-		let verified = match Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof) {
-			Ok(v) => v,
-			Err(_e) => return Ok((ExitSucceed::Stopped, [].to_vec())),
+		let vk = ark_groth16::VerifyingKey {
+			alpha_g1: ark_bn254_g1(vk_alpha_x, vk_alpha_y),
+			beta_g2: ark_bn254_g2(vk_beta_x1, vk_beta_x2, vk_beta_y1, vk_beta_y2),
+			gamma_g2: ark_bn254_g2(vk_gamma_x1, vk_gamma_x2, vk_gamma_y1, vk_gamma_y2),
+			delta_g2: ark_bn254_g2(vk_delta_x1, vk_delta_x2, vk_delta_y1, vk_delta_y2),
+			gamma_abc_g1: vk_ic_,
 		};
-		#[cfg(feature = "std")]
-		let _ = debug::println(format!("Verify result {verified:?}"));
+
+		let verified = Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof)
+			.map_err(|_e| PrecompileFailure::from(ExitError::InvalidRange))?;
+		log::debug!(
+			target: "runtime_common::precompiles::zk_verify::execute",
+			"verification result {:?}",
+			verified
+		);
 
 		let encoded = ethabi::encode(&[Token::Bool(verified)]);
 		Ok((ExitSucceed::Returned, encoded.to_vec()))
@@ -167,17 +158,5 @@ impl Int256Reader {
 		self.offset += 32;
 
 		prev..self.offset
-	}
-}
-
-#[cfg(feature = "std")]
-mod debug {
-	use std::{
-		io,
-		io::{stdout, Write},
-	};
-
-	pub fn println(s: String) -> io::Result<()> {
-		stdout().write_all((s + "\n").as_bytes())
 	}
 }

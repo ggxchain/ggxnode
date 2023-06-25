@@ -48,6 +48,7 @@ ark-relations = { workspace = true }
 ark-serialize = { workspace = true }
 # eth abi
 ethabi = { workspace = true }
+log.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true

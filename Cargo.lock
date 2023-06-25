@@ -8951,6 +8951,7 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
+ "log",
  "num-bigint",
  "pallet-contracts",
  "pallet-evm",
