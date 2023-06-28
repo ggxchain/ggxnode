@@ -32,7 +32,7 @@ jobs:
             system-features = kvm
             http2 = true
       - name: cachix-cachix-action
-        uses: cachix/cachix-action@ea6f6e9b45e696e7d061ffdbec262b68272d07eb
+        uses: cachix/cachix-action@c061ae84bf58b6c0afa0c252373498c25a5e86f8
         with:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           name: ${{ env.CACHIX_NAME }}
