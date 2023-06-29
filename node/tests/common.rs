@@ -34,7 +34,7 @@ use std::{
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
-#[cfg(feature = "mainnet")]
+#[cfg(not(feature = "testnet"))]
 use golden_gate_runtime_mainnet::{Balance, Hash, Header, Index};
 #[cfg(feature = "testnet")]
 use golden_gate_runtime_testnet::{Balance, Hash, Header, Index};

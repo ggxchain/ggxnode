@@ -19,7 +19,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN cargo build --locked --release --package golden-gate-node --no-default-features "--features=mainnet" --config net.git-fetch-with-cli=true
+RUN cargo build --locked --release --package golden-gate-node --no-default-features --config net.git-fetch-with-cli=true
 
 
 FROM debian:11 as production
