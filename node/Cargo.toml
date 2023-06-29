@@ -95,6 +95,9 @@ default = []
 mainnet = [
 	"golden-gate-runtime-mainnet",
 ]
+fast-runtime = [
+	"golden-gate-runtime-mainnet?/fast-runtime",
+]
 manual-seal = [
 	"sc-consensus-manual-seal",
 	"golden-gate-runtime-testnet/manual-seal",
@@ -102,7 +105,7 @@ manual-seal = [
 ]
 with-paritydb-weights = [
 	"golden-gate-runtime-testnet/with-paritydb-weights",
-	"golden-gate-runtime-mainnet?/with-paritydb-weights"
+	"golden-gate-runtime-mainnet?/with-paritydb-weights",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
