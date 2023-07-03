@@ -202,7 +202,9 @@ pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-coll
 pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "icf-m3" }
 pallet-ics20-transfer = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "icf-m3" }
 pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git",   default-features = false, branch = "icf-m3" }
+ibc = { version = "0.28.0", default-features = false, features = ["parity-scale-codec", "serde"]}
 ibc-proto = { version = "0.25.0", default-features = false, features = ["parity-scale-codec"], git = "https://github.com/octopus-network/ibc-proto-rs", branch = "ibc" }
+prost = { version = "0.11", default-features = false }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 # [patch."https://github.com/AstarNetwork/frontier.git"]

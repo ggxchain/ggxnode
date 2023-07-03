@@ -3848,7 +3848,8 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
- "ibc-proto",
+ "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -3886,6 +3887,7 @@ dependencies = [
  "pallet-vesting",
  "pallet-xvm",
  "parity-scale-codec 3.5.0",
+ "prost",
  "runtime-common",
  "scale-info",
  "sp-api",
@@ -4282,6 +4284,38 @@ dependencies = [
 [[package]]
 name = "ibc"
 version = "0.28.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7fda4983dc8f766190402d1d9e8d7c4bb10fd9b3f0b07558045b31a3066e4b25"
+dependencies = [
+ "bytes",
+ "derive_more",
+ "displaydoc",
+ "dyn-clone",
+ "erased-serde",
+ "ibc-proto 0.25.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ics23",
+ "num-traits",
+ "parity-scale-codec 3.5.0",
+ "primitive-types 0.12.1",
+ "prost",
+ "safe-regex",
+ "scale-info",
+ "serde",
+ "serde_derive",
+ "serde_json",
+ "sha2 0.10.6",
+ "subtle-encoding",
+ "tendermint",
+ "tendermint-light-client-verifier",
+ "tendermint-proto",
+ "time 0.3.17",
+ "tracing",
+ "uint",
+]
+
+[[package]]
+name = "ibc"
+version = "0.28.0"
 source = "git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3#3f1bd80048b24d12af0cd32d9bb7018e73b01640"
 dependencies = [
  "bytes",
@@ -4290,7 +4324,7 @@ dependencies = [
  "displaydoc",
  "dyn-clone",
  "erased-serde",
- "ibc-proto",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "ics23",
  "log",
  "num-traits",
@@ -4310,6 +4344,24 @@ dependencies = [
  "time 0.3.17",
  "tracing",
  "uint",
+]
+
+[[package]]
+name = "ibc-proto"
+version = "0.25.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a057472da7f2107be20b1996063db3616cf356167b03f50118fc3f3a8c4c704"
+dependencies = [
+ "base64 0.13.1",
+ "borsh",
+ "bytes",
+ "flex-error",
+ "parity-scale-codec 3.5.0",
+ "prost",
+ "scale-info",
+ "serde",
+ "subtle-encoding",
+ "tendermint-proto",
 ]
 
 [[package]]
@@ -6847,8 +6899,8 @@ dependencies = [
  "frame-benchmarking",
  "frame-support",
  "frame-system",
- "ibc",
- "ibc-proto",
+ "ibc 0.28.0 (git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3)",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "log",
  "pallet-ibc-utils",
  "pallet-timestamp",
@@ -6870,8 +6922,8 @@ source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=icf-m3#2e0692
 dependencies = [
  "frame-benchmarking",
  "frame-support",
- "ibc",
- "ibc-proto",
+ "ibc 0.28.0 (git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3)",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "parity-scale-codec 3.5.0",
  "scale-info",
  "sp-runtime",
@@ -6887,8 +6939,8 @@ dependencies = [
  "frame-support",
  "frame-system",
  "hex",
- "ibc",
- "ibc-proto",
+ "ibc 0.28.0 (git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3)",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "log",
  "pallet-ibc-utils",
  "parity-scale-codec 3.5.0",

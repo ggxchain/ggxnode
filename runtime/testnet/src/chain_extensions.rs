@@ -1,5 +1,5 @@
 use frame_support::{
-	log::{error, trace},
+	log::{error, info, trace},
 	pallet_prelude::Weight,
 	traits::fungibles::{
 		approvals::{Inspect as AllowanceInspect, Mutate as AllowanceMutate},
@@ -7,18 +7,21 @@ use frame_support::{
 	},
 };
 use frame_system::RawOrigin;
-use ibc_proto::google::protobuf::Any;
+use ibc::{applications::transfer::msgs::transfer::TYPE_URL, core::ics24_host::identifier::PortId};
+use ibc_proto::ibc::applications::transfer::v1::MsgTransfer;
 use pallet_assets::WeightInfo;
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
 };
+use pallet_ibc::ToString;
+
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_core::{crypto::UncheckedFrom, Get};
 use sp_runtime::{
 	traits::{StaticLookup, Zero},
 	DispatchError, Saturating,
 };
-use sp_std::vec;
+use sp_std::{vec, vec::Vec};
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct Psp22BalanceOfInput<AssetId, AccountId> {
@@ -72,11 +75,6 @@ impl TryFrom<u16> for AssetsFunc {
 	}
 }
 
-#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct ICS20TransferInput {
-	msg: [u8; 4096],
-}
-
 fn raw_tranfer<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
 where
 	T: frame_system::Config
@@ -87,6 +85,8 @@ where
 	E: Ext<T = T>,
 	u64: From<<T as frame_system::Config>::BlockNumber>,
 {
+	use prost::Message;
+
 	let mut env = env.buf_in_buf_out();
 	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer();
 	let base_weight = Weight::from_parts(10_000, 0);
@@ -104,13 +104,53 @@ where
 		charged_weight
 	);
 
-	let input: ICS20TransferInput = env.read_as()?;
+	let (source_channel, denom, amount, sender, receiver, _, _): (
+		Vec<u8>,
+		Vec<u8>,
+		Vec<u8>,
+		Vec<u8>,
+		Vec<u8>,
+		u64,
+		u64,
+	) = env.read_as_unbounded(env.in_len())?;
+
+	let source_channel = match scale_info::prelude::string::String::from_utf8(source_channel) {
+		Ok(v) => v,
+		Err(e) => Default::default(),
+	};
+
+	let denom = match scale_info::prelude::string::String::from_utf8(denom.to_vec()) {
+		Ok(v) => v,
+		Err(e) => Default::default(),
+	};
+	let amount = match scale_info::prelude::string::String::from_utf8(amount.to_vec()) {
+		Ok(v) => v,
+		Err(e) => Default::default(),
+	};
+	let sender = match scale_info::prelude::string::String::from_utf8(sender.to_vec()) {
+		Ok(v) => v,
+		Err(e) => Default::default(),
+	};
+	let receiver = match scale_info::prelude::string::String::from_utf8(receiver.to_vec()) {
+		Ok(v) => v,
+		Err(e) => Default::default(),
+	};
+
+	let msg = MsgTransfer {
+		source_port: PortId::transfer().to_string(),
+		source_channel,
+		token: Some(ibc_proto::cosmos::base::v1beta1::Coin { denom, amount }),
+		sender,
+		receiver,
+		timeout_timestamp: 0,
+		timeout_height: None,
+	};
 
 	let _ = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
 		RawOrigin::Signed(env.ext().address().clone()).into(),
-		vec![Any {
-			type_url: Default::default(),
-			value: input.msg.to_vec(),
+		vec![ibc_proto::google::protobuf::Any {
+			type_url: TYPE_URL.to_string(),
+			value: msg.encode_to_vec(),
 		}],
 	); //todo(smith) handle fail DispatchError
 
@@ -197,17 +237,17 @@ impl TryFrom<u16> for FuncId {
 			// Note: We use the first two bytes of PSP22 interface selectors as function
 			// IDs, While we can use anything here, it makes sense from a
 			// convention perspective.
-			0x3d26 => Self::Metadata(Metadata::Name),
-			0x3420 => Self::Metadata(Metadata::Symbol),
-			0x7271 => Self::Metadata(Metadata::Decimals),
-			0x162d => Self::Query(Query::TotalSupply),
-			0x6568 => Self::Query(Query::BalanceOf),
-			0x4d47 => Self::Query(Query::Allowance),
-			0xdb20 => Self::Transfer,
-			0x54b3 => Self::TransferFrom,
-			0xb20f => Self::Approve,
-			0x96d6 => Self::IncreaseAllowance,
-			0xfecb => Self::DecreaseAllowance,
+			0x3001 => Self::Metadata(Metadata::Name),
+			0x3002 => Self::Metadata(Metadata::Symbol),
+			0x3003 => Self::Metadata(Metadata::Decimals),
+			0x3004 => Self::Query(Query::TotalSupply),
+			0x3005 => Self::Query(Query::BalanceOf),
+			0x3006 => Self::Query(Query::Allowance),
+			0x3007 => Self::Transfer,
+			0x3008 => Self::TransferFrom,
+			0x3009 => Self::Approve,
+			0x300a => Self::IncreaseAllowance,
+			0x300b => Self::DecreaseAllowance,
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
 				return Err(DispatchError::Other("Unimplemented func_id"));
