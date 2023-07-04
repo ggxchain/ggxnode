@@ -1,14 +1,14 @@
 use sp_core::{Pair, Public};
 use sp_runtime::traits::{IdentifyAccount, Verify};
 
-#[cfg(not(feature = "mainnet"))]
+#[cfg(feature = "testnet")]
 pub mod testnet;
-#[cfg(not(feature = "mainnet"))]
+#[cfg(feature = "testnet")]
 pub use testnet::*;
 
-#[cfg(feature = "mainnet")]
+#[cfg(not(feature = "testnet"))]
 pub mod mainnet;
-#[cfg(feature = "mainnet")]
+#[cfg(not(feature = "testnet"))]
 pub use mainnet::*;
 
 pub type AccountPublic = <Signature as Verify>::Signer;

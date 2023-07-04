@@ -69,8 +69,8 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
-golden-gate-runtime-mainnet = { workspace = true, features = ["std"], optional = true }
-golden-gate-runtime-testnet = { workspace = true, features = ["std"] }
+golden-gate-runtime-mainnet = { workspace = true, features = ["std"] }
+golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -92,25 +92,25 @@ substrate-build-script-utils.workspace = true
 
 [features]
 default = []
-mainnet = [
-	"golden-gate-runtime-mainnet",
+testnet = [
+	"golden-gate-runtime-testnet",
 ]
 fast-runtime = [
-	"golden-gate-runtime-mainnet?/fast-runtime",
+	"golden-gate-runtime-mainnet/fast-runtime",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"golden-gate-runtime-testnet/manual-seal",
-	"golden-gate-runtime-mainnet?/manual-seal",
+	"golden-gate-runtime-testnet?/manual-seal",
+	"golden-gate-runtime-mainnet/manual-seal",
 ]
 with-paritydb-weights = [
-	"golden-gate-runtime-testnet/with-paritydb-weights",
-	"golden-gate-runtime-mainnet?/with-paritydb-weights",
+	"golden-gate-runtime-testnet?/with-paritydb-weights",
+	"golden-gate-runtime-mainnet/with-paritydb-weights",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"golden-gate-runtime-testnet/runtime-benchmarks",
-	"golden-gate-runtime-mainnet?/runtime-benchmarks",
+	"golden-gate-runtime-testnet?/runtime-benchmarks",
+	"golden-gate-runtime-mainnet/runtime-benchmarks",
 ]

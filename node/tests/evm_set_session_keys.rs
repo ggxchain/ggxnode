@@ -18,7 +18,7 @@ use nix::{
 use std::process::{self};
 pub mod common;
 
-#[cfg(feature = "mainnet")]
+#[cfg(not(feature = "testnet"))]
 const CHAIN_ID: u64 = 8866u64;
 #[cfg(feature = "testnet")]
 const CHAIN_ID: u64 = 888866u64;
