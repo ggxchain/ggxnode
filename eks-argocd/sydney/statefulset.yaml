@@ -30,7 +30,7 @@ spec:
           image: public.ecr.aws/f8n4k6v0/golden-gate-node:sydney-f4382271
           imagePullPolicy: "IfNotPresent"
           command: [ "/usr/src/app/target/release/golden-gate-node" ]
-          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--pruning=archive", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)", "--bootnodes=/ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n"]
+          args: ["--base-path=/chain-data", "--name=$(NAME)", "--chain=/chain-info/$(CHAINSPEC)", "--pruning=archive", "--state-pruning=archive", "--blocks-pruning=archive", "--password=$(PASSWORD)", "--telemetry-url=$(TELEMETRY)", "--bootnodes=/ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n"]
           envFrom:
             - configMapRef:
                 name: ggx-node-config
