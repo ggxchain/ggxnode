@@ -61,7 +61,6 @@ docker run \
     --base-path=/data-brooklyn \
     --chain /tmp/brooklyn.json \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --sync=full \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 Sydney:
@@ -84,7 +83,6 @@ docker run \
     --base-path=/data-sydney \
     --chain /tmp/sydney.json \
     --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
-    --sync=full \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
