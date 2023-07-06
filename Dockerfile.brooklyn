@@ -29,3 +29,5 @@ ENV HOME /usr/src/app
 WORKDIR $HOME
 
 COPY --from=builder $HOME/target/release/golden-gate-node ./target/release/golden-gate-node
+
+ENTRYPOINT [ "/usr/src/app/target/release/golden-gate-node" ]
