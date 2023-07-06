@@ -58,18 +58,19 @@ struct Psp22ApproveInput<AssetId, AccountId, Balance> {
 	value: Balance,
 }
 
-enum AssetsFunc {
+#[derive(Debug)]
+enum IBCFunc {
 	Transfer,
 }
 
-impl TryFrom<u16> for AssetsFunc {
+impl TryFrom<u16> for IBCFunc {
 	type Error = DispatchError;
 
 	fn try_from(value: u16) -> Result<Self, Self::Error> {
 		match value {
-			1 => Ok(AssetsFunc::Transfer),
+			1 => Ok(IBCFunc::Transfer),
 			_ => Err(DispatchError::Other(
-				"PalletAssetsExtension: Unimplemented func_id",
+				"IBCISC20Extension: Unimplemented func_id",
 			)),
 		}
 	}
@@ -116,24 +117,24 @@ where
 
 	let source_channel = match scale_info::prelude::string::String::from_utf8(source_channel) {
 		Ok(v) => v,
-		Err(e) => Default::default(),
+		Err(_e) => Default::default(),
 	};
 
 	let denom = match scale_info::prelude::string::String::from_utf8(denom.to_vec()) {
 		Ok(v) => v,
-		Err(e) => Default::default(),
+		Err(_e) => Default::default(),
 	};
 	let amount = match scale_info::prelude::string::String::from_utf8(amount.to_vec()) {
 		Ok(v) => v,
-		Err(e) => Default::default(),
+		Err(_e) => Default::default(),
 	};
 	let sender = match scale_info::prelude::string::String::from_utf8(sender.to_vec()) {
 		Ok(v) => v,
-		Err(e) => Default::default(),
+		Err(_e) => Default::default(),
 	};
 	let receiver = match scale_info::prelude::string::String::from_utf8(receiver.to_vec()) {
 		Ok(v) => v,
-		Err(e) => Default::default(),
+		Err(_e) => Default::default(),
 	};
 
 	let msg = MsgTransfer {
@@ -159,6 +160,9 @@ where
 		"[ChainExtension]|call|transfer"
 	);
 
+	let array: [u8; 3] = [0; 3];
+	env.write(&array, false, None)?;
+
 	Ok(())
 }
 
@@ -183,7 +187,7 @@ where
 	{
 		let func_id = env.func_id().try_into()?;
 		match func_id {
-			AssetsFunc::Transfer => raw_tranfer::<T, E>(env)?,
+			IBCFunc::Transfer => raw_tranfer::<T, E>(env)?,
 		}
 		Ok(RetVal::Converging(0))
 	}
@@ -237,17 +241,17 @@ impl TryFrom<u16> for FuncId {
 			// Note: We use the first two bytes of PSP22 interface selectors as function
 			// IDs, While we can use anything here, it makes sense from a
 			// convention perspective.
-			0x3001 => Self::Metadata(Metadata::Name),
-			0x3002 => Self::Metadata(Metadata::Symbol),
-			0x3003 => Self::Metadata(Metadata::Decimals),
-			0x3004 => Self::Query(Query::TotalSupply),
-			0x3005 => Self::Query(Query::BalanceOf),
-			0x3006 => Self::Query(Query::Allowance),
-			0x3007 => Self::Transfer,
-			0x3008 => Self::TransferFrom,
-			0x3009 => Self::Approve,
-			0x300a => Self::IncreaseAllowance,
-			0x300b => Self::DecreaseAllowance,
+			0x3d26 => Self::Metadata(Metadata::Name),
+			0x3420 => Self::Metadata(Metadata::Symbol),
+			0x7271 => Self::Metadata(Metadata::Decimals),
+			0x162d => Self::Query(Query::TotalSupply),
+			0x6568 => Self::Query(Query::BalanceOf),
+			0x4d47 => Self::Query(Query::Allowance),
+			0xdb20 => Self::Transfer,
+			0x54b3 => Self::TransferFrom,
+			0xb20f => Self::Approve,
+			0x96d6 => Self::IncreaseAllowance,
+			0xfecb => Self::DecreaseAllowance,
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
 				return Err(DispatchError::Other("Unimplemented func_id"));
