@@ -105,7 +105,7 @@ where
 		charged_weight
 	);
 
-	let (source_channel, denom, amount, sender, receiver, _, _): (
+	let (source_channel, denom, amount, sender, receiver, timeout_timestamp, _): (
 		Vec<u8>,
 		Vec<u8>,
 		Vec<u8>,
@@ -143,11 +143,11 @@ where
 		token: Some(ibc_proto::cosmos::base::v1beta1::Coin { denom, amount }),
 		sender,
 		receiver,
-		timeout_timestamp: 0,
+		timeout_timestamp: timeout_timestamp * 1000000, //millisecond to nanoseconds
 		timeout_height: None,
 	};
 
-	let _ = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
+	let rt = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
 		RawOrigin::Signed(env.ext().address().clone()).into(),
 		vec![ibc_proto::google::protobuf::Any {
 			type_url: TYPE_URL.to_string(),
