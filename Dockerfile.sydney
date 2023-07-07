@@ -24,9 +24,13 @@ RUN cargo build --locked --release --package golden-gate-node --no-default-featu
 
 FROM debian:11 as production
 
+ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME /usr/src/app
+
 WORKDIR $HOME
 
 COPY --from=builder $HOME/target/release/golden-gate-node ./target/release/golden-gate-node
 RUN apt-get update --yes && \
-    apt-get install curl --yes
+    apt-get install curl --yes --no-install-recommends
+
+ENTRYPOINT [ "/usr/src/app/target/release/golden-gate-node" ]

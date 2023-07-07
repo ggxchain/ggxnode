@@ -67,3 +67,6 @@ override.tf.json
 terraform.rc
 
 !**.sops
+
+data-brooklyn
+data-sydney

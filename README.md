@@ -43,13 +43,47 @@ From the repository's root directory execute following commands in order:
 
 Brooklyn:
 ```bash
+mkdir data-brooklyn
+
 docker build -f Dockerfile.brooklyn -t golden-gate-node:brooklyn .
-docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd)/custom-spec-files:/tmp golden-gate-node:brooklyn /usr/src/app/target/release/golden-gate-node --base-path=/data-brooklyn --chain /tmp/brooklyn.json --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
+
+docker run \
+    -it \
+    --rm \
+    --name ggx-local-node \
+    -u $(id -g):$(id -u) \
+    -p 9944:9944 \
+    -p 9933:9933 \
+    -p 30333:30333 \
+    -v $(pwd)/custom-spec-files:/tmp \
+    -v $(pwd)/data-brooklyn:/data-brooklyn \
+    golden-gate-node:brooklyn \
+    --base-path=/data-brooklyn \
+    --chain /tmp/brooklyn.json \
+    --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
+    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 Sydney:
 ```bash
+mkdir data-sydney
+
 docker build -f Dockerfile.sydney -t golden-gate-node:sydney .
-docker run -it --rm --name ggx-local-node -p 9944:9944 -p 9933:9933 -p 30333:30333 -v $(pwd)/custom-spec-files:/tmp golden-gate-node:sydney /usr/src/app/target/release/golden-gate-node --base-path=/data-sydney --chain /tmp/sydney.json --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+
+docker run \
+    -it \
+    --rm \
+    --name ggx-local-node \
+    -u $(id -g):$(id -u) \
+    -p 9944:9944 \
+    -p 9933:9933 \
+    -p 30333:30333 \
+    -v $(pwd)/custom-spec-files:/tmp \
+    -v $(pwd)/data-sydney:/data-sydney \
+    golden-gate-node:sydney \
+    --base-path=/data-sydney \
+    --chain /tmp/sydney.json \
+    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
+    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
 You can use the following optional flags:
