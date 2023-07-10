@@ -5,6 +5,7 @@ members = [
 	"runtime/mainnet",
 	"runtime/testnet",
 	"runtime/runtime-common",
+	"light-client/eth-light-client",
 ]
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
