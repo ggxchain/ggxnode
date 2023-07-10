@@ -52,8 +52,6 @@ docker run \
     --rm \
     --name ggx-local-node \
     -u $(id -g):$(id -u) \
-    -p 9944:9944 \
-    -p 9933:9933 \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-brooklyn:/data-brooklyn \
@@ -74,8 +72,6 @@ docker run \
     --rm \
     --name ggx-local-node \
     -u $(id -g):$(id -u) \
-    -p 9944:9944 \
-    -p 9933:9933 \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney:/data-sydney \
