@@ -1,5 +1,5 @@
 use ethers::{abi::AbiEncode, types::H256};
-use eyre::Result;
+use eyre::{Report, Result};
 use salvo::prelude::*;
 use serde::Deserialize;
 use serde_json::json;
@@ -18,37 +18,39 @@ async fn status() -> &'static str {
 }
 
 #[handler]
-async fn root(dep: &mut Depot) -> String {
-	let db = dep.obtain::<DB>().expect("get DB");
-	let logs = db.select_logs().expect("get logs");
+async fn root(dep: &mut Depot) -> eyre::Result<String> {
+	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
+	let logs = db.select_logs().map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()
 		.flat_map(|log| log.transaction_hash)
 		.collect::<Vec<_>>();
 
-	json!({
-		"root": merkle::root(&hashes).encode_hex()
-	})
-	.to_string()
+	Ok(
+		json!({
+			"root": merkle::root(&hashes).encode_hex()
+		})
+		.to_string()
+	)
 }
 
 #[handler]
-async fn verify(req: &mut Request, dep: &mut Depot) -> String {
+async fn verify(req: &mut Request, dep: &mut Depot) -> Result<String> {
 	let verify_req = req
 		.parse_body::<VerifyReq>()
 		.await
-		.expect("Could not parse VerifyReq");
-	let db = dep.obtain::<DB>().expect("get DB");
-	let logs = db.select_logs().expect("get logs");
+		.map_err(|_| Report::msg("Could not parse VerifyReq"))?;
+	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
+	let logs = db.select_logs().map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()
 		.flat_map(|log| log.transaction_hash)
 		.collect::<Vec<_>>();
 
 	let verified =
-		merkle::verify(&hashes, &verify_req.indices, &verify_req.hashes).expect("Could not verify");
+		merkle::verify(&hashes, &verify_req.indices, &verify_req.hashes).map_err(|_| Report::msg("Could not verify"))?;
 
-	json!({ "verified": verified }).to_string()
+	Ok(json!({ "verified": verified }).to_string())
 }
 
 pub async fn start_server(config: Config, db: DB) -> Result<()> {

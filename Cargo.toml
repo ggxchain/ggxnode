@@ -47,7 +47,7 @@ proptest = "1.1"
 quote = "1.0"
 rand = "0.8.4"
 rusqlite = "0.29.0"
-salvo = { version = "0.44.1", features = ["affix"] }
+salvo = { version = "0.44.1", features = ["affix", "eyre"] }
 scale-codec = { package = "parity-scale-codec", version = "3.4.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0", default-features = false }

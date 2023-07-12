@@ -9662,6 +9662,7 @@ dependencies = [
  "cruet",
  "encoding_rs",
  "enumflags2",
+ "eyre",
  "flate2",
  "form_urlencoded",
  "futures-util",
