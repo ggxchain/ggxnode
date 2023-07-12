@@ -20,18 +20,18 @@ async fn status() -> &'static str {
 #[handler]
 async fn root(dep: &mut Depot) -> eyre::Result<String> {
 	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
-	let logs = db.select_logs().map_err(|_| Report::msg("Could not get logs"))?;
+	let logs = db
+		.select_logs()
+		.map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()
 		.flat_map(|log| log.transaction_hash)
 		.collect::<Vec<_>>();
 
-	Ok(
-		json!({
-			"root": merkle::root(&hashes).encode_hex()
-		})
-		.to_string()
-	)
+	Ok(json!({
+		"root": merkle::root(&hashes).encode_hex()
+	})
+	.to_string())
 }
 
 #[handler]
@@ -41,14 +41,16 @@ async fn verify(req: &mut Request, dep: &mut Depot) -> Result<String> {
 		.await
 		.map_err(|_| Report::msg("Could not parse VerifyReq"))?;
 	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
-	let logs = db.select_logs().map_err(|_| Report::msg("Could not get logs"))?;
+	let logs = db
+		.select_logs()
+		.map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()
 		.flat_map(|log| log.transaction_hash)
 		.collect::<Vec<_>>();
 
-	let verified =
-		merkle::verify(&hashes, &verify_req.indices, &verify_req.hashes).map_err(|_| Report::msg("Could not verify"))?;
+	let verified = merkle::verify(&hashes, &verify_req.indices, &verify_req.hashes)
+		.map_err(|_| Report::msg("Could not verify"))?;
 
 	Ok(json!({ "verified": verified }).to_string())
 }
