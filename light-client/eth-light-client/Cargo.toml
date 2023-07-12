@@ -6,24 +6,20 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-blake2 = "0.10.6"
-env_logger = "0.10.0"
-envy = "0.4.2"
-ethers = "2.0.7"
-eyre = "0.6.8"
-helios = { git = "https://github.com/a16z/helios.git", tag = "0.4.1" }
-log = "0.4.19"
-merkle-cbt = "0.3.2"
-rusqlite = "0.29.0"
-salvo = { version = "0.44.1", features = ["affix"] }
-serde = "1.0.164"
-serde_json = "1.0.97"
-signal-hook = "0.3.15"
-tokio = {version = "1.28.2", features = ["macros", "rt-multi-thread"]}
+blake2.workspace = true
+env_logger.workspace = true
+envy.workspace = true
+ethers.workspace = true
+eyre.workspace = true
+helios.workspace = true
+log.workspace = true
+merkle-cbt.workspace = true
+rusqlite.workspace = true
+salvo.workspace = true
+serde.workspace = true
+serde_json.workspace = true
+signal-hook.workspace = true
+tokio.workspace = true
 
 [dev-dependencies]
-hex-literal = "0.4.1"
-
-[patch."https://github.com/a16z/helios.git"]
-helios = { git = "https://github.com/obsessed-cake/helios", branch = "bump-max-supported-logs-number" }
-
+hex-literal.workspace = true

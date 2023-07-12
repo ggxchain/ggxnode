@@ -1199,7 +1199,7 @@ checksum = "2da6da31387c7e4ef160ffab6d5e7f00c42626fe39aea70a7b0f1773f7dd6c1b"
 [[package]]
 name = "client"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "common",
  "config",
@@ -1305,7 +1305,7 @@ dependencies = [
 [[package]]
 name = "common"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "ethers",
  "eyre",
@@ -1327,7 +1327,7 @@ dependencies = [
 [[package]]
 name = "config"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "common",
  "ethers",
@@ -1348,7 +1348,7 @@ dependencies = [
 [[package]]
 name = "consensus"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "async-trait",
  "bytes",
@@ -2452,7 +2452,7 @@ dependencies = [
  "ethers",
  "eyre",
  "helios",
- "hex-literal 0.4.1",
+ "hex-literal",
  "log",
  "merkle-cbt",
  "rusqlite",
@@ -2910,7 +2910,7 @@ dependencies = [
 [[package]]
 name = "execution"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "async-trait",
  "bytes",
@@ -4354,7 +4354,7 @@ checksum = "95505c38b4572b2d910cecb0281560f54b440a19336cbbcb27bf6ce6adc6f5a8"
 [[package]]
 name = "helios"
 version = "0.4.1"
-source = "git+https://github.com/a16z/helios.git?tag=0.4.1#c057ab57e281e3a7c8a48a32a05e19ad90a922c3"
+source = "git+https://github.com/obsessed-cake/helios?branch=bump-max-supported-logs-number#925cad0f66aac1a8c3f0d2d445752533d20b054e"
 dependencies = [
  "client",
  "common",
@@ -4402,12 +4402,6 @@ name = "hex-literal"
 version = "0.3.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "7ebdb29d2ea9ed0083cd8cece49bbd968021bd99b0849edb4a9a7ee0fdf6a4e0"
-
-[[package]]
-name = "hex-literal"
-version = "0.4.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "6fe2267d4ed49bc07b63801559be28c718ea06c4738b7a03c94df7386d2cde46"
 
 [[package]]
 name = "hkdf"
@@ -7362,7 +7356,7 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal 0.3.4",
+ "hex-literal",
  "libsecp256k1",
  "log",
  "num_enum 0.5.11",

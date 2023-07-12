@@ -22,6 +22,7 @@ repository = "https://github.com/paritytech/frontier/"
 # General purpose dependencies
 assert_cmd = "2.0.2"
 async-trait = "0.1"
+blake2 = "0.10.6"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
 ethers = { version = "2.0.4" }
@@ -32,18 +33,26 @@ impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
 libsecp256k1 = "0.7"
 log = "0.4.17"
+env_logger = "0.10.0"
+envy = "0.4.2"
+eyre = "0.6.8"
+helios = { git = "https://github.com/a16z/helios.git", tag = "0.4.1" }
+merkle-cbt = "0.3.2"
+once_cell = { version = "1.17.1", default-features = false }
 nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }
-once_cell = { version = "1.17.1", default-features = false }
 paste = "1.0"
 proc-macro2 = "1.0"
 proptest = "1.1"
 quote = "1.0"
 rand = "0.8.4"
+rusqlite = "0.29.0"
+salvo = { version = "0.44.1", features = ["affix"] }
 scale-codec = { package = "parity-scale-codec", version = "3.4.0", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5.0", default-features = false, features = ["derive"] }
 serde = { version = "1.0", default-features = false }
 serde_json = "1.0.68"
+signal-hook = "0.3.15"
 sha3 = "0.8"
 syn = { version = "1.0", features = ["extra-traits", "fold", "full", "visit"] }
 tempfile = "3.1.0"
@@ -195,3 +204,7 @@ pallet-ics20-transfer = { default-features = false, git = "https://github.com/oc
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]
 fp-account = { git = "https://github.com/akorchyn/frontier.git", branch = "polkadot-v0.9.39" }
+
+# Temporary, until https://github.com/a16z/helios/pull/242 is merged.
+[patch."https://github.com/a16z/helios.git"]
+helios = { git = "https://github.com/obsessed-cake/helios", branch = "bump-max-supported-logs-number" }
