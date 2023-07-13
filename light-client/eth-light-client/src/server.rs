@@ -7,9 +7,15 @@ use serde_json::json;
 use crate::{config::Config, db::DB, merkle};
 
 #[derive(Deserialize)]
+struct RootReq {
+	block_number: u64,
+}
+
+#[derive(Deserialize)]
 struct VerifyReq {
-	indices: Vec<u32>,
+	block_number: u64,
 	hashes: Vec<H256>,
+	indices: Vec<u32>,
 }
 
 #[handler]
@@ -18,10 +24,14 @@ async fn status() -> &'static str {
 }
 
 #[handler]
-async fn root(dep: &mut Depot) -> eyre::Result<String> {
+async fn root(req: &mut Request, dep: &mut Depot) -> eyre::Result<String> {
+	let root_req = req
+		.parse_body::<RootReq>()
+		.await
+		.map_err(|_| Report::msg("Could not parse RootReq"))?;
 	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
 	let logs = db
-		.select_logs()
+		.select_logs(root_req.block_number)
 		.map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()
@@ -42,7 +52,7 @@ async fn verify(req: &mut Request, dep: &mut Depot) -> Result<String> {
 		.map_err(|_| Report::msg("Could not parse VerifyReq"))?;
 	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
 	let logs = db
-		.select_logs()
+		.select_logs(verify_req.block_number)
 		.map_err(|_| Report::msg("Could not get logs"))?;
 	let hashes = logs
 		.iter()

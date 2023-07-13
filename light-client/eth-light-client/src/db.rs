@@ -40,10 +40,14 @@ impl DB {
 		)?)
 	}
 
-	pub fn select_logs(&self) -> Result<Vec<Log>> {
+	pub fn select_logs(&self, block_number: u64) -> Result<Vec<Log>> {
 		let conn = self.conn.lock().expect("acquire mutex");
-		let mut stmt = conn.prepare("SELECT log FROM logs ORDER BY block_number, log_index")?;
-		let raw_logs_iter = stmt.query_map([], |row| row.get::<_, String>(0))?;
+		let mut stmt = conn.prepare(
+			"SELECT log FROM logs WHERE block_number = :block_number ORDER BY log_index",
+		)?;
+		let raw_logs_iter = stmt.query_map(&[(":block_number", &block_number)], |row| {
+			row.get::<_, String>(0)
+		})?;
 
 		Ok(raw_logs_iter
 			.flatten()
