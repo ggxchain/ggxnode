@@ -14,6 +14,7 @@ CONSENSUS_RPC="https://www.lightclientdata.org" \
 UNTRUSTED_RPC="https://eth-mainnet.g.alchemy.com/v2/YOUR_TOKEN" \
 DB_PATH="/tmp/eth-light-client.sqlite" \
 HELIOS_HOME_PATH="/tmp/helios" \
+SERVER_HOST="127.0.0.1" \
 SERVER_PORT=5800 \
 MAX_SUPPORTED_LOGS_NUMBER=50 \
 RUST_LOG=debug \

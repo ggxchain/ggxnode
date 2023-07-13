@@ -8,5 +8,6 @@ pub struct Config {
 	pub block_number: Option<u64>,
 	pub db_path: Option<String>,
 	pub helios_home_path: Option<String>,
+	pub server_host: Option<String>,
 	pub server_port: Option<u64>,
 }

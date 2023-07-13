@@ -66,7 +66,11 @@ async fn verify(req: &mut Request, dep: &mut Depot) -> Result<String> {
 }
 
 pub async fn start_server(config: Config, db: DB) -> Result<()> {
-	let host_and_port = format!("127.0.0.1:{}", config.server_port.unwrap_or(5800));
+	let host_and_port = format!(
+		"{}:{}",
+		config.server_host.unwrap_or("127.0.0.1".to_string()),
+		config.server_port.unwrap_or(5800)
+	);
 	log::info!("server is going to listen {}", host_and_port);
 
 	let router = Router::with_path("/api/v1")
