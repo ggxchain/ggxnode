@@ -169,8 +169,8 @@ where
 	use prost::Message;
 
 	let mut env = env.buf_in_buf_out();
-	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer();
-	let base_weight = Weight::from_parts(10_000, 0);
+	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer(); //todo add weight to raw_tranfer
+	let base_weight = Weight::from_parts(10_000, 10_000);
 
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
@@ -239,9 +239,6 @@ where
 		target: "runtime",
 		"[ChainExtension]|call|transfer"
 	);
-
-	let array: [u8; 3] = [0; 3];
-	env.write(&array, false, None)?;
 
 	Ok(())
 }
