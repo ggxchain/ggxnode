@@ -78,8 +78,9 @@ Slashed amounts are sent to treasury.
 * 1 year withdrawal lock is implemented
 * Session period is 4 hours. Era period is quarter.
 (configured by EpochDurationInBlocks, SessionsPerEra).
-* Payout at the end of the session. Configured by session_payour.rs
-* Fixed comission is not implemented yet. Currently, validator can set any comission it wants.
+* Payout at the end of the session. Configured by runtime/mainnet/src/pos/session_payout/mod.rs
+* Median commission to nominators from validator preferences calculated each session.
+Static commission can be enabled by referenda. Configured by runtime/mainnet/src/pos/session_payout/mod.rs
 * 10% Treasury comission is implemented. (configured by runtime/mainnet/src/pos/currency.rs TreasuryCommission)
 
 ## Rewards

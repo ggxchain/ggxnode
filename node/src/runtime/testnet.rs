@@ -143,12 +143,6 @@ pub fn testnet_genesis(
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),
 		base_fee: Default::default(),
-		account_filter: AccountFilterConfig {
-			allowed_accounts: initial_authorities
-				.into_iter()
-				.map(|e| (e.id, ()))
-				.collect(),
-		},
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,

@@ -113,7 +113,6 @@ pub fn testnet_genesis(
 				.collect::<Vec<_>>(),
 			..Default::default()
 		},
-
 		// Consensus
 		session: SessionConfig {
 			keys: initial_authorities
@@ -149,14 +148,10 @@ pub fn testnet_genesis(
 		ethereum: Default::default(),
 		dynamic_fee: Default::default(),
 		base_fee: Default::default(),
-
-		account_filter: AccountFilterConfig {
-			allowed_accounts: endowed_accounts.into_iter().map(|e| (e, ())).collect(),
-		},
 		runtime_specification: RuntimeSpecificationConfig {
 			chain_spec: RuntimeConfig {
 				block_time_in_millis: 2000,
-				session_time_in_seconds: 8, // 4 hours
+				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
 		vesting: Default::default(),

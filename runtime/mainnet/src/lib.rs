@@ -86,9 +86,6 @@ pub use runtime_common::chain_spec::{self, RuntimeConfig};
 pub use runtime_common::precompiles::GoldenGatePrecompiles;
 pub type Precompiles = GoldenGatePrecompiles<Runtime>;
 
-/// Import the permissioned ledger pallet.
-pub use account_filter;
-
 /// Type of block number.
 pub type BlockNumber = u32;
 
@@ -151,6 +148,7 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
+
 pub type SignedExtra = (
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
@@ -159,7 +157,6 @@ pub type SignedExtra = (
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
 	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	account_filter::AllowAccount<Runtime>,
 );
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
@@ -301,11 +298,6 @@ impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
 	type MaxAuthorities = MaxAuthorities;
 	type DisabledValidators = ();
-}
-
-impl account_filter::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ValidateOrigin = frame_system::EnsureRoot<AccountId>;
 }
 
 impl chain_spec::Config for Runtime {}
@@ -485,7 +477,6 @@ construct_runtime!(
 		HotfixSufficients: pallet_hotfix_sufficients,
 
 		// GGX pallets
-		AccountFilter: account_filter,
 		CurrencyManager: currency,
 		SessionPayout: session_payout,
 

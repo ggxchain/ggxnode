@@ -73,7 +73,6 @@ pallet-evm-chain-id.workspace = true
 pallet-hotfix-sufficients.workspace = true
 
 # GGX
-account-filter.workspace = true
 runtime-common = { workspace = true, features = ["xvm"] }
 
 # Astar
@@ -160,7 +159,6 @@ std = [
 	"pallet-evm-chain-id/std",
 	"pallet-hotfix-sufficients/std",
 	# GGX
-	"account-filter/std",
 	"runtime-common/std",
 	# Astar
 	"pallet-chain-extension-xvm/std",

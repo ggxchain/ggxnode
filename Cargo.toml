@@ -44,7 +44,7 @@ scale-info = { version = "2.5.0", default-features = false, features = ["derive"
 serde = { version = "1.0", default-features = false }
 serde_json = "1.0.68"
 sha3 = "0.8"
-syn = { version = "1.0", features = [ "extra-traits", "fold", "full", "visit" ] }
+syn = { version = "1.0", features = ["extra-traits", "fold", "full", "visit"] }
 tempfile = "3.1.0"
 test-strategy = "0.3.0"
 tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
@@ -179,11 +179,10 @@ pallet-evm-precompile-simple = { version = "2.0.0-dev", git = "https://github.co
 pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 
 # Golden Gate
-account-filter = { package = "substrate-account-filter", git = "https://github.com/GoldenGateGGX/ggx-frames", branch = "polkadot-v0.9.40", default-features = false }
 golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
 golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
-runtime-common = { path = "runtime/runtime-common", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
+runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/astar-frame.git", branch = "temp/polkadot-v0.9.40", default-features = false }
