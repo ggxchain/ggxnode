@@ -1,9 +1,9 @@
 use frame_support::{
-	log::{error, info, trace},
+	log::{error, trace},
 	pallet_prelude::Weight,
 	traits::fungibles::{
 		approvals::{Inspect as AllowanceInspect, Mutate as AllowanceMutate},
-		Inspect, InspectMetadata, Transfer,
+		Inspect, Transfer,
 	},
 };
 use frame_system::RawOrigin;
@@ -17,45 +17,125 @@ use pallet_ibc::ToString;
 
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_core::{crypto::UncheckedFrom, Get};
-use sp_runtime::{
-	traits::{StaticLookup, Zero},
-	DispatchError, Saturating,
-};
+use sp_runtime::{DispatchError, ModuleError};
 use sp_std::{vec, vec::Vec};
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct Psp22BalanceOfInput<AssetId, AccountId> {
-	asset_id: AssetId,
+struct Psp37BalanceOfInput<AssetId, AccountId> {
 	owner: AccountId,
+	asset_id: Option<AssetId>,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct Psp22AllowanceInput<AssetId, AccountId> {
-	asset_id: AssetId,
+struct Psp37AllowanceInput<AssetId, AccountId> {
 	owner: AccountId,
 	spender: AccountId,
+	asset_id: Option<AssetId>,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct Psp22TransferInput<AssetId, AccountId, Balance> {
-	asset_id: AssetId,
+struct Psp37TransferInput<AssetId, AccountId, Balance> {
 	to: AccountId,
+	asset_id: AssetId,
 	value: Balance,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct Psp22TransferFromInput<AssetId, AccountId, Balance> {
-	asset_id: AssetId,
+struct Psp37TransferFromInput<AssetId, AccountId, Balance> {
 	from: AccountId,
 	to: AccountId,
+	asset_id: AssetId,
 	value: Balance,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct Psp22ApproveInput<AssetId, AccountId, Balance> {
-	asset_id: AssetId,
+struct Psp37ApproveInput<AssetId, AccountId, Balance> {
 	spender: AccountId,
+	asset_id: Option<AssetId>,
 	value: Balance,
+}
+
+#[derive(PartialEq, Eq, Copy, Clone, Encode, Decode, Debug)]
+#[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
+pub enum Outcome {
+	/// Success
+	Success = 0,
+	/// Account balance must be greater than or equal to the transfer amount.
+	BalanceLow = 1,
+	/// The account to alter does not exist.
+	NoAccount = 2,
+	/// The signing account has no permission to do the operation.
+	NoPermission = 3,
+	/// The given asset ID is unknown.
+	Unknown = 4,
+	/// The origin account is frozen.
+	Frozen = 5,
+	/// The asset ID is already taken.
+	InUse = 6,
+	/// Invalid witness data given.
+	BadWitness = 7,
+	/// Minimum balance should be non-zero.
+	MinBalanceZero = 8,
+	/// Unable to increment the consumer reference counters on the account. Either no provider
+	/// reference exists to allow a non-zero balance of a non-self-sufficient asset, or the
+	/// maximum number of consumers has been reached.
+	NoProvider = 9,
+	/// Invalid metadata given.
+	BadMetadata = 10,
+	/// No approval exists that would allow the transfer.
+	Unapproved = 11,
+	/// The source account would not survive the transfer and it needs to stay alive.
+	WouldDie = 12,
+	/// The asset-account already exists.
+	AlreadyExists = 13,
+	/// The asset-account doesn't have an associated deposit.
+	NoDeposit = 14,
+	/// The operation would result in funds being burned.
+	WouldBurn = 15,
+	/// The asset is a live asset and is actively being used. Usually emit for operations such
+	/// as `start_destroy` which require the asset to be in a destroying state.
+	LiveAsset = 16,
+	/// The asset is not live, and likely being destroyed.
+	AssetNotLive = 17,
+	/// The asset status is not the expected status.
+	IncorrectStatus = 18,
+	/// The asset should be frozen before the given operation.
+	NotFrozen = 19,
+	/// Origin Caller is not supported
+	OriginCannotBeCaller = 98,
+	/// Unknown error
+	RuntimeError = 99,
+}
+
+impl From<DispatchError> for Outcome {
+	fn from(input: DispatchError) -> Self {
+		let error_text = match input {
+			DispatchError::Module(ModuleError { message, .. }) => message,
+			_ => Some("No module error Info"),
+		};
+		return match error_text {
+			Some("BalanceLow") => Outcome::BalanceLow,
+			Some("NoAccount") => Outcome::NoAccount,
+			Some("NoPermission") => Outcome::NoPermission,
+			Some("Unknown") => Outcome::Unknown,
+			Some("Frozen") => Outcome::Frozen,
+			Some("InUse") => Outcome::InUse,
+			Some("BadWitness") => Outcome::BadWitness,
+			Some("MinBalanceZero") => Outcome::MinBalanceZero,
+			Some("NoProvider") => Outcome::NoProvider,
+			Some("BadMetadata") => Outcome::BadMetadata,
+			Some("Unapproved") => Outcome::Unapproved,
+			Some("WouldDie") => Outcome::WouldDie,
+			Some("AlreadyExists") => Outcome::AlreadyExists,
+			Some("NoDeposit") => Outcome::NoDeposit,
+			Some("WouldBurn") => Outcome::WouldBurn,
+			Some("LiveAsset") => Outcome::LiveAsset,
+			Some("AssetNotLive") => Outcome::AssetNotLive,
+			Some("IncorrectStatus") => Outcome::IncorrectStatus,
+			Some("NotFrozen") => Outcome::NotFrozen,
+			_ => Outcome::RuntimeError,
+		};
+	}
 }
 
 #[derive(Debug)]
@@ -147,7 +227,7 @@ where
 		timeout_height: None,
 	};
 
-	let rt = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
+	let _rt = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
 		RawOrigin::Signed(env.ext().address().clone()).into(),
 		vec![ibc_proto::google::protobuf::Any {
 			type_url: TYPE_URL.to_string(),
@@ -189,18 +269,18 @@ where
 		match func_id {
 			IBCFunc::Transfer => raw_tranfer::<T, E>(env)?,
 		}
-		Ok(RetVal::Converging(0))
+		Ok(RetVal::Converging(Outcome::Success as u32))
 	}
 }
 
 #[derive(Default)]
-pub struct Psp22Extension;
+pub struct Psp37Extension;
 
 fn convert_err(err_msg: &'static str) -> impl FnOnce(DispatchError) -> DispatchError {
 	move |err| {
 		trace!(
 			target: "runtime",
-			"PSP22 Transfer failed:{:?}",
+			"PSP37 Transfer failed:{:?}",
 			err
 		);
 		DispatchError::Other(err_msg)
@@ -210,20 +290,10 @@ fn convert_err(err_msg: &'static str) -> impl FnOnce(DispatchError) -> DispatchE
 /// We're using enums for function IDs because contrary to raw u16 it enables
 /// exhaustive matching, which results in cleaner code.
 enum FuncId {
-	Metadata(Metadata),
 	Query(Query),
 	Transfer,
 	TransferFrom,
 	Approve,
-	IncreaseAllowance,
-	DecreaseAllowance,
-}
-
-#[derive(Debug)]
-enum Metadata {
-	Name,
-	Symbol,
-	Decimals,
 }
 
 #[derive(Debug)]
@@ -238,20 +308,12 @@ impl TryFrom<u16> for FuncId {
 
 	fn try_from(func_id: u16) -> Result<Self, Self::Error> {
 		let id = match func_id {
-			// Note: We use the first two bytes of PSP22 interface selectors as function
-			// IDs, While we can use anything here, it makes sense from a
-			// convention perspective.
-			0x3d26 => Self::Metadata(Metadata::Name),
-			0x3420 => Self::Metadata(Metadata::Symbol),
-			0x7271 => Self::Metadata(Metadata::Decimals),
-			0x162d => Self::Query(Query::TotalSupply),
-			0x6568 => Self::Query(Query::BalanceOf),
-			0x4d47 => Self::Query(Query::Allowance),
-			0xdb20 => Self::Transfer,
-			0x54b3 => Self::TransferFrom,
-			0xb20f => Self::Approve,
-			0x96d6 => Self::IncreaseAllowance,
-			0xfecb => Self::DecreaseAllowance,
+			1 => Self::Query(Query::BalanceOf),
+			2 => Self::Query(Query::TotalSupply),
+			3 => Self::Query(Query::Allowance),
+			4 => Self::Approve,
+			5 => Self::Transfer,
+			6 => Self::TransferFrom,
 			_ => {
 				error!("Called an unregistered `func_id`: {:}", func_id);
 				return Err(DispatchError::Other("Unimplemented func_id"));
@@ -260,35 +322,6 @@ impl TryFrom<u16> for FuncId {
 
 		Ok(id)
 	}
-}
-
-fn metadata<T, E>(func_id: Metadata, env: Environment<E, InitState>) -> Result<(), DispatchError>
-where
-	T: pallet_assets::Config + pallet_contracts::Config,
-	<T as SysConfig>::AccountId: UncheckedFrom<<T as SysConfig>::Hash> + AsRef<[u8]>,
-	E: Ext<T = T>,
-{
-	let mut env = env.buf_in_buf_out();
-	let asset_id = env.read_as()?;
-	let result = match func_id {
-		Metadata::Name => {
-			<pallet_assets::Pallet<T> as InspectMetadata<T::AccountId>>::name(&asset_id).encode()
-		}
-		Metadata::Symbol => {
-			<pallet_assets::Pallet<T> as InspectMetadata<T::AccountId>>::symbol(&asset_id).encode()
-		}
-		Metadata::Decimals => {
-			<pallet_assets::Pallet<T> as InspectMetadata<T::AccountId>>::decimals(&asset_id)
-				.encode()
-		}
-	};
-	trace!(
-		target: "runtime",
-		"[ChainExtension] PSP22Metadata::{:?}",
-		func_id
-	);
-	env.write(&result, false, None)
-		.map_err(convert_err("ChainExtension failed to call PSP22Metadata"))
 }
 
 fn query<T, E>(func_id: Query, env: Environment<E, InitState>) -> Result<(), DispatchError>
@@ -300,33 +333,47 @@ where
 	let mut env = env.buf_in_buf_out();
 	let result = match func_id {
 		Query::TotalSupply => {
-			let asset_id = env.read_as()?;
-			<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::total_issuance(asset_id)
+			let asset_id: Option<T::AssetId> = env.read_as()?;
+			if asset_id.is_some() {
+				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::total_issuance(
+					asset_id.unwrap(),
+				)
+			} else {
+				T::Balance::default()
+			}
 		}
 		Query::BalanceOf => {
-			let input: Psp22BalanceOfInput<T::AssetId, T::AccountId> = env.read_as()?;
-			<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::balance(
-				input.asset_id,
-				&input.owner,
-			)
+			let input: Psp37BalanceOfInput<T::AssetId, T::AccountId> = env.read_as()?;
+			if input.asset_id.is_some() {
+				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::balance(
+					input.asset_id.unwrap(),
+					&input.owner,
+				)
+			} else {
+				T::Balance::default()
+			}
 		}
 		Query::Allowance => {
-			let input: Psp22AllowanceInput<T::AssetId, T::AccountId> = env.read_as()?;
-			<pallet_assets::Pallet<T> as AllowanceInspect<T::AccountId>>::allowance(
-				input.asset_id,
-				&input.owner,
-				&input.spender,
-			)
+			let input: Psp37AllowanceInput<T::AssetId, T::AccountId> = env.read_as()?;
+			if input.asset_id.is_some() {
+				<pallet_assets::Pallet<T> as AllowanceInspect<T::AccountId>>::allowance(
+					input.asset_id.unwrap(),
+					&input.owner,
+					&input.spender,
+				)
+			} else {
+				T::Balance::default()
+			}
 		}
 	}
 	.encode();
 	trace!(
 		target: "runtime",
-		"[ChainExtension] PSP22::{:?}",
+		"[ChainExtension] PSP37::{:?}",
 		func_id
 	);
 	env.write(&result, false, None)
-		.map_err(convert_err("ChainExtension failed to call PSP22 query"))
+		.map_err(convert_err("ChainExtension failed to call PSP37 query"))
 }
 
 fn transfer<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
@@ -353,23 +400,21 @@ where
 		charged_weight
 	);
 
-	let input: Psp22TransferInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
+	let input: Psp37TransferInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
 	let sender = env.ext().caller();
 
-	<pallet_assets::Pallet<T> as Transfer<T::AccountId>>::transfer(
+	let result = <pallet_assets::Pallet<T> as Transfer<T::AccountId>>::transfer(
 		input.asset_id,
 		sender,
 		&input.to,
 		input.value,
 		true,
-	)
-	.map_err(convert_err("ChainExtension failed to call transfer"))?;
-	trace!(
-		target: "runtime",
-		"[ChainExtension]|call|transfer"
 	);
 
-	Ok(())
+	return match result {
+		Err(e) => Err(e),
+		_ => Ok(()),
+	};
 }
 
 fn transfer_from<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
@@ -396,7 +441,7 @@ where
 		charged_amount
 	);
 
-	let input: Psp22TransferFromInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
+	let input: Psp37TransferFromInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
 	let spender = env.ext().caller();
 
 	let result = <pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::transfer_from(
@@ -410,7 +455,7 @@ where
 		target: "runtime",
 		"[ChainExtension]|call|transfer_from"
 	);
-	result.map_err(convert_err("ChainExtension failed to call transfer_from"))
+	result
 }
 
 fn approve<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
@@ -437,11 +482,21 @@ where
 		charged_weight
 	);
 
-	let input: Psp22ApproveInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
+	let input: Psp37ApproveInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
 	let owner = env.ext().caller();
 
+	if input.asset_id.is_none() {
+		trace!(
+			target: "runtime",
+			"PSP37 approve failed, asset_id must be not none",
+		);
+		return Err(DispatchError::Other(
+			"ChainExtension failed to call approve, asset_id must be not none",
+		));
+	}
+
 	let result = <pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::approve(
-		input.asset_id,
+		input.asset_id.unwrap(),
 		owner,
 		&input.spender,
 		input.value,
@@ -450,81 +505,10 @@ where
 		target: "runtime",
 		"[ChainExtension]|call|approve"
 	);
-	result.map_err(convert_err("ChainExtension failed to call approve"))
+	result
 }
 
-fn decrease_allowance<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>
-where
-	T: pallet_assets::Config + pallet_contracts::Config,
-	<T as SysConfig>::AccountId: UncheckedFrom<<T as SysConfig>::Hash> + AsRef<[u8]>,
-	E: Ext<T = T>,
-{
-	let mut env = env.buf_in_buf_out();
-	let input: Psp22ApproveInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	if input.value.is_zero() {
-		return Ok(());
-	}
-
-	let base_weight = <T as pallet_assets::Config>::WeightInfo::cancel_approval()
-		.saturating_add(<T as pallet_assets::Config>::WeightInfo::approve_transfer());
-	// debug_message weight is a good approximation of the additional overhead of going
-	// from contract layer to substrate layer.
-	let overhead = Weight::from_parts(
-		<T as pallet_contracts::Config>::Schedule::get()
-			.host_fn_weights
-			.debug_message
-			.ref_time(),
-		0,
-	);
-	let charged_weight = env.charge_weight(base_weight.saturating_add(overhead))?;
-	trace!(
-		target: "runtime",
-		"[ChainExtension]|call|decrease_allowance / charge_weight:{:?}",
-		charged_weight
-	);
-
-	let owner = env.ext().caller();
-	let mut allowance = <pallet_assets::Pallet<T> as AllowanceInspect<T::AccountId>>::allowance(
-		input.asset_id,
-		owner,
-		&input.spender,
-	);
-	<pallet_assets::Pallet<T>>::cancel_approval(
-		RawOrigin::Signed(owner.clone()).into(),
-		input.asset_id.into(),
-		T::Lookup::unlookup(input.spender.clone()),
-	)
-	.map_err(convert_err(
-		"ChainExtension failed to call decrease_allowance",
-	))?;
-	allowance.saturating_reduce(input.value);
-	if allowance.is_zero() {
-		// If reduce value was less or equal than existing allowance, it should stay none.
-		env.adjust_weight(
-			charged_weight,
-			<T as pallet_assets::Config>::WeightInfo::cancel_approval().saturating_add(overhead),
-		);
-		return Ok(());
-	}
-	<pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::approve(
-		input.asset_id,
-		owner,
-		&input.spender,
-		allowance,
-	)
-	.map_err(convert_err(
-		"ChainExtension failed to call decrease_allowance",
-	))?;
-
-	trace!(
-		target: "runtime",
-		"[ChainExtension]|call|decrease_allowance"
-	);
-
-	Ok(())
-}
-
-impl<T> ChainExtension<T> for Psp22Extension
+impl<T> ChainExtension<T> for Psp37Extension
 where
 	T: pallet_assets::Config + pallet_contracts::Config,
 	<T as SysConfig>::AccountId: UncheckedFrom<<T as SysConfig>::Hash> + AsRef<[u8]>,
@@ -536,16 +520,39 @@ where
 	{
 		let func_id = FuncId::try_from(env.func_id())?;
 		match func_id {
-			FuncId::Metadata(func_id) => metadata::<T, E>(func_id, env)?,
 			FuncId::Query(func_id) => query::<T, E>(func_id, env)?,
-			FuncId::Transfer => transfer::<T, E>(env)?,
-			FuncId::TransferFrom => transfer_from::<T, E>(env)?,
-			// This is a bit of a shortcut. It was made because the documentation
-			// for Mutate::approve does not specify the result of subsequent calls.
-			FuncId::Approve | FuncId::IncreaseAllowance => approve::<T, E>(env)?,
-			FuncId::DecreaseAllowance => decrease_allowance(env)?,
+			FuncId::Transfer => {
+				let call_result = transfer::<T, E>(env);
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			FuncId::TransferFrom => {
+				let call_result = transfer_from::<T, E>(env);
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			FuncId::Approve => {
+				let call_result = approve::<T, E>(env);
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
 		}
 
-		Ok(RetVal::Converging(0))
+		Ok(RetVal::Converging(Outcome::Success as u32))
 	}
 }
