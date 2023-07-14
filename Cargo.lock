@@ -2446,7 +2446,6 @@ dependencies = [
 name = "eth-light-client"
 version = "0.1.0"
 dependencies = [
- "blake2",
  "env_logger",
  "envy",
  "ethers",
@@ -2459,6 +2458,7 @@ dependencies = [
  "salvo",
  "serde",
  "serde_json",
+ "sha3 0.8.2",
  "signal-hook",
  "tokio",
 ]

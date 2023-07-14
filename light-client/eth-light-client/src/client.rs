@@ -14,8 +14,9 @@ use helios::{client::ClientBuilder, config::networks::Network, prelude::*};
 use crate::{config::Config, db::DB};
 
 pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Result<()> {
+	let network = network(&config);
 	let mut client: Client<FileDB> = ClientBuilder::new()
-		.network(Network::MAINNET)
+		.network(network)
 		.consensus_rpc(&config.consensus_rpc)
 		.execution_rpc(&config.untrusted_rpc)
 		.load_external_fallback()
@@ -26,7 +27,7 @@ pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Resu
 
 	log::info!(
 		"Built client on network \"{}\" with external checkpoint fallbacks",
-		Network::MAINNET
+		network
 	);
 
 	exit_if_term(term.clone());
@@ -54,6 +55,19 @@ pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Resu
 				db.insert_logs(block_number.low_u64(), log_index.low_u64(), &json)?;
 			}
 		}
+	}
+}
+
+fn network(config: &Config) -> Network {
+	match &config.network {
+		Some(network) => {
+			if network == "goerli" {
+				Network::GOERLI
+			} else {
+				Network::MAINNET
+			}
+		}
+		_ => Network::MAINNET,
 	}
 }
 
