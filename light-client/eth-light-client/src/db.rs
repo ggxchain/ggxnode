@@ -32,7 +32,7 @@ impl DB {
 				log_index INTEGER NOT NULL,
 				log TEXT NOT NULL,
 				PRIMARY KEY (block_number, log_index)
-			)"
+			)",
 			(),
 		)?)
 	}
