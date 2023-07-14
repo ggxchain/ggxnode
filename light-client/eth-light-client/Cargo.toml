@@ -6,7 +6,6 @@ edition = "2021"
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-blake2.workspace = true
 env_logger.workspace = true
 envy.workspace = true
 ethers.workspace = true
@@ -18,6 +17,7 @@ rusqlite.workspace = true
 salvo.workspace = true
 serde.workspace = true
 serde_json.workspace = true
+sha3.workspace = true
 signal-hook.workspace = true
 tokio.workspace = true
 

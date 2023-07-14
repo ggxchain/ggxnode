@@ -1,7 +1,7 @@
-use blake2::{Blake2s256, Digest};
 use ethers::types::H256;
 use eyre::{Report, Result};
 use merkle_cbt::merkle_tree::{Merge, CBMT};
+use sha3::{Digest, Keccak256};
 
 struct MergeH256 {}
 
@@ -16,7 +16,7 @@ impl Merge for MergeH256 {
 			.cloned()
 			.collect::<Vec<_>>();
 
-		H256::from_slice(Blake2s256::digest(left_and_right).as_slice())
+		H256::from_slice(Keccak256::digest(&left_and_right).as_slice())
 	}
 }
 
@@ -72,7 +72,7 @@ mod tests {
 		assert_eq!(
 			root(&hashes),
 			H256::decode(hex!(
-				"c589709931c1a867f903dec1c25821e3893ce05c621fbc51fb568efafde841ab"
+				"2b5871d4f32de7994839ba680fbbcb34141c8d84c4995a7e16d6a32f0e81ebef"
 			))
 			.unwrap()
 		)
