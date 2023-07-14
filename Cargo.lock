@@ -3326,7 +3326,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/akorchyn/frontier.git?branch=polkadot-v0.9.39#b2f299b2ede0f4329d16ddeb39ae9213b3ae184e"
+source = "git+https://github.com/GoldenGateGGX/frontier.git?branch=polkadot-v0.9.39#b2f299b2ede0f4329d16ddeb39ae9213b3ae184e"
 dependencies = [
  "hex",
  "impl-serde 0.4.0",
