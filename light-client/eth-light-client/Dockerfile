@@ -10,7 +10,7 @@ WORKDIR /usr/src/app
 
 COPY . .
 
-RUN cargo build --locked --release
+RUN cargo build --locked --release -p eth-light-client
 
 
 FROM debian:11 as production
