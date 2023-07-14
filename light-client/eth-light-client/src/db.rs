@@ -27,7 +27,12 @@ impl DB {
 	pub fn create_table(&self) -> Result<usize> {
 		let conn = self.conn.lock().expect("acquire mutex");
 		Ok(conn.execute(
-			"CREATE TABLE IF NOT EXISTS logs (block_number INTEGER, log_index INTEGER, log TEXT)",
+			"CREATE TABLE IF NOT EXISTS logs (
+				block_number INTEGER NOT NULL,
+				log_index INTEGER NOT NULL,
+				log TEXT NOT NULL,
+				PRIMARY KEY (block_number, log_index)
+			)"
 			(),
 		)?)
 	}
