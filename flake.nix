@@ -205,15 +205,17 @@
               version = "0.2.0";
             };
 
-            eth-light-client-attrs = common-attrs // {
-                cargoExtraArgs = "--package eth-light-client";
-            };
-
             common-native-release-mainnet-deps =
               craneLib.buildDepsOnly (common-native-mainnet-attrs // { });
             common-native-release-testnet-deps =
               craneLib.buildDepsOnly (common-native-testnet-attrs // { });
             common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
+
+            eth-light-client-attrs = common-attrs // {
+                cargoExtraArgs = "--package eth-light-client";
+            };
+
+            eth-light-client-deps = craneLib.buildDepsOnly eth-light-client-attrs;
 
             golden-gate-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
               pname = "golden-gate-runtimes";
@@ -230,7 +232,17 @@
 
             eth-light-client = craneLib.buildPackage (eth-light-client-attrs // {
               pname = "eth-light-client";
-              cargoArtifacts = craneLib.buildDepsOnly eth-light-client-attrs;
+              cargoArtifacts = eth-light-client-deps;
+            });
+
+            eth-light-client-tests = craneLib.cargoBuild (eth-light-client-attrs // rec {
+              name = "eth-light-client";
+              pname = "${name}-tests";
+              pnameSuffix = "-tests";
+              doInstallCargoArtifacts = false;
+              cargoArtifacts = eth-light-client-deps;
+              buildPhase = "cargo test --package eth-light-client";
+              installPhase = "mkdir -p $out";
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -421,7 +433,7 @@
               rec  {
                 inherit golden-gate-runtimes golden-gate-node-testnet golden-gate-node-mainnet node-image;
                 inherit gen-node-key inspect-node-key;
-                inherit eth-light-client;
+                inherit eth-light-client eth-light-client-tests;
                 inherit fix doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm clippy-eth-light-client;
                 inherit tf-base tf-testnet;
                 subkey = pkgs.subkey;
