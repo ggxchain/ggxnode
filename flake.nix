@@ -99,7 +99,7 @@
             ]);
 
             common-attrs = rust-env // {
-              buildInputs = with pkgs; [ openssl zstd ];
+              buildInputs = with pkgs; [ openssl perl sqlite zstd ];
               nativeBuildInputs = with pkgs;
                 rust-native-build-inputs ++ [ openssl ] ++ darwin;
               doCheck = false;
@@ -222,6 +222,14 @@
 
             golden-gate-node-testnet = craneLib.buildPackage (common-native-testnet-attrs // {
               cargoArtifacts = common-native-release-testnet-deps;
+            });
+
+            eth-light-client = craneLib.buildPackage (common-attrs // rec {
+              pname = "eth-light-client";
+              cargoArtifacts = craneLib.buildDepsOnly (common-attrs // {
+                cargoExtraArgs = "--package ${pname}";
+              });
+              cargoExtraArgs = "--package ${pname}";
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -405,7 +413,11 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit fix golden-gate-runtimes golden-gate-node-testnet golden-gate-node-mainnet gen-node-key tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
+                inherit golden-gate-runtimes golden-gate-node-testnet golden-gate-node-mainnet node-image;
+                inherit gen-node-key inspect-node-key;
+                inherit eth-light-client;
+                inherit fix doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
+                inherit tf-base tf-testnet;
                 subkey = pkgs.subkey;
                 golden-gate-node = golden-gate-node-testnet;
                 node = golden-gate-node;
