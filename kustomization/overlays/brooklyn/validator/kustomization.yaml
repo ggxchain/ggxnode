@@ -1,4 +1,4 @@
-namePrefix: brooklyn-archive-
+namePrefix: brooklyn-validator-
 namespace: brooklyn
 commonLabels:
   testnet: brooklyn
