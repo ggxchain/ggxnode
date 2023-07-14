@@ -2,7 +2,7 @@ commonLabels:
   app: ggx-node
 resources:
 - statefulset.yaml
-- service.yaml
+- service-nlb.yaml
 # following is an example how to use configMapGenerator, using this in the base causing duplication problems
 # configMapGenerator: 
 # - name: ggx-node-config
