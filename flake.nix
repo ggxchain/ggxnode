@@ -195,14 +195,18 @@
               nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
             };
 
-            common-native-mainnet-attrs = common-native-release-attrs // rec {
+            common-native-mainnet-attrs = common-native-release-attrs // {
               runtime="mainnet";
               version = "0.1.0";
             };
 
-            common-native-testnet-attrs = common-native-release-attrs // rec {
+            common-native-testnet-attrs = common-native-release-attrs // {
               runtime="testnet";
               version = "0.2.0";
+            };
+
+            eth-light-client-attrs = common-attrs // {
+                cargoExtraArgs = "--package eth-light-client";
             };
 
             common-native-release-mainnet-deps =
@@ -224,12 +228,9 @@
               cargoArtifacts = common-native-release-testnet-deps;
             });
 
-            eth-light-client = craneLib.buildPackage (common-attrs // rec {
+            eth-light-client = craneLib.buildPackage (eth-light-client-attrs // {
               pname = "eth-light-client";
-              cargoArtifacts = craneLib.buildDepsOnly (common-attrs // {
-                cargoExtraArgs = "--package ${pname}";
-              });
-              cargoExtraArgs = "--package ${pname}";
+              cargoArtifacts = craneLib.buildDepsOnly eth-light-client-attrs;
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -252,6 +253,11 @@
             clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
               inherit cargoClippyExtraArgs;
               cargoArtifacts = golden-gate-runtimes.cargoArtifacts;
+            });
+
+            clippy-eth-light-client = craneLib.cargoClippy (eth-light-client-attrs // {
+              inherit cargoClippyExtraArgs;
+              cargoArtifacts = eth-light-client.cargoArtifacts;
             });
 
             tf-init = pkgs.writeShellApplication rec {
@@ -416,7 +422,7 @@
                 inherit golden-gate-runtimes golden-gate-node-testnet golden-gate-node-mainnet node-image;
                 inherit gen-node-key inspect-node-key;
                 inherit eth-light-client;
-                inherit fix doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
+                inherit fix doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm clippy-eth-light-client;
                 inherit tf-base tf-testnet;
                 subkey = pkgs.subkey;
                 golden-gate-node = golden-gate-node-testnet;
