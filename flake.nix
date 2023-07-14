@@ -241,7 +241,7 @@
               pnameSuffix = "-tests";
               doInstallCargoArtifacts = false;
               cargoArtifacts = eth-light-client-deps;
-              buildPhase = "cargo test --package eth-light-client";
+              buildPhase = "cargo test --package ${name}";
               installPhase = "mkdir -p $out";
             });
 
