@@ -351,11 +351,6 @@ impl pallet_beefy_mmr::Config for Runtime {
 	type BeefyDataProvider = BeefyDummyDataProvider;
 }
 
-impl account_filter::Config for Runtime {
-	type RuntimeEvent = RuntimeEvent;
-	type ValidateOrigin = frame_system::EnsureRoot<AccountId>;
-}
-
 impl chain_spec::Config for Runtime {}
 
 impl pallet_grandpa::Config for Runtime {

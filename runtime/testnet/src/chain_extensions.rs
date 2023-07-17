@@ -170,7 +170,7 @@ where
 
 	let mut env = env.buf_in_buf_out();
 	//let base_weight = <T as pallet_ics20_transfer::Config>::WeightInfo::raw_tranfer(); //todo add weight to raw_tranfer
-	let base_weight = Weight::from_parts(10_000, 10_000);
+	let base_weight = Weight::from_parts(10_000, 0);
 
 	// debug_message weight is a good approximation of the additional overhead of going
 	// from contract layer to substrate layer.
@@ -227,20 +227,30 @@ where
 		timeout_height: None,
 	};
 
-	let _rt = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
+	let rt = pallet_ics20_transfer::Pallet::<T>::raw_transfer(
 		RawOrigin::Signed(env.ext().address().clone()).into(),
 		vec![ibc_proto::google::protobuf::Any {
 			type_url: TYPE_URL.to_string(),
 			value: msg.encode_to_vec(),
 		}],
-	); //todo(smith) handle fail DispatchError
+	);
 
 	trace!(
 		target: "runtime",
 		"[ChainExtension]|call|transfer"
 	);
 
-	Ok(())
+	match rt {
+		Ok(_) => Ok(()),
+		Err(e) => {
+			trace!(
+				target: "runtime",
+				"[ChainExtension]|call|transfer / err:{:?}",
+				e.error
+			);
+			Err(e.error)
+		}
+	}
 }
 
 /// Contract extension for `IBCISC20Extension`
