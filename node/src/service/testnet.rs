@@ -326,7 +326,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			genesis_hash,
 			config.chain_spec.fork_id(),
 			client.clone(),
-			prometheus_registry.clone(),
+			prometheus_registry,
 		);
 
 	config
@@ -343,7 +343,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	let (grandpa_block_import, _grandpa_link) =
 		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
 			client.clone(),
-			&(client.clone() as Arc<_>),
+			&(client as Arc<_>),
 			select_chain.clone(),
 			Vec::new(),
 			telemetry.as_ref().map(|x| x.handle()),
@@ -488,7 +488,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		fee_history_cache,
 		fee_history_cache_limit,
 		sync_service.clone(),
-		pubsub_notification_sinks.clone(),
+		pubsub_notification_sinks,
 	);
 
 	let (block_import, grandpa_link) = consensus_result;
@@ -580,11 +580,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		task_manager.spawn_handle().spawn_blocking(
 			"mmr-gadget",
 			None,
-			MmrGadget::start(
-				client.clone(),
-				backend,
-				sp_mmr_primitives::INDEXING_PREFIX.to_vec(),
-			),
+			MmrGadget::start(client, backend, sp_mmr_primitives::INDEXING_PREFIX.to_vec()),
 		);
 	}
 
