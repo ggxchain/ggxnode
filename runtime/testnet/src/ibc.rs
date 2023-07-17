@@ -14,7 +14,7 @@ impl pallet_ibc_utils::module::AddModule for IbcModule {
 			),
 		) {
 			Ok(ret) => ret,
-			Err(e) => panic!("add module failed by {}", e),
+			Err(e) => panic!("add module failed by {e}"),
 		}
 	}
 }

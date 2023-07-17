@@ -427,7 +427,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		fee_history_cache,
 		fee_history_cache_limit,
 		sync_service.clone(),
-		pubsub_notification_sinks.clone(),
+		pubsub_notification_sinks,
 	);
 
 	let (block_import, grandpa_link) = consensus_result;
@@ -511,7 +511,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				config: grandpa_config,
 				link: grandpa_link,
 				network,
-				sync: Arc::new(sync_service.clone()),
+				sync: Arc::new(sync_service),
 				voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
 				prometheus_registry,
 				shared_voter_state: sc_consensus_grandpa::SharedVoterState::empty(),
@@ -787,8 +787,8 @@ fn spawn_frontier_tasks(
 			3,
 			0,
 			SyncStrategy::Normal,
-			sync_service.clone(),
-			pubsub_notification_sinks.clone(),
+			sync_service,
+			pubsub_notification_sinks,
 		)
 		.for_each(|()| future::ready(())),
 	);
@@ -919,7 +919,7 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			sync.clone(),
+			sync,
 			subscription_task_executor,
 			overrides,
 			pubsub_notification_sinks,

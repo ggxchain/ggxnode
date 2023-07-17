@@ -342,9 +342,7 @@ where
 		Query::TotalSupply => {
 			let asset_id: Option<T::AssetId> = env.read_as()?;
 			if let Some(id) = asset_id {
-				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::total_issuance(
-					id,
-				)
+				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::total_issuance(id)
 			} else {
 				T::Balance::default()
 			}
@@ -352,10 +350,7 @@ where
 		Query::BalanceOf => {
 			let input: Psp37BalanceOfInput<T::AssetId, T::AccountId> = env.read_as()?;
 			if let Some(id) = input.asset_id {
-				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::balance(
-					id,
-					&input.owner,
-				)
+				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::balance(id, &input.owner)
 			} else {
 				T::Balance::default()
 			}
