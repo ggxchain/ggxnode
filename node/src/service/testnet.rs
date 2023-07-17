@@ -318,12 +318,12 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		.expect("Genesis block exists; qed");
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let beefy_gossip_proto_name =
-		sc_consensus_beefy::gossip_protocol_name(&genesis_hash, config.chain_spec.fork_id());
+		sc_consensus_beefy::gossip_protocol_name(genesis_hash, config.chain_spec.fork_id());
 	// `beefy_on_demand_justifications_handler` is given to `beefy-gadget` task to be run,
 	// while `beefy_req_resp_cfg` is added to `config.network.request_response_protocols`.
 	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
 		sc_consensus_beefy::communication::request_response::BeefyJustifsRequestHandler::new(
-			&genesis_hash,
+			genesis_hash,
 			config.chain_spec.fork_id(),
 			client.clone(),
 			prometheus_registry.clone(),
@@ -582,7 +582,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			None,
 			MmrGadget::start(
 				client.clone(),
-				backend.clone(),
+				backend,
 				sp_mmr_primitives::INDEXING_PREFIX.to_vec(),
 			),
 		);
@@ -620,7 +620,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				config: grandpa_config,
 				link: grandpa_link,
 				network,
-				sync: Arc::new(sync_service.clone()),
+				sync: Arc::new(sync_service),
 				voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
 				prometheus_registry,
 				shared_voter_state: sc_consensus_grandpa::SharedVoterState::empty(),
@@ -896,8 +896,8 @@ fn spawn_frontier_tasks(
 			3,
 			0,
 			SyncStrategy::Normal,
-			sync_service.clone(),
-			pubsub_notification_sinks.clone(),
+			sync_service,
+			pubsub_notification_sinks,
 		)
 		.for_each(|()| future::ready(())),
 	);
@@ -1031,7 +1031,7 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			sync.clone(),
+			sync,
 			subscription_task_executor,
 			overrides,
 			pubsub_notification_sinks,
@@ -1059,7 +1059,7 @@ where
 		)?;
 	}
 
-	io.merge(Mmr::new(client.clone()).into_rpc())?;
+	io.merge(Mmr::new(client).into_rpc())?;
 	io.merge(
 		Beefy::<Block>::new(
 			beefy.beefy_finality_proof_stream,
