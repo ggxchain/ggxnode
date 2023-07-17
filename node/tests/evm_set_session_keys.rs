@@ -23,6 +23,11 @@ const CHAIN_ID: u64 = 8866u64;
 #[cfg(feature = "testnet")]
 const CHAIN_ID: u64 = 888866u64;
 
+#[cfg(not(feature = "testnet"))]
+const SESSION_KEYS: &str = "9e510c81b1367424fa3a23c9e4ec003c9f746aa92b98a7a1a1b4c9521ef4ad2bb47e390470f0cbbc498ee4d37cd2cb0df5734076385c02febee48a6499148e2ada8e520afc48d0de6e327dd88f1b6fac0015c783f28f44eab07a98a7a28ff516";
+#[cfg(feature = "testnet")]
+const SESSION_KEYS: &str= "6a8357e87e163a03ed9c03ce2852bcf673121fc67c9fa7b839797879547c155c5c9479d0fea15172526450eb3bda80d9830fabf07e4fe4b7c020bfd0e6dbd321bc7e65505f0967481fb2c7d5226072d14efaae9d65c1d732548c1cf07d675927038602d835e19cd18df04a40a0c3991fa76f254b89fe9b98401961bde94f15bc6e";
+
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
 // Sends some native currency
@@ -90,14 +95,13 @@ async fn evm_set_session_key_test() -> Result<(), Box<dyn std::error::Error>> {
 	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
 
 	let contract_addr = "0x0000000000000000000000000000000000002052".parse::<Address>()?;
-	let session_keys = "9e510c81b1367424fa3a23c9e4ec003c9f746aa92b98a7a1a1b4c9521ef4ad2bb47e390470f0cbbc498ee4d37cd2cb0df5734076385c02febee48a6499148e2ada8e520afc48d0de6e327dd88f1b6fac0015c783f28f44eab07a98a7a28ff516";
 
-	call_set_session_key(&client, &contract_addr, session_keys).await?;
+	call_set_session_key(&client, &contract_addr, SESSION_KEYS).await?;
 	let _ = common::wait_n_finalized_blocks(5, 30, &ws_url).await;
 
 	let keys = common::get_next_session_keys(&ws_url).await?;
 
-	let decoded_keys = hex::decode(session_keys).expect("Decoding failed");
+	let decoded_keys = hex::decode(SESSION_KEYS).expect("Decoding failed");
 	assert!(keys == decoded_keys);
 
 	// Stop the process
