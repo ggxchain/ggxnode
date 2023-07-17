@@ -343,7 +343,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	let (grandpa_block_import, _grandpa_link) =
 		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
 			client.clone(),
-			&(client.clone() as Arc<_>),
+			&(Arc::from(client)),
 			select_chain.clone(),
 			Vec::new(),
 			telemetry.as_ref().map(|x| x.handle()),
