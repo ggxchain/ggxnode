@@ -20,6 +20,8 @@ use sp_core::{crypto::UncheckedFrom, Get};
 use sp_runtime::{DispatchError, ModuleError};
 use sp_std::{vec, vec::Vec};
 
+type RawTranferInput = (Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, Vec<u8>, u64, u64);
+
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct Psp37BalanceOfInput<AssetId, AccountId> {
 	owner: AccountId,
@@ -185,34 +187,26 @@ where
 		charged_weight
 	);
 
-	let (source_channel, denom, amount, sender, receiver, timeout_timestamp, _): (
-		Vec<u8>,
-		Vec<u8>,
-		Vec<u8>,
-		Vec<u8>,
-		Vec<u8>,
-		u64,
-		u64,
-	) = env.read_as_unbounded(env.in_len())?;
+	let input: RawTranferInput = env.read_as_unbounded(env.in_len())?;
 
-	let source_channel = match scale_info::prelude::string::String::from_utf8(source_channel) {
+	let source_channel = match scale_info::prelude::string::String::from_utf8(input.0) {
 		Ok(v) => v,
 		Err(_e) => Default::default(),
 	};
 
-	let denom = match scale_info::prelude::string::String::from_utf8(denom.to_vec()) {
+	let denom = match scale_info::prelude::string::String::from_utf8(input.1.to_vec()) {
 		Ok(v) => v,
 		Err(_e) => Default::default(),
 	};
-	let amount = match scale_info::prelude::string::String::from_utf8(amount.to_vec()) {
+	let amount = match scale_info::prelude::string::String::from_utf8(input.2.to_vec()) {
 		Ok(v) => v,
 		Err(_e) => Default::default(),
 	};
-	let sender = match scale_info::prelude::string::String::from_utf8(sender.to_vec()) {
+	let sender = match scale_info::prelude::string::String::from_utf8(input.3.to_vec()) {
 		Ok(v) => v,
 		Err(_e) => Default::default(),
 	};
-	let receiver = match scale_info::prelude::string::String::from_utf8(receiver.to_vec()) {
+	let receiver = match scale_info::prelude::string::String::from_utf8(input.4.to_vec()) {
 		Ok(v) => v,
 		Err(_e) => Default::default(),
 	};
@@ -223,7 +217,7 @@ where
 		token: Some(ibc_proto::cosmos::base::v1beta1::Coin { denom, amount }),
 		sender,
 		receiver,
-		timeout_timestamp: timeout_timestamp * 1000000, //millisecond to nanoseconds
+		timeout_timestamp: input.5 * 1000000, //millisecond to nanoseconds
 		timeout_height: None,
 	};
 
