@@ -24,7 +24,7 @@ impl ValidatorIdentity {
 		}
 	}
 
-	pub fn from_pub(ed: &str, sr: &str, ecdsa: &str) -> ValidatorIdentity {
+	pub fn from_pub(ed: &str, sr: &str, _ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
 			.into_account()

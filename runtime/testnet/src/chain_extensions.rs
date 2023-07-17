@@ -113,7 +113,7 @@ impl From<DispatchError> for Outcome {
 			DispatchError::Module(ModuleError { message, .. }) => message,
 			_ => Some("No module error Info"),
 		};
-		return match error_text {
+		match error_text {
 			Some("BalanceLow") => Outcome::BalanceLow,
 			Some("NoAccount") => Outcome::NoAccount,
 			Some("NoPermission") => Outcome::NoPermission,
@@ -134,7 +134,7 @@ impl From<DispatchError> for Outcome {
 			Some("IncorrectStatus") => Outcome::IncorrectStatus,
 			Some("NotFrozen") => Outcome::NotFrozen,
 			_ => Outcome::RuntimeError,
-		};
+		}
 	}
 }
 
@@ -341,9 +341,9 @@ where
 	let result = match func_id {
 		Query::TotalSupply => {
 			let asset_id: Option<T::AssetId> = env.read_as()?;
-			if asset_id.is_some() {
+			if let Some(id) = asset_id {
 				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::total_issuance(
-					asset_id.unwrap(),
+					id,
 				)
 			} else {
 				T::Balance::default()
@@ -351,9 +351,9 @@ where
 		}
 		Query::BalanceOf => {
 			let input: Psp37BalanceOfInput<T::AssetId, T::AccountId> = env.read_as()?;
-			if input.asset_id.is_some() {
+			if let Some(id) = input.asset_id {
 				<pallet_assets::Pallet<T> as Inspect<T::AccountId>>::balance(
-					input.asset_id.unwrap(),
+					id,
 					&input.owner,
 				)
 			} else {
@@ -362,9 +362,9 @@ where
 		}
 		Query::Allowance => {
 			let input: Psp37AllowanceInput<T::AssetId, T::AccountId> = env.read_as()?;
-			if input.asset_id.is_some() {
+			if let Some(id) = input.asset_id {
 				<pallet_assets::Pallet<T> as AllowanceInspect<T::AccountId>>::allowance(
-					input.asset_id.unwrap(),
+					id,
 					&input.owner,
 					&input.spender,
 				)
@@ -418,10 +418,10 @@ where
 		true,
 	);
 
-	return match result {
+	match result {
 		Err(e) => Err(e),
 		_ => Ok(()),
-	};
+	}
 }
 
 fn transfer_from<T, E>(env: Environment<E, InitState>) -> Result<(), DispatchError>

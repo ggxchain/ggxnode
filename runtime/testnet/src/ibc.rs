@@ -7,7 +7,7 @@ pub struct IbcModule;
 
 impl pallet_ibc_utils::module::AddModule for IbcModule {
 	fn add_module(router: Router) -> Router {
-		match router.clone().add_route(
+		match router.add_route(
 			"transfer".parse().expect("never failed"),
 			pallet_ics20_transfer::callback::IbcTransferModule::<Runtime>(
 				sp_std::marker::PhantomData::<Runtime>,
