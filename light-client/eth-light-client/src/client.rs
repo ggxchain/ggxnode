@@ -7,7 +7,10 @@ use std::{
 	},
 };
 
-use ethers::{abi::AbiEncode, types::{Address, H256}};
+use ethers::{
+	abi::AbiEncode,
+	types::{Address, H256},
+};
 use eyre::Result;
 use helios::{client::ClientBuilder, config::networks::Network, prelude::*};
 
@@ -50,30 +53,42 @@ pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Resu
 		let logs = client.get_logs(&filter).await?;
 		log::debug!("logs: {:#?}", logs);
 		'outer: for log in logs {
-			if let (Some(block_number), Some(block_hash), Some(log_index)) = (log.block_number, log.block_hash, log.log_index) {
+			if let (Some(block_number), Some(block_hash), Some(log_index)) =
+				(log.block_number, log.block_hash, log.log_index)
+			{
 				let json = serde_json::to_string(&log)?;
 				db.insert_logs(block_number.low_u64(), log_index.low_u64(), &json)?;
 
-				if let Ok(Some(block)) = client.get_block_by_hash(&block_hash.encode(), false).await {
+				if let Ok(Some(block)) = client.get_block_by_hash(&block_hash.encode(), false).await
+				{
 					let mut receipts = vec![];
 					for hash in transactions_to_hashes(block.transactions) {
 						if let Ok(receipt) = client.get_transaction_receipt(&hash).await {
 							receipts.push(receipt)
 						} else {
-							log::warn!("Could not get a transaction receipt for tx {}", hash.encode_hex());
-							continue 'outer
+							log::warn!(
+								"Could not get a transaction receipt for tx {}",
+								hash.encode_hex()
+							);
+							continue 'outer;
 						}
 					}
-					
+
 					if !receipts.is_empty() {
 						let json = serde_json::to_string(&receipts)?;
 						db.insert_receipts(block_hash, &json)?;
 					} else {
-						log::debug!("Block {} does not have any receipts", block_hash.encode_hex());
+						log::debug!(
+							"Block {} does not have any receipts",
+							block_hash.encode_hex()
+						);
 					}
 				} else {
-					log::info!("Could not get a block by block_hash {}", block_hash.encode_hex());
-					continue 'outer
+					log::info!(
+						"Could not get a block by block_hash {}",
+						block_hash.encode_hex()
+					);
+					continue 'outer;
 				}
 			}
 		}

@@ -1,6 +1,9 @@
 use std::sync::{Arc, Mutex};
 
-use ethers::{abi::AbiEncode, types::{H256, Log, TransactionReceipt}};
+use ethers::{
+	abi::AbiEncode,
+	types::{Log, TransactionReceipt, H256},
+};
 use eyre::Result;
 use rusqlite::Connection;
 
@@ -76,14 +79,16 @@ impl DB {
 			.collect())
 	}
 
-	pub fn select_receipts_by_block_hash(&self, block_hash: H256) -> Result<Vec<TransactionReceipt>> {
+	pub fn select_receipts_by_block_hash(
+		&self,
+		block_hash: H256,
+	) -> Result<Vec<TransactionReceipt>> {
 		let conn = self.conn.lock().expect("acquire mutex");
-		let mut stmt = conn.prepare(
-			"SELECT log FROM receipts WHERE block_hash = :block_hash",
-		)?;
-		let raw_receipts_iter = stmt.query_map(&[(":block_hash", &block_hash.encode_hex())], |row| {
-			row.get::<_, String>(0)
-		})?;
+		let mut stmt = conn.prepare("SELECT log FROM receipts WHERE block_hash = :block_hash")?;
+		let raw_receipts_iter = stmt
+			.query_map(&[(":block_hash", &block_hash.encode_hex())], |row| {
+				row.get::<_, String>(0)
+			})?;
 
 		Ok(raw_receipts_iter
 			.flatten()
