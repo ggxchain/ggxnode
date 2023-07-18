@@ -12,8 +12,8 @@ sudo apt-get -y install binaryen protobuf
 rustup component add rust-src
 rustup component add rust-src --toolchain nightly-unknown-linux-gnu
 rustup target add wasm32-unknown-unknown
-cargo +nightly install cargo-dylint dylint-link
-cargo +nightly install cargo-contract
+cargo install cargo-dylint dylint-link
+cargo install cargo-contract
 
 # Start a node with the Golden Gate runtime from the root of the repository
 cargo run --release -- --dev
@@ -27,8 +27,8 @@ brew install binaryen protobuf
 rustup component add rust-src
 rustup component add rust-src --toolchain nightly-x86_64-apple-darwin
 rustup target add wasm32-unknown-unknown
-cargo +nightly install cargo-dylint dylint-link
-cargo +nightly install cargo-contract
+cargo install cargo-dylint dylint-link
+cargo install cargo-contract
 
 # Start a node with the Golden Gate runtime from the root of the repository
 cargo run --release -- --dev
@@ -61,7 +61,7 @@ The contract will produce an event `Flipped(bool)` when the value is flipped.
 
 ```bash
 # The contract will be located in evm-to-wasm/flipper/target/ink/flipper.contract
-cargo +nightly contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
+cargo contract build --manifest-path evm-to-wasm/flipper/Cargo.toml
 ```
 
 ### Deploying the contract
@@ -184,7 +184,7 @@ The source code can be found in the `wasm_to_evm/flipper/lib.rs` file.
 
 ```bash
 # The contract will be located in wasm-to-evm/flipper/target/ink/flipper.contract
-cargo +nightly contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
+cargo contract build --manifest-path wasm-to-evm/flipper/Cargo.toml
 ```
 
 #### Deploying the flipper wrapper contract
