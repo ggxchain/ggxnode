@@ -7,20 +7,6 @@ pragma solidity >=0.8.0;
  * The interface through which solidity contracts will interact with ZKGroth16Verify
  * Address :    0x0000000000000000000000000000000000008888
  */
-// struct Proof {
-//     uint[2] a;
-//     uint[2][2] b;
-//     uint[2] c;
-// }
-
-// struct VerificationKey {
-//     uint[2] alpha;
-//     uint[2][2] beta;
-//     uint[2][2] gamma;
-//     uint[2][2] delta;
-//     uint[2][] ic;
-// }
-
 interface IZKGroth16Verify {
     function verify(
         uint[2] memory proof_a,

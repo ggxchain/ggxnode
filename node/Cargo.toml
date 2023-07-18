@@ -99,7 +99,7 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["testnet"]
+default = []
 testnet = [
 	"golden-gate-runtime-testnet",
 ]

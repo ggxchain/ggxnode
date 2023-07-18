@@ -1,7 +1,7 @@
 #![cfg(unix)]
 
 use assert_cmd::cargo::cargo_bin;
-use std::{io::BufReader, process::Command};
+use std::{io::BufReader, process::Command, sync::Arc};
 use tempfile::tempdir;
 
 use nix::{
@@ -19,18 +19,82 @@ use ethers::{
 	providers::{Http, Provider},
 };
 
-use ethers::{
-	abi::{ParamType, Token, Tokenize},
-	types::transaction::eip2718::TypedTransaction::Eip1559,
-};
-use std::str::FromStr;
-
 #[cfg(not(feature = "testnet"))]
 const CHAIN_ID: u64 = 8866u64;
 #[cfg(feature = "testnet")]
 const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
+
+// call precompile zk groth16 verify
+async fn call_zk_groth16_verify(
+	client: &Client,
+	contract_addr: &H160,
+) -> Result<(), Box<dyn std::error::Error>> {
+	let (
+		proof_a,
+		proof_b,
+		proof_c,
+		vk_alpha,
+		vk_beta,
+		vk_gamma,
+		vk_delta,
+		vk_ic,
+		valid_input,
+		invalid_input,
+	) = generate_test_case_data()?;
+
+	abigen!(
+		ZKGroth16Verify,
+		"node/tests/evm_zk_verify_precompile_abi.json",
+	);
+
+	// Create contract instance
+	let contract = ZKGroth16Verify::new(contract_addr.clone(), Arc::new(client.clone()));
+
+	let valid_tx: bool = contract
+		.verify(
+			proof_a,
+			proof_b,
+			proof_c,
+			vk_alpha,
+			vk_beta,
+			vk_gamma,
+			vk_delta,
+			vk_ic.clone(),
+			valid_input,
+		)
+		.gas(2326400)
+		.call()
+		.await?;
+	println!(
+		"Valid Transaction Receipt: {}",
+		serde_json::to_string(&valid_tx)?
+	);
+	assert!(valid_tx);
+
+	let invalid_tx: bool = contract
+		.verify(
+			proof_a,
+			proof_b,
+			proof_c,
+			vk_alpha,
+			vk_beta,
+			vk_gamma,
+			vk_delta,
+			vk_ic,
+			invalid_input,
+		)
+		.gas(2326400)
+		.call()
+		.await?;
+	println!(
+		"Invalid Transaction Receipt: {}",
+		serde_json::to_string(&invalid_tx)?
+	);
+	assert!(!invalid_tx);
+	Ok(())
+}
 
 #[cfg(unix)]
 #[tokio::test]
@@ -61,6 +125,40 @@ async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 		"the process should still be running"
 	);
 
+	let provider: Provider<Http> = Provider::<Http>::try_from(http_url)?; // Change to correct network
+
+	// Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
+	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391"
+		.parse::<LocalWallet>()?
+		.with_chain_id(CHAIN_ID); // Change to correct network
+	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
+
+	let contract_addr = "0x0000000000000000000000000000000000008888".parse::<Address>()?;
+
+	call_zk_groth16_verify(&client, &contract_addr).await?;
+
+	// Stop the process
+	kill(Pid::from_raw(child.id() as i32), SIGINT).unwrap();
+	child.wait().unwrap();
+
+	Ok(())
+}
+
+fn generate_test_case_data() -> Result<
+	(
+		[U256; 2],
+		[[U256; 2]; 2],
+		[U256; 2],
+		[U256; 2],
+		[[U256; 2]; 2],
+		[[U256; 2]; 2],
+		[[U256; 2]; 2],
+		Vec<[U256; 2]>,
+		Vec<U256>,
+		Vec<U256>,
+	),
+	Box<dyn std::error::Error>,
+> {
 	let proof_a = decode_g1_point(
 		"13202079600221154376862161785979680082984660469505374274880948735521253479994",
 		"19032139815435908179959144311759562497239236177745989139113028703727512477837",
@@ -113,141 +211,25 @@ async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 		],
 	])?;
 
-	let provider: Provider<Http> = Provider::<Http>::try_from(http_url)?; // Change to correct network
-																	  // let provider: Provider<Http> = Provider::<Http>::try_from("http://localhost:9933")?; // Change to correct network
+	let valid_input: Vec<U256> = vec![U256::from(66)];
+	let invalid_input: Vec<U256> = vec![U256::from(65)];
 
-	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
-		.parse::<LocalWallet>()?
-		.with_chain_id(CHAIN_ID); // Change to correct network
-	let client = SignerMiddleware::new(provider.clone(), wallet.clone());
-
-	let zk_contract = ZKContract::new(
-		"0x0000000000000000000000000000000000008888".parse::<Address>()?,
-		client,
-	);
-
-	let valid = zk_contract
-		.verify(
-			proof_a,
-			proof_b,
-			proof_c,
-			vk_alpha,
-			vk_beta,
-			vk_gamma,
-			vk_delta,
-			vk_ic.clone(),
-			vec![U256::from(66)],
-		)
-		.await?;
-	assert!(valid);
-
-	let invalid = zk_contract
-		.verify(
-			proof_a,
-			proof_b,
-			proof_c,
-			vk_alpha,
-			vk_beta,
-			vk_gamma,
-			vk_delta,
-			vk_ic,
-			vec![U256::from(65)],
-		)
-		.await?;
-	assert!(!invalid);
-
-	// Stop the process
-	kill(Pid::from_raw(child.id().try_into().unwrap()), SIGINT).unwrap();
-	assert!(common::wait_for(&mut child, 40)
-		.map(|x| x.success())
-		.unwrap());
-
-	Ok(())
-}
-
-struct ZKContract {
-	address: Address,
-	client: Client,
-}
-
-impl ZKContract {
-	fn new(address: Address, client: Client) -> Self {
-		Self { address, client }
-	}
-
-	async fn verify(
-		&self,
-		proof_a: G1Point,
-		proof_b: G2Point,
-		proof_c: G1Point,
-		vk_alpha: G1Point,
-		vk_beta: G2Point,
-		vk_gamma: G2Point,
-		vk_delta: G2Point,
-		vk_ic: Vec<[U256; 2]>,
-		input: Vec<U256>,
-	) -> Result<bool, Box<dyn std::error::Error>> {
-		let data = zk_verify_encode(
-			proof_a, proof_b, proof_c, vk_alpha, vk_beta, vk_gamma, vk_delta, vk_ic, input,
-		);
-
-		let tx = Eip1559TransactionRequest::new()
-			.to(self.address)
-			.from(self.client.address())
-			.data(data);
-
-		let result = self.client.call(&Eip1559(tx), None).await?;
-
-		let types = &[ParamType::Bool];
-		let decoded = abi::decode(types, &result)?;
-
-		let token = decoded.first().unwrap();
-		Ok(token.clone().into_bool().unwrap())
-	}
-}
-
-#[derive(Clone, Copy)]
-struct G1Point(U256, U256);
-#[derive(Clone, Copy)]
-struct G2Point(U256, U256, U256, U256);
-
-fn zk_verify_encode(
-	proof_a: G1Point,
-	proof_b: G2Point,
-	proof_c: G1Point,
-	vk_alpha: G1Point,
-	vk_beta: G2Point,
-	vk_gamma: G2Point,
-	vk_delta: G2Point,
-	vk_ic: Vec<[U256; 2]>,
-	input: Vec<U256>,
-) -> Bytes {
-	let encoded = abi::encode(
-		ZKCallArgs(
-			proof_a.0, proof_a.1, proof_b.0, proof_b.1, proof_b.2, proof_b.3, proof_c.0, proof_c.1,
-			vk_alpha.0, vk_alpha.1, vk_beta.0, vk_beta.1, vk_beta.2, vk_beta.3, vk_gamma.0,
-			vk_gamma.1, vk_gamma.2, vk_gamma.3, vk_delta.0, vk_delta.1, vk_delta.2, vk_delta.3,
-			vk_ic, input,
-		)
-		.into_tokens()
-		.as_ref(),
-	);
-
-	let func_sig: Vec<u8> = vec![1; 4];
-
-	let data: Bytes = func_sig.into_iter().chain(encoded.into_iter()).collect();
-
-	return data;
-}
-
-fn str_to_u256(s: &str) -> Result<U256, Box<dyn std::error::Error>> {
-	Ok(ethers::core::types::U256::from(
-		num_bigint::BigUint::from_str(&s)?.to_bytes_be().as_slice(),
+	Ok((
+		proof_a,
+		proof_b,
+		proof_c,
+		vk_alpha,
+		vk_beta,
+		vk_gamma,
+		vk_delta,
+		vk_ic,
+		valid_input,
+		invalid_input,
 	))
 }
 
-fn decode_g1_point(x: &str, y: &str) -> Result<G1Point, Box<dyn std::error::Error>> {
-	Ok(G1Point(str_to_u256(x)?, str_to_u256(y)?))
+fn decode_g1_point(x: &str, y: &str) -> Result<[U256; 2], Box<dyn std::error::Error>> {
+	Ok([U256::from_dec_str(x)?, U256::from_dec_str(y)?])
 }
 
 fn decode_g2_point(
@@ -255,93 +237,22 @@ fn decode_g2_point(
 	x2: &str,
 	y1: &str,
 	y2: &str,
-) -> Result<G2Point, Box<dyn std::error::Error>> {
-	Ok(G2Point(
-		str_to_u256(x1)?,
-		str_to_u256(x2)?,
-		str_to_u256(y1)?,
-		str_to_u256(y2)?,
-	))
+) -> Result<[[U256; 2]; 2], Box<dyn std::error::Error>> {
+	Ok([
+		[U256::from_dec_str(x1)?, U256::from_dec_str(x2)?],
+		[U256::from_dec_str(y1)?, U256::from_dec_str(y2)?],
+	])
 }
 
-fn decode_ic(ic: Vec<[String; 2]>) -> Result<Vec<[U256; 2]>, Box<dyn std::error::Error>> {
-	let mut out = Vec::<[U256; 2]>::with_capacity(ic.len());
-
-	for v in ic {
-		let g1 = decode_g1_point(&v[0], &v[1])?;
-		out.push([g1.0, g1.1]);
+fn decode_ic(
+	points: Vec<[String; 2]>,
+) -> Result<Vec<[ethers::types::U256; 2]>, Box<dyn std::error::Error>> {
+	let mut result = Vec::new();
+	for point in points {
+		result.push([
+			U256::from_dec_str(&point[0])?,
+			U256::from_dec_str(&point[1])?,
+		]);
 	}
-
-	Ok(out)
-}
-
-struct ZKCallArgs(
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	U256,
-	Vec<[U256; 2]>,
-	Vec<U256>,
-);
-
-impl Tokenize for ZKCallArgs {
-	fn into_tokens(self) -> Vec<Token> {
-		let mut ic = Vec::new();
-		for v in self.22 {
-			ic.push(Token::FixedArray(vec![
-				Token::Uint(v[0]),
-				Token::Uint(v[1]),
-			]));
-		}
-
-		let mut input = Vec::new();
-		for v in self.23 {
-			input.push(Token::Uint(v));
-		}
-
-		vec![
-			Token::Uint(self.0),
-			Token::Uint(self.1),
-			Token::Uint(self.2),
-			Token::Uint(self.3),
-			Token::Uint(self.4),
-			Token::Uint(self.5),
-			Token::Uint(self.6),
-			Token::Uint(self.7),
-			Token::Uint(self.8),
-			Token::Uint(self.9),
-			Token::Uint(self.10),
-			Token::Uint(self.11),
-			Token::Uint(self.12),
-			Token::Uint(self.13),
-			Token::Uint(self.14),
-			Token::Uint(self.15),
-			Token::Uint(self.16),
-			Token::Uint(self.17),
-			Token::Uint(self.18),
-			Token::Uint(self.19),
-			Token::Uint(self.20),
-			Token::Uint(self.21),
-			Token::Array(ic),
-			Token::Array(input),
-		]
-	}
+	Ok(result)
 }
