@@ -25,9 +25,9 @@ use ethers::{
 };
 use std::str::FromStr;
 
-#[cfg(feature = "mainnet")]
+#[cfg(not(feature = "testnet"))]
 const CHAIN_ID: u64 = 8866u64;
-#[cfg(not(feature = "mainnet"))]
+#[cfg(feature = "testnet")]
 const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
@@ -240,14 +240,14 @@ fn zk_verify_encode(
 	return data;
 }
 
-fn str_to_u256(s: &str) -> Result<U256, Box<dyn std::error::Error>>{
+fn str_to_u256(s: &str) -> Result<U256, Box<dyn std::error::Error>> {
 	Ok(ethers::core::types::U256::from(
 		num_bigint::BigUint::from_str(&s)?.to_bytes_be().as_slice(),
 	))
 }
 
 fn decode_g1_point(x: &str, y: &str) -> Result<G1Point, Box<dyn std::error::Error>> {
-	Ok(G1Point(str_to_u256(x)?, str_to_u256(y)?,))
+	Ok(G1Point(str_to_u256(x)?, str_to_u256(y)?))
 }
 
 fn decode_g2_point(
@@ -256,7 +256,12 @@ fn decode_g2_point(
 	y1: &str,
 	y2: &str,
 ) -> Result<G2Point, Box<dyn std::error::Error>> {
-	Ok(G2Point(str_to_u256(x1)?, str_to_u256(x2)?, str_to_u256(y1)?, str_to_u256(y2)?))
+	Ok(G2Point(
+		str_to_u256(x1)?,
+		str_to_u256(x2)?,
+		str_to_u256(y1)?,
+		str_to_u256(y2)?,
+	))
 }
 
 fn decode_ic(ic: Vec<[String; 2]>) -> Result<Vec<[U256; 2]>, Box<dyn std::error::Error>> {

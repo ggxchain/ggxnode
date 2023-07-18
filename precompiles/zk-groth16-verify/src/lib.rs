@@ -1,15 +1,25 @@
-use pallet_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure};
+#![cfg_attr(not(feature = "std"), no_std)]
 
-extern crate alloc;
-use alloc::{boxed::Box, vec::Vec};
+// use fp_evm::PrecompileOutput;
+
+use pallet_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure};
+// use pallet_session::Call as SessionCall;
+// use precompile_utils::{
+// 	revert, succeed, Bytes, EvmDataWriter, EvmResult, FunctionModifier, PrecompileHandleExt,
+// 	RuntimeHelper,
+// };
+// use sp_core::{Decode, H256};
+// use sp_std::{fmt::Debug, marker::PhantomData};
+
 use core::ops::Range;
+use sp_std::{prelude::Box, vec::Vec};
 
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
 
-use crate::precompiles::zk_verify::ark::{ark_bn254_fr, ark_bn254_g1, ark_bn254_g2};
+use ark::{ark_bn254_fr, ark_bn254_g1, ark_bn254_g2};
 use ethabi::Token;
-use frame_support::log;
+// use fp_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure};
 
 pub struct ZKGroth16Verify;
 

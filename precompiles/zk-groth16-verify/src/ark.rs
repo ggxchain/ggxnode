@@ -1,6 +1,6 @@
 use num_bigint::BigUint;
 
-extern crate alloc;
+// extern crate alloc;
 
 pub fn ark_bn254_g1(x: &[u8], y: &[u8]) -> ark_bn254::g1::G1Affine {
 	let x_int = BigUint::from_bytes_be(x);

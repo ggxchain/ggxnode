@@ -7039,6 +7039,44 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-evm-precompile-zk-groth16-verify"
+version = "0.0.0"
+dependencies = [
+ "ark-bn254",
+ "ark-crypto-primitives",
+ "ark-ec",
+ "ark-ff",
+ "ark-groth16",
+ "ark-poly",
+ "ark-relations",
+ "ark-serialize",
+ "ark-std",
+ "derive_more",
+ "ethabi 18.0.0",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "hex-literal",
+ "libsecp256k1",
+ "log",
+ "num-bigint",
+ "num_enum 0.5.11",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec 3.5.0",
+ "precompile-utils",
+ "serde",
+ "sha3 0.8.2",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-staking",
+ "sp-std",
+]
+
+[[package]]
 name = "pallet-grandpa"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
@@ -8938,21 +8976,10 @@ dependencies = [
 name = "runtime-common"
 version = "0.1.0"
 dependencies = [
- "ark-bn254",
- "ark-crypto-primitives",
- "ark-ec",
- "ark-ff",
- "ark-groth16",
- "ark-poly",
- "ark-relations",
- "ark-serialize",
- "ark-std",
  "ethabi 18.0.0",
  "frame-support",
  "frame-system",
- "hex",
  "log",
- "num-bigint",
  "pallet-contracts",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
@@ -8965,6 +8992,7 @@ dependencies = [
  "pallet-evm-precompile-sr25519",
  "pallet-evm-precompile-substrate-ecdsa",
  "pallet-evm-precompile-xvm",
+ "pallet-evm-precompile-zk-groth16-verify",
  "pallet-session",
  "pallet-xvm",
  "parity-scale-codec 3.6.3",
