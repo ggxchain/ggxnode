@@ -1,0 +1,14 @@
+apiVersion: v1
+kind: Service
+metadata:
+  name: ggx-node
+spec:
+  ports:
+    - name: websocket
+      protocol: TCP
+      port: 9944
+      targetPort: 9944
+    - name: rpc
+      protocol: TCP
+      port: 9933
+      targetPort: 9933
