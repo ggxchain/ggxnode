@@ -84,7 +84,8 @@ impl DB {
 		block_hash: H256,
 	) -> Result<Vec<TransactionReceipt>> {
 		let conn = self.conn.lock().expect("acquire mutex");
-		let mut stmt = conn.prepare("SELECT receipts FROM receipts WHERE block_hash = :block_hash")?;
+		let mut stmt =
+			conn.prepare("SELECT receipts FROM receipts WHERE block_hash = :block_hash")?;
 		let raw_receipts_iter = stmt
 			.query_map(&[(":block_hash", &block_hash.encode_hex())], |row| {
 				row.get::<_, String>(0)
