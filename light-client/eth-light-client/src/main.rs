@@ -22,7 +22,7 @@ async fn main() -> Result<()> {
 	signal_hook::flag::register(signal_hook::consts::SIGTERM, Arc::clone(&term))?;
 
 	let db = DB::new(&config)?;
-	db.create_table()?;
+	db.create_tables()?;
 
 	let clone_db = db.clone();
 	let clone_config = config.clone();

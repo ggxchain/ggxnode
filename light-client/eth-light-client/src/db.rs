@@ -1,6 +1,6 @@
 use std::sync::{Arc, Mutex};
 
-use ethers::types::Log;
+use ethers::{abi::AbiEncode, types::{H256, Log, TransactionReceipt}};
 use eyre::Result;
 use rusqlite::Connection;
 
@@ -24,14 +24,22 @@ impl DB {
 		})
 	}
 
-	pub fn create_table(&self) -> Result<usize> {
+	pub fn create_tables(&self) -> Result<usize> {
 		let conn = self.conn.lock().expect("acquire mutex");
-		Ok(conn.execute(
+		conn.execute(
 			"CREATE TABLE IF NOT EXISTS logs (
 				block_number INTEGER NOT NULL,
 				log_index INTEGER NOT NULL,
 				log TEXT NOT NULL,
 				PRIMARY KEY (block_number, log_index)
+			)",
+			(),
+		)?;
+		Ok(conn.execute(
+			"CREATE TABLE IF NOT EXISTS receipts (
+				block_hash TEXT NOT NULL,
+				receipts TEXT NOT NULL,
+				PRIMARY KEY (block_number)
 			)",
 			(),
 		)?)
@@ -45,7 +53,15 @@ impl DB {
 		)?)
 	}
 
-	pub fn select_logs(&self, block_number: u64) -> Result<Vec<Log>> {
+	pub fn insert_receipts(&self, block_hash: H256, receipts: &str) -> Result<usize> {
+		let conn = self.conn.lock().expect("acquire mutex");
+		Ok(conn.execute(
+			"INSERT INTO receipts(block_hash, receipts) values (?1, ?2)",
+			(block_hash.encode_hex(), receipts),
+		)?)
+	}
+
+	pub fn select_logs_by_block_number(&self, block_number: u64) -> Result<Vec<Log>> {
 		let conn = self.conn.lock().expect("acquire mutex");
 		let mut stmt = conn.prepare(
 			"SELECT log FROM logs WHERE block_number = :block_number ORDER BY log_index",
@@ -57,6 +73,21 @@ impl DB {
 		Ok(raw_logs_iter
 			.flatten()
 			.flat_map(|raw_log| serde_json::from_str(&raw_log))
+			.collect())
+	}
+
+	pub fn select_receipts_by_block_hash(&self, block_hash: H256) -> Result<Vec<TransactionReceipt>> {
+		let conn = self.conn.lock().expect("acquire mutex");
+		let mut stmt = conn.prepare(
+			"SELECT log FROM receipts WHERE block_hash = :block_hash",
+		)?;
+		let raw_receipts_iter = stmt.query_map(&[(":block_hash", &block_hash.encode_hex())], |row| {
+			row.get::<_, String>(0)
+		})?;
+
+		Ok(raw_receipts_iter
+			.flatten()
+			.flat_map(|raw_receipts| serde_json::from_str(&raw_receipts))
 			.collect())
 	}
 }
