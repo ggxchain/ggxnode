@@ -1,9 +1,0 @@
-apiVersion: v1
-kind: ConfigMap
-metadata:
-  name: ggx-node-config
-  namespace: ggx-sydney
-data:
-  CHAINSPEC: "sydney.json"
-  TELEMETRY: "ws://3.127.40.214:8001/submit 0"
-  NAME: "ggx-sydney-archive"
