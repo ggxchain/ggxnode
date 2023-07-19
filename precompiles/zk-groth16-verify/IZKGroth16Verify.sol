@@ -8,6 +8,21 @@ pragma solidity >=0.8.0;
  * Address :    0x0000000000000000000000000000000000008888
  */
 interface IZKGroth16Verify {
+    /**
+     * @notice Verifies a Groth16 zkSNARK proof.
+     *
+     * @param proof_a The first element of the zkSNARK proof.
+     * @param proof_b The second element of the zkSNARK proof.
+     * @param proof_c The third element of the zkSNARK proof.
+     * @param vk_alpha The first element of the verification key.
+     * @param vk_beta The second element of the verification key.
+     * @param vk_gamma The third element of the verification key.
+     * @param vk_delta The fourth element of the verification key.
+     * @param vk_ic The array of the rest of the elements of the verification key.
+     * @param input The array of public inputs to the zkSNARK.
+     *
+     * @return A boolean value representing whether the proof is valid or not.
+     */
     function verify(
         uint[2] memory proof_a,
         uint[2][2] memory proof_b,
