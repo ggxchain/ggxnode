@@ -7052,7 +7052,6 @@ dependencies = [
  "ark-serialize",
  "ark-std",
  "derive_more",
- "ethabi 18.0.0",
  "fp-evm",
  "frame-support",
  "frame-system",
