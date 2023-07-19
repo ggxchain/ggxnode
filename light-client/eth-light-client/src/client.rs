@@ -53,12 +53,9 @@ pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Resu
 		let logs = client.get_logs(&filter).await?;
 		log::debug!("logs: {:#?}", logs);
 		'outer: for log in logs {
-			if let (Some(block_number), Some(block_hash), Some(log_index)) =
-				(log.block_number, log.block_hash, log.log_index)
+			if let (Some(block_number), Some(block_hash)) =
+				(log.block_number, log.block_hash)
 			{
-				let json = serde_json::to_string(&log)?;
-				db.insert_logs(block_number.low_u64(), log_index.low_u64(), &json)?;
-
 				if let Ok(Some(block)) = client.get_block_by_hash(&block_hash.encode(), false).await
 				{
 					let mut receipts = vec![];
