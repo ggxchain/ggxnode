@@ -11,13 +11,6 @@ struct RootReq {
 	block_hash: H256,
 }
 
-#[derive(Deserialize)]
-struct VerifyReq {
-	block_number: u64,
-	hashes: Vec<H256>,
-	indices: Vec<u32>,
-}
-
 #[handler]
 async fn status() -> &'static str {
 	"ok"
@@ -44,27 +37,6 @@ async fn root(req: &mut Request, dep: &mut Depot) -> eyre::Result<String> {
 	.to_string())
 }
 
-#[handler]
-async fn verify(req: &mut Request, dep: &mut Depot) -> Result<String> {
-	let verify_req = req
-		.parse_body::<VerifyReq>()
-		.await
-		.map_err(|_| Report::msg("Could not parse VerifyReq"))?;
-	let db = dep.obtain::<DB>().ok_or(Report::msg("Could not get DB"))?;
-	let logs = db
-		.select_logs_by_block_number(verify_req.block_number)
-		.map_err(|_| Report::msg("Could not get logs"))?;
-	let hashes = logs
-		.iter()
-		.flat_map(|log| log.transaction_hash)
-		.collect::<Vec<_>>();
-
-	let verified = merkle::verify(&hashes, &verify_req.indices, &verify_req.hashes)
-		.map_err(|_| Report::msg("Could not verify"))?;
-
-	Ok(json!({ "verified": verified }).to_string())
-}
-
 pub async fn start_server(config: Config, db: DB) -> Result<()> {
 	let host_and_port = format!(
 		"{}:{}",
@@ -79,11 +51,6 @@ pub async fn start_server(config: Config, db: DB) -> Result<()> {
 			Router::with_path("root")
 				.hoop(affix::inject(db.clone()))
 				.get(root),
-		)
-		.push(
-			Router::with_path("verify")
-				.hoop(affix::inject(db))
-				.post(verify),
 		);
 	let acceptor = TcpListener::new(host_and_port).bind().await;
 	Server::new(acceptor).serve(router).await;
