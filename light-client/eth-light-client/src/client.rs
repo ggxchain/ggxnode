@@ -53,8 +53,7 @@ pub async fn start_client(config: Config, db: DB, term: Arc<AtomicBool>) -> Resu
 		let logs = client.get_logs(&filter).await?;
 		log::debug!("logs: {:#?}", logs);
 		'outer: for log in logs {
-			if let (Some(block_number), Some(block_hash)) =
-				(log.block_number, log.block_hash)
+			if let Some(block_hash) = log.block_hash
 			{
 				if let Ok(Some(block)) = client.get_block_by_hash(&block_hash.encode(), false).await
 				{
