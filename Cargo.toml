@@ -219,8 +219,6 @@ ark-poly = { version = "0.4.1", default-features = false }
 ark-relations = { version = "0.4.0", default-features = false }
 ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
-# eth abi
-ethabi = { version = "18.0.0", default-features = false }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

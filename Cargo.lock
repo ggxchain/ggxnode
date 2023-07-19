@@ -8975,7 +8975,6 @@ dependencies = [
 name = "runtime-common"
 version = "0.1.0"
 dependencies = [
- "ethabi 18.0.0",
  "frame-support",
  "frame-system",
  "log",

@@ -35,7 +35,6 @@ pallet-evm-precompile-zk-groth16-verify = { workspace = true, optional = true }
 pallet-xvm = { workspace = true, optional = true }
 
 # eth abi
-ethabi = { workspace = true }
 log.workspace = true
 
 [dev-dependencies]

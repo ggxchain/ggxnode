@@ -162,7 +162,7 @@ where
 			a if a == consts::XVM => Some(XvmPrecompile::<R>::execute(handle)),
 			a if a == consts::SESSION_WRAPPER => Some(SessionWrapper::<R>::execute(handle)),
 
-			// 0x8888 zk
+			// 0x8888 - is zk-groth16 verify
 			a if a == consts::ZK_GROTH16_VERIFY => Some(ZKGroth16Verify::execute(handle)),
 			_ => None,
 		}

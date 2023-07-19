@@ -20,7 +20,7 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 	const WORD: u64 = 12;
 
 	fn execute(input: &[u8], _cost: u64) -> Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
-		log::trace!(target: "zk-groth16-verify-precompile", "In zk-groth16-verify");
+		log::trace!(target: "precompiles::zk_groth16_verify::execute", "In zk-groth16-verify");
 		const MIN_INPUT_LENGTH: usize = 24 * 32;
 		if input.len() < 4 + MIN_INPUT_LENGTH {
 			return Err(PrecompileFailure::from(ExitError::InvalidRange));
@@ -100,7 +100,7 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 			.map_err(|_e| PrecompileFailure::from(ExitError::InvalidRange))?;
 
 		log::debug!(
-			target: "zk-groth16-verify-precompile",
+			target: "precompiles::zk_groth16_verify::execute",
 			"verification result {:?}",
 			verified
 		);
