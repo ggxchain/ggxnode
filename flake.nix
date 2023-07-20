@@ -187,7 +187,7 @@
               runtime = "testnet";
               cargoExtraArgs =
                 let features =
-                  if runtime == "mainnet"
+                  if runtime == "testnet"
                   then "--features=${runtime}"
                   else "";
                 in ''--package ${pname}  --no-default-features ${features}'';

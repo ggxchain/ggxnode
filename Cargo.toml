@@ -194,4 +194,4 @@ pallet-ics20-transfer = { default-features = false, git = "https://github.com/oc
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]
-fp-account = { git = "https://github.com/akorchyn/frontier.git", branch = "polkadot-v0.9.39" }
+fp-account = { git = "https://github.com/GoldenGateGGX/frontier.git", branch = "polkadot-v0.9.39" }
