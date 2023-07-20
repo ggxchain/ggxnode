@@ -488,6 +488,7 @@ construct_runtime!(
 		// GGX pallets
 		CurrencyManager: currency,
 		SessionPayout: session_payout,
+		AccountFilter: account_filter,
 
 		// Wasm contracts
 		Contracts: pallet_contracts,

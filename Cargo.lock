@@ -3759,6 +3759,7 @@ dependencies = [
  "sp-std",
  "sp-transaction-pool",
  "sp-version",
+ "substrate-account-filter",
  "substrate-wasm-builder",
 ]
 
@@ -11128,6 +11129,21 @@ dependencies = [
  "tokio",
  "url",
  "webrtc-util",
+]
+
+[[package]]
+name = "substrate-account-filter"
+version = "4.0.0"
+source = "git+https://github.com/GoldenGateGGX/ggx-frames.git?branch=decentrilized-validator-manager#d8057095e9e89c02000903a526c252e630a4536c"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "parity-scale-codec 3.5.0",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-runtime",
+ "sp-std",
 ]
 
 [[package]]
