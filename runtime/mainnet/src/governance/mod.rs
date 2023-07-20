@@ -63,10 +63,10 @@ impl pallet_referenda::Config for Runtime {
 pub struct CallBlocker {}
 impl account_filter::BlockCallMatcher<Runtime> for CallBlocker {
 	fn matches(call: &RuntimeCall) -> bool {
-		match call {
-			RuntimeCall::Staking(pallet_staking::Call::validate { .. }) => true,
-			_ => false,
-		}
+		matches!(
+			call,
+			RuntimeCall::Staking(pallet_staking::Call::validate { .. })
+		)
 	}
 }
 
