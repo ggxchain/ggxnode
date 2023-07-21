@@ -180,6 +180,7 @@ std = [
 	"pallet-contracts-primitives/std",
 ]
 aura = []
+allowlist = []
 manual-seal = ["with-rocksdb-weights"]
 with-rocksdb-weights = []
 with-paritydb-weights = []

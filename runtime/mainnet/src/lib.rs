@@ -149,6 +149,19 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
 
+// Hacky way to get around the fact that we can't use #[cfg] attribute inside type declaration.
+#[cfg(feature = "allowlist")]
+pub type OptionalSignedExtension = (
+	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	// The pallet will live in the runtime and will be possible to configure,
+	// but will start working only after enabling in the SignedExtra.
+	account_filter::AllowAccount<Runtime>,
+);
+
+// Contain one mandatory signed extension to compile as () doesn't work either.
+#[cfg(not(feature = "allowlist"))]
+pub type OptionalSignedExtension = (pallet_transaction_payment::ChargeTransactionPayment<Runtime>,);
+
 pub type SignedExtra = (
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
@@ -156,9 +169,9 @@ pub type SignedExtra = (
 	frame_system::CheckEra<Runtime>,
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
-	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
-	account_filter::AllowAccount<Runtime>,
+	OptionalSignedExtension,
 );
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
