@@ -76,11 +76,14 @@ golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional =
 assert_cmd = { workspace = true }
 ethers = { workspace = true }
 hex = { workspace = true }
+hex-literal = { workspace = true }
 nix = { workspace = true }
 pallet-balances = { workspace = true }
 serde_json = { workspace = true }
+sp-keyring = { workspace = true }
 substrate-rpc-client = { workspace = true }
 substrate-test-utils = { workspace = true }
+subxt = { workspace = true, features = ["jsonrpsee-ws"] }
 tempfile = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }

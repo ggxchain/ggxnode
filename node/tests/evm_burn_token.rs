@@ -35,7 +35,7 @@ async fn send_transaction(
 	println!("Beginning transfer of 10000 native currency {address_from} to {address_to}.");
 	let tx = Eip1559TransactionRequest::new()
 		.to(*address_to)
-		.value((utils::parse_ether(10000)?))
+		.value(utils::parse_ether(10000)?)
 		.from(*address_from);
 	let tx = client.send_transaction(tx, None).await?.await?;
 

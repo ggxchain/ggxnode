@@ -31,13 +31,23 @@ use std::{
 	process::{self, Child, Command, ExitStatus},
 	time::Duration,
 };
+use subxt::{
+	config::{polkadot::PolkadotExtrinsicParams, substrate::SubstrateHeader},
+	Config, SubstrateConfig,
+};
+
+use tempfile::tempdir;
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
 #[cfg(not(feature = "testnet"))]
-use golden_gate_runtime_mainnet::{Balance, Hash, Header, Index};
+pub use golden_gate_runtime_mainnet::{
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
+};
 #[cfg(feature = "testnet")]
-use golden_gate_runtime_testnet::{Balance, Hash, Header, Index};
+pub use golden_gate_runtime_testnet::{
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
+};
 use sc_client_api::StorageData;
 use scale_codec::DecodeAll;
 
@@ -86,7 +96,9 @@ pub async fn wait_n_finalized_blocks_from(n: usize, url: &str) {
 
 	let mut built_blocks = std::collections::HashSet::new();
 	let mut interval = tokio::time::interval(Duration::from_secs(2));
-	let rpc = ws_client(url).await.unwrap();
+	let rpc = ws_client(url)
+		.await
+		.unwrap_or_else(|_| panic!("failed to connect to node with {url}"));
 
 	loop {
 		if let Ok(block) = ChainApi::<(), Hash, Header, ()>::finalized_head(&rpc).await {
@@ -283,4 +295,121 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 		});
 
 	(ws_url, http_url, data)
+}
+
+pub struct Node {
+	pub child: KillChildOnDrop,
+	pub ws_url: String,
+	pub http_url: String,
+}
+
+pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> Node {
+	let base_path = tempdir().expect("could not create a temp dir");
+
+	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+		.stdout(process::Stdio::piped())
+		.stderr(process::Stdio::piped())
+		.args([&format!("--{validator_name}"), &format!("--chain={chain}")])
+		.arg("-d")
+		.arg(base_path.path())
+		.spawn()
+		.unwrap();
+
+	let stderr = cmd.stderr.take().unwrap();
+
+	let (ws_url, http_url, _) = find_ws_http_url_from_output(stderr);
+
+	let mut child = KillChildOnDrop(cmd);
+
+	assert!(
+		child.try_wait().unwrap().is_none(),
+		"the process should still be running"
+	);
+
+	Node {
+		child,
+		ws_url,
+		http_url,
+	}
+}
+
+pub mod pair_signer {
+	use sp_core::Pair as PairT;
+	use sp_runtime::{
+		traits::{IdentifyAccount, Verify},
+		AccountId32 as SpAccountId32, MultiSignature as SpMultiSignature,
+	};
+	use subxt::{tx::Signer, Config};
+
+	/// A [`Signer`] implementation that can be constructed from an [`sp_core::Pair`].
+	#[derive(Clone, Debug)]
+	pub struct PairSigner<T: Config, Pair> {
+		account_id: T::AccountId,
+		signer: Pair,
+	}
+
+	impl<T, Pair> PairSigner<T, Pair>
+	where
+		T: Config,
+		Pair: PairT,
+		// We go via an sp_runtime::MultiSignature. We can probably generalise this
+		// by implementing some of these traits on our built-in MultiSignature and then
+		// requiring them on all T::Signatures, to avoid any go-between.
+		<SpMultiSignature as Verify>::Signer: From<Pair::Public>,
+		T::AccountId: From<SpAccountId32>,
+	{
+		/// Creates a new [`Signer`] from an [`sp_core::Pair`].
+		pub fn new(signer: Pair) -> Self {
+			let account_id =
+				<SpMultiSignature as Verify>::Signer::from(signer.public()).into_account();
+			Self {
+				account_id: account_id.into(),
+				signer,
+			}
+		}
+
+		/// Returns the [`sp_core::Pair`] implementation used to construct this.
+		pub fn signer(&self) -> &Pair {
+			&self.signer
+		}
+
+		/// Return the account ID.
+		pub fn account_id(&self) -> &T::AccountId {
+			&self.account_id
+		}
+	}
+
+	impl<T, Pair> Signer<T> for PairSigner<T, Pair>
+	where
+		T: Config,
+		Pair: PairT,
+		Pair::Signature: Into<T::Signature>,
+	{
+		fn account_id(&self) -> &T::AccountId {
+			&self.account_id
+		}
+
+		fn address(&self) -> T::Address {
+			self.account_id.clone().into()
+		}
+
+		fn sign(&self, signer_payload: &[u8]) -> T::Signature {
+			self.signer.sign(signer_payload).into()
+		}
+	}
+}
+
+pub enum GGConfig {}
+impl Config for GGConfig {
+	// This is different from the default `u32`:
+	type Index = Index;
+	// We can point to the default types if we don't need to change things:
+	type Hash = Hash;
+	type Hasher = <SubstrateConfig as Config>::Hasher;
+	type Header = SubstrateHeader<BlockNumber, Self::Hasher>;
+	type AccountId = AccountId;
+	type Address = Address;
+	type Signature = Signature;
+	// polkadot because of that: https://github.com/paritytech/subxt/issues/505
+	type ExtrinsicParams = PolkadotExtrinsicParams<Self>;
 }
