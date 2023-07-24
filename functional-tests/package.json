@@ -1,0 +1,40 @@
+{
+  "name": "functional-tests",
+  "version": "1.0.0",
+  "description": "Node functional tests",
+  "main": "index.ts",
+  "type": "module",
+  "scripts": {
+    "test": "mocha test/**/*.test.js"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/GoldenGateGGX/golden-gate.git"
+  },
+  "keywords": [
+    "autotests",
+    "TS"
+  ],
+  "author": "Maksym Nyrka",
+  "license": "Apache-2.0",
+  "bugs": {
+    "url": "https://github.com/GoldenGateGGX/golden-gate/issues"
+  },
+  "homepage": "https://github.com/GoldenGateGGX/golden-gate#readme",
+  "dependencies": {
+    "@polkadot/api": "^10.9.1",
+    "@polkadot/api-contract": "^10.9.1",
+    "@truffle/hdwallet-provider": "^2.1.13",
+    "mocha": "^10.2.0",
+    "truffle-hdwallet-provider": "^1.0.17",
+    "ts-node": "^10.9.1",
+    "web3": "^4.0.3",
+    "websocket": "^1.0.34"
+  },
+  "devDependencies": {
+    "@types/chai": "^4.3.5",
+    "@types/mocha": "^10.0.1",
+    "chai": "^4.3.7",
+    "typescript": "^5.1.6"
+  }
+}
