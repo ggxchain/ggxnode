@@ -5,6 +5,7 @@ use ethers::{
 	types::{TransactionReceipt, H256},
 };
 use eyre::Result;
+use helios::prelude::ExecutionBlock;
 use rusqlite::Connection;
 
 use crate::config::Config;
@@ -48,12 +49,60 @@ impl DB {
 		)?)
 	}
 
+	pub fn insert_block(&self, block_number: u64, block_hash: H256, block: &str) -> Result<usize> {
+		let conn = self.conn.lock().expect("acquire mutex");
+		Ok(conn.execute(
+			"INSERT INTO blocks(block_number, block_hash, block) values (?1, ?2, ?3)",
+			(block_number, block_hash.encode_hex(), block),
+		)?)
+	}
+
 	pub fn insert_receipts(&self, block_hash: H256, receipts: &str) -> Result<usize> {
 		let conn = self.conn.lock().expect("acquire mutex");
 		Ok(conn.execute(
 			"INSERT INTO receipts(block_hash, receipts) values (?1, ?2)",
 			(block_hash.encode_hex(), receipts),
 		)?)
+	}
+
+	pub fn select_block_by_block_hash(
+		&self,
+		block_hash: H256,
+	) -> Result<Option<ExecutionBlock>> {
+		let conn = self.conn.lock().expect("acquire mutex");
+		let mut stmt =
+			conn.prepare("SELECT block FROM blocks WHERE block_hash = :block_hash")?;
+		let raw_blocks_iter = stmt
+			.query_map(&[(":block_hash", &block_hash.encode_hex())], |row| {
+				row.get::<_, String>(0)
+			})?;
+
+		Ok(raw_blocks_iter
+			.flatten()
+			.flat_map(|raw_blocks| serde_json::from_str(&raw_blocks))
+			.collect::<Vec<_>>()
+			.get(0)
+			.cloned())
+	}
+
+	pub fn select_block_by_block_number(
+		&self,
+		block_number: u64,
+	) -> Result<Option<ExecutionBlock>> {
+		let conn = self.conn.lock().expect("acquire mutex");
+		let mut stmt =
+			conn.prepare("SELECT block FROM blocks WHERE block_number = :block_number")?;
+		let raw_blocks_iter = stmt
+			.query_map(&[(":block_number", &block_number)], |row| {
+				row.get::<_, String>(0)
+			})?;
+
+		Ok(raw_blocks_iter
+			.flatten()
+			.flat_map(|raw_blocks| serde_json::from_str(&raw_blocks))
+			.collect::<Vec<_>>()
+			.get(0)
+			.cloned())
 	}
 
 	pub fn select_receipts_by_block_hash(
