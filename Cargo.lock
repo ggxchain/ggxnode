@@ -3677,7 +3677,6 @@ dependencies = [
  "golden-gate-runtime-mainnet",
  "golden-gate-runtime-testnet",
  "hex",
- "hex-literal",
  "jsonrpsee",
  "log",
  "nix 0.26.2",
