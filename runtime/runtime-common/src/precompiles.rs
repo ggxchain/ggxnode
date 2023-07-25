@@ -49,6 +49,7 @@ pub mod consts {
 	pub const SESSION_WRAPPER: H160 = hash(0x2052);
 
 	pub const ZK_GROTH16_VERIFY: H160 = hash(0x8888);
+
 	pub const SUPPORTED_PRECOMPILES: [H160; 18] = [
 		EC_RECOVER,
 		SHA256,
