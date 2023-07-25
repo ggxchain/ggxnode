@@ -7055,7 +7055,6 @@ dependencies = [
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex",
  "hex-literal",
  "libsecp256k1",
  "log",

@@ -28,18 +28,17 @@ fp-evm.workspace = true
 pallet-evm.workspace = true
 
 # zk precompile
-hex = { version = "0.4", default-features = false }
-num-bigint = { workspace = true }
+num-bigint.workspace = true
 # zksnark
-ark-bn254 = { workspace = true }
-ark-crypto-primitives = { workspace = true }
-ark-ec = { workspace = true }
-ark-ff = { workspace = true }
-ark-groth16 = { workspace = true }
-ark-poly = { workspace = true }
-ark-relations = { workspace = true }
-ark-serialize = { workspace = true }
-ark-std = { workspace = true }
+ark-bn254.workspace = true
+ark-crypto-primitives.workspace = true
+ark-ec.workspace = true
+ark-ff.workspace = true
+ark-groth16.workspace = true
+ark-poly.workspace = true
+ark-relations.workspace = true
+ark-serialize.workspace = true
+ark-std.workspace = true
 
 [dev-dependencies]
 derive_more.workspace = true

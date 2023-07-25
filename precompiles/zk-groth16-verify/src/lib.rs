@@ -56,21 +56,11 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 		let vk_delta = ark_bn254_g2(next(), next(), next(), next())
 			.ok_or_else(|| PrecompileFailure::from(ExitError::InvalidRange))?;
 
-		// Read the offset of vk_ic
-		let mut vk_ic_offset = U256::from_big_endian(next()).low_u32() as usize;
-		// Read the length of the vk_ic array
-		let _vk_ic_len = U256::from_big_endian(&input_stripped[vk_ic_offset..vk_ic_offset + 32])
-			.low_u32() as usize;
-		// Skip the length field
-		vk_ic_offset += 32;
+		// Read the offset of vk_ic and skip the length field
+		let vk_ic_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
-		// Read the offset of input
-		let mut input_offset = U256::from_big_endian(next()).low_u32() as usize;
-		// Read the length of the input array
-		let _input_len = U256::from_big_endian(&input_stripped[input_offset..input_offset + 32])
-			.low_u32() as usize;
-		// Skip the length field
-		input_offset += 32;
+		// Read the offset of input and skip the length field
+		let input_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
 		// Read the vk_ic array
 		let vk_ic = input_stripped[vk_ic_offset..input_offset]
