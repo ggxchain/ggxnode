@@ -80,7 +80,7 @@
 
             # not optimal as not all packages requires this,
             # but many build.rs do - so we add little bit slowness for simplificaiton and reproduceability
-            rust-native-build-inputs = with pkgs; [ clang pkg-config gnumake ];
+            rust-native-build-inputs = with pkgs; [ clang pkg-config gnumake  binaryen llvmPackages.bintools];
 
             # reusable env for shell and builds
             rust-env = with pkgs; {
