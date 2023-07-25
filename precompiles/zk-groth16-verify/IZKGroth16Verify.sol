@@ -21,7 +21,7 @@ interface IZKGroth16Verify {
      * @param vk_ic The array of the rest of the elements of the verification key.
      * @param input The array of public inputs to the zkSNARK.
      *
-     * @return A boolean value representing whether the proof is valid or not.
+     * @return valid A boolean value representing whether the proof is valid or not.
      */
     function verify(
         uint[2] memory proof_a,
@@ -33,5 +33,5 @@ interface IZKGroth16Verify {
         uint[2][2] memory vk_delta,
         uint[2][] memory vk_ic,
         uint[] memory input
-    ) external returns (bool);
+    ) external returns (bool valid);
 }
