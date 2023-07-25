@@ -2,7 +2,7 @@
 
 extern crate core;
 
-#[cfg(feature = "xvm")]
+#[cfg(feature = "precompiles")]
 pub mod precompiles;
 
 pub mod chain_spec;

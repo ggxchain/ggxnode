@@ -46,6 +46,11 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 			b: proof_b,
 			c: proof_c,
 		};
+		log::debug!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"Proof: {:?}",
+			proof
+		);
 
 		let vk_alpha = ark_bn254_g1(next(), next())
 			.ok_or_else(|| PrecompileFailure::from(ExitError::InvalidRange))?;
@@ -85,13 +90,18 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 				delta_g2: vk_delta,
 				gamma_abc_g1: vk_ic,
 			};
+		log::debug!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"VerifyingKey: {:?}",
+			vk
+		);
 
 		let verified = Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof)
 			.map_err(|_e| PrecompileFailure::from(ExitError::InvalidRange))?;
 
 		log::debug!(
 			target: "precompiles::zk_groth16_verify::execute",
-			"verification result {:?}",
+			"Verification result {:?}",
 			verified
 		);
 

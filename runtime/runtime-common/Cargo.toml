@@ -43,7 +43,7 @@ test-strategy.workspace = true
 
 [features]
 default = ["std"]
-xvm = [
+precompiles = [
 	"pallet-contracts",
 	"pallet-evm",
 	"pallet-evm-precompile-blake2",
