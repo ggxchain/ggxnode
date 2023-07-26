@@ -148,14 +148,17 @@ pub fn remote_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_pub(
 						"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
 						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
+						"KW5iGDUzxmzxkRHjXvMALXQqLfX1WCi7wVbWTCHHZfykuNKYt", //subkey generate --scheme ecdsa, Public key (SS58)
 					),
 					ValidatorIdentity::from_pub(
 						"5Dos85SfdWJbh2RAkTLpViwjJXcSpkZjn9B5FGRCsCWQ4cT3",
 						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
+						"KWAG8WAPa2VTnrpSwCqiFoPYssAJamNobdDNCjQLXYTeC3UXF",
 					),
 					ValidatorIdentity::from_pub(
 						"5DMjxJDSWR1uBQ8fN5o7fxUxpE3MeePf3b5f5iqTxm4KaLBY",
 						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
+						"KWDsp2vLX45UKMTt9Hm7MjnyKFKUP9aPunjBNDrpvbQy1J2NW",
 					),
 				],
 				888888,

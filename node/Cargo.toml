@@ -22,16 +22,22 @@ rand.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
 
 # Substrate
+mmr-gadget.workspace = true
+mmr-rpc.workspace = true
+sp-mmr-primitives.workspace = true
 sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
+sc-consensus-beefy.workspace = true
+sc-consensus-beefy-rpc.workspace = true
 sc-consensus-manual-seal = { workspace = true, optional = true }
 sc-consensus.workspace = true
 sc-executor.workspace = true
-sc-finality-grandpa.workspace = true
+sc-consensus-grandpa.workspace = true
 sc-keystore.workspace = true
 sc-network.workspace = true
+sc-network-sync.workspace = true
 sc-rpc-api.workspace = true
 sc-rpc.workspace = true
 sc-service.workspace = true
@@ -41,8 +47,8 @@ sp-api = { workspace = true, features = ["std"] }
 sp-block-builder.workspace = true
 sp-blockchain.workspace = true
 sp-consensus-aura = { workspace = true, features = ["std"] }
+sp-consensus-beefy = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
-sp-finality-grandpa = { workspace = true, features = ["std"] }
 sp-inherents = { workspace = true, features = ["std"] }
 sp-keyring.workspace = true
 sp-runtime = { workspace = true, features = ["std"] }
@@ -55,6 +61,7 @@ frame-benchmarking = { workspace = true, optional = true }
 frame-benchmarking-cli = { workspace = true, optional = true }
 frame-system.workspace = true
 pallet-transaction-payment.workspace = true
+polkadot-rpc.workspace = true
 
 # Frontier
 fc-cli = { workspace = true }

@@ -2,7 +2,7 @@ use crate::{
 	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO,
 };
 
-use super::{Balances, Runtime, RuntimeEvent};
+use super::{Balances, Runtime, RuntimeEvent, Timestamp};
 
 use super::opaque;
 use crate::Treasury;
@@ -143,7 +143,7 @@ parameter_types! {
 		NORMAL_DISPATCH_RATIO * BlockWeights::get().max_block.ref_time() / WEIGHT_PER_GAS
 	);
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
-	pub WeightPerGas: Weight = Weight::from_ref_time(WEIGHT_PER_GAS);
+	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	pub ChainId: u64 = 888866;
 }
 
@@ -166,18 +166,22 @@ impl pallet_evm::Config for Runtime {
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type OnChargeTransaction = GGXEVMCurrencyAdapter<Balances, Treasury>;
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
+	type Timestamp = Timestamp;
 	type OnCreate = ();
 	type WeightInfo = ();
 }
 
 parameter_types! {
 	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
+	// Maximum length (in bytes) of revert message to include in Executed event
+	pub const ExtraDataLength: u32 = 30;
 }
 
 impl pallet_ethereum::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
 	type PostLogContent = PostBlockAndTxnHashes;
+	type ExtraDataLength = ExtraDataLength;
 }
 
 pub struct TransactionConverter;
