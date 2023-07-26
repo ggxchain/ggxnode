@@ -84,6 +84,7 @@ assert_cmd = { workspace = true }
 ethers = { workspace = true }
 hex = { workspace = true }
 nix = { workspace = true }
+num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
 pallet-balances = { workspace = true }
 serde_json = { workspace = true }
 substrate-rpc-client = { workspace = true }

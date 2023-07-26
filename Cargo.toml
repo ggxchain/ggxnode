@@ -2,6 +2,7 @@
 members = [
 	"node",
 	"precompiles/session",
+	"precompiles/zk-groth16-verify",
 	"runtime/mainnet",
 	"runtime/testnet",
 	"runtime/runtime-common",
@@ -182,6 +183,7 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Astar
 golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
 golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
+pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
@@ -204,6 +206,19 @@ pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git",   de
 ibc = { version = "0.28.0", default-features = false, features = ["parity-scale-codec", "serde"]}
 ibc-proto = { version = "0.25.0", default-features = false, features = ["parity-scale-codec"], git = "https://github.com/octopus-network/ibc-proto-rs", branch = "ibc" }
 prost = { version = "0.11", default-features = false }
+
+# zk precompile
+num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
+# zksnark
+ark-bn254 = { version = "0.4.0" }
+ark-crypto-primitives = { version = "0.4.0", default-features = false }
+ark-ec = { version = "0.4.1", default-features = false }
+ark-ff = { version = "0.4.1", default-features = false, features = ["asm"] }
+ark-groth16 = { version = "0.4.0", default-features = false }
+ark-poly = { version = "0.4.1", default-features = false }
+ark-relations = { version = "0.4.0", default-features = false }
+ark-serialize = { version = "0.4.1", default-features = false }
+ark-std = { version = "0.4.0", default-features = false }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

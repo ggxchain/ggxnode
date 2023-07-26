@@ -1,0 +1,61 @@
+[
+  {
+    "inputs": [
+      {
+        "internalType": "uint256[2]",
+        "name": "proof_a",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "proof_b",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "proof_c",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2]",
+        "name": "vk_alpha",
+        "type": "uint256[2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "vk_beta",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "vk_gamma",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2][2]",
+        "name": "vk_delta",
+        "type": "uint256[2][2]"
+      },
+      {
+        "internalType": "uint256[2][]",
+        "name": "vk_ic",
+        "type": "uint256[2][]"
+      },
+      {
+        "internalType": "uint256[]",
+        "name": "input",
+        "type": "uint256[]"
+      }
+    ],
+    "name": "verify",
+    "outputs": [
+      {
+        "internalType": "bool",
+        "name": "",
+        "type": "bool"
+      }
+    ],
+    "stateMutability": "nonpayable",
+    "type": "function"
+  }
+]

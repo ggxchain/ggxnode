@@ -14,6 +14,7 @@ use pallet_evm_precompile_simple::{ECRecover, ECRecoverPublicKey, Identity, Ripe
 use pallet_evm_precompile_sr25519::Sr25519Precompile;
 use pallet_evm_precompile_substrate_ecdsa::SubstrateEcdsaPrecompile;
 use pallet_evm_precompile_xvm::XvmPrecompile;
+use pallet_evm_precompile_zk_groth16_verify::ZKGroth16Verify;
 
 #[derive(Default)]
 pub struct GoldenGatePrecompiles<R>(PhantomData<R>);
@@ -47,7 +48,9 @@ pub mod consts {
 
 	pub const SESSION_WRAPPER: H160 = hash(0x2052);
 
-	pub const SUPPORTED_PRECOMPILES: [H160; 17] = [
+	pub const ZK_GROTH16_VERIFY: H160 = hash(0x8888);
+
+	pub const SUPPORTED_PRECOMPILES: [H160; 18] = [
 		EC_RECOVER,
 		SHA256,
 		RIPEMD160,
@@ -65,6 +68,7 @@ pub mod consts {
 		ECDSA_VERIFY,
 		XVM,
 		SESSION_WRAPPER,
+		ZK_GROTH16_VERIFY,
 	];
 
 	const fn hash(a: u64) -> H160 {
@@ -157,6 +161,9 @@ where
 			// 0x5005 - is cross virtual machine (XVM)
 			a if a == consts::XVM => Some(XvmPrecompile::<R>::execute(handle)),
 			a if a == consts::SESSION_WRAPPER => Some(SessionWrapper::<R>::execute(handle)),
+
+			// 0x8888 - is zk-groth16 verify
+			a if a == consts::ZK_GROTH16_VERIFY => Some(ZKGroth16Verify::execute(handle)),
 			_ => None,
 		}
 	}

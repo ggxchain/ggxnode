@@ -73,7 +73,7 @@ pallet-evm-chain-id.workspace = true
 pallet-hotfix-sufficients.workspace = true
 
 # GGX
-runtime-common = { workspace = true, features = ["xvm"] }
+runtime-common = { workspace = true, features = ["precompiles"] }
 
 # Astar
 pallet-chain-extension-xvm.workspace = true
