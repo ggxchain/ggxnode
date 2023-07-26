@@ -83,7 +83,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["xvm"] }
+runtime-common = { workspace = true, features = ["precompiles"] }
 
 # Astar
 pallet-chain-extension-xvm.workspace = true

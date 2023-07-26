@@ -1,5 +1,10 @@
 use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEvent, Timestamp};
-use crate::{deposit, prelude::*, Balance, BlockWeights};
+use crate::{
+	chain_extensions::{IBCISC20Extension, Psp37Extension},
+	deposit,
+	prelude::*,
+	Balance, BlockWeights,
+};
 
 pub use frame_support::dispatch::DispatchClass;
 use frame_support::weights::Weight;
@@ -10,6 +15,14 @@ use sp_core::{ConstBool, ConstU32};
 
 impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
 	const ID: u16 = 1;
+}
+
+impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
+	const ID: u16 = 2;
+}
+
+impl RegisteredChainExtension<Runtime> for Psp37Extension {
+	const ID: u16 = 3;
 }
 
 parameter_types! {
@@ -47,7 +60,7 @@ impl pallet_contracts::Config for Runtime {
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = XvmExtension<Self>;
+	type ChainExtension = (XvmExtension<Self>, IBCISC20Extension, Psp37Extension);
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
