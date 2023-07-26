@@ -4,7 +4,7 @@ use super::*;
 
 use futures::{future, StreamExt};
 use jsonrpsee::RpcModule;
-use sp_api::ProvideRuntimeApi;
+use sp_api::{CallApiAt, ProvideRuntimeApi};
 use std::{
 	collections::BTreeMap,
 	path::PathBuf,
@@ -12,6 +12,8 @@ use std::{
 	time::Duration,
 };
 // Substrate
+use mmr_gadget::MmrGadget;
+use mmr_rpc::{Mmr, MmrApiServer};
 use sc_cli::SubstrateCli;
 use sc_client_api::{
 	backend::{Backend, StateBackend},
@@ -20,6 +22,7 @@ use sc_client_api::{
 use sc_executor::NativeElseWasmExecutor;
 use sc_keystore::LocalKeystore;
 use sc_network::NetworkService;
+use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_service::{
 	error::Error as ServiceError, BasePath, Configuration, TaskManager, TransactionPool,
@@ -42,17 +45,17 @@ use crate::cli::Sealing;
 use crate::{
 	cli::Cli,
 	rpc::FullDeps,
-	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
+	runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, RuntimeApi},
 };
 
 #[cfg(not(feature = "manual-seal"))]
 pub type ConsensusResult = (
 	FrontierBlockImport<
 		Block,
-		sc_finality_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
+		sc_consensus_grandpa::GrandpaBlockImport<FullBackend, Block, FullClient, FullSelectChain>,
 		FullClient,
 	>,
-	sc_finality_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
+	sc_consensus_grandpa::LinkHalf<Block, FullClient, FullSelectChain>,
 );
 
 #[cfg(feature = "manual-seal")]
@@ -158,7 +161,7 @@ pub fn new_partial(
 	{
 		use sp_consensus_aura::sr25519::AuthorityPair as AuraPair;
 
-		let (grandpa_block_import, grandpa_link) = sc_finality_grandpa::block_import(
+		let (grandpa_block_import, grandpa_link) = sc_consensus_grandpa::block_import(
 			client.clone(),
 			&Arc::clone(&client),
 			select_chain.clone(),
@@ -262,6 +265,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 
 	// Use ethereum style for subscription ids
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	let is_offchain_indexing_enabled = config.offchain_worker.indexing_enabled;
 
 	let sc_service::PartialComponents {
 		client,
@@ -292,7 +296,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		};
 	}
 
-	let grandpa_protocol_name = sc_finality_grandpa::protocol_standard_name(
+	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client
 			.block_hash(0)
 			.ok()
@@ -303,17 +307,64 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	config
 		.network
 		.extra_sets
-		.push(sc_finality_grandpa::grandpa_peers_set_config(
+		.push(sc_consensus_grandpa::grandpa_peers_set_config(
 			grandpa_protocol_name.clone(),
 		));
 
-	let warp_sync = Arc::new(sc_finality_grandpa::warp_proof::NetworkProvider::new(
+	let genesis_hash = client
+		.block_hash(0)
+		.ok()
+		.flatten()
+		.expect("Genesis block exists; qed");
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let beefy_gossip_proto_name =
+		sc_consensus_beefy::gossip_protocol_name(genesis_hash, config.chain_spec.fork_id());
+	// `beefy_on_demand_justifications_handler` is given to `beefy-gadget` task to be run,
+	// while `beefy_req_resp_cfg` is added to `config.network.request_response_protocols`.
+	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
+		sc_consensus_beefy::communication::request_response::BeefyJustifsRequestHandler::new(
+			genesis_hash,
+			config.chain_spec.fork_id(),
+			client.clone(),
+			prometheus_registry,
+		);
+
+	config
+		.network
+		.extra_sets
+		.push(sc_consensus_beefy::communication::beefy_peers_set_config(
+			beefy_gossip_proto_name.clone(),
+		));
+	config
+		.network
+		.request_response_protocols
+		.push(beefy_req_resp_cfg);
+
+	let (grandpa_block_import, _grandpa_link) =
+		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
+			client.clone(),
+			&Arc::clone(&client),
+			select_chain.clone(),
+			Vec::new(),
+			telemetry.as_ref().map(|x| x.handle()),
+		)?;
+	let _justification_import = grandpa_block_import.clone();
+
+	let (_beefy_block_import, beefy_voter_links, beefy_rpc_links) =
+		sc_consensus_beefy::beefy_block_import_and_links(
+			grandpa_block_import,
+			backend.clone(),
+			client.clone(),
+			config.prometheus_registry().cloned(),
+		);
+
+	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
 		consensus_result.1.shared_authority_set().clone(),
 		Vec::default(),
 	));
 
-	let (network, system_rpc_tx, tx_handler_controller, network_starter) =
+	let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
 			client: client.clone(),
@@ -347,40 +398,69 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		prometheus_registry.clone(),
 	));
 
+	// Sinks for pubsub notifications.
+	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a notification to the subscriber on receiving a message through this channel.
+	// This way we avoid race conditions when using native substrate block import notification stream.
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+
 	let rpc_builder = {
 		let client = client.clone();
 		let pool = transaction_pool.clone();
 		let is_authority = role.is_authority();
 		let enable_dev_signer = cli.run.enable_dev_signer;
 		let network = network.clone();
+		let sync = sync_service.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides.clone();
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = cli.run.max_past_logs;
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
-			let deps = crate::rpc::FullDeps {
-				client: client.clone(),
-				pool: pool.clone(),
-				deny_unsafe,
-				testnet: TestNetParams {
-					graph: pool.pool().clone(),
-					is_authority,
-					enable_dev_signer,
-					network: network.clone(),
-					filter_pool: filter_pool.clone(),
-					backend: frontier_backend.clone(),
-					max_past_logs,
-					fee_history_cache: fee_history_cache.clone(),
-					fee_history_cache_limit,
-					overrides: overrides.clone(),
-					block_data_cache: block_data_cache.clone(),
-				},
-			};
+		Box::new(
+			move |deny_unsafe,
+			      subscription_task_executor: polkadot_rpc::SubscriptionTaskExecutor| {
+				let deps = crate::rpc::FullDeps {
+					client: client.clone(),
+					pool: pool.clone(),
+					deny_unsafe,
+					testnet: TestNetParams {
+						graph: pool.pool().clone(),
+						is_authority,
+						enable_dev_signer,
+						network: network.clone(),
+						sync: sync.clone(),
+						filter_pool: filter_pool.clone(),
+						backend: frontier_backend.clone(),
+						max_past_logs,
+						fee_history_cache: fee_history_cache.clone(),
+						fee_history_cache_limit,
+						overrides: overrides.clone(),
+						block_data_cache: block_data_cache.clone(),
+						beefy: polkadot_rpc::BeefyDeps {
+							beefy_finality_proof_stream: beefy_rpc_links
+								.from_voter_justif_stream
+								.clone(),
+							beefy_best_block_stream: beefy_rpc_links
+								.from_voter_best_beefy_stream
+								.clone(),
+							subscription_executor: subscription_task_executor.clone(),
+						},
+					},
+				};
 
-			crate::rpc::create_full(deps, subscription_task_executor).map_err(Into::into)
-		})
+				crate::rpc::create_full(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+				)
+				.map_err(Into::into)
+			},
+		)
 	};
 
 	let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -392,6 +472,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		transaction_pool: transaction_pool.clone(),
 		rpc_builder,
 		network: network.clone(),
+		sync_service: sync_service.clone(),
 		system_rpc_tx,
 		tx_handler_controller,
 		telemetry: telemetry.as_mut(),
@@ -400,12 +481,14 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
-		backend,
+		backend.clone(),
 		frontier_backend,
 		filter_pool,
 		overrides,
 		fee_history_cache,
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks,
 	);
 
 	let (block_import, grandpa_link) = consensus_result;
@@ -434,12 +517,12 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(
 			sc_consensus_aura::StartAuraParams {
 				slot_duration,
-				client,
+				client: client.clone(),
 				select_chain,
 				block_import,
 				proposer_factory,
-				sync_oracle: network.clone(),
-				justification_sync_link: network.clone(),
+				sync_oracle: sync_service.clone(),
+				justification_sync_link: sync_service.clone(),
 				create_inherent_data_providers,
 				force_authoring,
 				backoff_authoring_blocks: Option::<()>::None,
@@ -457,6 +540,50 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			.spawn_blocking("aura", Some("block-authoring"), aura);
 	}
 
+	// if the node isn't actively participating in consensus then it doesn't
+	// need a keystore, regardless of which protocol we use below.
+	let keystore_opt = if role.is_authority() {
+		Some(keystore_container.sync_keystore())
+	} else {
+		None
+	};
+
+	let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
+	let network_params = sc_consensus_beefy::BeefyNetworkParams {
+		network: network.clone(),
+		sync: sync_service.clone(),
+		gossip_protocol_name: beefy_gossip_proto_name,
+		justifications_protocol_name,
+		_phantom: core::marker::PhantomData::<Block>,
+	};
+	let payload_provider = sp_consensus_beefy::mmr::MmrRootProvider::new(client.clone());
+	let beefy_params = sc_consensus_beefy::BeefyParams {
+		client: client.clone(),
+		backend: backend.clone(),
+		payload_provider,
+		runtime: client.clone(),
+		key_store: keystore_opt.clone(),
+		network_params,
+		min_block_delta: 2,
+		prometheus_registry: prometheus_registry.clone(),
+		links: beefy_voter_links,
+		on_demand_justifications_handler: beefy_on_demand_justifications_handler,
+	};
+
+	let gadget = sc_consensus_beefy::start_beefy_gadget::<_, _, _, _, _, _, _>(beefy_params);
+
+	task_manager
+		.spawn_handle()
+		.spawn_blocking("beefy-gadget", None, gadget);
+
+	if is_offchain_indexing_enabled {
+		task_manager.spawn_handle().spawn_blocking(
+			"mmr-gadget",
+			None,
+			MmrGadget::start(client, backend, sp_mmr_primitives::INDEXING_PREFIX.to_vec()),
+		);
+	}
+
 	if enable_grandpa {
 		// if the node isn't actively participating in consensus then it doesn't
 		// need a keystore, regardless of which protocol we use below.
@@ -466,7 +593,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			None
 		};
 
-		let grandpa_config = sc_finality_grandpa::Config {
+		let grandpa_config = sc_consensus_grandpa::Config {
 			// FIXME #1578 make this available through chainspec
 			gossip_duration: Duration::from_millis(333),
 			justification_period: 512,
@@ -485,13 +612,14 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		// been tested extensively yet and having most nodes in a network run it
 		// could lead to finality stalls.
 		let grandpa_voter =
-			sc_finality_grandpa::run_grandpa_voter(sc_finality_grandpa::GrandpaParams {
+			sc_consensus_grandpa::run_grandpa_voter(sc_consensus_grandpa::GrandpaParams {
 				config: grandpa_config,
 				link: grandpa_link,
 				network,
-				voting_rule: sc_finality_grandpa::VotingRulesBuilder::default().build(),
+				sync: Arc::new(sync_service),
+				voting_rule: sc_consensus_grandpa::VotingRulesBuilder::default().build(),
 				prometheus_registry,
-				shared_voter_state: sc_finality_grandpa::SharedVoterState::empty(),
+				shared_voter_state: sc_consensus_grandpa::SharedVoterState::empty(),
 				telemetry: telemetry.as_ref().map(|x| x.handle()),
 			})?;
 
@@ -572,6 +700,16 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		50,
 		prometheus_registry.clone(),
 	));
+
+	// Sinks for pubsub notifications.
+	// Everytime a new subscription is created, a new mpsc channel is added to the sink pool.
+	// The MappingSyncWorker sends through the channel on block import and the subscription emits a notification to the subscriber on receiving a message through this channel.
+	// This way we avoid race conditions when using native substrate block import notification stream.
+	let pubsub_notification_sinks: fc_mapping_sync::EthereumBlockNotificationSinks<
+		fc_mapping_sync::EthereumBlockNotification<Block>,
+	> = Default::default();
+	let pubsub_notification_sinks = Arc::new(pubsub_notification_sinks);
+
 	// Channel for the rpc handler to communicate with the authorship task.
 	let (command_sink, commands_stream) = futures::channel::mpsc::channel(1000);
 
@@ -581,11 +719,13 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let is_authority = role.is_authority();
 		let enable_dev_signer = cli.run.enable_dev_signer;
 		let network = network.clone();
+		let sync = sync_service.clone();
 		let filter_pool = filter_pool.clone();
 		let frontier_backend = frontier_backend.clone();
 		let overrides = overrides.clone();
 		let fee_history_cache = fee_history_cache.clone();
 		let max_past_logs = cli.run.max_past_logs;
+		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
 		Box::new(move |deny_unsafe, subscription_task_executor| {
 			let deps = crate::rpc::FullDeps {
@@ -635,6 +775,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		overrides,
 		fee_history_cache,
 		fee_history_cache_limit,
+		sync_service.clone(),
+		pubsub_notification_sinks.clone(),
 	);
 
 	if role.is_authority() {
@@ -730,6 +872,12 @@ fn spawn_frontier_tasks(
 	overrides: Arc<OverrideHandle<Block>>,
 	fee_history_cache: FeeHistoryCache,
 	fee_history_cache_limit: FeeHistoryCacheLimit,
+	sync_service: Arc<SyncingService<Block>>,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<Block>,
+		>,
+	>,
 ) {
 	task_manager.spawn_essential_handle().spawn(
 		"golden-gate-mapping-sync-worker",
@@ -744,6 +892,8 @@ fn spawn_frontier_tasks(
 			3,
 			0,
 			SyncStrategy::Normal,
+			sync_service,
+			pubsub_notification_sinks,
 		)
 		.for_each(|()| future::ready(())),
 	);
@@ -775,15 +925,22 @@ fn spawn_frontier_tasks(
 pub fn create_full_rpc<C, P, BE, A>(
 	deps: FullDeps<C, P, A>,
 	subscription_task_executor: SubscriptionTaskExecutor,
+	pubsub_notification_sinks: Arc<
+		fc_mapping_sync::EthereumBlockNotificationSinks<
+			fc_mapping_sync::EthereumBlockNotification<Block>,
+		>,
+	>,
 ) -> Result<RpcModule<()>, Box<dyn std::error::Error + Send + Sync>>
 where
 	BE: Backend<Block> + 'static,
 	BE::State: StateBackend<BlakeTwo256>,
 	C: ProvideRuntimeApi<Block> + StorageProvider<Block, BE> + AuxStore,
+	C: CallApiAt<Block>,
 	C: BlockchainEvents<Block>,
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
+	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
 	C::Api: BlockBuilder<Block>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
@@ -792,6 +949,7 @@ where
 	A: ChainApi<Block = Block> + 'static,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	let mut io = RpcModule::new(());
@@ -805,6 +963,7 @@ where
 				is_authority,
 				enable_dev_signer,
 				network,
+				sync,
 				filter_pool,
 				backend,
 				max_past_logs,
@@ -812,6 +971,7 @@ where
 				fee_history_cache_limit,
 				overrides,
 				block_data_cache,
+				beefy,
 			},
 		#[cfg(feature = "manual-seal")]
 		command_sink,
@@ -835,7 +995,7 @@ where
 			pool.clone(),
 			graph,
 			Some(crate::runtime::ethereum::TransactionConverter),
-			network.clone(),
+			sync.clone(),
 			signers,
 			overrides.clone(),
 			backend.clone(),
@@ -867,9 +1027,10 @@ where
 		EthPubSub::new(
 			pool,
 			client.clone(),
-			network.clone(),
+			sync,
 			subscription_task_executor,
 			overrides,
+			pubsub_notification_sinks,
 		)
 		.into_rpc(),
 	)?;
@@ -883,7 +1044,7 @@ where
 		)
 		.into_rpc(),
 	)?;
-	io.merge(Web3::new(client).into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
 
 	#[cfg(feature = "manual-seal")]
 	if let Some(command_sink) = command_sink {
@@ -893,6 +1054,16 @@ where
 			ManualSeal::new(command_sink).into_rpc(),
 		)?;
 	}
+
+	io.merge(Mmr::new(client).into_rpc())?;
+	io.merge(
+		Beefy::<Block>::new(
+			beefy.beefy_finality_proof_stream,
+			beefy.beefy_best_block_stream,
+			beefy.subscription_executor,
+		)?
+		.into_rpc(),
+	)?;
 
 	Ok(io)
 }
@@ -907,6 +1078,8 @@ pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
 	pub enable_dev_signer: bool,
 	/// Network service
 	pub network: Arc<NetworkService<Block, Hash>>,
+	/// Chain syncing service
+	pub sync: Arc<SyncingService<Block>>,
 	/// EthFilterApi pool.
 	pub filter_pool: Option<FilterPool>,
 	/// Backend.
@@ -921,4 +1094,6 @@ pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
 	pub overrides: Arc<OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	/// BEEFY specific dependencies.
+	pub beefy: polkadot_rpc::BeefyDeps,
 }

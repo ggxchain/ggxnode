@@ -1,6 +1,8 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 
-#[cfg(feature = "xvm")]
+extern crate core;
+
+#[cfg(feature = "precompiles")]
 pub mod precompiles;
 
 pub mod chain_spec;

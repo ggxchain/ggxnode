@@ -762,6 +762,7 @@ mod tests {
 				UncheckedExtrinsic = UncheckedExtrinsic,
 			{
 				System: frame_system,
+				Timestamp: pallet_timestamp,
 				Balances: pallet_balances,
 				Scheduler: pallet_scheduler,
 				CurrencyManager: currency,
@@ -940,6 +941,7 @@ mod tests {
 			type OnCreate = ();
 			type FindAuthor = FindAuthorTruncated;
 			type WeightInfo = ();
+			type Timestamp = Timestamp;
 		}
 
 		pub fn test_runtime() -> sp_io::TestExternalities {

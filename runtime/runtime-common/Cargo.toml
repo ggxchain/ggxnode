@@ -25,13 +25,17 @@ pallet-evm-precompile-blake2 = { workspace = true, optional = true }
 pallet-evm-precompile-bn128 = { workspace = true, optional = true }
 pallet-evm-precompile-ed25519 = { workspace = true, optional = true }
 pallet-evm-precompile-modexp = { workspace = true, optional = true }
+pallet-evm-precompile-session = { workspace = true, optional = true }
 pallet-evm-precompile-sha3fips = { workspace = true, optional = true }
 pallet-evm-precompile-simple = { workspace = true, optional = true }
 pallet-evm-precompile-sr25519 = { workspace = true, optional = true }
 pallet-evm-precompile-substrate-ecdsa = { workspace = true, optional = true }
 pallet-evm-precompile-xvm = { workspace = true, optional = true }
+pallet-evm-precompile-zk-groth16-verify = { workspace = true, optional = true }
 pallet-xvm = { workspace = true, optional = true }
-pallet-evm-precompile-session = { workspace = true, optional = true }
+
+# eth abi
+log.workspace = true
 
 [dev-dependencies]
 proptest.workspace = true
@@ -39,7 +43,7 @@ test-strategy.workspace = true
 
 [features]
 default = ["std"]
-xvm = [
+precompiles = [
 	"pallet-contracts",
 	"pallet-evm",
 	"pallet-evm-precompile-blake2",
@@ -52,6 +56,7 @@ xvm = [
 	"pallet-evm-precompile-substrate-ecdsa",
 	"pallet-evm-precompile-xvm",
 	"pallet-evm-precompile-session",
+	"pallet-evm-precompile-zk-groth16-verify",
 	"pallet-xvm",
 ]
 std = [
@@ -77,5 +82,6 @@ std = [
 	"pallet-evm-precompile-substrate-ecdsa?/std",
 	"pallet-evm-precompile-xvm?/std",
 	"pallet-evm-precompile-session?/std",
+	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
 ]
