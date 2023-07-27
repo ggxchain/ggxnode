@@ -30,7 +30,12 @@ use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, AccountId32, OpaqueExtrinsic, SaturatedConversion};
 // Frontier
-use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+#[cfg(not(feature = "testnet"))]
+use golden_gate_runtime_mainnet::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+#[cfg(feature = "testnet")]
+use golden_gate_runtime_testnet::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+
+// use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 
 use crate::service::FullClient;
 
@@ -140,7 +145,7 @@ pub fn create_benchmark_extrinsic(
 		.map(|c| c / 2)
 		.unwrap_or(2) as u64;
 	let extra: runtime::SignedExtra = (
-		frame_system::CheckNonZeroSender::<runtime::Runtime>::new(),
+		//frame_system::CheckNonZeroSender::<runtime::Runtime>::new(),
 		frame_system::CheckSpecVersion::<runtime::Runtime>::new(),
 		frame_system::CheckTxVersion::<runtime::Runtime>::new(),
 		frame_system::CheckGenesis::<runtime::Runtime>::new(),
@@ -157,7 +162,7 @@ pub fn create_benchmark_extrinsic(
 		call.clone(),
 		extra.clone(),
 		(
-			(),
+			// (),
 			runtime::VERSION.spec_version,
 			runtime::VERSION.transaction_version,
 			genesis_hash,

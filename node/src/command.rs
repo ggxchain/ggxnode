@@ -182,7 +182,12 @@ pub fn run() -> sc_cli::Result<()> {
 			use frame_benchmarking_cli::{
 				BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE,
 			};
-			use golden_gate_runtime::{Block, ExistentialDeposit};
+
+			#[cfg(not(feature = "testnet"))]
+			use golden_gate_runtime_mainnet::{Block, ExistentialDeposit};
+
+			#[cfg(feature = "testnet")]
+			use golden_gate_runtime_testnet::{Block, ExistentialDeposit};
 
 			let runner = cli.create_runner(cmd)?;
 			match cmd {

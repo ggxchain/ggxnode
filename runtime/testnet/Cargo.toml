@@ -16,8 +16,8 @@ scale-codec = { package = "parity-scale-codec", workspace = true }
 scale-info.workspace = true
 
 # Substrate
-pallet-beefy.workspace = true
 pallet-beefy-mmr.workspace = true
+pallet-beefy.workspace = true
 sp-api.workspace = true
 sp-block-builder.workspace = true
 sp-consensus-aura.workspace = true
@@ -85,11 +85,11 @@ pallet-contracts.workspace = true
 pallet-randomness-collective-flip.workspace = true
 
 # Ibc
+ibc-proto.workspace = true
+ibc.workspace = true
+pallet-ibc-utils.workspace = true
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
-pallet-ibc-utils.workspace = true
-ibc.workspace = true
-ibc-proto.workspace = true
 prost.workspace = true
 
 [build-dependencies]
@@ -176,6 +176,7 @@ runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-system-benchmarking/runtime-benchmarks",
 	"frame-system/runtime-benchmarks",
+	"pallet-assets/runtime-benchmarks",
 	"pallet-balances/runtime-benchmarks",
 	"pallet-grandpa/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",

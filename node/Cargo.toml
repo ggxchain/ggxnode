@@ -24,20 +24,19 @@ scale-codec = { package = "parity-scale-codec", workspace = true }
 # Substrate
 mmr-gadget.workspace = true
 mmr-rpc.workspace = true
-sp-mmr-primitives.workspace = true
 sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
-sc-consensus-beefy.workspace = true
 sc-consensus-beefy-rpc.workspace = true
+sc-consensus-beefy.workspace = true
+sc-consensus-grandpa.workspace = true
 sc-consensus-manual-seal = { workspace = true, optional = true }
 sc-consensus.workspace = true
 sc-executor.workspace = true
-sc-consensus-grandpa.workspace = true
 sc-keystore.workspace = true
-sc-network.workspace = true
 sc-network-sync.workspace = true
+sc-network.workspace = true
 sc-rpc-api.workspace = true
 sc-rpc.workspace = true
 sc-service.workspace = true
@@ -51,6 +50,7 @@ sp-consensus-beefy = { workspace = true, features = ["std"] }
 sp-core = { workspace = true, features = ["std"] }
 sp-inherents = { workspace = true, features = ["std"] }
 sp-keyring.workspace = true
+sp-mmr-primitives.workspace = true
 sp-runtime = { workspace = true, features = ["std"] }
 sp-timestamp = { workspace = true, features = ["std"] }
 # These dependencies are used for RPC
@@ -99,7 +99,7 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = []
+default = ["runtime-benchmarks"]
 testnet = [
 	"golden-gate-runtime-testnet",
 ]

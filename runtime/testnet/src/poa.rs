@@ -188,6 +188,15 @@ impl pallet_identity::Config for Runtime {
 	type WeightInfo = pallet_identity::weights::SubstrateWeight<Runtime>;
 }
 
+#[cfg(feature = "runtime-benchmarks")]
+pub struct AssetsBenchmarkHelper;
+#[cfg(feature = "runtime-benchmarks")]
+impl pallet_assets::BenchmarkHelper<scale_codec::Compact<u32>> for AssetsBenchmarkHelper {
+	fn create_asset_id_parameter(id: u32) -> scale_codec::Compact<u32> {
+		scale_codec::Compact(id)
+	}
+}
+
 impl pallet_assets::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type Balance = u128;
@@ -208,7 +217,7 @@ impl pallet_assets::Config for Runtime {
 	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
 	type RemoveItemsLimit = ConstU32<1000>;
 	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = ();
+	type BenchmarkHelper = AssetsBenchmarkHelper;
 }
 
 /// The type used to represent the kinds of proxying allowed.
