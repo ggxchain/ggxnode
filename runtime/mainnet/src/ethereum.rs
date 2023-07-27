@@ -1,5 +1,6 @@
 use crate::{
-	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO,
+	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, MAXIMUM_BLOCK_WEIGHT,
+	NORMAL_DISPATCH_RATIO,
 };
 
 use super::{Balances, Runtime, RuntimeEvent, Timestamp};
@@ -8,8 +9,9 @@ use super::opaque;
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 use pallet_ethereum::PostLogContent;
 use runtime_common::precompiles::GoldenGatePrecompiles;
+use sp_core::H160;
 
-use crate::CurrencyManager;
+use crate::{CurrencyManager, EthereumChecked};
 use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping};
 
 /// Current approximation of the gas/s consumption considering
@@ -29,6 +31,14 @@ parameter_types! {
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	pub ChainId: u64 = 8866;
+
+  /// The amount of gas per PoV size. Value is calculated as:
+	///
+	/// max_gas_limit = max_tx_ref_time / WEIGHT_PER_GAS = max_pov_size * gas_limit_pov_size_ratio
+	/// gas_limit_pov_size_ratio = ceil((max_tx_ref_time / WEIGHT_PER_GAS) / max_pov_size)
+	///
+	/// Equals 4 for values used by Astar runtime.
+	pub const GasLimitPovSizeRatio: u64 = 4;
 }
 
 impl pallet_evm_chain_id::Config for Runtime {}
@@ -52,6 +62,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type Timestamp = Timestamp;
 	type OnCreate = ();
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type WeightInfo = ();
 }
 
@@ -105,11 +116,41 @@ parameter_types! {
 	pub WasmId: u8 = 0x1F;
 }
 
+use astar_primitives::AccountId;
 use pallet_xvm::{evm, wasm};
 use sp_core::U256;
 use sp_runtime::{traits::BlakeTwo256, Permill};
+
+///TODO: Placeholder account mapping. This would be replaced once account abstraction is finished.
+pub struct HashedAccountMapping;
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+	fn into_h160(account_id: AccountId) -> H160 {
+		let data = (b"evm:", account_id);
+		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
+	}
+}
+
+parameter_types! {
+	pub const ReservedXcmpWeight: Weight = MAXIMUM_BLOCK_WEIGHT.saturating_div(4);
+	/// Equal to normal class dispatch weight limit.
+	pub XvmTxWeightLimit: Weight = NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT;
+}
+
+impl pallet_ethereum_checked::Config for Runtime {
+	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type XvmTxWeightLimit = XvmTxWeightLimit;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type AccountMapping = HashedAccountMapping;
+	type XcmTransactOrigin = pallet_ethereum_checked::EnsureXcmEthereumTx<AccountId>;
+	type WeightInfo = pallet_ethereum_checked::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_xvm::Config for Runtime {
-	type SyncVM = (evm::EVM<EvmId, Self>, wasm::WASM<WasmId, Self>);
+	type SyncVM = (
+		evm::EVM<EvmId, Self, EthereumChecked>,
+		wasm::WASM<WasmId, Self>,
+	);
 	type AsyncVM = ();
 	type RuntimeEvent = RuntimeEvent;
 }

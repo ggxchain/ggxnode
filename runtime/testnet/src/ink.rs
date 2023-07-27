@@ -1,9 +1,10 @@
 use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEvent, Timestamp};
 use crate::{
-	chain_extensions::{IBCISC20Extension, Psp37Extension},
+	// chain_extensions::{IBCISC20Extension, Psp37Extension},
 	deposit,
 	prelude::*,
-	Balance, BlockWeights,
+	Balance,
+	BlockWeights,
 };
 
 pub use frame_support::dispatch::DispatchClass;
@@ -17,13 +18,13 @@ impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
 	const ID: u16 = 1;
 }
 
-impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
-	const ID: u16 = 2;
-}
+// impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
+// 	const ID: u16 = 2;
+// }
 
-impl RegisteredChainExtension<Runtime> for Psp37Extension {
-	const ID: u16 = 3;
-}
+// impl RegisteredChainExtension<Runtime> for Psp37Extension {
+// 	const ID: u16 = 3;
+// }
 
 parameter_types! {
 	pub const DepositPerItem: Balance = deposit(1, 0);
@@ -35,6 +36,8 @@ parameter_types! {
 	.get(DispatchClass::Normal)
 	.max_total
 	.unwrap_or(BlockWeights::get().max_block);
+	 // Fallback value if storage deposit limit not set by the user
+	 pub const DefaultDepositLimit: Balance = deposit(1024, 1024 * 1024);
 
 	pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
 }
@@ -57,12 +60,13 @@ impl pallet_contracts::Config for Runtime {
 	type CallFilter = frame_support::traits::Nothing;
 	type DepositPerItem = DepositPerItem;
 	type DepositPerByte = DepositPerByte;
+	type DefaultDepositLimit = DefaultDepositLimit;
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (XvmExtension<Self>, IBCISC20Extension, Psp37Extension);
-	type DeletionQueueDepth = ConstU32<128>;
-	type DeletionWeightLimit = DeletionWeightLimit;
+	type ChainExtension = (
+		XvmExtension<Self>, /*IBCISC20Extension, Psp37Extension*/
+	);
 	type Schedule = Schedule;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type MaxCodeLen = ConstU32<{ 123 * 1024 }>;

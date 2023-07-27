@@ -24,6 +24,7 @@ sp-consensus-aura.workspace = true
 sp-consensus-beefy.workspace = true
 sp-core.workspace = true
 sp-inherents.workspace = true
+sp-io.workspace = true
 sp-mmr-primitives.workspace = true
 sp-offchain.workspace = true
 sp-runtime.workspace = true
@@ -76,7 +77,9 @@ pallet-hotfix-sufficients.workspace = true
 runtime-common = { workspace = true, features = ["precompiles"] }
 
 # Astar
+astar-primitives.workspace = true
 pallet-chain-extension-xvm.workspace = true
+pallet-ethereum-checked.workspace = true
 pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
 
 # Wasm contracts
@@ -85,12 +88,12 @@ pallet-contracts.workspace = true
 pallet-randomness-collective-flip.workspace = true
 
 # Ibc
-pallet-ibc.workspace = true
-pallet-ics20-transfer.workspace = true
-pallet-ibc-utils.workspace = true
-ibc.workspace = true
-ibc-proto.workspace = true
-prost.workspace = true
+# pallet-ibc.workspace = true
+# pallet-ics20-transfer.workspace = true
+# pallet-ibc-utils.workspace = true
+# ibc.workspace = true
+# ibc-proto.workspace = true
+# prost.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
@@ -125,7 +128,6 @@ std = [
 	"frame-support/std",
 	"frame-system/std",
 	"frame-system-rpc-runtime-api/std",
-	"frame-system-benchmarking/std",
 	"pallet-assets/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
@@ -163,14 +165,15 @@ std = [
 	# Astar
 	"pallet-chain-extension-xvm/std",
 	"pallet-xvm/std",
+	"pallet-ethereum-checked/std",
 	# Wasm contracts
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",
 	"pallet-randomness-collective-flip/std",
 	# IBC
-	"pallet-ibc/std",
-	"pallet-ics20-transfer/std",
-	"pallet-ibc-utils/std",
+	# "pallet-ibc/std",
+	# "pallet-ics20-transfer/std",
+	# "pallet-ibc-utils/std",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",

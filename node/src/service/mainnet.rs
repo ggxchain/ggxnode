@@ -34,7 +34,7 @@ use sp_runtime::traits::BlakeTwo256;
 // Frontier
 use fc_consensus::FrontierBlockImport;
 use fc_db::Backend as FrontierBackend;
-use fc_mapping_sync::{MappingSyncWorker, SyncStrategy};
+use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Runtime
@@ -62,15 +62,8 @@ pub type ConsensusResult = (
 	Sealing,
 );
 
-pub(crate) fn db_config_dir(config: &Configuration) -> PathBuf {
-	config
-		.base_path
-		.as_ref()
-		.map(|base_path| base_path.config_dir(config.chain_spec.id()))
-		.unwrap_or_else(|| {
-			BasePath::from_project("", "", &Cli::executable_name())
-				.config_dir(config.chain_spec.id())
-		})
+pub fn db_config_dir(config: &Configuration) -> PathBuf {
+	config.base_path.config_dir(config.chain_spec.id())
 }
 
 pub fn new_partial(
@@ -93,12 +86,6 @@ pub fn new_partial(
 	>,
 	ServiceError,
 > {
-	if config.keystore_remote.is_some() {
-		return Err(ServiceError::Other(
-			"Remote Keystores are not supported.".to_string(),
-		));
-	}
-
 	sp_core::crypto::set_default_ss58_version(Ss58AddressFormat::custom(
 		crate::runtime::SS58Prefix::get(),
 	));
@@ -146,11 +133,13 @@ pub fn new_partial(
 		client.clone(),
 	);
 
-	let frontier_backend = Arc::new(FrontierBackend::open(
+	let frontier_backend_type = 1;
+	let frontier_backend = Arc::new(FrontierBackend::KeyValue(fc_db::kv::Backend::open(
 		Arc::clone(&client),
 		&config.database,
 		&db_config_dir(config),
-	)?);
+	)?));
+
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit: FeeHistoryCacheLimit = cli.run.fee_history_limit;
@@ -166,11 +155,8 @@ pub fn new_partial(
 			telemetry.as_ref().map(|x| x.handle()),
 		)?;
 
-		let frontier_block_import = FrontierBlockImport::new(
-			grandpa_block_import.clone(),
-			client.clone(),
-			frontier_backend.clone(),
-		);
+		let frontier_block_import =
+			FrontierBlockImport::new(grandpa_block_import.clone(), client.clone());
 
 		let slot_duration = sc_consensus_aura::slot_duration(&*client)?;
 		let target_gas_price = cli.run.target_gas_price;
@@ -283,16 +269,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			),
 	} = new_partial(&config, cli)?;
 
-	if let Some(url) = &config.keystore_remote {
-		match remote_keystore(url) {
-			Ok(k) => keystore_container.set_remote_keystore(k),
-			Err(e) => {
-				return Err(ServiceError::Other(format!(
-					"Error hooking up remote keystore for {url}: {e}"
-				)))
-			}
-		};
-	}
+	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client
@@ -302,12 +279,9 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			.expect("Genesis block exists; qed"),
 		&config.chain_spec,
 	);
-	config
-		.network
-		.extra_sets
-		.push(sc_consensus_grandpa::grandpa_peers_set_config(
-			grandpa_protocol_name.clone(),
-		));
+	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
+		grandpa_protocol_name.clone(),
+	));
 
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
@@ -315,9 +289,12 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		Vec::default(),
 	));
 
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+
 	let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
@@ -407,7 +384,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		client: client.clone(),
 		backend: backend.clone(),
 		task_manager: &mut task_manager,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		transaction_pool: transaction_pool.clone(),
 		rpc_builder,
 		network: network.clone(),
@@ -465,7 +442,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				create_inherent_data_providers,
 				force_authoring,
 				backoff_authoring_blocks: Option::<()>::None,
-				keystore: keystore_container.sync_keystore(),
+				keystore: keystore_container.keystore(),
 				block_proposal_slot_portion: sc_consensus_aura::SlotProportion::new(2f32 / 3f32),
 				max_block_proposal_slot_portion: None,
 				telemetry: telemetry.as_ref().map(|x| x.handle()),
@@ -483,7 +460,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		// if the node isn't actively participating in consensus then it doesn't
 		// need a keystore, regardless of which protocol we use below.
 		let keystore = if role.is_authority() {
-			Some(keystore_container.sync_keystore())
+			Some(keystore_container.keystore())
 		} else {
 			None
 		};
@@ -565,9 +542,12 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		};
 	}
 
-	let (network, system_rpc_tx, tx_handler_controller, network_starter) =
+	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+
+	let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
+			net_config,
 			client: client.clone(),
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
@@ -652,7 +632,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		client: client.clone(),
 		backend: backend.clone(),
 		task_manager: &mut task_manager,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		transaction_pool: transaction_pool.clone(),
 		rpc_builder,
 		network,
@@ -879,16 +859,17 @@ where
 	}
 	use fc_rpc::{
 		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
-		EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3, Web3ApiServer,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, TxPoolApiServer, Web3,
+		Web3ApiServer,
 	};
 	io.merge(
 		Eth::new(
 			client.clone(),
 			pool.clone(),
-			graph,
+			graph.clone(),
 			Some(crate::runtime::ethereum::TransactionConverter),
 			sync.clone(),
-			signers,
+			Default::default(), //network.clone(),
 			overrides.clone(),
 			backend.clone(),
 			// Is authority.
@@ -897,15 +878,18 @@ where
 			fee_history_cache,
 			fee_history_cache_limit,
 			10,
+			None,
 		)
 		.into_rpc(),
 	)?;
 
+	let tx_pool = TxPool::new(client.clone(), graph);
 	if let Some(filter_pool) = filter_pool {
 		io.merge(
 			EthFilter::new(
 				client.clone(),
 				backend,
+				tx_pool.clone(),
 				filter_pool,
 				500_usize, // max stored filters
 				max_past_logs,
