@@ -153,8 +153,8 @@ pub fn testnet_genesis(
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
-		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 666)],
-		},
+		// ics_20_transfer: Ics20TransferConfig {
+		// 	asset_id_by_name: vec![("ERT".to_string(), 666)],
+		// },
 	}
 }

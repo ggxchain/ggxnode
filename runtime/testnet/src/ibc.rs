@@ -3,7 +3,7 @@ use crate::prelude::*;
 // use super::{Assets, Ics20Transfer};
 
 // use pallet_ibc_utils::module::Router;
-pub struct IbcModule;
+// pub struct IbcModule;
 
 // impl pallet_ibc_utils::module::AddModule for IbcModule {
 // 	fn add_module(router: Router) -> Router {

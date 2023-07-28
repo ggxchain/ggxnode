@@ -12,7 +12,6 @@ use std::{
 	time::Duration,
 };
 // Substrate
-use sc_cli::SubstrateCli;
 use sc_client_api::{
 	backend::{Backend, StateBackend},
 	AuxStore, BlockchainEvents, StorageProvider,
@@ -22,18 +21,16 @@ use sc_keystore::LocalKeystore;
 use sc_network::NetworkService;
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
-use sc_service::{
-	error::Error as ServiceError, BasePath, Configuration, TaskManager, TransactionPool,
-};
+use sc_service::{error::Error as ServiceError, Configuration, TaskManager, TransactionPool};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
 use sp_core::{crypto::Ss58AddressFormat, U256};
-use sp_runtime::traits::BlakeTwo256;
+use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
 // Frontier
 use fc_consensus::FrontierBlockImport;
-use fc_db::Backend as FrontierBackend;
+use fc_db::kv::Backend as FrontierBackend;
 use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
@@ -79,7 +76,7 @@ pub fn new_partial(
 		(
 			Option<Telemetry>,
 			ConsensusResult,
-			Arc<FrontierBackend<Block>>,
+			fc_db::kv::Backend<Block>,
 			Option<FilterPool>,
 			(FeeHistoryCache, FeeHistoryCacheLimit),
 		),
@@ -133,12 +130,11 @@ pub fn new_partial(
 		client.clone(),
 	);
 
-	let frontier_backend_type = 1;
-	let frontier_backend = Arc::new(FrontierBackend::KeyValue(fc_db::kv::Backend::open(
+	let frontier_backend = fc_db::kv::Backend::open(
 		Arc::clone(&client),
 		&config.database,
 		&db_config_dir(config),
-	)?));
+	)?;
 
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
@@ -256,7 +252,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		backend,
 		mut task_manager,
 		import_queue,
-		mut keystore_container,
+		keystore_container,
 		select_chain,
 		transaction_pool,
 		other:
@@ -361,7 +357,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 					network: network.clone(),
 					sync: sync.clone(),
 					filter_pool: filter_pool.clone(),
-					backend: frontier_backend.clone(),
+					backend: Arc::new(frontier_backend.clone()),
 					max_past_logs,
 					fee_history_cache: fee_history_cache.clone(),
 					fee_history_cache_limit,
@@ -742,7 +738,7 @@ fn spawn_frontier_tasks(
 	task_manager: &TaskManager,
 	client: Arc<FullClient>,
 	backend: Arc<FullBackend>,
-	frontier_backend: Arc<FrontierBackend<Block>>,
+	frontier_backend: FrontierBackend<Block>,
 	filter_pool: Option<FilterPool>,
 	overrides: Arc<OverrideHandle<Block>>,
 	fee_history_cache: FeeHistoryCache,
@@ -763,7 +759,7 @@ fn spawn_frontier_tasks(
 			client.clone(),
 			backend,
 			overrides.clone(),
-			frontier_backend,
+			Arc::new(frontier_backend),
 			3,
 			0,
 			SyncStrategy::Normal,
@@ -859,8 +855,7 @@ where
 	}
 	use fc_rpc::{
 		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
-		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, TxPoolApiServer, Web3,
-		Web3ApiServer,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, Web3, Web3ApiServer,
 	};
 	io.merge(
 		Eth::new(
@@ -935,7 +930,7 @@ where
 }
 
 #[cfg(not(feature = "testnet"))]
-pub struct MainNetParams<A: sc_transaction_pool::ChainApi> {
+pub struct MainNetParams<A: sc_transaction_pool::ChainApi, B: BlockT> {
 	/// Graph pool instance.                        
 	pub graph: Arc<Pool<A>>,
 	/// The Node authority flag
@@ -949,7 +944,7 @@ pub struct MainNetParams<A: sc_transaction_pool::ChainApi> {
 	/// EthFilterApi pool.
 	pub filter_pool: Option<FilterPool>,
 	/// Backend.
-	pub backend: Arc<fc_db::Backend<Block>>,
+	pub backend: Arc<dyn fc_db::BackendReader<B> + Send + Sync>,
 	/// Maximum number of logs in a query.
 	pub max_past_logs: u32,
 	/// Fee history cache.

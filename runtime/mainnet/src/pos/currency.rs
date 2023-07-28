@@ -801,6 +801,10 @@ mod tests {
 			type MaxLocks = ConstU32<50>;
 			type MaxReserves = ();
 			type ReserveIdentifier = [u8; 8];
+			type HoldIdentifier = ();
+			type FreezeIdentifier = ();
+			type MaxHolds = ConstU32<0>;
+			type MaxFreezes = ConstU32<0>;
 		}
 
 		impl pallet_treasury::Config for Test {
@@ -916,7 +920,7 @@ mod tests {
 
 		parameter_types! {
 			pub BlockGasLimit: U256 = U256::max_value();
-			pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+			pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
 		}
 
 		impl pallet_evm::Config for Test {
@@ -942,6 +946,7 @@ mod tests {
 			type FindAuthor = FindAuthorTruncated;
 			type WeightInfo = ();
 			type Timestamp = Timestamp;
+			type GasLimitPovSizeRatio = ConstU64<4>;
 		}
 
 		pub fn test_runtime() -> sp_io::TestExternalities {

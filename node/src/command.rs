@@ -21,7 +21,7 @@ use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
 // Frontier
 #[cfg(feature = "testnet")]
-use fc_db::frontier_database_dir;
+use fc_db::kv::frontier_database_dir;
 
 use crate::{
 	chain_spec,
@@ -243,7 +243,7 @@ pub fn run() -> sc_cli::Result<()> {
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } = service::new_partial(&config, &cli)?;
 				let frontier_backend = other.2;
-				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
+				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend.into())
 			})
 		}
 		None => {

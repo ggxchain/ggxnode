@@ -1,5 +1,6 @@
 use std::sync::Arc;
 
+use crate::runtime::opaque::Block;
 #[cfg(feature = "manual-seal")]
 use sc_consensus_manual_seal::rpc::{ManualSeal, ManualSealApiServer};
 use sc_rpc_api::DenyUnsafe;
@@ -14,9 +15,9 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub deny_unsafe: DenyUnsafe,
 
 	#[cfg(not(feature = "testnet"))]
-	pub mainnet: crate::service::mainnet::MainNetParams<A>,
+	pub mainnet: crate::service::mainnet::MainNetParams<A, Block>,
 	#[cfg(feature = "testnet")]
-	pub testnet: crate::service::testnet::TestNetParams<A>,
+	pub testnet: crate::service::testnet::TestNetParams<A, Block>,
 	/// Manual seal command sink
 	#[cfg(feature = "manual-seal")]
 	pub command_sink:
