@@ -23,6 +23,8 @@ mod prelude;
 mod version;
 pub use version::VERSION;
 
+mod zk_precompile_gas_estimation;
+
 use core::cmp::Ordering;
 
 #[cfg(feature = "std")]
@@ -432,6 +434,8 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+impl zk_precompile_gas_estimation::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -484,6 +488,7 @@ construct_runtime!(
 		// GGX pallets
 		CurrencyManager: currency,
 		SessionPayout: session_payout,
+		ZKPrecompileGasEstimation: zk_precompile_gas_estimation,
 
 		// Wasm contracts
 		Contracts: pallet_contracts,
@@ -564,7 +569,13 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
-	define_benchmarks!([pallet_evm, EVM]);
+	define_benchmarks!(
+		[pallet_evm, EVM]
+		[
+			zk_precompile_gas_estimation,
+			ZKPrecompileGasEstimation
+		]
+	);
 }
 
 use fp_rpc::TransactionStatus;
