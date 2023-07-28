@@ -41,7 +41,10 @@ It takes around 20 mins to complete with this suggested requirements, exponentia
 
 From the repository's root directory execute following commands in order:
 
-Brooklyn:
+### Brooklyn
+
+#### Mainnet
+
 ```bash
 mkdir data-brooklyn
 
@@ -61,7 +64,32 @@ docker run \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
-Sydney:
+
+#### Testnet
+
+```bash
+mkdir data-brooklyn-testnet
+
+docker build -f Dockerfile.brooklyn-testnet -t golden-gate-node:brooklyn-testnet .
+
+docker run \
+    -it \
+    --rm \
+    --name ggx-local-node-testnet \
+    -u $(id -g):$(id -u) \
+    -p 30333:30333 \
+    -v $(pwd)/custom-spec-files:/tmp \
+    -v $(pwd)/data-brooklyn-testnet:/data-brooklyn \
+    golden-gate-node:brooklyn-testnet \
+    --base-path=/data-brooklyn \
+    --chain /tmp/brooklyn.json \
+    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
+```
+
+### Sydney
+
+#### Mainnet
+
 ```bash
 mkdir data-sydney
 
@@ -79,6 +107,27 @@ docker run \
     --base-path=/data-sydney \
     --chain /tmp/sydney.json \
     --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
+    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+```
+
+#### Testnet
+
+```bash
+mkdir data-sydney-testnet
+
+docker build -f Dockerfile.sydney-testnet -t golden-gate-node:sydney-testnet .
+
+docker run \
+    -it \
+    --rm \
+    --name ggx-local-node-testnet \
+    -u $(id -g):$(id -u) \
+    -p 30333:30333 \
+    -v $(pwd)/custom-spec-files:/tmp \
+    -v $(pwd)/data-sydney-testnet:/data-sydney \
+    golden-gate-node:sydney-testnet \
+    --base-path=/data-sydney \
+    --chain /tmp/sydney.json \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
