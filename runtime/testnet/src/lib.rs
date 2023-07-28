@@ -24,6 +24,7 @@ use frame_support::{
 	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
 
+use frame_support::PalletId;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_api::impl_runtime_apis;
@@ -479,6 +480,18 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+parameter_types! {
+	pub const StoragePricePerByte: u128 = 100;
+	pub const Eth2ClientPalletId: PalletId = PalletId(*b"py/eth2c");
+}
+
+impl pallet_eth2_light_client::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type StoragePricePerByte = StoragePricePerByte;
+	type PalletId = Eth2ClientPalletId;
+	type Currency = Balances;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -531,6 +544,8 @@ construct_runtime!(
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
 
+		//webb-tools
+		Eth2Client: pallet_eth2_light_client,
 	}
 );
 
