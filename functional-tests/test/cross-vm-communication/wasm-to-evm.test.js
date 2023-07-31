@@ -63,6 +63,7 @@ describe('WASM to EVM communication', async function () {
         console.log('flipperValueAfter: ', flipperValueAfter);
 
         //assertions:
+        //Make valid assertion after https://github.com/ggxchain/planning/issues/120 is fixed
         expect(true).to.be.true;
     });
 
