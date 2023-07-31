@@ -1,4 +1,4 @@
-// #![cfg_attr(not(feature = "std"), no_std)]
+use super::*;
 
 pub use pallet::*;
 #[frame_support::pallet]

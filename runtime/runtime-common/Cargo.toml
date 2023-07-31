@@ -8,7 +8,7 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-scale-codec = { package = "parity-scale-codec", workspace = true }
+scale-codec = { package = "parity-scale-codec", workspace = true, features = ["max-encoded-len"] }
 scale-info.workspace = true
 serde = { workspace = true, optional = true }
 
@@ -39,16 +39,18 @@ pallet-xvm = { workspace = true, optional = true }
 # eth abi
 log.workspace = true
 
-# Astar
-precompile-utils.workspace = true
-
 [dev-dependencies]
+derive_more.workspace = true
 fp-account.workspace = true
+fp-evm.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
 proptest.workspace = true
 sp-io.workspace = true
 test-strategy.workspace = true
+
+# Astar
+precompile-utils = { workspace = true, features = ["testing"] }
 
 [features]
 default = ["std"]
