@@ -5,6 +5,8 @@ extern crate core;
 #[cfg(feature = "precompiles")]
 pub mod precompiles;
 
+pub mod zk_precompile_gas_estimation;
+
 pub mod chain_spec;
 pub mod validator_manager;
 

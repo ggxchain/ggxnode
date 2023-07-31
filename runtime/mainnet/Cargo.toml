@@ -194,4 +194,5 @@ runtime-benchmarks = [
 	"pallet-referenda/runtime-benchmarks",
 	"pallet-society/runtime-benchmarks",
 	"pallet-timestamp/runtime-benchmarks",
+	"runtime-common/runtime-benchmarks",
 ]

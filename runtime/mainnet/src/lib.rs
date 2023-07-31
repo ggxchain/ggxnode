@@ -23,8 +23,6 @@ mod prelude;
 mod version;
 pub use version::VERSION;
 
-mod zk_precompile_gas_estimation;
-
 use core::cmp::Ordering;
 
 #[cfg(feature = "std")]
@@ -60,6 +58,7 @@ use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
 use pos::{currency, session_payout};
+use runtime_common::zk_precompile_gas_estimation;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{

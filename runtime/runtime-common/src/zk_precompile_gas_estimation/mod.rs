@@ -38,3 +38,6 @@ pub mod pallet {
 mod benchmarking;
 #[cfg(test)]
 mod mock;
+
+#[cfg(test)]
+mod tests;
