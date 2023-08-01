@@ -96,4 +96,5 @@ std = [
 	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
 ]
-runtime-benchmarks = []
+runtime-benchmarks = [
+]

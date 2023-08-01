@@ -1,9 +1,5 @@
 use fp_evm::{IsPrecompileResult, PrecompileHandle};
-use frame_support::{
-	construct_runtime, parameter_types,
-	traits::{ConstU32, ConstU64, Everything},
-	weights::Weight,
-};
+use frame_support::{construct_runtime, parameter_types, traits::Everything, weights::Weight};
 use pallet_evm::{
 	AddressMapping, EnsureAddressNever, EnsureAddressRoot, Precompile, PrecompileResult,
 	PrecompileSet,
@@ -22,7 +18,6 @@ use sp_std::marker::PhantomData;
 /// Constant values used within the runtime.
 pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
-pub const KGGX: Balance = 1000 * GGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
 
 pub type AccountId = TestAccount;

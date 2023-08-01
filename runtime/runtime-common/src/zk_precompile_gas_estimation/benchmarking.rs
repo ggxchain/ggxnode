@@ -1,12 +1,16 @@
-use super::*;
-
-#[allow(unused)]
-use crate::zk_precompile_gas_estimation::Pallet as ZKPrecompileGasEstimation;
+use crate::zk_precompile_gas_estimation::{mock::*, Pallet as ZKPrecompileGasEstimation};
 use frame_benchmarking::{benchmarks, whitelisted_caller};
-// use frame_system::RawOrigin;
+use pallet_evm_precompile_zk_groth16_verify::Action;
+use precompile_utils::{testing::*, EvmDataWriter};
 use sp_core::U256;
+use sp_std::{boxed::Box, vec, vec::Vec};
+
+fn precompiles() -> TestPrecompileSet<Runtime> {
+	PrecompilesValue::get()
+}
+
 benchmarks! {
-  do_some_work {
+	do_some_work {
 		let caller: T::AccountId = whitelisted_caller();
 	}:{
 		let (
@@ -40,11 +44,8 @@ benchmarks! {
 			)
 			.expect_no_logs()
 			.execute_returns(EvmDataWriter::new().write(true).build());
-		}
 	}
 
-  // 使用mock中的new_test_ext
-//   impl_benchmark_test_suite!(ZKPrecompileGasEstimation, crate::mock::new_test_ext(), crate::mock::Test);
 	impl_benchmark_test_suite!(
 		ZKPrecompileGasEstimation,
 		ExtBuilder::default().build(),,
@@ -104,6 +105,7 @@ fn generate_test_case_data() -> Result<
 		"14275677868038957349366208693756706908778821863795564855498136614399516409168",
 		"20950579407520036072561845357324335488555384097745021047033651867265123837403",
 	)?;
+	// replace vec! to Vec::<U256>
 	let vk_ic = decode_ic(vec![
 		[
 			"15329034480187562940265095627808115353397553736992059710948268284574612609224"
