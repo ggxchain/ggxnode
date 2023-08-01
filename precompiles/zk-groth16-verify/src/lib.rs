@@ -9,11 +9,17 @@ use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
 
 use ark::{ark_bn254_fr, ark_bn254_g1, ark_bn254_g2};
-use precompile_utils::EvmDataWriter;
+use precompile_utils::{EvmDataReader, EvmDataWriter};
 
 pub struct ZKGroth16Verify;
 
 mod ark;
+
+#[precompile_utils::generate_function_selector]
+#[derive(Debug, PartialEq)]
+pub enum Action {
+	Verify = "verify(uint256[2],uint256[2][2],uint256[2],uint256[2],uint256[2][2],uint256[2][2],uint256[2][2],uint256[2][],uint256[])",
+}
 
 impl LinearCostPrecompile for ZKGroth16Verify {
 	const BASE: u64 = 60;
@@ -22,11 +28,19 @@ impl LinearCostPrecompile for ZKGroth16Verify {
 	fn execute(input: &[u8], _cost: u64) -> Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
 		log::trace!(target: "precompiles::zk_groth16_verify::execute", "In zk-groth16-verify");
 		const MIN_INPUT_LENGTH: usize = 24 * 32;
+		let selector: Action = EvmDataReader::read_selector(input)?;
+
 		if input.len() < 4 + MIN_INPUT_LENGTH {
 			return Err(PrecompileFailure::from(ExitError::InvalidRange));
 		}
-		let (_selector, input_stripped) = input.split_at(4);
+		match selector {
+			Action::Verify => Self::verify(&input[4..]),
+		}
+	}
+}
 
+impl ZKGroth16Verify {
+	pub fn verify(input_stripped: &[u8]) -> Result<(ExitSucceed, Vec<u8>), PrecompileFailure> {
 		let mut cursor = 0;
 		let mut next = || {
 			let start = cursor;

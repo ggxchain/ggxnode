@@ -1,6 +1,7 @@
 use super::*;
 
 pub use pallet::*;
+use pallet_evm_precompile_zk_groth16_verify::ZKGroth16Verify;
 #[frame_support::pallet]
 pub mod pallet {
 	// use frame_support::{

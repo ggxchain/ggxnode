@@ -51,7 +51,7 @@
     "outputs": [
       {
         "internalType": "bool",
-        "name": "",
+        "name": "valid",
         "type": "bool"
       }
     ],
