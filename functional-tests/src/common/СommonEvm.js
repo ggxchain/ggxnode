@@ -45,8 +45,6 @@ class CommonEvm {
 
             // Parse the compiler output to retrieve the ABI and Bytecode
             const output = solc.compile(JSON.stringify(input));
-            console.log('output')
-            console.log(output)
             const artifact = JSON.parse(output).contracts.main[contractName];
 
             resolve({

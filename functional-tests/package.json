@@ -2,14 +2,13 @@
   "name": "functional-tests",
   "version": "1.0.0",
   "description": "Node functional tests",
-  "main": "index.ts",
   "type": "module",
   "scripts": {
     "test": "mocha test/**/*.test.js"
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/GoldenGateGGX/golden-gate.git"
+    "url": "git+https://github.com/ggxchain/ggxnode.git"
   },
   "keywords": [
     "autotests",
@@ -19,9 +18,9 @@
   "author": "Maksym Nyrka",
   "license": "Apache-2.0",
   "bugs": {
-    "url": "https://github.com/GoldenGateGGX/golden-gate/issues"
+    "url": "https://github.com/ggxchain/ggxnode/issues"
   },
-  "homepage": "https://github.com/GoldenGateGGX/golden-gate#readme",
+  "homepage": "https://github.com/ggxchain/ggxnode#readme",
   "dependencies": {
     "@polkadot/api": "^10.9.1",
     "@polkadot/api-contract": "^10.9.1",
