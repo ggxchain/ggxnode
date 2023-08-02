@@ -40,6 +40,9 @@ describe('WASM to EVM communication', async function () {
         let flipperValueBefore = await evmContractCall(flipper_abi, flipperContractAddress, commonEvm.getWeb3(), evmAccount);
         console.log('flipperValueBefore: ', flipperValueBefore);
 
+        //assertion before method call:
+        expect(flipperValueBefore).to.be.true;
+
         const wrapperContract = await commonWasm.deployContract(wrapperContractFile);
         const wrapperContractAddress = wrapperContract.address.toString();
         const wrapperContractPromise = new ContractPromise(commonWasm.getApi(), wrapperContractFile, wrapperContractAddress);
@@ -49,22 +52,15 @@ describe('WASM to EVM communication', async function () {
         const storageDepositLimit = null;
         const gasLimit = await commonWasm.getGasLimit();
 
-        await wrapperContractPromise.tx
-            .flip({storageDepositLimit, gasLimit}, flipperContractAddress)
-            .signAndSend(commonWasm.getAccount(), result => {
-                if (result.status.isInBlock) {
-                    console.log('in a block');
-                } else if (result.status.isFinalized) {
-                    console.log('finalized');
-                }
-            });
+        const tx = await wrapperContractPromise.tx
+            .flip({storageDepositLimit, gasLimit}, flipperContractAddress);
+        await commonWasm.signAndSend(tx, commonWasm.getAccount());
 
         let flipperValueAfter = await evmContractCall(flipper_abi, flipperContractAddress, commonEvm.getWeb3(), evmAccount);
         console.log('flipperValueAfter: ', flipperValueAfter);
 
-        //assertions:
-        //Make valid assertion after https://github.com/ggxchain/planning/issues/120 is fixed
-        expect(true).to.be.true;
+        //value must be changed after method call:
+        expect(flipperValueAfter).to.be.false;
     });
 
     async function evmContractCall(abi, address, web3, evmAccount) {

@@ -42,8 +42,8 @@ class CommonWasm {
 
                 const tx = code.tx.new({gasLimit, storageDepositLimit}, ...args);
 
-                const contract = await this.signAndSend(tx, this.account);
-                resolve(contract);
+                const result = await this.signAndSend(tx, this.account);
+                resolve(result.contract);
             } catch (e) {
                 reject(e);
             }
@@ -56,7 +56,7 @@ class CommonWasm {
                 tx.signAndSend(account, {nonce: -1}, (result) => {
                     console.log(`Current status is ${result.status}`);
                     if (result.status.isFinalized) {
-                        resolve(result.contract);
+                        resolve(result);
                     }
                 })
             } catch (e) {
