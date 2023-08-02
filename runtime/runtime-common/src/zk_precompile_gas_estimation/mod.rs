@@ -1,4 +1,15 @@
+#![cfg_attr(not(feature = "std"), no_std)]
+// #![cfg_attr(feature = "runtime-benchmarks", deny(unused_crate_dependencies))]
+
+#[cfg(feature = "runtime-benchmarks")]
+pub mod benchmarking;
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 pub use pallet::*;
+
 #[frame_support::pallet]
 pub mod pallet {
 	// use frame_support::{
@@ -31,11 +42,3 @@ pub mod pallet {
 		}
 	}
 }
-
-#[cfg(feature = "runtime-benchmarks")]
-mod benchmarking;
-#[cfg(test)]
-mod mock;
-
-#[cfg(test)]
-mod tests;
