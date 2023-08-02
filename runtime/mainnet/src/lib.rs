@@ -569,10 +569,11 @@ extern crate frame_benchmarking;
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
 	define_benchmarks!(
-		[pallet_evm, EVM] // [
-		                  // 	zk_precompile_gas_estimation,
-		                  // 	ZKPrecompileGasEstimation
-		                  // ]
+		[pallet_evm, EVM]
+		[
+			zk_precompile_gas_estimation,
+			ZKPrecompileGasEstimation
+		]
 	);
 }
 
@@ -939,7 +940,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, pallet_evm, PalletEvmBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
-			// add_benchmark!(params, batches, zk_precompile_gas_estimation, ZKPrecompileGasEstimation);
+			add_benchmark!(params, batches, zk_precompile_gas_estimation, ZKPrecompileGasEstimation);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)

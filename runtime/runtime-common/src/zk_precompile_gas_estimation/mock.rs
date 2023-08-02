@@ -27,8 +27,7 @@ pub type BlockNumber = u64;
 pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 pub type Block = frame_system::mocking::MockBlock<Test>;
 
-pub const PRECOMPILE_ADDRESS: H160 = H160::repeat_byte(0xBB);
-
+pub const PRECOMPILE_ADDRESS: H160 = H160::from_low_u64_be(0x8888);
 // #[derive(
 // 	Eq,
 // 	PartialEq,
@@ -191,20 +190,20 @@ construct_runtime!(
 	}
 );
 
-#[derive(Default)]
-pub(crate) struct ExtBuilder;
+// #[derive(Default)]
+// pub(crate) struct ExtBuilder;
 
-impl ExtBuilder {
-	pub(crate) fn build(self) -> sp_io::TestExternalities {
-		let t = frame_system::GenesisConfig::default()
-			.build_storage::<Test>()
-			.expect("Frame system builds valid default genesis config");
+// impl ExtBuilder {
+// 	pub(crate) fn build(self) -> sp_io::TestExternalities {
+// 		let t = frame_system::GenesisConfig::default()
+// 			.build_storage::<Test>()
+// 			.expect("Frame system builds valid default genesis config");
 
-		let mut ext = sp_io::TestExternalities::new(t);
-		ext.execute_with(|| System::set_block_number(1));
-		ext
-	}
-}
+// 		let mut ext = sp_io::TestExternalities::new(t);
+// 		ext.execute_with(|| System::set_block_number(1));
+// 		ext
+// 	}
+// }
 
 #[derive(Debug, Clone, Copy)]
 pub struct MockPrecompileSet<R>(PhantomData<R>);

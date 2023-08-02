@@ -1,12 +1,7 @@
 use crate::zk_precompile_gas_estimation::mock::*;
 use fp_evm::GenesisAccount;
-use frame_support::{
-	assert_ok,
-	traits::{GenesisBuild, LockIdentifier, LockableCurrency, WithdrawReasons},
-};
+use frame_support::traits::GenesisBuild;
 use pallet_evm::GenesisConfig;
-use pallet_evm_precompile_zk_groth16_verify::Action;
-use precompile_utils::{testing::*, EvmDataWriter};
 use sp_core::{H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
 

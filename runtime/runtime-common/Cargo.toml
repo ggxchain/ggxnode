@@ -40,17 +40,17 @@ pallet-xvm = { workspace = true, optional = true }
 log.workspace = true
 
 [dev-dependencies]
-derive_more.workspace = true
+# derive_more.workspace = true
 fp-account.workspace = true
 fp-evm.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
-proptest.workspace = true
+# proptest.workspace = true
 sp-io.workspace = true
-test-strategy.workspace = true
+# test-strategy.workspace = true
 
 # Astar
-precompile-utils = { workspace = true, features = ["testing"] }
+# precompile-utils = { workspace = true, features = ["testing"] }
 
 [features]
 default = ["std"]
@@ -80,6 +80,7 @@ std = [
 	"sp-core/std",
 	"sp-staking/std",
 	"sp-std/std",
+	"frame-benchmarking/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",
@@ -97,4 +98,7 @@ std = [
 	"pallet-xvm?/std",
 ]
 runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 ]
