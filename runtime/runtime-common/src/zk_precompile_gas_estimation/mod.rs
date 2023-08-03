@@ -1,4 +1,4 @@
-#![cfg_attr(not(feature = "std"), no_std)]
+// #![cfg_attr(not(feature = "std"), no_std)]
 // #![cfg_attr(feature = "runtime-benchmarks", deny(unused_crate_dependencies))]
 
 #[cfg(feature = "runtime-benchmarks")]
@@ -19,10 +19,8 @@ pub mod pallet {
 	#[pallet::config]
 	pub trait Config: frame_system::Config + pallet_evm::Config {}
 
-	// 8. Runtime Errors
 	#[pallet::error]
 	pub enum Error<T> {}
 
-	// Functions that are callable from outside the runtime.
 	impl<T: Config> Pallet<T> {}
 }

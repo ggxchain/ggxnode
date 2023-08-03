@@ -58,6 +58,7 @@ use pallet_transaction_payment::CurrencyAdapter;
 use sp_consensus_beefy as beefy_primitives;
 
 use pallet_session::historical::{self as pallet_session_historical};
+use runtime_common::zk_precompile_gas_estimation;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -473,6 +474,8 @@ impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
 
 impl pallet_randomness_collective_flip::Config for Runtime {}
 
+impl zk_precompile_gas_estimation::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -523,6 +526,8 @@ construct_runtime!(
 		Mmr: pallet_mmr,
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
+		// GGX pallets
+		ZKPrecompileGasEstimation: zk_precompile_gas_estimation,
 
 	}
 );
@@ -601,7 +606,8 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
-	define_benchmarks!([pallet_evm, EVM]);
+	// define_benchmarks!([pallet_evm, EVM]);
+	define_benchmarks!([zk_precompile_gas_estimation, ZKPrecompileGasEstimation]);
 }
 
 use fp_rpc::TransactionStatus;
@@ -1062,6 +1068,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, pallet_evm, PalletEvmBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
+			add_benchmark!(params, batches, zk_precompile_gas_estimation, ZKPrecompileGasEstimation);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)

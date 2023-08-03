@@ -17,6 +17,11 @@ pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 
+#[cfg(not(feature = "testnet"))]
+pub const CHAIN_ID: u64 = 8866u64;
+#[cfg(feature = "testnet")]
+pub const CHAIN_ID: u64 = 888866u64;
+
 pub type AccountId = H160;
 pub type Balance = u64;
 pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
@@ -146,6 +151,7 @@ parameter_types! {
 		MockPrecompileSet(PhantomData);
 	pub const WeightPerGas: Weight = Weight::from_parts(1, 0);
 	pub BlockGasLimit: U256 = U256::from(BLOCK_GAS_LIMIT);
+	pub ChainId: u64 = CHAIN_ID;
 }
 
 impl pallet_evm::Config for Test {
@@ -163,7 +169,7 @@ impl pallet_evm::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type PrecompilesType = MockPrecompileSet<Self>;
 	type PrecompilesValue = MockPrecompiles;
-	type ChainId = ();
+	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type OnChargeTransaction = ();

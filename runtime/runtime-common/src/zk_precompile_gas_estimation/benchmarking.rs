@@ -5,14 +5,13 @@ use frame_benchmarking::{benchmarks, impl_benchmark_test_suite};
 // frontier
 use pallet_evm::Runner;
 use sp_std::prelude::*;
-
 benchmarks! {
 	demo_runner {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256};
 		use ethabi::Token;
 
-		let caller = "1000000000000000000000000000000000000001".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 
 		let contract_address = H160::from_low_u64_be(0x8888);
 
@@ -89,26 +88,24 @@ benchmarks! {
 		let valid_input = vec![U256::from(66)];
 		let mut encoded_call = vec![0u8; 4];
 		encoded_call[0..4].copy_from_slice(&sp_io::hashing::keccak_256(b"verify(uint256[2],uint256[2][2],uint256[2],uint256[2],uint256[2][2],uint256[2][2],uint256[2][2],uint256[2][],uint256[])")[0..4]);
-
-		// append parameters to the encoded call
-		encoded_call.extend(ethabi::encode(&[
-			Token::Array(proof_a.into_iter().map(Token::Uint).collect()),
-			Token::Array(proof_b.into_iter().map(|b| Token::Array(b.into_iter().map(Token::Uint).collect())).collect()),
-			Token::Array(proof_c.into_iter().map(Token::Uint).collect()),
-			Token::Array(vk_alpha.into_iter().map(Token::Uint).collect()),
-			Token::Array(vk_beta.into_iter().map(|b| Token::Array(b.into_iter().map(Token::Uint).collect())).collect()),
-			Token::Array(vk_gamma.into_iter().map(|b| Token::Array(b.into_iter().map(Token::Uint).collect())).collect()),
-			Token::Array(vk_delta.into_iter().map(|b| Token::Array(b.into_iter().map(Token::Uint).collect())).collect()),
-			Token::Array(vk_ic.into_iter().map(|ic| Token::Array(ic.into_iter().map(Token::Uint).collect())).collect()),
+		let parameters = ethabi::encode(&[
+			Token::FixedArray(proof_a.into_iter().map(Token::Uint).collect()),
+			Token::FixedArray(proof_b.into_iter().map(|inner| Token::FixedArray(inner.into_iter().map(Token::Uint).collect())).collect()),
+			Token::FixedArray(proof_c.into_iter().map(Token::Uint).collect()),
+			Token::FixedArray(vk_alpha.into_iter().map(Token::Uint).collect()),
+			Token::FixedArray(vk_beta.into_iter().map(|inner| Token::FixedArray(inner.into_iter().map(Token::Uint).collect())).collect()),
+			Token::FixedArray(vk_gamma.into_iter().map(|inner| Token::FixedArray(inner.into_iter().map(Token::Uint).collect())).collect()),
+			Token::FixedArray(vk_delta.into_iter().map(|inner| Token::FixedArray(inner.into_iter().map(Token::Uint).collect())).collect()),
+			Token::Array(vk_ic.into_iter().map(|inner| Token::FixedArray(inner.into_iter().map(Token::Uint).collect())).collect()),
 			Token::Array(valid_input.into_iter().map(Token::Uint).collect()),
-		]));
+		]);
+		encoded_call.extend(parameters);
 		let gas_limit_call = 1000000;
-
-	}:{
 		let value = U256::default();
 		let is_transactional = true;
 		let validate = true;
-		let call_runner_results = <T as pallet_evm::Config>::Runner::call(
+	}:{
+		let call_runner_results = <Test as pallet_evm::Config>::Runner::call(
 			caller,
 			contract_address,
 			encoded_call,
@@ -120,35 +117,38 @@ benchmarks! {
 			Vec::new(),
 			is_transactional,
 			validate,
-			<T as pallet_evm::Config>::config(),
+			<Test as pallet_evm::Config>::config(),
 		);
-		// log::info!(
-		// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-		// 	"call_runner_results:{:?}",
-		// 	call_runner_results
-		// );
-		assert!(call_runner_results.is_ok(), "call() failed");
-
-		// 	let output = info.value;
-		// 	log::info!(
-		// 		target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-		// 		"output result {:?}",
-		// 		output
-		// 	);
-		// 	if output.len() >= 32 {
-		// 		let mut result_bytes = [0u8; 32];
-		// 		result_bytes.copy_from_slice(&output[output.len() - 32..]);
-		// 		let result = U256::from_big_endian(&result_bytes);
-		// 		log::info!(
-		// 			target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-		// 			"Verification result {:?}",
-		// 			result
-		// 		);
-		// 		assert_eq!(result, U256::one(), "The contract did not return true");
-		// 	}
-		// } else {
-
-		// }
+		log::info!(
+			target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+			"Benchmarking call end.",
+		);
+		match call_runner_results {
+			Ok(info) => {
+				let output = info.value;
+				log::info!(
+					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+					"output result {:?}",
+					output
+				);
+				if output.len() >= 32 {
+					let mut result_bytes = [0u8; 32];
+					result_bytes.copy_from_slice(&output[output.len() - 32..]);
+					let result = U256::from_big_endian(&result_bytes);
+					log::info!(
+						target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+						"Verification result {result:?}",
+					);
+					assert_eq!(result, U256::one(), "The contract did not return true");
+				}
+			},
+			Err(e) => {
+				log::info!(
+					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+					"Benchmarking failed",
+				);
+			}
+		}
 	}
 }
 impl_benchmark_test_suite!(

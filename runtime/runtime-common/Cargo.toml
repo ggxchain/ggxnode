@@ -40,10 +40,9 @@ pallet-xvm = { workspace = true, optional = true }
 log.workspace = true
 # zk groth16 precompile gas estimation
 ethabi.workspace = true
-# rlp.workspace = true
+# ethers.workspace = true
 
 [dev-dependencies]
-# derive_more.workspace = true
 fp-account.workspace = true
 fp-evm.workspace = true
 pallet-balances.workspace = true
