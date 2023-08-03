@@ -51,4 +51,16 @@ describe('Staking', async function () {
 
         expect(difference).to.be.equal(amountToUnbond);
     });
+
+    it('should able to perform nominate', async function ()  {
+        const senderAddress = commonWasm.getAccount().address;
+
+        const transaction = commonWasm.getApi().tx.staking.nominate([senderAddress]);
+        await commonWasm.signAndSend(transaction, commonWasm.getAccount());
+
+        const nominators = await commonWasm.getApi().query.staking.nominators(senderAddress);
+        console.log('Nominators:', nominators.toJSON());
+
+        expect(nominators.toJSON().targets[0]).to.be.equal(senderAddress);
+    });
 });
