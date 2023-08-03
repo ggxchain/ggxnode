@@ -360,12 +360,10 @@ pub mod pair_signer {
 	{
 		/// Creates a new [`Signer`] from an [`sp_core::Pair`].
 		pub fn new(signer: Pair) -> Self {
-			let account_id =
-				<SpMultiSignature as Verify>::Signer::from(signer.public()).into_account();
-			Self {
-				account_id: account_id.into(),
-				signer,
-			}
+			let account_id = <SpMultiSignature as Verify>::Signer::from(signer.public())
+				.into_account()
+				.into();
+			Self { account_id, signer }
 		}
 
 		/// Returns the [`sp_core::Pair`] implementation used to construct this.
