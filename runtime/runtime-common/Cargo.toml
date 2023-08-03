@@ -17,6 +17,7 @@ frame-support.workspace = true
 frame-system.workspace = true
 pallet-session = { workspace = true, features = ["historical"] }
 sp-core.workspace = true
+sp-io.workspace = true
 sp-runtime.workspace = true
 sp-staking.workspace = true
 sp-std.workspace = true
@@ -36,8 +37,10 @@ pallet-evm-precompile-xvm = { workspace = true, optional = true }
 pallet-evm-precompile-zk-groth16-verify = { workspace = true, optional = true }
 pallet-xvm = { workspace = true, optional = true }
 
-# eth abi
 log.workspace = true
+# zk groth16 precompile gas estimation
+ethabi.workspace = true
+# rlp.workspace = true
 
 [dev-dependencies]
 # derive_more.workspace = true
@@ -45,9 +48,8 @@ fp-account.workspace = true
 fp-evm.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
-# proptest.workspace = true
-sp-io.workspace = true
-# test-strategy.workspace = true
+proptest.workspace = true
+test-strategy.workspace = true
 
 # Astar
 # precompile-utils = { workspace = true, features = ["testing"] }
@@ -81,6 +83,7 @@ std = [
 	"sp-staking/std",
 	"sp-std/std",
 	"frame-benchmarking/std",
+	# "rlp/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",

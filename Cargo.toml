@@ -211,7 +211,10 @@ pallet-ics20-transfer = { default-features = false, git = "https://github.com/ib
 prost = { version = "0.11", default-features = false }
 
 # zk precompile
+ethabi = { version = "18.0.0", default-features = false }
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
+rlp = { version = "0.5.2", default-features = false }
+
 # zksnark
 ark-bn254 = { version = "0.4.0" }
 ark-crypto-primitives = { version = "0.4.0", default-features = false }
