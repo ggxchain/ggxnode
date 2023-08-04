@@ -11,7 +11,7 @@ benchmarks! {
 		use sp_core::{H160, U256};
 		use ethabi::Token;
 
-		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
+		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
 
 		let contract_address = H160::from_low_u64_be(0x8888);
 
@@ -105,7 +105,7 @@ benchmarks! {
 		let is_transactional = true;
 		let validate = true;
 	}:{
-		let call_runner_results = <Test as pallet_evm::Config>::Runner::call(
+		let call_runner_results = <T as pallet_evm::Config>::Runner::call(
 			caller,
 			contract_address,
 			encoded_call,
@@ -117,7 +117,7 @@ benchmarks! {
 			Vec::new(),
 			is_transactional,
 			validate,
-			<Test as pallet_evm::Config>::config(),
+			<T as pallet_evm::Config>::config(),
 		);
 		log::info!(
 			target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",

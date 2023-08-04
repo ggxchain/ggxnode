@@ -179,6 +179,8 @@ impl pallet_evm::Config for Test {
 	type WeightInfo = ();
 }
 
+impl crate::zk_precompile_gas_estimation::Config for Test {}
+
 // Configure a mock runtime to test the pallet.
 construct_runtime!(
 	pub enum Test where

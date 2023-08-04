@@ -57,6 +57,12 @@ pub fn testnet_genesis(
 ) -> GenesisConfig {
 	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
 
+	// This is supposed the be the simplest bytecode to revert without returning any data.
+	// We will pre-deploy it under all of our precompiles to ensure they can be called from
+	// within contracts.
+	// (PUSH1 0x00 PUSH1 0x00 REVERT)
+	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
+
 	GenesisConfig {
 		// System
 		system: SystemConfig {
@@ -97,7 +103,21 @@ pub fn testnet_genesis(
 		evm_chain_id: EVMChainIdConfig { chain_id },
 		evm: EVMConfig {
 			accounts: {
-				let mut map = BTreeMap::new();
+				let mut map: BTreeMap<sp_core::H160, GenesisAccount> =
+					Precompiles::used_addresses()
+						.map(|addr| {
+							(
+								addr,
+								GenesisAccount {
+									nonce: Default::default(),
+									balance: Default::default(),
+									storage: Default::default(),
+									code: revert_bytecode.clone(),
+								},
+							)
+						})
+						.into_iter()
+						.collect();
 				map.insert(
 					// H160 address of Alice dev account
 					// Derived from SS58 (42 prefix) address

@@ -19,6 +19,8 @@ mod prelude;
 mod version;
 pub use version::VERSION;
 
+#[cfg(feature = "std")]
+pub use fp_evm::GenesisAccount;
 use frame_support::{
 	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
@@ -82,8 +84,10 @@ pub use pallet_timestamp::Call as TimestampCall;
 
 pub use runtime_common::{
 	chain_spec::{self, RuntimeConfig},
+	precompiles::GoldenGatePrecompiles,
 	validator_manager,
 };
+pub type Precompiles = GoldenGatePrecompiles<Runtime>;
 
 /// Type of block number.
 pub type BlockNumber = u32;
