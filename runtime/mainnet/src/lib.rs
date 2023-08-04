@@ -357,11 +357,6 @@ parameter_types! {
 	// For weight estimation, we assume that the most locks on an individual account will be 50.
 	// This number may need to be adjusted in the future if this assumption no longer holds true.
 	pub const MaxLocks: u32 = 50;
-
-	// The minimum balance that an account must have in order to be kept alive on-chain.
-	// This value is used by the Balances pallet to determine if an account should be
-	// kept alive or if it should be reaped to free up storage space.
-	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -370,7 +365,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	/// The ubiquitous event type.
 	type RuntimeEvent = RuntimeEvent;
-	type ExistentialDeposit = ExistentialDeposit;
+	type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 	type MaxLocks = MaxLocks;

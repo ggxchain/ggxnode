@@ -1,6 +1,3 @@
-// #![cfg_attr(not(feature = "std"), no_std)]
-// #![cfg_attr(feature = "runtime-benchmarks", deny(unused_crate_dependencies))]
-
 #[cfg(feature = "runtime-benchmarks")]
 pub mod benchmarking;
 #[cfg(test)]

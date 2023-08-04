@@ -1,10 +1,5 @@
 use crate::zk_precompile_gas_estimation::mock::*;
 use ethabi::Token;
-// use ethers::{
-// 	core::types::U256,
-// 	prelude::*,
-// 	providers::{Http, Provider},
-// };
 use fp_evm::GenesisAccount;
 use frame_support::traits::GenesisBuild;
 use pallet_evm::{GenesisConfig, Runner};
@@ -14,9 +9,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default()
 		.build_storage::<Test>()
 		.unwrap();
-	// let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
-	// 	.parse::<LocalWallet>()?
-	// 	.with_chain_id(CHAIN_ID);
 	let mut accounts = BTreeMap::new();
 	accounts.insert(
 		H160::from_str("1000000000000000000000000000000000000001").unwrap(),

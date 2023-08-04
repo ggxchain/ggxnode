@@ -40,7 +40,6 @@ pallet-xvm = { workspace = true, optional = true }
 log.workspace = true
 # zk groth16 precompile gas estimation
 ethabi.workspace = true
-# ethers.workspace = true
 
 [dev-dependencies]
 fp-account.workspace = true
@@ -49,9 +48,6 @@ pallet-balances.workspace = true
 pallet-timestamp.workspace = true
 proptest.workspace = true
 test-strategy.workspace = true
-
-# Astar
-# precompile-utils = { workspace = true, features = ["testing"] }
 
 [features]
 default = ["std"]

@@ -27,66 +27,6 @@ pub type Balance = u64;
 pub type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 pub type Block = frame_system::mocking::MockBlock<Test>;
 
-// pub const PRECOMPILE_ADDRESS: H160 = H160::from_low_u64_be(0x8888);
-// #[derive(
-// 	Eq,
-// 	PartialEq,
-// 	Ord,
-// 	PartialOrd,
-// 	Clone,
-// 	Encode,
-// 	Decode,
-// 	Debug,
-// 	MaxEncodedLen,
-// 	Serialize,
-// 	Deserialize,
-// 	derive_more::Display,
-// 	TypeInfo,
-// )]
-// pub enum TestAccount {
-// 	Alice,
-// 	Bob,
-// 	Charlie,
-// 	Bogus,
-// 	Precompile,
-// }
-
-// impl Default for TestAccount {
-// 	fn default() -> Self {
-// 		Self::Alice
-// 	}
-// }
-
-// impl AddressMapping<TestAccount> for TestAccount {
-// 	fn into_account_id(h160_account: H160) -> TestAccount {
-// 		match h160_account {
-// 			a if a == H160::repeat_byte(0xAA) => Self::Alice,
-// 			a if a == H160::repeat_byte(0xBB) => Self::Bob,
-// 			a if a == H160::repeat_byte(0xCC) => Self::Charlie,
-// 			a if a == PRECOMPILE_ADDRESS => Self::Precompile,
-// 			_ => Self::Bogus,
-// 		}
-// 	}
-// }
-
-// impl From<H160> for TestAccount {
-// 	fn from(x: H160) -> TestAccount {
-// 		TestAccount::into_account_id(x)
-// 	}
-// }
-
-// impl From<TestAccount> for H160 {
-// 	fn from(value: TestAccount) -> H160 {
-// 		match value {
-// 			TestAccount::Alice => H160::repeat_byte(0xAA),
-// 			TestAccount::Bob => H160::repeat_byte(0xBB),
-// 			TestAccount::Charlie => H160::repeat_byte(0xCC),
-// 			TestAccount::Precompile => PRECOMPILE_ADDRESS,
-// 			TestAccount::Bogus => Default::default(),
-// 		}
-// 	}
-// }
-
 parameter_types! {
 	pub const BlockHashCount: u64 = 250;
 	pub BlockWeights: frame_system::limits::BlockWeights =
@@ -194,21 +134,6 @@ construct_runtime!(
 		Evm: pallet_evm,
 	}
 );
-
-// #[derive(Default)]
-// pub(crate) struct ExtBuilder;
-
-// impl ExtBuilder {
-// 	pub(crate) fn build(self) -> sp_io::TestExternalities {
-// 		let t = frame_system::GenesisConfig::default()
-// 			.build_storage::<Test>()
-// 			.expect("Frame system builds valid default genesis config");
-
-// 		let mut ext = sp_io::TestExternalities::new(t);
-// 		ext.execute_with(|| System::set_block_number(1));
-// 		ext
-// 	}
-// }
 
 #[derive(Debug, Clone, Copy)]
 pub struct MockPrecompileSet<R>(PhantomData<R>);
