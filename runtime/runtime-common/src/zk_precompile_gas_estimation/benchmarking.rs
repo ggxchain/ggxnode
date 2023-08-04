@@ -119,26 +119,26 @@ benchmarks! {
 			validate,
 			<T as pallet_evm::Config>::config(),
 		);
-		log::info!(
-			target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-			"Benchmarking call end.",
-		);
+		// log::info!(
+		// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+		// 	"Benchmarking call end.",
+		// );
 		match call_runner_results {
 			Ok(info) => {
 				let output = info.value;
-				log::info!(
-					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					"output result {:?}",
-					output
-				);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"output result {:?}",
+				// 	output
+				// );
 				if output.len() >= 32 {
 					let mut result_bytes = [0u8; 32];
 					result_bytes.copy_from_slice(&output[output.len() - 32..]);
 					let result = U256::from_big_endian(&result_bytes);
-					log::info!(
-						target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-						"Verification result {result:?}",
-					);
+					// log::info!(
+					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+					// 	"Verification result {result:?}",
+					// );
 					assert_eq!(result, U256::one(), "The contract did not return true");
 				}
 			},
