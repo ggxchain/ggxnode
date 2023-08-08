@@ -9,6 +9,7 @@ use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
 
 use ark::{ark_bn254_fr, ark_bn254_g1, ark_bn254_g2};
+use ark_std::format;
 use precompile_utils::{EvmDataReader, EvmDataWriter};
 
 pub struct ZKGroth16Verify;
@@ -95,7 +96,11 @@ impl ZKGroth16Verify {
 			.chunks_exact(32)
 			.map(ark_bn254_fr)
 			.collect();
-
+		log::debug!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"Pub_inputs: {:?}",
+			pub_inputs
+		);
 		let vk: ark_groth16::VerifyingKey<ark_ec::bn::Bn<ark_bn254::Config>> =
 			ark_groth16::VerifyingKey {
 				alpha_g1: vk_alpha,
@@ -110,8 +115,13 @@ impl ZKGroth16Verify {
 			vk
 		);
 
-		let verified = Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof)
-			.map_err(|_e| PrecompileFailure::from(ExitError::InvalidRange))?;
+		let verified =
+			Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof).map_err(|e| {
+				let error_message = format!("{}", e); // Convert the error to a string
+				PrecompileFailure::Error {
+					exit_status: ExitError::Other(error_message.into()),
+				}
+			})?;
 
 		log::debug!(
 			target: "precompiles::zk_groth16_verify::execute",
