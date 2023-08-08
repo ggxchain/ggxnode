@@ -79,8 +79,13 @@ impl ZKGroth16Verify {
 		// Read the offset of vk_ic and skip the length field
 		let vk_ic_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
-		// Read the offset of input and skip the length field
-		let input_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
+		// Read the offset of input
+		let mut input_offset = U256::from_big_endian(next()).low_u32() as usize;
+		// Read the length of the input array
+		let input_len = U256::from_big_endian(&input_stripped[input_offset..input_offset + 32])
+			.low_u32() as usize;
+		// Skip the length field
+		input_offset += 32;
 
 		// Read the vk_ic array
 		let vk_ic = input_stripped[vk_ic_offset..input_offset]
@@ -92,11 +97,58 @@ impl ZKGroth16Verify {
 			.collect::<Result<Vec<_>, _>>()?;
 
 		// Read the input array
-		let pub_inputs: Vec<_> = input_stripped[input_offset..]
+		let pub_inputs: Vec<ark_bn254::Fr> = input_stripped[input_offset..]
 			.chunks_exact(32)
 			.map(ark_bn254_fr)
 			.collect();
-		log::debug!(
+		log::info!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"Pub_inputs: {:?}",
+			pub_inputs
+		);
+
+		let mut bigints: Vec<num_bigint::BigUint> = input_stripped[input_offset..]
+			.chunks(32)
+			.map(|chunk| {
+				let chunk = &chunk[24..32];
+				num_bigint::BigUint::from_bytes_be(chunk)
+			})
+			.collect();
+		bigints.resize(4, num_bigint::BigUint::from(0u64));
+let bigints_bytes: Vec<u8> = bigints
+    .iter()
+    .flat_map(|b| {
+        let mut bytes = vec![0u8; 8];
+        let b_bytes = b.to_bytes_be();
+        bytes[(8 - b_bytes.len())..].copy_from_slice(&b_bytes);
+        bytes
+    })
+    .collect();
+		log::info!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"bigints: {:?}",
+			bigints_bytes
+		);
+		log::info!(
+			target: "precompiles::zk_groth16_verify::execute",
+			"bigints_len: {:?}",
+			bigints
+			.iter()
+			.flat_map(|b| b.to_bytes_be())
+			.collect::<Vec<u8>>()
+		);
+
+		let pub_inputs: Vec<ark_bn254::Fr> = bigints
+			.iter()
+			.flat_map(|b| b.to_bytes_be())
+			.collect::<Vec<u8>>()
+			.chunks_exact(32)
+			.map(ark_bn254_fr)
+			.collect();
+		// let pub_inputs: Vec<ark_ff::Fp<ark_ff::MontBackend<ark_bn254::FrConfig, 4>, 4>> =
+		// 	vec![ark_bn254_fr(&bigints_bytes)];
+
+		log::info!(
 			target: "precompiles::zk_groth16_verify::execute",
 			"Pub_inputs: {:?}",
 			pub_inputs
@@ -117,7 +169,7 @@ impl ZKGroth16Verify {
 
 		let verified =
 			Groth16::<ark_bn254::Bn254>::verify(&vk, &pub_inputs, &proof).map_err(|e| {
-				let error_message = format!("{}", e); // Convert the error to a string
+				let error_message = format!("{e}"); // Convert the error to a string
 				PrecompileFailure::Error {
 					exit_status: ExitError::Other(error_message.into()),
 				}

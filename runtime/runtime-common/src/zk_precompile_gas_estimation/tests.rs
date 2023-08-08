@@ -144,6 +144,12 @@ fn test_zk_precompile_gas_estimation() {
 		let valid_input = vec![
 			U256::from_dec_str("1250025000").unwrap()
 		];
+		// 		let valid_input = vec![
+		// 	U256::from_dec_str("14965631224775206224").unwrap(),
+		// 	U256::from_dec_str("3021577815302938909").unwrap(),
+		// 	U256::from_dec_str("14359293880404272991").unwrap(),
+		// 	U256::from_dec_str("1555005537055779113").unwrap(),
+		// ];
 		let mut encoded_call = vec![0u8; 4];
 		encoded_call[0..4].copy_from_slice(&sp_io::hashing::keccak_256(b"verify(uint256[2],uint256[2][2],uint256[2],uint256[2],uint256[2][2],uint256[2][2],uint256[2][2],uint256[2][],uint256[])")[0..4]);
 		println!("encoded_call: {:?}", encoded_call);
