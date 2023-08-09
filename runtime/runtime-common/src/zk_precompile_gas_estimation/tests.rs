@@ -144,7 +144,7 @@ fn test_zk_precompile_gas_estimation() {
 		let valid_input = vec![
 			U256::from_dec_str("1250025000").unwrap()
 		];
-		// 		let valid_input = vec![
+		// let valid_input = vec![
 		// 	U256::from_dec_str("14965631224775206224").unwrap(),
 		// 	U256::from_dec_str("3021577815302938909").unwrap(),
 		// 	U256::from_dec_str("14359293880404272991").unwrap(),

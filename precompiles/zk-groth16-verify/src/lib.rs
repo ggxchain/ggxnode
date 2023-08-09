@@ -3,7 +3,7 @@
 use pallet_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure};
 use sp_core::U256;
 
-use sp_std::vec::Vec;
+use sp_std::{vec, vec::Vec};
 
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
@@ -115,38 +115,31 @@ impl ZKGroth16Verify {
 			})
 			.collect();
 		bigints.resize(4, num_bigint::BigUint::from(0u64));
-let bigints_bytes: Vec<u8> = bigints
-    .iter()
-    .flat_map(|b| {
-        let mut bytes = vec![0u8; 8];
-        let b_bytes = b.to_bytes_be();
-        bytes[(8 - b_bytes.len())..].copy_from_slice(&b_bytes);
-        bytes
-    })
-    .collect();
+
 		log::info!(
 			target: "precompiles::zk_groth16_verify::execute",
 			"bigints: {:?}",
-			bigints_bytes
-		);
-		log::info!(
-			target: "precompiles::zk_groth16_verify::execute",
-			"bigints_len: {:?}",
 			bigints
-			.iter()
-			.flat_map(|b| b.to_bytes_be())
-			.collect::<Vec<u8>>()
 		);
-
 		let pub_inputs: Vec<ark_bn254::Fr> = bigints
 			.iter()
-			.flat_map(|b| b.to_bytes_be())
+			.flat_map(|b| {
+				let mut bytes = vec![0u8; 8];
+				let b_bytes = b.to_bytes_be();
+				bytes[8 - b_bytes.len()..].copy_from_slice(&b_bytes);
+				bytes
+			})
 			.collect::<Vec<u8>>()
 			.chunks_exact(32)
 			.map(ark_bn254_fr)
 			.collect();
-		// let pub_inputs: Vec<ark_ff::Fp<ark_ff::MontBackend<ark_bn254::FrConfig, 4>, 4>> =
-		// 	vec![ark_bn254_fr(&bigints_bytes)];
+
+		// log::info!(
+		// 	target: "precompiles::zk_groth16_verify::execute",
+		// 	"bigints_bytes: {:?} len: {:?}",
+		// 	bigints_bytes,
+		// 	bigints_bytes.len(),
+		// );
 
 		log::info!(
 			target: "precompiles::zk_groth16_verify::execute",
