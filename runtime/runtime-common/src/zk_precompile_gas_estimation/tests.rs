@@ -5,6 +5,17 @@ use frame_support::traits::GenesisBuild;
 use pallet_evm::{GenesisConfig, Runner};
 use sp_core::{H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
+
+fn u64s_to_u256(values: Vec<u64>) -> U256 {
+	let mut result = U256::zero();
+	for (i, value) in values.into_iter().enumerate().take(4) {
+		let shift = i * 64;
+		result |= U256::from(value) << shift;
+	}
+	println!("{:?}", result);
+	result
+}
+
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default()
 		.build_storage::<Test>()
@@ -141,15 +152,14 @@ fn test_zk_precompile_gas_estimation() {
 			]
 		];
 
-		let valid_input = vec![
-			U256::from_dec_str("1250025000").unwrap()
-		];
-		// let valid_input = vec![
-		// 	U256::from_dec_str("14965631224775206224").unwrap(),
-		// 	U256::from_dec_str("3021577815302938909").unwrap(),
-		// 	U256::from_dec_str("14359293880404272991").unwrap(),
-		// 	U256::from_dec_str("1555005537055779113").unwrap(),
-		// ];
+		// let valid_input = vec![u64s_to_u256(vec![1250025000])];
+		let valid_input = vec![u64s_to_u256(vec![
+			14965631224775206224,
+			3021577815302938909,
+			14359293880404272991,
+			1555005537055779113,
+		])];
+
 		let mut encoded_call = vec![0u8; 4];
 		encoded_call[0..4].copy_from_slice(&sp_io::hashing::keccak_256(b"verify(uint256[2],uint256[2][2],uint256[2],uint256[2],uint256[2][2],uint256[2][2],uint256[2][2],uint256[2][],uint256[])")[0..4]);
 		println!("encoded_call: {:?}", encoded_call);

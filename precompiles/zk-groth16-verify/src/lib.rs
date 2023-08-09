@@ -3,7 +3,7 @@
 use pallet_evm::{ExitError, ExitSucceed, LinearCostPrecompile, PrecompileFailure};
 use sp_core::U256;
 
-use sp_std::{vec, vec::Vec};
+use sp_std::vec::Vec;
 
 use ark_crypto_primitives::snark::SNARK;
 use ark_groth16::Groth16;
@@ -80,12 +80,7 @@ impl ZKGroth16Verify {
 		let vk_ic_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
 		// Read the offset of input
-		let mut input_offset = U256::from_big_endian(next()).low_u32() as usize;
-		// Read the length of the input array
-		let input_len = U256::from_big_endian(&input_stripped[input_offset..input_offset + 32])
-			.low_u32() as usize;
-		// Skip the length field
-		input_offset += 32;
+		let input_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
 		// Read the vk_ic array
 		let vk_ic = input_stripped[vk_ic_offset..input_offset]
@@ -101,47 +96,7 @@ impl ZKGroth16Verify {
 			.chunks_exact(32)
 			.map(ark_bn254_fr)
 			.collect();
-		log::info!(
-			target: "precompiles::zk_groth16_verify::execute",
-			"Pub_inputs: {:?}",
-			pub_inputs
-		);
-
-		let mut bigints: Vec<num_bigint::BigUint> = input_stripped[input_offset..]
-			.chunks(32)
-			.map(|chunk| {
-				let chunk = &chunk[24..32];
-				num_bigint::BigUint::from_bytes_be(chunk)
-			})
-			.collect();
-		bigints.resize(4, num_bigint::BigUint::from(0u64));
-
-		log::info!(
-			target: "precompiles::zk_groth16_verify::execute",
-			"bigints: {:?}",
-			bigints
-		);
-		let pub_inputs: Vec<ark_bn254::Fr> = bigints
-			.iter()
-			.flat_map(|b| {
-				let mut bytes = vec![0u8; 8];
-				let b_bytes = b.to_bytes_be();
-				bytes[8 - b_bytes.len()..].copy_from_slice(&b_bytes);
-				bytes
-			})
-			.collect::<Vec<u8>>()
-			.chunks_exact(32)
-			.map(ark_bn254_fr)
-			.collect();
-
-		// log::info!(
-		// 	target: "precompiles::zk_groth16_verify::execute",
-		// 	"bigints_bytes: {:?} len: {:?}",
-		// 	bigints_bytes,
-		// 	bigints_bytes.len(),
-		// );
-
-		log::info!(
+		log::debug!(
 			target: "precompiles::zk_groth16_verify::execute",
 			"Pub_inputs: {:?}",
 			pub_inputs
