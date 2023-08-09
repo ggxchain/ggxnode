@@ -85,6 +85,8 @@ pub fn testnet_genesis(
 		staking: StakingConfig {
 			validator_count: 100,
 			minimum_validator_count: 1,
+			min_validator_bond: 1000 * GGX,
+			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
 			stakers: endowed_accounts
 				.iter()

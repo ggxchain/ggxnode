@@ -60,8 +60,8 @@
             "Validator"
           ]
         ],
-        "minNominatorBond": 0,
-        "minValidatorBond": 0,
+        "minNominatorBond": 100000000000000000000,
+        "minValidatorBond": 1000000000000000000000,
         "maxValidatorCount": null,
         "maxNominatorCount": null
       },
