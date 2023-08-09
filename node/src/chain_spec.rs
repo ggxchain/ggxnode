@@ -192,7 +192,6 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 		move || {
 			testnet_genesis(
 				wasm_binary,
-				// Initial PoA authorities
 				// Sudo account
 				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
 					.unwrap()
@@ -205,6 +204,7 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 				.unwrap()
 				.into_account()
 				.into()],
+				// Initial Validator
 				vec![ValidatorIdentity::from_pub(
 					"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
 					"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
