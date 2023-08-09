@@ -16,7 +16,7 @@ describe('Staking', async function () {
 
     it('should able to perform bond', async function ()  {
         const senderAddress = commonWasm.getAccount().address;
-        const amountToBond = 100000000000000000n;
+        const amountToBond = 100_000_000_000_000_000n;
 
         const stakingLedgerBefore = await commonWasm.getApi().query.staking.ledger(senderAddress);
         console.log('Staking Ledger Before:', stakingLedgerBefore.toJSON());
@@ -35,7 +35,7 @@ describe('Staking', async function () {
 
     it('should able to perform unbond', async function ()  {
         const senderAddress = commonWasm.getAccount().address;
-        const amountToUnbond = 100000000000000000n;
+        const amountToUnbond = 100_000_000_000_000_000n;
 
         const stakingLedgerBefore = await commonWasm.getApi().query.staking.ledger(senderAddress);
         console.log('Staking Ledger Before:', stakingLedgerBefore.toJSON());
