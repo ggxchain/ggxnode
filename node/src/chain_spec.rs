@@ -9,9 +9,9 @@ use crate::runtime::{
 
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
-fn properties() -> Option<Properties> {
+fn properties(token_symbol: &str) -> Option<Properties> {
 	let mut properties = Properties::new();
-	properties.insert("tokenSymbol".into(), "GGX Test".into());
+	properties.insert("tokenSymbol".into(), token_symbol.into());
 	properties.insert("tokenDecimals".into(), 18u32.into());
 	Some(properties)
 }
@@ -58,7 +58,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		Some("Golden Gate Dev"),
 		None,
 		// Properties
-		properties(),
+		properties("GGX Dev"),
 		// Extensions
 		None,
 	))
@@ -101,7 +101,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		Some("Golden Gate"),
 		None,
 		// Properties
-		properties(),
+		properties("GGX Local"),
 		// Extensions
 		None,
 	))
@@ -173,7 +173,62 @@ pub fn remote_testnet_config() -> Result<ChainSpec, String> {
 		Some("Golden Gate"),
 		None,
 		// Properties
-		properties(),
+		properties("GGXT"),
+		// Extensions
+		None,
+	))
+}
+
+#[cfg(not(feature = "testnet"))]
+pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
+	use sc_telemetry::TelemetryEndpoints;
+
+	let wasm_binary = WASM_BINARY.ok_or_else(|| "Runtime wasm not available".to_string())?;
+
+	Ok(ChainSpec::from_genesis(
+		"GGX Sydney Testnet",
+		"GGX",
+		ChainType::Live,
+		move || {
+			testnet_genesis(
+				wasm_binary,
+				// Initial PoA authorities
+				// Sudo account
+				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
+					.unwrap()
+					.into_account()
+					.into(),
+				// Pre-funded accounts
+				vec![sr25519::Public::from_ss58check(
+					"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
+				)
+				.unwrap()
+				.into_account()
+				.into()],
+				vec![ValidatorIdentity::from_pub(
+					"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
+					"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
+					"KW5iGDUzxmzxkRHjXvMALXQqLfX1WCi7wVbWTCHHZfykuNKYt", //subkey generate --scheme ecdsa, Public key (SS58)
+				)],
+				888888,
+				1_000_000_000,
+			)
+		},
+		// Some dns bootnodes
+		vec![],
+		// Telemetry
+		Some(
+			TelemetryEndpoints::new(vec![(
+				"wss://testnet.telemetry.sydney.ggxchain.io/submit/".into(),
+				0,
+			)])
+			.expect("Telemetry url is valid"),
+		),
+		// Protocol ID
+		Some("GGX Sydney"),
+		None,
+		// Properties
+		properties("GGXT"),
 		// Extensions
 		None,
 	))

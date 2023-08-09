@@ -63,6 +63,7 @@ impl SubstrateCli for Cli {
 			"testnet" | "remote-testnet" | "testnet-remote" => {
 				Box::new(chain_spec::remote_testnet_config()?)
 			}
+			"sydney" => Box::new(chain_spec::sydney_testnet_config()?),
 			path => Box::new(chain_spec::ChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
 			)?),
