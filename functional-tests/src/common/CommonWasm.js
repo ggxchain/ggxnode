@@ -98,6 +98,10 @@ class CommonWasm {
         return !!parseInt(hexValue);
     }
 
+    hexToDecimal(hexValue) {
+        return parseInt(hexValue, 16);
+    }
+
     disconnect() {
         this.getApi().disconnect();
     }
