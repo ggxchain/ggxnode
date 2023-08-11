@@ -182,7 +182,7 @@ pallet-evm-precompile-simple = { version = "2.0.0-dev", git = "https://github.co
 pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 
 # Golden Gate
-account-filter = { package = "substrate-account-filter", git = "https://github.com/GoldenGateGGX/ggx-frames.git", branch = "polkadot-v0.9.40", default-features = false }
+account-filter = { package = "substrate-account-filter", git = "https://github.com/ggxchain/ggx-frames.git", branch = "polkadot-v0.9.40", default-features = false }
 golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
 golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
