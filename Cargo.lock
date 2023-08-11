@@ -12039,7 +12039,7 @@ dependencies = [
 [[package]]
 name = "substrate-account-filter"
 version = "4.0.0"
-source = "git+https://github.com/GoldenGateGGX/ggx-frames.git?branch=polkadot-v0.9.40#29cb0829e498e467d1525bb6b7c738d30012d280"
+source = "git+https://github.com/ggxchain/ggx-frames.git?branch=polkadot-v0.9.40#29cb0829e498e467d1525bb6b7c738d30012d280"
 dependencies = [
  "frame-support",
  "frame-system",
