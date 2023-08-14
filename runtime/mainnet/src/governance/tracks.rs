@@ -4,6 +4,9 @@ const fn percent(x: i32) -> sp_arithmetic::FixedI64 {
 	sp_arithmetic::FixedI64::from_rational(x as u128, 100)
 }
 use pallet_referenda::Curve;
+
+use runtime_common::prod_or_fast;
+
 const APP_ROOT: Curve = Curve::make_reciprocal(4, 28, percent(80), percent(50), percent(100));
 const SUP_ROOT: Curve = Curve::make_linear(28, 28, percent(0), percent(50));
 
@@ -12,12 +15,12 @@ const TRACKS_DATA: [(u16, pallet_referenda::TrackInfo<Balance, BlockNumber>); 1]
 	0,
 	pallet_referenda::TrackInfo {
 		name: "root",
-		max_deciding: 1,
-		decision_deposit: 5 * KGGX,
+		max_deciding: prod_or_fast!(1, 5), // 1 or 5 proposals can be decided at the same time for Root track (in parallel)
+		decision_deposit: prod_or_fast!(5 * KGGX, 500 * GGX),
 		prepare_period: 2 * HOURS,
-		decision_period: 14 * (24 * HOURS),
-		confirm_period: 24 * HOURS,
-		min_enactment_period: 24 * HOURS,
+		decision_period: prod_or_fast!(14 * (24 * HOURS), 10 * HOURS),
+		confirm_period: prod_or_fast!(24 * HOURS, 10 * HOURS),
+		min_enactment_period: prod_or_fast!(24 * HOURS, 2 * HOURS),
 		min_approval: APP_ROOT,
 		min_support: SUP_ROOT,
 	},
