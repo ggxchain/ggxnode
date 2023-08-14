@@ -54,9 +54,8 @@ pub fn testnet_genesis(
 	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
-	_nominate: bool
+	_nominate: bool,
 ) -> GenesisConfig {
-
 	GenesisConfig {
 		// System
 		system: SystemConfig {
