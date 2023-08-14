@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 
 COPY  . .
 
-RUN cargo build --locked --release --no-default-features --features=testnet,brooklyn --config net.git-fetch-with-cli=true
+RUN cargo build --locked --release --no-default-features --features=brooklyn --config net.git-fetch-with-cli=true
 
 
 FROM debian:11 as production
