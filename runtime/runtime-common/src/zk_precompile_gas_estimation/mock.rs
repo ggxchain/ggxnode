@@ -144,7 +144,7 @@ where
 	ZKGroth16Verify: Precompile,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
-		println!("aaa: {}", handle.code_address());
+		println!("handle.code_address() = {:?}", handle.code_address());
 		match handle.code_address() {
 			a if a == H160::from_low_u64_be(0x8888) => Some(ZKGroth16Verify::execute(handle)),
 			_ => None,
