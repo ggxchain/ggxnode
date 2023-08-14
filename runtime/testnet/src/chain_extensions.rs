@@ -61,52 +61,52 @@ struct Psp37ApproveInput<AssetId, AccountId, Balance> {
 #[cfg_attr(feature = "std", derive(scale_info::TypeInfo))]
 pub enum Outcome {
 	/// Success
-	Success = 0,
+	Success = 0_isize,
 	/// Account balance must be greater than or equal to the transfer amount.
-	BalanceLow = 1,
+	BalanceLow = 1_isize,
 	/// The account to alter does not exist.
-	NoAccount = 2,
+	NoAccount = 2_isize,
 	/// The signing account has no permission to do the operation.
-	NoPermission = 3,
+	NoPermission = 3_isize,
 	/// The given asset ID is unknown.
-	Unknown = 4,
+	Unknown = 4_isize,
 	/// The origin account is frozen.
-	Frozen = 5,
+	Frozen = 5_isize,
 	/// The asset ID is already taken.
-	InUse = 6,
+	InUse = 6_isize,
 	/// Invalid witness data given.
-	BadWitness = 7,
+	BadWitness = 7_isize,
 	/// Minimum balance should be non-zero.
-	MinBalanceZero = 8,
+	MinBalanceZero = 8_isize,
 	/// Unable to increment the consumer reference counters on the account. Either no provider
 	/// reference exists to allow a non-zero balance of a non-self-sufficient asset, or the
 	/// maximum number of consumers has been reached.
-	NoProvider = 9,
+	NoProvider = 9_isize,
 	/// Invalid metadata given.
-	BadMetadata = 10,
+	BadMetadata = 10_isize,
 	/// No approval exists that would allow the transfer.
-	Unapproved = 11,
+	Unapproved = 11_isize,
 	/// The source account would not survive the transfer and it needs to stay alive.
-	WouldDie = 12,
+	WouldDie = 12_isize,
 	/// The asset-account already exists.
-	AlreadyExists = 13,
+	AlreadyExists = 13_isize,
 	/// The asset-account doesn't have an associated deposit.
-	NoDeposit = 14,
+	NoDeposit = 14_isize,
 	/// The operation would result in funds being burned.
-	WouldBurn = 15,
+	WouldBurn = 15_isize,
 	/// The asset is a live asset and is actively being used. Usually emit for operations such
 	/// as `start_destroy` which require the asset to be in a destroying state.
-	LiveAsset = 16,
+	LiveAsset = 16_isize,
 	/// The asset is not live, and likely being destroyed.
-	AssetNotLive = 17,
+	AssetNotLive = 17_isize,
 	/// The asset status is not the expected status.
-	IncorrectStatus = 18,
+	IncorrectStatus = 18_isize,
 	/// The asset should be frozen before the given operation.
-	NotFrozen = 19,
+	NotFrozen = 19_isize,
 	/// Origin Caller is not supported
-	OriginCannotBeCaller = 98,
+	OriginCannotBeCaller = 98_isize,
 	/// Unknown error
-	RuntimeError = 99,
+	RuntimeError = 99_isize,
 }
 
 impl From<DispatchError> for Outcome {
