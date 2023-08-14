@@ -161,5 +161,8 @@ pub fn testnet_genesis(
 		im_online: Default::default(),
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
+		account_filter: AccountFilterConfig {
+			allowed_accounts: endowed_accounts.iter().map(|x| (x.clone(), ())).collect(),
+		},
 	}
 }

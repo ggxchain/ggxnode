@@ -87,8 +87,10 @@ nix = { workspace = true }
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
 pallet-balances = { workspace = true }
 serde_json = { workspace = true }
+sp-keyring = { workspace = true }
 substrate-rpc-client = { workspace = true }
 substrate-test-utils = { workspace = true }
+subxt = { workspace = true, features = ["jsonrpsee-ws"] }
 tempfile = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
@@ -100,11 +102,16 @@ substrate-build-script-utils.workspace = true
 
 [features]
 default = []
+sydney = ["fast-runtime"]
+brooklyn = ["testnet"]
 testnet = [
 	"golden-gate-runtime-testnet",
 ]
 fast-runtime = [
 	"golden-gate-runtime-mainnet/fast-runtime",
+]
+allowlist = [
+	"golden-gate-runtime-mainnet/allowlist",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",

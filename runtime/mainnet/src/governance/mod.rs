@@ -3,6 +3,7 @@ use frame_support::parameter_types;
 use frame_system::EnsureRoot;
 
 mod tracks;
+use sp_runtime::Percent;
 pub use tracks::TracksInfo;
 
 parameter_types! {
@@ -57,4 +58,25 @@ impl pallet_referenda::Config for Runtime {
 	type AlarmInterval = AlarmInterval;
 	type Tracks = TracksInfo;
 	type Preimages = Preimage;
+}
+
+pub struct CallBlocker {}
+impl account_filter::BlockCallMatcher<Runtime> for CallBlocker {
+	fn matches(call: &RuntimeCall) -> bool {
+		matches!(
+			call,
+			RuntimeCall::Staking(pallet_staking::Call::validate { .. })
+		)
+	}
+}
+
+parameter_types! {
+	// 2 out 3
+	pub VotesToAllow: Percent = Percent::from_rational(2u32, 3u32);
+}
+
+impl account_filter::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type CallsToFilter = CallBlocker;
+	type VotesToAllow = VotesToAllow;
 }

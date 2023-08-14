@@ -82,6 +82,7 @@ pallet-evm-chain-id.workspace = true
 pallet-hotfix-sufficients.workspace = true
 
 # GGX
+account-filter.workspace = true
 runtime-common = { workspace = true, features = ["precompiles"] }
 
 # Astar
@@ -169,6 +170,7 @@ std = [
 	"pallet-evm-chain-id/std",
 	"pallet-hotfix-sufficients/std",
 	# GGX
+	"account-filter/std",
 	"runtime-common/std",
 	# Astar
 	"pallet-chain-extension-xvm/std",
@@ -178,6 +180,7 @@ std = [
 	"pallet-contracts-primitives/std",
 ]
 aura = []
+allowlist = []
 manual-seal = ["with-rocksdb-weights"]
 with-rocksdb-weights = []
 with-paritydb-weights = []
