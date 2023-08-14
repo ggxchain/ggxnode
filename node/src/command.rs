@@ -19,7 +19,6 @@ use clap::Parser;
 // Substrate
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
-// Frontier
 #[cfg(feature = "testnet")]
 use fc_db::frontier_database_dir;
 

@@ -16,7 +16,7 @@ resolver = "2"
 [workspace.package]
 authors = ["GGXChain <admin@ggxchain.io>"]
 edition = "2021"
-repository = "https://github.com/paritytech/frontier/"
+repository = "https://github.com/ggxchain/ggxnode/"
 
 [workspace.dependencies]
 # General purpose dependencies
