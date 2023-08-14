@@ -111,7 +111,7 @@
 
             common-wasm-deps-attrs = common-attrs // {
               cargoExtraArgs =
-                "--package 'ggx-runtime-*' --target wasm32-unknown-unknown --no-default-features";
+                "--package 'ggxchain-runtime-*' --target wasm32-unknown-unknown --no-default-features";
               RUSTFLAGS =
                 "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
             };
@@ -120,7 +120,7 @@
               installPhase = ''
                 runHook preInstall
                 mkdir --parents $out/lib
-                cp ./target/wasm32-unknown-unknown/release/wbuild/ggx-runtime-*/ggx_runtime_*.compact.compressed.wasm $out/lib
+                cp ./target/wasm32-unknown-unknown/release/wbuild/ggxchain-runtime-*/ggxchain_runtime_*.compact.compressed.wasm $out/lib
                 runHook postInstall
               '';
             };
@@ -191,7 +191,7 @@
                   then "--features=${runtime}"
                   else "";
                 in ''--package ${pname}  --no-default-features ${features}'';
-              pname = "ggx-node";
+              pname = "ggxchain-node";
               nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
             };
 
@@ -211,16 +211,16 @@
               craneLib.buildDepsOnly (common-native-testnet-attrs // { });
             common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
 
-            ggx-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
-              pname = "ggx-runtimes";
+            ggxchain-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
+              pname = "ggxchain-runtimes";
               cargoArtifacts = common-wasm-release-deps;
             });
 
-            ggx-node-mainnet = craneLib.buildPackage (common-native-mainnet-attrs // {
+            ggxchain-node-mainnet = craneLib.buildPackage (common-native-mainnet-attrs // {
               cargoArtifacts = common-native-release-mainnet-deps;
             });
 
-            ggx-node-testnet = craneLib.buildPackage (common-native-testnet-attrs // {
+            ggxchain-node-testnet = craneLib.buildPackage (common-native-testnet-attrs // {
               cargoArtifacts = common-native-release-testnet-deps;
             });
 
@@ -233,17 +233,17 @@
 
             clippy-node-testnet = craneLib.cargoClippy (common-native-testnet-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggx-node-testnet.cargoArtifacts;
+              cargoArtifacts = ggxchain-node-testnet.cargoArtifacts;
             });
 
             clippy-node-mainnet = craneLib.cargoClippy (common-native-mainnet-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggx-node-mainnet.cargoArtifacts;
+              cargoArtifacts = ggxchain-node-mainnet.cargoArtifacts;
             });
 
             clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggx-runtimes.cargoArtifacts;
+              cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
             });
 
             tf-init = pkgs.writeShellApplication rec {
@@ -405,17 +405,17 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit fix ggx-runtimes ggx-node-testnet ggx-node-mainnet gen-node-key tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
+                inherit fix ggxchain-runtimes ggxchain-node-testnet ggxchain-node-mainnet gen-node-key tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
                 subkey = pkgs.subkey;
-                ggx-node = ggx-node-testnet;
-                node = ggx-node;
+                ggxchain-node = ggxchain-node-testnet;
+                node = ggxchain-node;
                 lint-all = pkgs.symlinkJoin {
                   name = "lint-all";
                   paths = [ doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm ];
                 };
                 release = pkgs.symlinkJoin {
                   name = "release";
-                  paths = [ node ggx-runtimes ];
+                  paths = [ node ggxchain-runtimes ];
                 };
                 default = release;
                 # we should prune 3 things:
@@ -441,7 +441,7 @@
                 single-fast = pkgs.writeShellApplication rec {
                   name = "single-fast";
                   text = ''
-                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggx-node-mainnet} || package=${pkgs.lib.meta.getExe ggx-node-testnet}
+                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-mainnet} || package=${pkgs.lib.meta.getExe ggxchain-node-testnet}
                     $package --dev  
                   '';
                 };
@@ -451,7 +451,7 @@
                 multi-fast = pkgs.writeShellApplication rec {
                   name = "multi-fast";
                   text = ''
-                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggx-node-mainnet} || package=${pkgs.lib.meta.getExe ggx-node-testnet}
+                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-mainnet} || package=${pkgs.lib.meta.getExe ggxchain-node-testnet}
                     WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
                     WS_PORT_BOB=''${WS_PORT_BOB:-9945}
                     WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
@@ -469,7 +469,7 @@
 
                 run-testnet-node-a = pkgs.writeShellApplication {
                   name = "run-testnet-node-a";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggx-node ];
+                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
 
                     RUST_LOG=info,libp2p=info,grandpa=info
@@ -477,7 +477,7 @@
                     NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
                     rm -r -f chains
                     
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme=sr25519 \
@@ -485,7 +485,7 @@
                       --key-type aura \
                       --keystore-path ~/chains/remote_testnet/keystore
 
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme ed25519 \
@@ -493,20 +493,20 @@
                       --key-type gran \
                       --keystore-path ~/chains/remote_testnet/keystore  
 
-                    ggx-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-a --base-path=/root/ 
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-a --base-path=/root/ 
                   '';
                 };
 
                 run-testnet-node-b = pkgs.writeShellApplication {
                   name = "run-testnet-node-b";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggx-node ];
+                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
                     export RUST_LOG
                     NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
                     rm -r -f /root/chains
                     
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme=sr25519 \
@@ -514,7 +514,7 @@
                       --key-type aura \
                       --keystore-path ~/chains/remote_testnet/keystore
 
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme ed25519 \
@@ -522,20 +522,20 @@
                       --key-type gran \
                       --keystore-path ~/chains/remote_testnet/keystore  
 
-                    ggx-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-b --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-b --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
 
                 run-testnet-node-c = pkgs.writeShellApplication {
                   name = "run-testnet-node-c";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggx-node ];
+                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
                     export RUST_LOG
                     NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
                     rm -r -f /root/chains
                     
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme=sr25519 \
@@ -543,7 +543,7 @@
                       --key-type aura \
                       --keystore-path ~/chains/remote_testnet/keystore
 
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme ed25519 \
@@ -551,19 +551,19 @@
                       --key-type gran \
                       --keystore-path ~/chains/remote_testnet/keystore  
 
-                    ggx-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-c --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-c --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
                 run-testnet-node-d = pkgs.writeShellApplication {
                   name = "run-testnet-node-d";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggx-node ];
+                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
                     export RUST_LOG
                     NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
                     rm -r -f /root/chains
                     
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme=sr25519 \
@@ -571,7 +571,7 @@
                       --key-type aura \
                       --keystore-path ~/chains/remote_testnet/keystore
 
-                    ggx-node key insert \
+                    ggxchain-node key insert \
                       --base-path=/root/ \
                       --chain=testnet \
                       --scheme ed25519 \
@@ -579,7 +579,7 @@
                       --key-type gran \
                       --keystore-path ~/chains/remote_testnet/keystore  
 
-                    ggx-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-d --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-d --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
               };
@@ -665,7 +665,7 @@
           overlays = [
             (import rust-overlay)
             (_: _: {
-              ggx-node = per_system.packages.${system}.ggx-node;
+              ggxchain-node = per_system.packages.${system}.ggxchain-node;
             })
           ];
           pkgs = import nixpkgs {
@@ -681,7 +681,7 @@
               {
                 nixpkgs.overlays = [
                   (_: _: {
-                    ggx-node = pkgs.ggx-node;
+                    ggxchain-node = pkgs.ggxchain-node;
                   })
                 ];
               }
@@ -716,8 +716,8 @@
                     acceptTerms = true;
                   };
                 };
-                environment.systemPackages = [ pkgs.ggx-node ];
-                systemd.services.ggx-node = {
+                environment.systemPackages = [ pkgs.ggxchain-node ];
+                systemd.services.ggxchain-node = {
                   wantedBy = [ "multi-user.target" ];
                   after = [ "network.target" ];
                   description = "substrate-node";
@@ -741,66 +741,7 @@
               {
                 nixpkgs.overlays = [
                   (_: _: {
-                    ggx-node = pkgs.ggx-node;
-                  })
-                ];
-              }
-              ./flake/web3nix-module.nix
-              ./flake/nixos-amazon.nix
-            ]
-            ++ [
-              ({ ... }: {
-                web3nix.admin.email = email;
-                services.nginx.virtualHosts = {
-                  "${name}.${domain}" = {
-                    addSSL = true;
-                    enableACME = true;
-                    root = "/var/www/default";
-                    # just stub for root page, can route to any usefull info or landing
-                    locations."/" = {
-                      root = pkgs.runCommand "testdir" { } ''
-                        mkdir "$out"
-                        echo "here could be ggx pwa" > "$out/index.html"
-                      '';
-                    };
-                    locations."/substrate/client" = {
-                      # any all to external servers is routed to node
-                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
-                      proxyWebsockets = true;
-                    };
-                  };
-                };
-                security = {
-                  acme = {
-                    defaults.email = email;
-                    acceptTerms = true;
-                  };
-                };
-                environment.systemPackages = [ pkgs.ggx-node ];
-                systemd.services.ggx-node =
-                  {
-                    wantedBy = [ "multi-user.target" ];
-                    after = [ "network.target" ];
-                    description = "substrate-node";
-                    serviceConfig = {
-                      Type = "simple";
-                      User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-b}";
-                      Restart = "always";
-                    };
-                  };
-
-              })
-            ];
-          };
-
-          testnet-node-c = let name = "node-c"; in nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              {
-                nixpkgs.overlays = [
-                  (_: _: {
-                    ggx-node = pkgs.ggx-node;
+                    ggxchain-node = pkgs.ggxchain-node;
                   })
                 ];
               }
@@ -835,8 +776,67 @@
                     acceptTerms = true;
                   };
                 };
-                environment.systemPackages = [ pkgs.ggx-node ];
-                systemd.services.ggx-node =
+                environment.systemPackages = [ pkgs.ggxchain-node ];
+                systemd.services.ggxchain-node =
+                  {
+                    wantedBy = [ "multi-user.target" ];
+                    after = [ "network.target" ];
+                    description = "substrate-node";
+                    serviceConfig = {
+                      Type = "simple";
+                      User = "root";
+                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-b}";
+                      Restart = "always";
+                    };
+                  };
+
+              })
+            ];
+          };
+
+          testnet-node-c = let name = "node-c"; in nixpkgs.lib.nixosSystem {
+            inherit system;
+            modules = [
+              {
+                nixpkgs.overlays = [
+                  (_: _: {
+                    ggxchain-node = pkgs.ggxchain-node;
+                  })
+                ];
+              }
+              ./flake/web3nix-module.nix
+              ./flake/nixos-amazon.nix
+            ]
+            ++ [
+              ({ ... }: {
+                web3nix.admin.email = email;
+                services.nginx.virtualHosts = {
+                  "${name}.${domain}" = {
+                    addSSL = true;
+                    enableACME = true;
+                    root = "/var/www/default";
+                    # just stub for root page, can route to any usefull info or landing
+                    locations."/" = {
+                      root = pkgs.runCommand "testdir" { } ''
+                        mkdir "$out"
+                        echo "here could be ggx chain pwa" > "$out/index.html"
+                      '';
+                    };
+                    locations."/substrate/client" = {
+                      # any all to external servers is routed to node
+                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
+                      proxyWebsockets = true;
+                    };
+                  };
+                };
+                security = {
+                  acme = {
+                    defaults.email = email;
+                    acceptTerms = true;
+                  };
+                };
+                environment.systemPackages = [ pkgs.ggxchain-node ];
+                systemd.services.ggxchain-node =
                   {
                     wantedBy = [ "multi-user.target" ];
                     after = [ "network.target" ];
@@ -859,7 +859,7 @@
               {
                 nixpkgs.overlays = [
                   (_: _: {
-                    ggx-node = pkgs.ggx-node;
+                    ggxchain-node = pkgs.ggxchain-node;
                   })
                 ];
               }
@@ -878,7 +878,7 @@
                     locations."/" = {
                       root = pkgs.runCommand "testdir" { } ''
                         mkdir "$out"
-                        echo "here could be ggx pwa" > "$out/index.html"
+                        echo "here could be ggx chain pwa" > "$out/index.html"
                       '';
                     };
                     locations."/substrate/client" = {
@@ -894,8 +894,8 @@
                     acceptTerms = true;
                   };
                 };
-                environment.systemPackages = [ pkgs.ggx-node ];
-                systemd.services.ggx-node =
+                environment.systemPackages = [ pkgs.ggxchain-node ];
+                systemd.services.ggxchain-node =
                   {
                     wantedBy = [ "multi-user.target" ];
                     after = [ "network.target" ];

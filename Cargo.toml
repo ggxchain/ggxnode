@@ -183,8 +183,8 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Astar
 
 # GGX
 account-filter = { package = "substrate-account-filter", git = "https://github.com/ggxchain/ggx-frames.git", branch = "polkadot-v0.9.40", default-features = false }
-ggx-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
-ggx-runtime-testnet = { path = "runtime/testnet", default-features = false }
+ggxchain-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
+ggxchain-runtime-testnet = { path = "runtime/testnet", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }

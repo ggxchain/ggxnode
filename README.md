@@ -48,7 +48,7 @@ From the repository's root directory execute following commands in order:
 ```bash
 mkdir data-brooklyn
 
-docker build -f Dockerfile.brooklyn -t ggx-node:brooklyn .
+docker build -f Dockerfile.brooklyn -t ggxchain-node:brooklyn .
 
 docker run \
     -it \
@@ -58,7 +58,7 @@ docker run \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-brooklyn:/data-brooklyn \
-    ggx-node:brooklyn \
+    ggxchain-node:brooklyn \
     --base-path=/data-brooklyn \
     --chain /tmp/brooklyn.json \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
@@ -70,7 +70,7 @@ docker run \
 ```bash
 mkdir data-brooklyn-testnet
 
-docker build -f Dockerfile.brooklyn-testnet -t ggx-node:brooklyn-testnet .
+docker build -f Dockerfile.brooklyn-testnet -t ggxchain-node:brooklyn-testnet .
 
 docker run \
     -it \
@@ -80,7 +80,7 @@ docker run \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-brooklyn-testnet:/data-brooklyn \
-    ggx-node:brooklyn-testnet \
+    ggxchain-node:brooklyn-testnet \
     --base-path=/data-brooklyn \
     --chain /tmp/brooklyn.json \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
@@ -93,7 +93,7 @@ docker run \
 ```bash
 mkdir data-sydney
 
-docker build -f Dockerfile.sydney -t ggx-node:sydney .
+docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
 
 docker run \
     -it \
@@ -103,7 +103,7 @@ docker run \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney:/data-sydney \
-    ggx-node:sydney \
+    ggxchain-node:sydney \
     --base-path=/data-sydney \
     --chain /tmp/sydney.json \
     --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
@@ -115,7 +115,7 @@ docker run \
 ```bash
 mkdir data-sydney-testnet
 
-docker build -f Dockerfile.sydney-testnet -t ggx-node:sydney-testnet .
+docker build -f Dockerfile.sydney-testnet -t ggxchain-node:sydney-testnet .
 
 docker run \
     -it \
@@ -125,7 +125,7 @@ docker run \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney-testnet:/data-sydney \
-    ggx-node:sydney-testnet \
+    ggxchain-node:sydney-testnet \
     --base-path=/data-sydney \
     --chain /tmp/sydney.json \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"

@@ -1,5 +1,5 @@
 [package]
-name = "ggx-runtime-testnet"
+name = "ggxchain-runtime-testnet"
 version = "0.0.0"
 license = "Unlicense"
 description = "GGX PoS Runtime"

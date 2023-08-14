@@ -63,7 +63,7 @@ async fn _print_balances(
 async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let mut cmd = Command::new(cargo_bin("ggx-node"))
+	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args(["--dev"])

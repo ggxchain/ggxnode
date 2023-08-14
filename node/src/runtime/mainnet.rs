@@ -1,4 +1,4 @@
-pub use ggx_runtime_mainnet::{opaque::SessionKeys, *};
+pub use ggxchain_runtime_mainnet::{opaque::SessionKeys, *};
 
 use rand::SeedableRng;
 use sp_core::{crypto::Ss58Codec, ed25519, sr25519};

@@ -699,7 +699,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				inherent_data: &mut sp_inherents::InherentData,
 			) -> Result<(), sp_inherents::Error> {
 				TIMESTAMP.with(|x| {
-					*x.borrow_mut() += ggx_runtime::SLOT_DURATION;
+					*x.borrow_mut() += ggxchain_runtime::SLOT_DURATION;
 					inherent_data.put_data(INHERENT_IDENTIFIER, &*x.borrow())
 				})
 			}

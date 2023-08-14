@@ -3832,7 +3832,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ggx-node"
+name = "ggxchain-node"
 version = "0.0.1"
 dependencies = [
  "assert_cmd",
@@ -3854,8 +3854,8 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures",
- "ggx-runtime-mainnet",
- "ggx-runtime-testnet",
+ "ggxchain-runtime-mainnet",
+ "ggxchain-runtime-testnet",
  "hex",
  "jsonrpsee",
  "log",
@@ -3912,7 +3912,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ggx-runtime-mainnet"
+name = "ggxchain-runtime-mainnet"
 version = "0.0.0"
 dependencies = [
  "fp-evm",
@@ -3988,7 +3988,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "ggx-runtime-testnet"
+name = "ggxchain-runtime-testnet"
 version = "0.0.0"
 dependencies = [
  "fp-rpc",

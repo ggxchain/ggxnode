@@ -180,7 +180,7 @@ pub fn run() -> sc_cli::Result<()> {
 			use frame_benchmarking_cli::{
 				BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE,
 			};
-			use ggx_runtime::{Block, ExistentialDeposit};
+			use ggxchain_runtime::{Block, ExistentialDeposit};
 
 			let runner = cli.create_runner(cmd)?;
 			match cmd {

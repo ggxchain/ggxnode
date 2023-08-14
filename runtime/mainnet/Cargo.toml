@@ -1,5 +1,5 @@
 [package]
-name = "ggx-runtime-mainnet"
+name = "ggxchain-runtime-mainnet"
 version = "0.0.0"
 license = "Unlicense"
 description = "GGX Chain PoS Runtime"

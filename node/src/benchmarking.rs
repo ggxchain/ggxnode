@@ -23,7 +23,7 @@ use std::{sync::Arc, time::Duration};
 
 use scale_codec::Encode;
 // Substrate
-use ggx_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+use ggxchain_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 use sc_cli::Result;
 use sc_client_api::BlockBackend;
 use sp_core::{sr25519, Pair};

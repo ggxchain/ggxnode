@@ -1,5 +1,5 @@
 [package]
-name = "ggx-node"
+name = "ggxchain-node"
 version = "0.0.1"
 license = "Unlicense"
 build = "build.rs"
@@ -76,8 +76,8 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
-ggx-runtime-mainnet = { workspace = true, features = ["std"] }
-ggx-runtime-testnet = { workspace = true, features = ["std"], optional = true }
+ggxchain-runtime-mainnet = { workspace = true, features = ["std"] }
+ggxchain-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -105,27 +105,27 @@ default = []
 sydney = ["fast-runtime"]
 brooklyn = ["testnet"]
 testnet = [
-	"ggx-runtime-testnet",
+	"ggxchain-runtime-testnet",
 ]
 fast-runtime = [
-	"ggx-runtime-mainnet/fast-runtime",
+	"ggxchain-runtime-mainnet/fast-runtime",
 ]
 allowlist = [
-	"ggx-runtime-mainnet/allowlist",
+	"ggxchain-runtime-mainnet/allowlist",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"ggx-runtime-testnet?/manual-seal",
-	"ggx-runtime-mainnet/manual-seal",
+	"ggxchain-runtime-testnet?/manual-seal",
+	"ggxchain-runtime-mainnet/manual-seal",
 ]
 with-paritydb-weights = [
-	"ggx-runtime-testnet?/with-paritydb-weights",
-	"ggx-runtime-mainnet/with-paritydb-weights",
+	"ggxchain-runtime-testnet?/with-paritydb-weights",
+	"ggxchain-runtime-mainnet/with-paritydb-weights",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"ggx-runtime-testnet?/runtime-benchmarks",
-	"ggx-runtime-mainnet/runtime-benchmarks",
+	"ggxchain-runtime-testnet?/runtime-benchmarks",
+	"ggxchain-runtime-mainnet/runtime-benchmarks",
 ]
