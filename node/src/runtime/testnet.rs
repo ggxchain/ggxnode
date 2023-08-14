@@ -27,6 +27,7 @@ impl ValidatorIdentity {
 		}
 	}
 
+	#[allow(dead_code)]
 	pub fn from_pub(ed: &str, sr: &str, ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
@@ -50,12 +51,11 @@ impl ValidatorIdentity {
 pub fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
-	token_supply_in_ggx: u64,
+	_nominate: bool
 ) -> GenesisConfig {
-	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
 
 	GenesisConfig {
 		// System
@@ -74,7 +74,7 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, endowment))
+				.map(|(k, endowment)| (k, endowment as u128 * GGX))
 				.collect(),
 		},
 		transaction_payment: Default::default(),

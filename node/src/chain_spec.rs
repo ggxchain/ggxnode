@@ -1,6 +1,5 @@
 use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
-use sp_runtime::traits::IdentifyAccount;
 
 use crate::runtime::{
 	get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
