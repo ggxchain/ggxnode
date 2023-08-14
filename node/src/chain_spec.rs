@@ -184,7 +184,7 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 					"5CtKi5GCuzQLTA25cwJKCZLea3rBUYDLsdPXyrPnPuUpNTxg",
 					"5DUNfB4c3yKXp1LprVeAqUhgJtxuxqFiB3KUdXScSf9mpFdj",
 				)],
-				888888,
+				8886,
 				false,
 			)
 		},
