@@ -127,7 +127,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	))
 }
 
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 	use sc_telemetry::TelemetryEndpoints;
 	use sp_runtime::traits::IdentifyAccount;

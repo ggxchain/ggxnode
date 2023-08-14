@@ -184,10 +184,10 @@
             };
 
             common-native-release-attrs = common-attrs // rec {
-              runtime = "testnet";
+              runtime = "brooklyn";
               cargoExtraArgs =
                 let features =
-                  if runtime == "testnet"
+                  if runtime == "brooklyn"
                   then "--features=${runtime}"
                   else "";
                 in ''--package ${pname}  --no-default-features ${features}'';
@@ -195,20 +195,20 @@
               nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
             };
 
-            common-native-mainnet-attrs = common-native-release-attrs // rec {
-              runtime="mainnet";
+            common-native-sydney-attrs = common-native-release-attrs // rec {
+              runtime="sydney";
               version = "0.1.0";
             };
 
-            common-native-testnet-attrs = common-native-release-attrs // rec {
-              runtime="testnet";
+            common-native-brooklyn-attrs = common-native-release-attrs // rec {
+              runtime="brooklyn";
               version = "0.2.0";
             };
 
-            common-native-release-mainnet-deps =
-              craneLib.buildDepsOnly (common-native-mainnet-attrs // { });
-            common-native-release-testnet-deps =
-              craneLib.buildDepsOnly (common-native-testnet-attrs // { });
+            common-native-release-sydney-deps =
+              craneLib.buildDepsOnly (common-native-sydney-attrs // { });
+            common-native-release-brooklyn-deps =
+              craneLib.buildDepsOnly (common-native-brooklyn-attrs // { });
             common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
 
             ggxchain-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
@@ -216,12 +216,12 @@
               cargoArtifacts = common-wasm-release-deps;
             });
 
-            ggxchain-node-mainnet = craneLib.buildPackage (common-native-mainnet-attrs // {
-              cargoArtifacts = common-native-release-mainnet-deps;
+            ggxchain-node-sydney = craneLib.buildPackage (common-native-sydney-attrs // {
+              cargoArtifacts = common-native-release-sydney-deps;
             });
 
-            ggxchain-node-testnet = craneLib.buildPackage (common-native-testnet-attrs // {
-              cargoArtifacts = common-native-release-testnet-deps;
+            ggxchain-node-brooklyn = craneLib.buildPackage (common-native-brooklyn-attrs // {
+              cargoArtifacts = common-native-release-brooklyn-deps;
             });
 
             fmt = craneLib.cargoFmt (common-attrs // {
@@ -231,14 +231,14 @@
 
             cargoClippyExtraArgs = "-- -D warnings";
 
-            clippy-node-testnet = craneLib.cargoClippy (common-native-testnet-attrs // {
+            clippy-node-brooklyn = craneLib.cargoClippy (common-native-brooklyn-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggxchain-node-testnet.cargoArtifacts;
+              cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
             });
 
-            clippy-node-mainnet = craneLib.cargoClippy (common-native-mainnet-attrs // {
+            clippy-node-sydney = craneLib.cargoClippy (common-native-sydney-attrs // {
               inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggxchain-node-mainnet.cargoArtifacts;
+              cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
             });
 
             clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
@@ -278,7 +278,7 @@
               TF_VAR_AWS_REGION = region;
             };
 
-            terraformtestnet = terraformattrs // {
+            terraformbrooklyn = terraformattrs // {
               TF_VAR_DOMAIN_NAME = domain;
             };
 
@@ -374,7 +374,7 @@
               '';
             });
 
-            tf-testnet = mkTerraformRun "testnet" tf-config-testnet terraformtestnet;
+            tf-brooklyn = mkTerraformRun "brooklyn" tf-config-brooklyn terraformbrooklyn;
             tf-base = mkTerraformRun "base" tf-config-base terraformbase;
 
 
@@ -382,9 +382,9 @@
               inherit system;
               modules = [ ./flake/terraform/base.nix ];
             };
-            tf-config-testnet = terranix.lib.terranixConfiguration {
+            tf-config-brooklyn = terranix.lib.terranixConfiguration {
               inherit system;
-              modules = [ ./flake/terraform/testnet.nix ];
+              modules = [ ./flake/terraform/brooklyn.nix ];
             };
 
             mkNixosAwsRemoteRebuild = ip: region: name: pkgs.writeShellApplication
@@ -394,7 +394,7 @@
                 text = ''
                   # builds node locally and delta copies nix store to remote machine, and applies nix config
                   # should read from tfstate here to avoid cp paste of name       
-                  NIX_SSHOPTS="-i ./terraform/testnet/id_rsa.pem"         
+                  NIX_SSHOPTS="-i ./terraform/brooklyn/id_rsa.pem"         
                   export NIX_SSHOPTS
                   # first run will be slow, so can consider variouse optimization later
                   nixos-rebuild switch --fast --flake .#${name}  --target-host root@ec2-${ip}.${region}.compute.amazonaws.com
@@ -405,13 +405,13 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit fix ggxchain-runtimes ggxchain-node-testnet ggxchain-node-mainnet gen-node-key tf-base tf-testnet node-image inspect-node-key doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm;
+                inherit fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key tf-base tf-brooklyn node-image inspect-node-key doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm;
                 subkey = pkgs.subkey;
-                ggxchain-node = ggxchain-node-testnet;
+                ggxchain-node = ggxchain-node-brooklyn;
                 node = ggxchain-node;
                 lint-all = pkgs.symlinkJoin {
                   name = "lint-all";
-                  paths = [ doclint fmt clippy-node-testnet clippy-node-mainnet clippy-wasm ];
+                  paths = [ doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm ];
                 };
                 release = pkgs.symlinkJoin {
                   name = "release";
@@ -441,7 +441,7 @@
                 single-fast = pkgs.writeShellApplication rec {
                   name = "single-fast";
                   text = ''
-                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-mainnet} || package=${pkgs.lib.meta.getExe ggxchain-node-testnet}
+                    [[ ''${1:-""} == "sydney" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-sydney} || package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
                     $package --dev  
                   '';
                 };
@@ -451,7 +451,7 @@
                 multi-fast = pkgs.writeShellApplication rec {
                   name = "multi-fast";
                   text = ''
-                    [[ ''${1:-""} == "mainnet" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-mainnet} || package=${pkgs.lib.meta.getExe ggxchain-node-testnet}
+                    [[ ''${1:-""} == "sydney" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-sydney} || package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
                     WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
                     WS_PORT_BOB=''${WS_PORT_BOB:-9945}
                     WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
@@ -462,13 +462,13 @@
                   '';
                 };
 
-                deploy-testnet-node-a = mkNixosAwsRemoteRebuild bootnode region "testnet-node-a";
-                deploy-testnet-node-b = mkNixosAwsRemoteRebuild "34-243-72-53" region "testnet-node-b";
-                deploy-testnet-node-c = mkNixosAwsRemoteRebuild "54-246-50-70" region "testnet-node-c";
-                deploy-testnet-node-d = mkNixosAwsRemoteRebuild "3-253-35-79" region "testnet-node-d";
+                deploy-brooklyn-node-a = mkNixosAwsRemoteRebuild bootnode region "brooklyn-node-a";
+                deploy-brooklyn-node-b = mkNixosAwsRemoteRebuild "34-243-72-53" region "brooklyn-node-b";
+                deploy-brooklyn-node-c = mkNixosAwsRemoteRebuild "54-246-50-70" region "brooklyn-node-c";
+                deploy-brooklyn-node-d = mkNixosAwsRemoteRebuild "3-253-35-79" region "brooklyn-node-d";
 
-                run-testnet-node-a = pkgs.writeShellApplication {
-                  name = "run-testnet-node-a";
+                run-brooklyn-node-a = pkgs.writeShellApplication {
+                  name = "run-brooklyn-node-a";
                   runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
 
@@ -479,26 +479,26 @@
                     
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme=sr25519 \
                       --suri "$NODE_KEY" \
                       --key-type aura \
-                      --keystore-path ~/chains/remote_testnet/keystore
+                      --keystore-path ~/chains/remote_brooklyn/keystore
 
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme ed25519 \
                       --suri "$NODE_KEY" \
                       --key-type gran \
-                      --keystore-path ~/chains/remote_testnet/keystore  
+                      --keystore-path ~/chains/remote_brooklyn/keystore  
 
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-a --base-path=/root/ 
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-a --base-path=/root/ 
                   '';
                 };
 
-                run-testnet-node-b = pkgs.writeShellApplication {
-                  name = "run-testnet-node-b";
+                run-brooklyn-node-b = pkgs.writeShellApplication {
+                  name = "run-brooklyn-node-b";
                   runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
@@ -508,26 +508,26 @@
                     
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme=sr25519 \
                       --suri "$NODE_KEY" \
                       --key-type aura \
-                      --keystore-path ~/chains/remote_testnet/keystore
+                      --keystore-path ~/chains/remote_brooklyn/keystore
 
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme ed25519 \
                       --suri "$NODE_KEY" \
                       --key-type gran \
-                      --keystore-path ~/chains/remote_testnet/keystore  
+                      --keystore-path ~/chains/remote_brooklyn/keystore  
 
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-b --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-b --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
 
-                run-testnet-node-c = pkgs.writeShellApplication {
-                  name = "run-testnet-node-c";
+                run-brooklyn-node-c = pkgs.writeShellApplication {
+                  name = "run-brooklyn-node-c";
                   runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
@@ -537,25 +537,25 @@
                     
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme=sr25519 \
                       --suri "$NODE_KEY" \
                       --key-type aura \
-                      --keystore-path ~/chains/remote_testnet/keystore
+                      --keystore-path ~/chains/remote_brooklyn/keystore
 
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme ed25519 \
                       --suri "$NODE_KEY" \
                       --key-type gran \
-                      --keystore-path ~/chains/remote_testnet/keystore  
+                      --keystore-path ~/chains/remote_brooklyn/keystore  
 
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-c --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-c --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
-                run-testnet-node-d = pkgs.writeShellApplication {
-                  name = "run-testnet-node-d";
+                run-brooklyn-node-d = pkgs.writeShellApplication {
+                  name = "run-brooklyn-node-d";
                   runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
                   text = ''
                     RUST_LOG=info,libp2p=info,grandpa=info
@@ -565,21 +565,21 @@
                     
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme=sr25519 \
                       --suri "$NODE_KEY" \
                       --key-type aura \
-                      --keystore-path ~/chains/remote_testnet/keystore
+                      --keystore-path ~/chains/remote_brooklyn/keystore
 
                     ggxchain-node key insert \
                       --base-path=/root/ \
-                      --chain=testnet \
+                      --chain=brooklyn \
                       --scheme ed25519 \
                       --suri "$NODE_KEY" \
                       --key-type gran \
-                      --keystore-path ~/chains/remote_testnet/keystore  
+                      --keystore-path ~/chains/remote_brooklyn/keystore  
 
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=testnet --name=node-d --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
+                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-d --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
                   '';
                 };
               };
@@ -675,7 +675,7 @@
         {
           # so basically cp pasted config to remote node with node binry
           # really should generate config after terraform run and load it dynamically
-          testnet-node-a = let name = "node-a"; in nixpkgs.lib.nixosSystem {
+          brooklyn-node-a = let name = "node-a"; in nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               {
@@ -726,7 +726,7 @@
                       Type = "simple";
                       User = "root";
                       # yeah, tune each unsafe on release
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-a}";
+                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-a}";
                       Restart = "always";
                     };
                 };
@@ -735,7 +735,7 @@
             ];
           };
 
-          testnet-node-b = let name = "node-b"; in nixpkgs.lib.nixosSystem {
+          brooklyn-node-b = let name = "node-b"; in nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               {
@@ -785,7 +785,7 @@
                     serviceConfig = {
                       Type = "simple";
                       User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-b}";
+                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-b}";
                       Restart = "always";
                     };
                   };
@@ -794,7 +794,7 @@
             ];
           };
 
-          testnet-node-c = let name = "node-c"; in nixpkgs.lib.nixosSystem {
+          brooklyn-node-c = let name = "node-c"; in nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               {
@@ -844,7 +844,7 @@
                     serviceConfig = {
                       Type = "simple";
                       User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-c}";
+                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-c}";
                       Restart = "always";
                     };
                   };
@@ -853,7 +853,7 @@
             ];
           };
 
-          testnet-node-d = let name = "node-d"; in nixpkgs.lib.nixosSystem {
+          brooklyn-node-d = let name = "node-d"; in nixpkgs.lib.nixosSystem {
             inherit system;
             modules = [
               {
@@ -903,7 +903,7 @@
                     serviceConfig = {
                       Type = "simple";
                       User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-testnet-node-d}";
+                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-d}";
                       Restart = "always";
                     };
                   };

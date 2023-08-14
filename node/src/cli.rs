@@ -89,6 +89,6 @@ pub enum Subcommand {
 	Benchmark,
 
 	/// Db meta columns information.
-	#[cfg(feature = "testnet")]
+	#[cfg(feature = "brooklyn")]
 	FrontierDb(fc_cli::FrontierDbCmd),
 }

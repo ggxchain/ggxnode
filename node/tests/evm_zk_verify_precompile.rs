@@ -19,9 +19,9 @@ use ethers::{
 	providers::{Http, Provider},
 };
 
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 const CHAIN_ID: u64 = 8886u64;
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;

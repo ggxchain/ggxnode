@@ -40,11 +40,11 @@ use tempfile::tempdir;
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 pub use ggxchain_runtime_brooklyn::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 pub use ggxchain_runtime_sydney::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };

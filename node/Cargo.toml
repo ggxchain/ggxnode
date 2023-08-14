@@ -103,10 +103,7 @@ substrate-build-script-utils.workspace = true
 [features]
 default = ["sydney"]
 sydney = ["fast-runtime"]
-brooklyn = ["testnet"]
-testnet = [
-	"ggxchain-runtime-brooklyn",
-]
+brooklyn = ["ggxchain-runtime-brooklyn"]
 fast-runtime = [
 	"ggxchain-runtime-sydney/fast-runtime",
 ]

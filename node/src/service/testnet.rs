@@ -1068,7 +1068,7 @@ where
 	Ok(io)
 }
 
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 pub struct TestNetParams<A: sc_transaction_pool::ChainApi> {
 	/// Graph pool instance.                        
 	pub graph: Arc<Pool<A>>,
