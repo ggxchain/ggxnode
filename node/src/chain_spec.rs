@@ -6,8 +6,6 @@ use crate::runtime::{
 	WASM_BINARY,
 };
 
-use sp_runtime::traits::IdentifyAccount;
-
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn properties(token_symbol: &str) -> Option<Properties> {
@@ -132,6 +130,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 #[cfg(not(feature = "testnet"))]
 pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 	use sc_telemetry::TelemetryEndpoints;
+	use sp_runtime::traits::IdentifyAccount;
 
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Runtime wasm not available".to_string())?;
 
