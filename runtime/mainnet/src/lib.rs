@@ -237,7 +237,7 @@ parameter_types! {
 	pub storage EpochDurationInBlocks: BlockNumber = (RuntimeSpecification::chain_spec().session_time_in_seconds / (RuntimeSpecification::chain_spec().block_time_in_millis / 1000)) as u32;
 
 	pub ReportLongevity: u64 = EpochDurationInBlocks::get() as u64 * 10;
-	pub const SS58Prefix: u16 = 8888;
+	pub const SS58Prefix: u16 = 8866;
 }
 
 // Configure FRAME pallets to include in runtime.
