@@ -44,21 +44,25 @@ impl ValidatorIdentity {
 pub fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
-	token_supply_in_ggx: u64,
+	nominate: bool,
 ) -> GenesisConfig {
-	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
-	let stash: Balance = endowment / 2;
-
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+	let stash = 1000 * GGX;
 
 	// This is supposed the be the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
 	// within contracts.
 	// (PUSH1 0x00 PUSH1 0x00 REVERT)
 	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
+
+	let stakers: Vec<_> = if nominate {
+		endowed_accounts.iter().map(|i| i.0.clone()).collect()
+	} else {
+		initial_authorities.iter().map(|i| i.id.clone()).collect()
+	};
 
 	GenesisConfig {
 		// System
@@ -77,7 +81,7 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, endowment))
+				.map(|(k, endowment)| (k, endowment as u128 * GGX))
 				.collect(),
 		},
 		transaction_payment: Default::default(),
@@ -88,7 +92,7 @@ pub fn testnet_genesis(
 			min_validator_bond: 1000 * GGX,
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
-			stakers: endowed_accounts
+			stakers: stakers
 				.iter()
 				.map(|user| {
 					let status = if initial_authorities
@@ -162,7 +166,10 @@ pub fn testnet_genesis(
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
 		account_filter: AccountFilterConfig {
-			allowed_accounts: endowed_accounts.iter().map(|x| (x.clone(), ())).collect(),
+			allowed_accounts: initial_authorities
+				.iter()
+				.map(|x| (x.id.clone(), ()))
+				.collect(),
 		},
 	}
 }

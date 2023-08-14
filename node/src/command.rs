@@ -31,7 +31,7 @@ use crate::{
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"GGX node".into()
+		"GGX chain node".into()
 	}
 
 	fn impl_version() -> String {
@@ -59,9 +59,6 @@ impl SubstrateCli for Cli {
 			"dev" => Box::new(chain_spec::development_config()?),
 			"" | "local" => Box::new(chain_spec::local_testnet_config()?),
 			// on """release""", replace with  included resource
-			"testnet" | "remote-testnet" | "testnet-remote" => {
-				Box::new(chain_spec::remote_testnet_config()?)
-			}
 			#[cfg(not(feature = "testnet"))]
 			"sydney" => Box::new(chain_spec::sydney_testnet_config()?),
 			path => Box::new(chain_spec::ChainSpec::from_json_file(

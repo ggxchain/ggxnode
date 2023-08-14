@@ -700,7 +700,7 @@
                     locations."/" = {
                       root = pkgs.runCommand "testdir" { } ''
                         mkdir "$out"
-                        echo "here could be ggx pwa" > "$out/index.html"
+                        echo "here could be ggx chain pwa" > "$out/index.html"
                       '';
                     };
                     locations."/substrate/client" = {
@@ -819,7 +819,7 @@
                     locations."/" = {
                       root = pkgs.runCommand "testdir" { } ''
                         mkdir "$out"
-                        echo "here could be ggx pwa" > "$out/index.html"
+                        echo "here could be ggx chain pwa" > "$out/index.html"
                       '';
                     };
                     locations."/substrate/client" = {

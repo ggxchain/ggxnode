@@ -2,7 +2,7 @@
 name = "ggx-runtime-mainnet"
 version = "0.0.0"
 license = "Unlicense"
-description = "GGX PoS Runtime"
+description = "GGX Chain PoS Runtime"
 publish = false
 authors.workspace = true
 edition.workspace = true

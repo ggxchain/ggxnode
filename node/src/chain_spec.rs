@@ -18,6 +18,7 @@ fn properties(token_symbol: &str) -> Option<Properties> {
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+	let balance = 200_000_000;
 
 	Ok(ChainSpec::from_genesis(
 		// Name
@@ -33,21 +34,35 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Pre-funded accounts
 				vec![
 					// Alice pub in EVM is: 0xd43593c715fdd31c61141abd04a99fd6822c8558
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						balance,
+					),
+					(get_account_id_from_seed::<sr25519::Public>("Bob"), balance),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+						balance,
+					),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+						balance,
+					),
 					// Arrakis.TEST account in MetaMask
 					// Import known test account with private key
 					// 0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391
 					// H160 address: 0xaaafB3972B05630fCceE866eC69CdADd9baC2771
-					AccountId::from_ss58check("5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT")
+					(
+						AccountId::from_ss58check(
+							"5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT",
+						)
 						.unwrap(),
+						balance,
+					),
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
 				888888,
-				1_000_000_000,
+				true,
 			)
 		},
 		// Bootnodes
@@ -55,7 +70,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("GGX Dev"),
+		Some("GGX chain Dev"),
 		None,
 		// Properties
 		properties("GGX Dev"),
@@ -66,7 +81,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
+	let balance = 333_333_333;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Local Testnet",
@@ -81,16 +96,22 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// Pre-funded accounts
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						balance,
+					),
+					(get_account_id_from_seed::<sr25519::Public>("Bob"), balance),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Charlie"),
+						balance,
+					),
 				],
 				vec![
 					ValidatorIdentity::from_seed("Alice"),
 					ValidatorIdentity::from_seed("Bob"),
 				],
 				888888,
-				1_000_000_000,
+				true,
 			)
 		},
 		// Bootnodes
@@ -98,82 +119,10 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("GGX"),
+		Some("GGX Chain Local"),
 		None,
 		// Properties
 		properties("GGX Local"),
-		// Extensions
-		None,
-	))
-}
-
-pub fn remote_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
-	Ok(ChainSpec::from_genesis(
-		"Remote Testnet",
-		"remote_testnet",
-		ChainType::Live,
-		move || {
-			testnet_genesis(
-				wasm_binary,
-				// Initial PoA authorities
-				// Sudo account
-				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
-					.unwrap()
-					.into_account()
-					.into(),
-				// Pre-funded accounts
-				vec![
-					sr25519::Public::from_ss58check(
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-				],
-				vec![
-					ValidatorIdentity::from_pub(
-						"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-						"KW5iGDUzxmzxkRHjXvMALXQqLfX1WCi7wVbWTCHHZfykuNKYt", //subkey generate --scheme ecdsa, Public key (SS58)
-					),
-					ValidatorIdentity::from_pub(
-						"5Dos85SfdWJbh2RAkTLpViwjJXcSpkZjn9B5FGRCsCWQ4cT3",
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-						"KWAG8WAPa2VTnrpSwCqiFoPYssAJamNobdDNCjQLXYTeC3UXF",
-					),
-					ValidatorIdentity::from_pub(
-						"5DMjxJDSWR1uBQ8fN5o7fxUxpE3MeePf3b5f5iqTxm4KaLBY",
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-						"KWDsp2vLX45UKMTt9Hm7MjnyKFKUP9aPunjBNDrpvbQy1J2NW",
-					),
-				],
-				888888,
-				1_000_000_000,
-			)
-		},
-		// Bootnodes
-		vec![],
-		// Telemetry
-		None,
-		// Protocol ID
-		Some("GGX"),
-		None,
-		// Properties
-		properties("GGXT"),
 		// Extensions
 		None,
 	))
@@ -186,32 +135,56 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Runtime wasm not available".to_string())?;
 
 	Ok(ChainSpec::from_genesis(
-		"GGX Sydney Testnet",
+		"GGX Chain Sydney Testnet",
 		"GGX",
 		ChainType::Live,
 		move || {
 			testnet_genesis(
 				wasm_binary,
 				// Sudo account
-				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
+				// Multisig
+				sr25519::Public::from_ss58check("5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz")
 					.unwrap()
 					.into_account()
 					.into(),
 				// Pre-funded accounts
-				vec![sr25519::Public::from_ss58check(
-					"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-				)
-				.unwrap()
-				.into_account()
-				.into()],
+				vec![
+					(
+						sr25519::Public::from_ss58check(
+							"5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						1_000_000_000 - 10_000 - 1100,
+					),
+					(
+						sr25519::Public::from_ss58check(
+							"5CtKi5GCuzQLTA25cwJKCZLea3rBUYDLsdPXyrPnPuUpNTxg",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						1100,
+					),
+					(
+						sr25519::Public::from_ss58check(
+							"5GxBFw4nqvhX9X1C6apRpvWm57QaRb6MkVSF7YzQXLq2VJ6m",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						10_000,
+					),
+				],
 				// Initial Validator
 				vec![ValidatorIdentity::from_pub(
-					"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
-					"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-					"KW5iGDUzxmzxkRHjXvMALXQqLfX1WCi7wVbWTCHHZfykuNKYt", //subkey generate --scheme ecdsa, Public key (SS58)
+					"5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
+					"5CtKi5GCuzQLTA25cwJKCZLea3rBUYDLsdPXyrPnPuUpNTxg",
+					"5DUNfB4c3yKXp1LprVeAqUhgJtxuxqFiB3KUdXScSf9mpFdj",
 				)],
 				888888,
-				1_000_000_000,
+				false,
 			)
 		},
 		// Some dns bootnodes

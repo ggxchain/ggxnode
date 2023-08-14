@@ -28,7 +28,7 @@ rustup component add rust-src --toolchain nightly-x86_64-apple-darwin
 rustup target add wasm32-unknown-unknown
 cargo install cargo-contract cargo-dylint dylint-link
 
-# Start a node with the GGX runtime from the root of the repository
+# Start a node with the GGX chain runtime from the root of the repository
 cargo run --release -- --dev
 
 ```
@@ -109,7 +109,7 @@ You are supposed to see the `My accounts` section. Click on the `Import account`
 * Enter the next private key `0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391`.
 This account has prefilled balance. You have successfully imported the account, and see something like this in Metamask:
 
-  ![The image shows successfully added account with funds on GGX network](images/metamask-added-network-account.png)
+  ![The image shows successfully added account with funds on GGX chain network](images/metamask-added-network-account.png)
 
 * Open [remix ide](https://remix.ethereum.org/#) and create a new file with the data from the `evm-to-wasm/xvm.sol` file.
 * Compile the code
