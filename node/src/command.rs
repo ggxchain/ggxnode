@@ -17,10 +17,10 @@
 
 use clap::Parser;
 // Substrate
-use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use sc_service::PartialComponents;
 #[cfg(feature = "testnet")]
 use fc_db::frontier_database_dir;
+use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
+use sc_service::PartialComponents;
 
 use crate::{
 	chain_spec,
