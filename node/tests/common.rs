@@ -40,12 +40,12 @@ use tempfile::tempdir;
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
-#[cfg(not(feature = "testnet"))]
-pub use ggxchain_runtime_sydney::{
-	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
-};
 #[cfg(feature = "testnet")]
 pub use ggxchain_runtime_brooklyn::{
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
+};
+#[cfg(not(feature = "testnet"))]
+pub use ggxchain_runtime_sydney::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
 use sc_client_api::StorageData;
