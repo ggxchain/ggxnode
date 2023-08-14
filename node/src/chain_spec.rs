@@ -6,6 +6,8 @@ use crate::runtime::{
 	WASM_BINARY,
 };
 
+use sp_runtime::traits::IdentifyAccount;
+
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn properties(token_symbol: &str) -> Option<Properties> {
