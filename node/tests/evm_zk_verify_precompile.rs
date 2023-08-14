@@ -101,7 +101,7 @@ async fn call_zk_groth16_verify(
 async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+	let mut cmd = Command::new(cargo_bin("ggx-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args(["--dev"])

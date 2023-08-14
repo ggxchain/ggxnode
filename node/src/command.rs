@@ -32,7 +32,7 @@ use crate::{
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Golden Gate node".into()
+		"GGX node".into()
 	}
 
 	fn impl_version() -> String {
@@ -184,7 +184,7 @@ pub fn run() -> sc_cli::Result<()> {
 			use frame_benchmarking_cli::{
 				BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE,
 			};
-			use golden_gate_runtime::{Block, ExistentialDeposit};
+			use ggx_runtime::{Block, ExistentialDeposit};
 
 			let runner = cli.create_runner(cmd)?;
 			match cmd {

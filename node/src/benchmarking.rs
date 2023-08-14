@@ -30,7 +30,7 @@ use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, AccountId32, OpaqueExtrinsic, SaturatedConversion};
 // Frontier
-use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+use ggx_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 
 use crate::service::FullClient;
 

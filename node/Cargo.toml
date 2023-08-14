@@ -1,5 +1,5 @@
 [package]
-name = "golden-gate-node"
+name = "ggx-node"
 version = "0.0.1"
 license = "Unlicense"
 build = "build.rs"
@@ -76,8 +76,8 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
-golden-gate-runtime-mainnet = { workspace = true, features = ["std"] }
-golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
+ggx-runtime-mainnet = { workspace = true, features = ["std"] }
+ggx-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -105,27 +105,27 @@ default = []
 sydney = ["fast-runtime"]
 brooklyn = ["testnet"]
 testnet = [
-	"golden-gate-runtime-testnet",
+	"ggx-runtime-testnet",
 ]
 fast-runtime = [
-	"golden-gate-runtime-mainnet/fast-runtime",
+	"ggx-runtime-mainnet/fast-runtime",
 ]
 allowlist = [
-	"golden-gate-runtime-mainnet/allowlist",
+	"ggx-runtime-mainnet/allowlist",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
-	"golden-gate-runtime-testnet?/manual-seal",
-	"golden-gate-runtime-mainnet/manual-seal",
+	"ggx-runtime-testnet?/manual-seal",
+	"ggx-runtime-mainnet/manual-seal",
 ]
 with-paritydb-weights = [
-	"golden-gate-runtime-testnet?/with-paritydb-weights",
-	"golden-gate-runtime-mainnet/with-paritydb-weights",
+	"ggx-runtime-testnet?/with-paritydb-weights",
+	"ggx-runtime-mainnet/with-paritydb-weights",
 ]
 runtime-benchmarks = [
 	"frame-benchmarking/runtime-benchmarks",
 	"frame-benchmarking-cli/runtime-benchmarks",
 	"sc-service/runtime-benchmarks",
-	"golden-gate-runtime-testnet?/runtime-benchmarks",
-	"golden-gate-runtime-mainnet/runtime-benchmarks",
+	"ggx-runtime-testnet?/runtime-benchmarks",
+	"ggx-runtime-mainnet/runtime-benchmarks",
 ]

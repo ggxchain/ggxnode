@@ -699,7 +699,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				inherent_data: &mut sp_inherents::InherentData,
 			) -> Result<(), sp_inherents::Error> {
 				TIMESTAMP.with(|x| {
-					*x.borrow_mut() += golden_gate_runtime::SLOT_DURATION;
+					*x.borrow_mut() += ggx_runtime::SLOT_DURATION;
 					inherent_data.put_data(INHERENT_IDENTIFIER, &*x.borrow())
 				})
 			}
@@ -775,8 +775,8 @@ fn spawn_frontier_tasks(
 	>,
 ) {
 	task_manager.spawn_essential_handle().spawn(
-		"golden-gate-mapping-sync-worker",
-		Some("Golden Gate"),
+		"ggx-mapping-sync-worker",
+		Some("GGX"),
 		MappingSyncWorker::new(
 			client.import_notification_stream(),
 			Duration::new(6, 0),
@@ -798,16 +798,16 @@ fn spawn_frontier_tasks(
 		// Each filter is allowed to stay in the pool for 100 blocks.
 		const FILTER_RETAIN_THRESHOLD: u64 = 100;
 		task_manager.spawn_essential_handle().spawn(
-			"golden-gate-filter-pool",
-			Some("Golden Gate"),
+			"ggx-filter-pool",
+			Some("GGX"),
 			EthTask::filter_pool_task(client.clone(), filter_pool, FILTER_RETAIN_THRESHOLD),
 		);
 	}
 
 	// Spawn Frontier FeeHistory cache maintenance task.
 	task_manager.spawn_essential_handle().spawn(
-		"golden-gate-fee-history",
-		Some("Golden Gate"),
+		"ggx-fee-history",
+		Some("GGX"),
 		EthTask::fee_history_task(
 			client,
 			overrides,

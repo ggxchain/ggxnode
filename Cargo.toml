@@ -14,7 +14,7 @@ exclude = [
 resolver = "2"
 
 [workspace.package]
-authors = ["Parity Technologies <admin@parity.io>"]
+authors = ["GGXChain <admin@ggxchain.io>"]
 edition = "2021"
 repository = "https://github.com/paritytech/frontier/"
 
@@ -181,10 +181,10 @@ pallet-evm-precompile-sha3fips = { version = "2.0.0-dev", git = "https://github.
 pallet-evm-precompile-simple = { version = "2.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 
-# Golden Gate
+# GGX
 account-filter = { package = "substrate-account-filter", git = "https://github.com/ggxchain/ggx-frames.git", branch = "polkadot-v0.9.40", default-features = false }
-golden-gate-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
-golden-gate-runtime-testnet = { path = "runtime/testnet", default-features = false }
+ggx-runtime-mainnet = { path = "runtime/mainnet", default-features = false }
+ggx-runtime-testnet = { path = "runtime/testnet", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }

@@ -1,8 +1,8 @@
 [package]
-name = "golden-gate-runtime-testnet"
+name = "ggx-runtime-testnet"
 version = "0.0.0"
 license = "Unlicense"
-description = "Golden Gate PoS Runtime"
+description = "GGX PoS Runtime"
 publish = false
 authors.workspace = true
 edition.workspace = true

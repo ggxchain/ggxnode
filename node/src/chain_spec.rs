@@ -55,7 +55,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("Golden Gate Dev"),
+		Some("GGX Dev"),
 		None,
 		// Properties
 		properties("GGX Dev"),
@@ -98,7 +98,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("Golden Gate"),
+		Some("GGX"),
 		None,
 		// Properties
 		properties("GGX Local"),
@@ -170,7 +170,7 @@ pub fn remote_testnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("Golden Gate"),
+		Some("GGX"),
 		None,
 		// Properties
 		properties("GGXT"),

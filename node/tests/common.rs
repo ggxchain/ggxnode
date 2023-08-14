@@ -41,11 +41,11 @@ use tokio::time::timeout;
 
 use frame_system::AccountInfo;
 #[cfg(not(feature = "testnet"))]
-pub use golden_gate_runtime_mainnet::{
+pub use ggx_runtime_mainnet::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
 #[cfg(feature = "testnet")]
-pub use golden_gate_runtime_testnet::{
+pub use ggx_runtime_testnet::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
 use sc_client_api::StorageData;
@@ -158,7 +158,7 @@ pub async fn get_next_session_keys(url: &str) -> Result<Vec<u8>, Box<dyn std::er
 
 /// Run the node for a while (3 blocks)
 pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+	let mut cmd = Command::new(cargo_bin("ggx-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args(args)
@@ -188,7 +188,7 @@ pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
 
 /// Run the node asserting that it fails with an error
 pub fn run_node_assert_fail(base_path: &Path, args: &[&str]) {
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"));
+	let mut cmd = Command::new(cargo_bin("ggx-node"));
 
 	let mut child = KillChildOnDrop(cmd.args(args).arg("-d").arg(base_path).spawn().unwrap());
 
@@ -306,7 +306,7 @@ pub struct Node {
 pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> Node {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+	let mut cmd = Command::new(cargo_bin("ggx-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args([&format!("--{validator_name}"), &format!("--chain={chain}")])
