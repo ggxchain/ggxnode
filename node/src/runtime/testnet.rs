@@ -114,7 +114,6 @@ pub fn testnet_genesis(
 								},
 							)
 						})
-						.into_iter()
 						.collect();
 				map.insert(
 					// H160 address of Alice dev account

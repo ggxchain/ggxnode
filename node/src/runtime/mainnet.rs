@@ -148,7 +148,6 @@ pub fn testnet_genesis(
 						},
 					)
 				})
-				.into_iter()
 				.collect(),
 		},
 		ethereum: Default::default(),
