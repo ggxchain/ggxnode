@@ -1,7 +1,7 @@
 # Managing validator list
 
 This document shows how to add and remove the validator.
-Currently, the Golden Gate runs a Federated POA.
+Currently, the GGX chain runs a POS.
 There are two ways to add or remove the validator:
 
 * Using the sudo extrinsic to the validator_manager pallet.

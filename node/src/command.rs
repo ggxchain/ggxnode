@@ -17,11 +17,10 @@
 
 use clap::Parser;
 // Substrate
+#[cfg(feature = "brooklyn")]
+use fc_db::frontier_database_dir;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
-// Frontier
-#[cfg(feature = "testnet")]
-use fc_db::frontier_database_dir;
 
 use crate::{
 	chain_spec,
@@ -32,7 +31,7 @@ use crate::{
 
 impl SubstrateCli for Cli {
 	fn impl_name() -> String {
-		"Golden Gate node".into()
+		"GGX chain node".into()
 	}
 
 	fn impl_version() -> String {
@@ -60,9 +59,8 @@ impl SubstrateCli for Cli {
 			"dev" => Box::new(chain_spec::development_config()?),
 			"" | "local" => Box::new(chain_spec::local_testnet_config()?),
 			// on """release""", replace with  included resource
-			"testnet" | "remote-testnet" | "testnet-remote" => {
-				Box::new(chain_spec::remote_testnet_config()?)
-			}
+			#[cfg(not(feature = "brooklyn"))]
+			"sydney" => Box::new(chain_spec::sydney_testnet_config()?),
 			path => Box::new(chain_spec::ChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
 			)?),
@@ -133,7 +131,7 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
-				#[cfg(feature = "testnet")]
+				#[cfg(feature = "brooklyn")]
 				{
 					use fc_db::DatabaseSource;
 					use service::testnet::db_config_dir;
@@ -182,7 +180,7 @@ pub fn run() -> sc_cli::Result<()> {
 			use frame_benchmarking_cli::{
 				BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE,
 			};
-			use golden_gate_runtime::{Block, ExistentialDeposit};
+			use ggxchain_runtime::{Block, ExistentialDeposit};
 
 			let runner = cli.create_runner(cmd)?;
 			match cmd {
@@ -237,7 +235,7 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark) => Err("Benchmarking wasn't enabled when building the node. \
 			You can enable it with `--features runtime-benchmarks`."
 			.into()),
-		#[cfg(feature = "testnet")]
+		#[cfg(feature = "brooklyn")]
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {

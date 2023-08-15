@@ -20,7 +20,7 @@ WORKDIR /usr/src/app
 
 COPY  . .
 
-RUN cargo build --locked --release --config net.git-fetch-with-cli=true
+RUN cargo build --locked --release --config net.git-fetch-with-cli=true --features="brooklyn"
 
 
 FROM debian:11 as production
@@ -28,6 +28,6 @@ FROM debian:11 as production
 ENV HOME /usr/src/app
 WORKDIR $HOME
 
-COPY --from=builder $HOME/target/release/golden-gate-node ./target/release/golden-gate-node
+COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
 
-ENTRYPOINT [ "/usr/src/app/target/release/golden-gate-node" ]
+ENTRYPOINT [ "/usr/src/app/target/release/ggxchain-node" ]

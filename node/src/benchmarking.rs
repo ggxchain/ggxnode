@@ -23,14 +23,13 @@ use std::{sync::Arc, time::Duration};
 
 use scale_codec::Encode;
 // Substrate
+use ggxchain_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 use sc_cli::Result;
 use sc_client_api::BlockBackend;
 use sp_core::{sr25519, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, AccountId32, OpaqueExtrinsic, SaturatedConversion};
-// Frontier
-use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 
 use crate::service::FullClient;
 
