@@ -213,7 +213,8 @@ fn test_zk_precompile_gas_estimation() {
 		match call_runner_results {
 			Ok(info) => {
 				let output = info.value;
-				println!("output result {output:?}");
+				let used_gas = info.used_gas;
+				println!("output result {output:?} used gas: {used_gas:?}");
 				if output.len() >= 32 {
 					let mut result_bytes = [0u8; 32];
 					result_bytes.copy_from_slice(&output[output.len() - 32..]);
