@@ -23,6 +23,7 @@ use std::{sync::Arc, time::Duration};
 
 use scale_codec::Encode;
 // Substrate
+use ggxchain_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 use sc_cli::Result;
 use sc_client_api::BlockBackend;
 use sp_core::{sr25519, Pair};
@@ -30,10 +31,10 @@ use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, AccountId32, OpaqueExtrinsic, SaturatedConversion};
 // Frontier
-#[cfg(not(feature = "testnet"))]
-use golden_gate_runtime_mainnet::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
-#[cfg(feature = "testnet")]
-use golden_gate_runtime_testnet::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+#[cfg(feature = "brooklyn")]
+use ggxchain_runtime_brooklyn::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
+#[cfg(not(feature = "brooklyn"))]
+use ggxchain_runtime_sydney::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 
 // use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 

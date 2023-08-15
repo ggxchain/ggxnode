@@ -17,9 +17,9 @@ pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 pub const CHAIN_ID: u64 = 8866u64;
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 pub const CHAIN_ID: u64 = 888866u64;
 
 pub type AccountId = H160;

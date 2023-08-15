@@ -1,6 +1,6 @@
 # Cross VM communication
 
-This document will show you how to use the cross-VM communication feature of the Golden Gate.
+This document will show you how to use the cross-VM communication feature of the ggxchain.
 
 ## Prerequisites
 
@@ -14,7 +14,7 @@ rustup component add rust-src --toolchain nightly-unknown-linux-gnu
 rustup target add wasm32-unknown-unknown
 cargo install cargo-contract cargo-dylint dylint-link
 
-# Start a node with the Golden Gate runtime from the root of the repository
+# Start a node with the ggxchain runtime from the root of the repository
 cargo run --release -- --dev
 ```
 
@@ -28,7 +28,7 @@ rustup component add rust-src --toolchain nightly-x86_64-apple-darwin
 rustup target add wasm32-unknown-unknown
 cargo install cargo-contract cargo-dylint dylint-link
 
-# Start a node with the Golden Gate runtime from the root of the repository
+# Start a node with the GGX chain runtime from the root of the repository
 cargo run --release -- --dev
 
 ```
@@ -38,10 +38,10 @@ cargo run --release -- --dev
 Alternatively, you can use provided docker file to build contracts and run the node.
 
 ```bash
-cd golden-gate # go to the root of the repository
-docker build -t golden-gate-env -f containers/enviroment . # build the docker image
-docker run -it -p 9944:9944 -p 9933:9933 -v $(pwd):/golden-gate golden-gate-env bash # run the docker image
-cd golden-gate # go to the root of the repository
+cd ggxchain # go to the root of the repository
+docker build -t ggxchain-env -f containers/enviroment . # build the docker image
+docker run -it -p 9944:9944 -p 9933:9933 -v $(pwd):/ggxchain ggxchain-env bash # run the docker image
+cd ggxchain # go to the root of the repository
 cargo run --release -- --dev --ws-external --rpc-external # start the node
 ```
 
@@ -96,7 +96,7 @@ You are supposed to see an event. Example:
   ![The image shows how to add a network to the metamask](images/metamask-add-network.png)
 * You will be redirected to the website with the network settings.
 Click on the `Add a network manually` button at the bottom of the page. Fill in the following fields:
-  * Network name: `Golden Gate`
+  * Network name: `GGX`
   * New RPC URL: `http://localhost:9944`
   * Chain ID: `8866`.
   * Currency symbol: `GGX`
@@ -109,7 +109,7 @@ You are supposed to see the `My accounts` section. Click on the `Import account`
 * Enter the next private key `0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391`.
 This account has prefilled balance. You have successfully imported the account, and see something like this in Metamask:
 
-  ![The image shows successfully added account with funds on Golden Gate network](images/metamask-added-network-account.png)
+  ![The image shows successfully added account with funds on GGX chain network](images/metamask-added-network-account.png)
 
 * Open [remix ide](https://remix.ethereum.org/#) and create a new file with the data from the `evm-to-wasm/xvm.sol` file.
 * Compile the code

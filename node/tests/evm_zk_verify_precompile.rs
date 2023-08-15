@@ -19,9 +19,9 @@ use ethers::{
 	providers::{Http, Provider},
 };
 
-#[cfg(not(feature = "testnet"))]
-const CHAIN_ID: u64 = 8866u64;
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "brooklyn"))]
+const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
 const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
@@ -101,7 +101,7 @@ async fn call_zk_groth16_verify(
 async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args(["--dev"])

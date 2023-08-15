@@ -1,11 +1,11 @@
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 pub mod testnet;
-#[cfg(feature = "testnet")]
+#[cfg(feature = "brooklyn")]
 use testnet as service;
 
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 pub mod mainnet;
-#[cfg(not(feature = "testnet"))]
+#[cfg(not(feature = "brooklyn"))]
 use mainnet as service;
 
 pub use service::{create_full_rpc, new_full, new_partial};

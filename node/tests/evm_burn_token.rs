@@ -19,9 +19,9 @@ use ethers::{
 	utils,
 };
 
-#[cfg(not(feature = "testnet"))]
-const CHAIN_ID: u64 = 8866u64;
-#[cfg(feature = "testnet")]
+#[cfg(not(feature = "brooklyn"))]
+const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
 const CHAIN_ID: u64 = 888866u64;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
@@ -35,7 +35,7 @@ async fn send_transaction(
 	println!("Beginning transfer of 10000 native currency {address_from} to {address_to}.");
 	let tx = Eip1559TransactionRequest::new()
 		.to(*address_to)
-		.value((utils::parse_ether(10000)?))
+		.value(utils::parse_ether(10000)?)
 		.from(*address_from);
 	let tx = client.send_transaction(tx, None).await?.await?;
 
@@ -63,7 +63,7 @@ async fn _print_balances(
 async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let base_path = tempdir().expect("could not create a temp dir");
 
-	let mut cmd = Command::new(cargo_bin("golden-gate-node"))
+	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::piped())
 		.args(["--dev"])
