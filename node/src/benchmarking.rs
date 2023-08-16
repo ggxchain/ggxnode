@@ -155,7 +155,9 @@ pub fn create_benchmark_extrinsic(
 		)),
 		frame_system::CheckNonce::<runtime::Runtime>::from(nonce),
 		frame_system::CheckWeight::<runtime::Runtime>::new(),
-		pallet_transaction_payment::ChargeTransactionPayment::<runtime::Runtime>::from(0),
+		(pallet_transaction_payment::ChargeTransactionPayment::<
+			runtime::Runtime,
+		>::from(0),),
 	);
 
 	let raw_payload = runtime::SignedPayload::from_raw(
@@ -169,7 +171,7 @@ pub fn create_benchmark_extrinsic(
 			best_hash,
 			(),
 			(),
-			(),
+			((),),
 		),
 	);
 	let signature = raw_payload.using_encoded(|e| sender.sign(e));

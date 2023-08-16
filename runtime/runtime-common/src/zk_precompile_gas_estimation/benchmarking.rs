@@ -306,24 +306,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
-
+				panic!("nconstraints_10 Benchmarking failed");
 			}
 		}
 	}
@@ -457,24 +455,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_50 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_50 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_50 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
-
+				panic!("nconstraints_50 Benchmarking failed");
 			}
 		}
 	}
@@ -608,24 +604,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_1000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_1000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_1000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
-
+				panic!("nconstraints_1000 Benchmarking failed");
 			}
 		}
 	}
@@ -758,24 +752,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_900000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_900000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_900000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
-
+				panic!("nconstraints_900000 Benchmarking failed");
 			}
 		}
 	}
@@ -909,24 +901,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
-
+				panic!("nconstraints_30_input_10 Benchmarking failed");
 			}
 		}
 	}
@@ -1059,23 +1049,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_100 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_100 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_100 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_100 Benchmarking failed");
 			}
 		}
 	}
@@ -1208,23 +1197,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_1000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_1000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_1000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_1000 Benchmarking failed");
 			}
 		}
 	}
@@ -1357,23 +1345,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_5000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_5000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_5000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_5000 Benchmarking failed");
 			}
 		}
 	}
@@ -1506,23 +1493,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_10000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_10000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_10000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_10000 Benchmarking failed");
 
 			}
 		}
@@ -1656,23 +1642,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_90000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_90000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_90000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_90000 Benchmarking failed");
 			}
 		}
 	}
@@ -1805,23 +1790,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"nconstraints_30_input_200000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"nconstraints_30_input_200000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"nconstraints_30_input_200000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("nconstraints_30_input_200000 Benchmarking failed");
 			}
 		}
 	}
@@ -1952,23 +1936,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sum_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sum_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sum_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sum_10 Benchmarking failed");
 			}
 		}
 	}
@@ -2098,23 +2081,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sum_50 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sum_50 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sum_50 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sum_50 Benchmarking failed");
 			}
 		}
 	}
@@ -2245,23 +2227,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sum_5000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sum_5000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sum_5000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sum_5000 Benchmarking failed");
 			}
 		}
 	}
@@ -2390,23 +2371,22 @@ benchmarks! {
 				// 	"output result {:?}",
 				// 	output
 				// );
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sum_50000 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sum_50000 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sum_50000 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sum_50000 Benchmarking failed");
 			}
 		}
 	}
@@ -2528,23 +2508,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_1 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_1 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_1 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_1 Benchmarking failed");
 			}
 		}
 	}
@@ -2676,23 +2655,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_3 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_3 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_3 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_3 Benchmarking failed");
 			}
 		}
 	}
@@ -2834,23 +2812,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_5 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_5 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_5 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_5 Benchmarking failed");
 			}
 		}
 	}
@@ -3007,23 +2984,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_8 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_8 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_8 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_8 Benchmarking failed");
 			}
 		}
 	}
@@ -3190,23 +3166,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_10 Benchmarking failed");
 			}
 		}
 	}
@@ -3383,23 +3358,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_12 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_12 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_12 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_12 Benchmarking failed");
 			}
 		}
 	}
@@ -3591,23 +3565,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_15 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_15 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_15 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_15 Benchmarking failed");
 			}
 		}
 	}
@@ -3814,23 +3787,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_18 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_18 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_18 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_18 Benchmarking failed");
 			}
 		}
 	}
@@ -4047,23 +4019,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_20 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_20 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_20 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_20 Benchmarking failed");
 			}
 		}
 	}
@@ -4430,23 +4401,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"sumout_50 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"sumout_50 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"sumout_50 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("sumout_50 Benchmarking failed");
 			}
 		}
 	}
@@ -4578,23 +4548,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"fib_3 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"fib_3 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"fib_3 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("fib_3 Benchmarking failed");
 			}
 		}
 	}
@@ -4736,23 +4705,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"fib_5 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"fib_5 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"fib_5 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("fib_5 Benchmarking failed");
 			}
 		}
 	}
@@ -4919,23 +4887,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"fib_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"fib_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"fib_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("fib_10 Benchmarking failed");
 			}
 		}
 	}
@@ -5102,23 +5069,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"copy_10 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"copy_10 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"copy_10 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("copy_10 Benchmarking failed");
 			}
 		}
 	}
@@ -5335,23 +5301,22 @@ benchmarks! {
 					output,
 					used_gas,
 				);
-				if output.len() >= 32 {
-					let mut result_bytes = [0u8; 32];
-					result_bytes.copy_from_slice(&output[output.len() - 32..]);
-					let result = U256::from_big_endian(&result_bytes);
-					// log::info!(
-					// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					// 	"copy_20 Verification result {result:?}",
-					// );
-					assert_eq!(result, U256::one(), "The contract did not return true");
-				}
+				assert!(output.len() >= 32, "The contract did not return true");
+				let mut result_bytes = [0u8; 32];
+				result_bytes.copy_from_slice(&output[output.len() - 32..]);
+				let result = U256::from_big_endian(&result_bytes);
+				// log::info!(
+				// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+				// 	"copy_20 Verification result {result:?}",
+				// );
+				assert_eq!(result, U256::one(), "The contract did not return true");
 			},
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
 					"copy_20 Benchmarking failed",
 				);
-				assert!(false, "Benchmarking failed");
+				panic!("copy_20 Benchmarking failed");
 			}
 		}
 	}

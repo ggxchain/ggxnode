@@ -76,8 +76,8 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
-ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
+ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
