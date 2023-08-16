@@ -167,20 +167,6 @@ impl ZKPrecompileVerifier {
 	}
 }
 
-fn u64s_to_u256(values: Vec<u64>) -> U256 {
-	let mut result = U256::zero();
-	for (i, value) in values.into_iter().enumerate().take(4) {
-		let shift = i * 64;
-		result |= U256::from(value) << shift;
-	}
-	// log::info!(
-	// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-	// 	"u64s_to_u256 result {:?}",
-	// 	result
-	// );
-	result
-}
-
 benchmarks! {
 	nconstraints_10 {
 		use frame_benchmarking::vec;

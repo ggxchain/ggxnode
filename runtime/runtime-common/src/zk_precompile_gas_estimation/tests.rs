@@ -1,3 +1,4 @@
+use super::*;
 use crate::zk_precompile_gas_estimation::mock::*;
 use ethabi::Token;
 use fp_evm::GenesisAccount;
@@ -5,16 +6,6 @@ use frame_support::traits::GenesisBuild;
 use pallet_evm::{GenesisConfig, Runner};
 use sp_core::{H160, U256};
 use std::{collections::BTreeMap, str::FromStr};
-
-fn u64s_to_u256(values: Vec<u64>) -> U256 {
-	let mut result = U256::zero();
-	for (i, value) in values.into_iter().enumerate().take(4) {
-		let shift = i * 64;
-		result |= U256::from(value) << shift;
-	}
-	println!("{:?}", result);
-	result
-}
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	let mut t = frame_system::GenesisConfig::default()

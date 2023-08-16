@@ -161,7 +161,7 @@ fc-rpc-core = { version = "1.1.0-dev", git = "https://github.com/AstarNetwork/fr
 
 # Frontier Primitive
 fc-storage = { version = "1.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
-fp-account = { git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
+fp-account = { version = "1.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 fp-dynamic-fee = { version = "1.0.0", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 fp-evm = { version = "3.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }
 fp-rpc = { version = "3.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.40", default-features = false }

@@ -6,6 +6,22 @@ mod mock;
 mod tests;
 
 pub use pallet::*;
+use sp_core::U256;
+use sp_std::vec::Vec;
+
+pub fn u64s_to_u256(values: Vec<u64>) -> U256 {
+	let mut result = U256::zero();
+	for (i, value) in values.into_iter().enumerate().take(4) {
+		let shift = i * 64;
+		result |= U256::from(value) << shift;
+	}
+	log::info!(
+		target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+		"u64s_to_u256 result {:?}",
+		result
+	);
+	result
+}
 
 #[frame_support::pallet]
 pub mod pallet {

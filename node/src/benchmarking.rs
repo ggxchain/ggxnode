@@ -29,13 +29,11 @@ use sp_core::{sr25519, Pair};
 use sp_inherents::{InherentData, InherentDataProvider};
 use sp_keyring::Sr25519Keyring;
 use sp_runtime::{generic::Era, AccountId32, OpaqueExtrinsic, SaturatedConversion};
-// Frontier
+
 #[cfg(feature = "brooklyn")]
 use ggxchain_runtime_brooklyn::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 #[cfg(not(feature = "brooklyn"))]
 use ggxchain_runtime_sydney::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
-
-// use golden_gate_runtime::{self as runtime, AccountId, Balance, BalancesCall, SystemCall};
 
 use crate::service::FullClient;
 
@@ -144,6 +142,7 @@ pub fn create_benchmark_extrinsic(
 		.checked_next_power_of_two()
 		.map(|c| c / 2)
 		.unwrap_or(2) as u64;
+
 	let extra: runtime::SignedExtra = (
 		//frame_system::CheckNonZeroSender::<runtime::Runtime>::new(),
 		frame_system::CheckSpecVersion::<runtime::Runtime>::new(),
@@ -155,7 +154,12 @@ pub fn create_benchmark_extrinsic(
 		)),
 		frame_system::CheckNonce::<runtime::Runtime>::from(nonce),
 		frame_system::CheckWeight::<runtime::Runtime>::new(),
+		#[cfg(feature = "brooklyn")]
 		pallet_transaction_payment::ChargeTransactionPayment::<runtime::Runtime>::from(0),
+		#[cfg(not(feature = "brooklyn"))]
+		(pallet_transaction_payment::ChargeTransactionPayment::<
+			runtime::Runtime,
+		>::from(0),),
 	);
 
 	let raw_payload = runtime::SignedPayload::from_raw(
@@ -169,7 +173,10 @@ pub fn create_benchmark_extrinsic(
 			best_hash,
 			(),
 			(),
+			#[cfg(feature = "brooklyn")]
 			(),
+			#[cfg(not(feature = "brooklyn"))]
+			((),),
 		),
 	);
 	let signature = raw_payload.using_encoded(|e| sender.sign(e));

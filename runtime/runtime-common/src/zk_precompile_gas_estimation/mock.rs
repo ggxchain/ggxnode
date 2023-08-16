@@ -5,17 +5,12 @@ use pallet_evm::{
 	PrecompileSet,
 };
 use pallet_evm_precompile_zk_groth16_verify::ZKGroth16Verify;
-use sp_core::{ConstU32, H160, H256, U256};
+use sp_core::{ConstU32, ConstU64, H160, H256, U256};
 use sp_runtime::{
 	generic,
 	traits::{BlakeTwo256, IdentityLookup},
 };
 use sp_std::marker::PhantomData;
-
-/// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000_000_000;
-pub const GGX: Balance = 1000 * MILLIGGX;
-pub const EXISTENTIAL_DEPOSIT: Balance = 0;
 
 #[cfg(not(feature = "brooklyn"))]
 pub const CHAIN_ID: u64 = 8866u64;
@@ -69,16 +64,12 @@ impl pallet_timestamp::Config for Test {
 	type WeightInfo = ();
 }
 
-parameter_types! {
-	pub const ExistentialDeposit: u64 = EXISTENTIAL_DEPOSIT;
-}
-
 impl pallet_balances::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = ();
 	type Balance = Balance;
 	type DustRemoval = ();
-	type ExistentialDeposit = ExistentialDeposit;
+	type ExistentialDeposit = ConstU64<2>;
 	type AccountStore = System;
 	type ReserveIdentifier = ();
 	type MaxLocks = ();
