@@ -1,13 +1,16 @@
-# 🛠🚧🏗 Under Construction 🛠🚧🏗
-
 ## Node set-up
 
 ### Dependencies
 
-The following dependencies are required to run the project:
+The following dependencies are required to run the node:
 
-* rust, wasm32-unknown-unknown target
-* protobuf
+* rust
+* build-essential
+* protobuf-compiler
+* libclang-dev
+
+In order to compile WASM contracts you need additional dependencies:
+* wasm32-unknown-unknown target
 * dylint
 
 #### Ubuntu example
@@ -16,12 +19,18 @@ The following dependencies are required to run the project:
 # Install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
 
+# Install additional needed dependencies
+sudo apt update
+sudo apt install build-essential
+sudo apt install protobuf-compiler
+sudo apt install libclang-dev
+```
+
+#### Prerequisites for contract compile:
+```bash
 # Install wasm32-unknown-unknown target
 rustup target add wasm32-unknown-unknown
 rustup component add rust-src
-
-# Install protobuf
-sudo apt install protobuf-compiler
 
 # Install dylint
 cargo install cargo-dylint dylint-link
@@ -43,8 +52,6 @@ From the repository's root directory execute following commands in order:
 
 ### Brooklyn
 
-#### Mainnet
-
 ```bash
 mkdir data-brooklyn
 
@@ -65,30 +72,8 @@ docker run \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 
-#### Testnet
-
-```bash
-mkdir data-brooklyn-testnet
-
-docker build -f Dockerfile.brooklyn-testnet -t ggxchain-node:brooklyn-testnet .
-
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node-testnet \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
-    -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-brooklyn-testnet:/data-brooklyn \
-    ggxchain-node:brooklyn-testnet \
-    --base-path=/data-brooklyn \
-    --chain /tmp/brooklyn.json \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
-```
 
 ### Sydney
-
-#### Mainnet
 
 ```bash
 mkdir data-sydney
@@ -110,27 +95,6 @@ docker run \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
-#### Testnet
-
-```bash
-mkdir data-sydney-testnet
-
-docker build -f Dockerfile.sydney-testnet -t ggxchain-node:sydney-testnet .
-
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node-testnet \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
-    -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-sydney-testnet:/data-sydney \
-    ggxchain-node:sydney-testnet \
-    --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
-```
-
 You can use the following optional flags:
 
 | Flags                             | Description |
@@ -147,10 +111,12 @@ You can use the following optional flags:
 | `--password <password>`           | Specifies the password to use for the keystore. |
 | `--telemetry-url <url verbosity>` | Specifies the URL of the telemetry server to connect to. You can pass <br>this flag multiple times to specify multiple telemetry endpoints. <br>Verbosity levels range from 0-9, with 0 denoting the least verbose. Use <br>the following format to specify the URL followed the verbosity option is `--telemetry-url 'wss://foo/bar 0'`. |
 
+## Without Docker
+
 #### Build
 
 ```bash
-cargo build --release
+cargo build --release --features="fast-runtime"
 # or using nix
 nix build .#node
 ```
