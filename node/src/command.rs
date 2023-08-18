@@ -23,7 +23,7 @@ use clap::Parser;
 use fc_db::frontier_database_dir;
 use prometheus::Registry;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use sc_service::{config::PrometheusConfig, PartialComponents, RpcMethods};
+use sc_service::{config::PrometheusConfig, PartialComponents};
 
 use crate::{
 	chain_spec,
