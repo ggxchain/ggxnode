@@ -21,7 +21,6 @@ use clap::Parser;
 // Substrate
 #[cfg(feature = "brooklyn")]
 use fc_db::frontier_database_dir;
-use prometheus::Registry;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::{config::PrometheusConfig, PartialComponents};
 
@@ -253,26 +252,14 @@ pub fn run() -> sc_cli::Result<()> {
 		}
 		None => {
 			let runner = cli.create_runner(&cli.run.base)?;
-			runner.run_node_until_exit(|config| async move {
-				let mut config = config;
+			runner.run_node_until_exit(|mut config| async move {
+				config.prometheus_config = config.prometheus_config.map(|mut prometheus_config| {
+					prometheus_config.registry =
+						prometheus::Registry::new_custom(Some("ggxnode".to_owned()), None)
+							.expect("failed to create prometheus registry");
+					prometheus_config
+				});
 
-				// Set the port
-				let port = {
-					if let Some(prometheus_config) = config.prometheus_config {
-						prometheus_config.port
-					} else {
-						// Use the default port 9615 if not set
-						let default_port = 9615;
-						SocketAddr::new(Ipv4Addr::LOCALHOST.into(), default_port)
-					}
-				};
-				// TODO: don't spawn prometheus if port is unavailable
-
-				// Custom prometheus prefix name
-				// TODO: figure out how to set labels
-				let registry = Registry::new_custom(Some("ggxnode".to_owned()), None)
-					.expect("failed to create prometheus registry");
-				config.prometheus_config = Some(PrometheusConfig { port, registry });
 				service::new_full(config, &cli).map_err(sc_cli::Error::Service)
 			})
 		}
