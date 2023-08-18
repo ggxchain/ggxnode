@@ -21,7 +21,7 @@ jobs:
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: cachix-install-nix-action
-        uses: cachix/install-nix-action@4b933aa7ebcc94a6174cf1364864e957b4910265
+        uses: cachix/install-nix-action@6ed004b9ccb68dbc28e7c85bee15fa93dbd214ac
         with:
           install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
           nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
