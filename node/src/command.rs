@@ -15,14 +15,12 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-use std::net::{Ipv4Addr, SocketAddr};
-
 use clap::Parser;
 // Substrate
 #[cfg(feature = "brooklyn")]
 use fc_db::frontier_database_dir;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
-use sc_service::{config::PrometheusConfig, PartialComponents};
+use sc_service::PartialComponents;
 
 use crate::{
 	chain_spec,
