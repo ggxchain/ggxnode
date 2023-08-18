@@ -34,6 +34,7 @@ jobs:
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
 
       - name: ArgoCD Deployment
-        run: |
+        env:
           CHAIN: ${{ inputs.chain }}
+        run: |
           echo "Deployment Image selected for $CHAIN: ggxchain-node:$TAG"
