@@ -37,7 +37,7 @@ jobs:
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
 
       - name: ArgoCD Deployment Brookyln
-        if:  ${{ inputs.chain }} == 'brooklyn'
+        if:  ${{ inputs.chain == 'brooklyn' }}
         env:
           CHAIN: ${{ inputs.chain }}
           APPS: ${{ env.BROOKLYN_APPS }}
@@ -55,7 +55,7 @@ jobs:
 
 
       - name: ArgoCD Deployment Sydney
-        if:  ${{ inputs.chain }} == 'sydney'
+        if:  ${{ inputs.chain  == 'sydney' }}
         env:
           CHAIN: ${{ inputs.chain }}
           APPS: ${{ env.SYDNEY_APPS }}
