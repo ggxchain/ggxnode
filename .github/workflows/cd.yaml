@@ -6,7 +6,6 @@ on:
       chain:
         description: 'Chain'
         required: true
-        default: 'brooklyn'
         type: choice
         options:
         - brooklyn
@@ -14,8 +13,8 @@ on:
 
 env:
   ## DO NOT INCLUDE "00" validators, they are initial bootnodes that requires manual updates ONLY.
-  brooklyn_apps: ("archive", "validator-01")
-  sydney_apps: ("archive")
+  BROOKLYN_APPS: ("archive", "validator-01")
+  SYDNEY_APPS: ("archive")
 
 jobs:
   argocd-deploy:
@@ -37,15 +36,35 @@ jobs:
           aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
 
-      - name: ArgoCD Deployment
+      - name: ArgoCD Deployment Brookyln
+        if:  ${{ inputs.chain }} == 'brooklyn'
         env:
           CHAIN: ${{ inputs.chain }}
-          APPS: ${{ env.${{ inputs.chain }}_apps }}
+          APPS: ${{ env.BROOKLYN_APPS }}
         run: |
-          echo "Deployment Image selected for $CHAIN: ggxchain-node:$TAG"
+          echo "IMAGE=brooklyn-$TAG"
+          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
           declare -a apps=$APPS
           for app in ${apps[@]}; do
-            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$TAG/" sts.yaml && cd ..
+            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
+            echo $app
+          done
+          if [ $? -ne 0 ]; then
+            echo "Failed to update manifests"
+          fi
+
+
+      - name: ArgoCD Deployment Sydney
+        if:  ${{ inputs.chain }} == 'sydney'
+        env:
+          CHAIN: ${{ inputs.chain }}
+          APPS: ${{ env.SYDNEY_APPS }}
+        run: |
+          echo "IMAGE=sydney-$TAG"
+          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
+          declare -a apps=$APPS
+          for app in ${apps[@]}; do
+            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
             echo $app
           done
           if [ $? -ne 0 ]; then
