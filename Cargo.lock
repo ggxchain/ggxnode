@@ -3833,7 +3833,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-node"
-version = "0.0.1"
+version = "0.1.0"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -3913,7 +3913,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-brooklyn"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "fp-rpc",
  "fp-self-contained",
@@ -3984,7 +3984,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-sydney"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "fp-evm",
  "fp-rpc",
@@ -7010,7 +7010,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-session"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "derive_more",
  "fp-evm",
@@ -7108,7 +7108,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-zk-groth16-verify"
-version = "0.0.0"
+version = "0.1.0"
 dependencies = [
  "ark-bn254",
  "ark-crypto-primitives",

@@ -1,6 +1,6 @@
 [package]
 name = "ggxchain-runtime-brooklyn"
-version = "0.0.0"
+version.workspace = true
 license = "Unlicense"
 description = "GGX PoS Runtime"
 publish = false
