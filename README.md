@@ -65,7 +65,7 @@ docker run \
 ```
 
 
-### Brooklyn
+### Brooklyn - development network:
 
 ```bash
 mkdir data-brooklyn
