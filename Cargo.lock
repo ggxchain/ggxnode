@@ -4860,6 +4860,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "453ad9f582a441959e5f0d088b02ce04cfe8d51a8eaf077f12ac6d3e94164ca6"
 
 [[package]]
+name = "itoap"
+version = "1.0.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "9028f49264629065d057f340a86acb84867925865f73bbf8d47b4d149a7e88b8"
+
+[[package]]
 name = "jobserver"
 version = "0.1.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9310,6 +9316,44 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "794821e4ccb0d9f979512f9c1973480123f9bd62a90d74ab0f9426fcf8f4a529"
 dependencies = [
  "bytemuck",
+]
+
+[[package]]
+name = "sailfish"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "7519b7521780097b0183bb4b0c7c2165b924f5f1d44c3ef765bde8c2f8008fd1"
+dependencies = [
+ "itoap",
+ "ryu",
+ "sailfish-macros",
+ "version_check",
+]
+
+[[package]]
+name = "sailfish-compiler"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "535500faca492ee8054fbffdfca6447ca97fa495e0ede9f28fa473e1a44f9d5c"
+dependencies = [
+ "filetime",
+ "home",
+ "memchr",
+ "proc-macro2",
+ "quote",
+ "serde",
+ "syn 2.0.17",
+ "toml 0.7.4",
+]
+
+[[package]]
+name = "sailfish-macros"
+version = "0.8.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "06a95a6b8a0f59bf66f430a4ed37ece23fcefcd26898399573043e56fb202be2"
+dependencies = [
+ "proc-macro2",
+ "sailfish-compiler",
 ]
 
 [[package]]
@@ -14464,6 +14508,20 @@ dependencies = [
  "sha1",
  "time 0.3.17",
  "zstd",
+]
+
+[[package]]
+name = "zkutils"
+version = "0.1.0"
+dependencies = [
+ "assert_cmd",
+ "clap",
+ "ethers",
+ "sailfish",
+ "serde",
+ "serde_json",
+ "tempfile",
+ "tokio",
 ]
 
 [[package]]

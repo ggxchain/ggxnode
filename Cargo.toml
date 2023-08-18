@@ -6,6 +6,7 @@ members = [
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
+	"zkutils",
 ]
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
@@ -226,6 +227,9 @@ ark-poly = { version = "0.4.1", default-features = false }
 ark-relations = { version = "0.4.0", default-features = false }
 ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
+
+# zk utils
+sailfish = "0.8.0"
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

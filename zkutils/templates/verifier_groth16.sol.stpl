@@ -1,0 +1,125 @@
+// SPDX-License-Identifier: GPL-3.0
+/*
+    Copyright 2021 0KIMS association.
+
+    This file is generated with [snarkJS](https://github.com/iden3/snarkjs).
+
+    snarkJS is a free software: you can redistribute it and/or modify it
+    under the terms of the GNU General Public License as published by
+    the Free Software Foundation, either version 3 of the License, or
+    (at your option) any later version.
+
+    snarkJS is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY
+    or FITNESS FOR A PARTICULAR PURPOSE. See the GNU General Public
+    License for more details.
+
+    You should have received a copy of the GNU General Public License
+    along with snarkJS. If not, see <https://www.gnu.org/licenses/>.
+*/
+
+pragma solidity >=0.7.0 <0.9.0;
+
+/**
+* @title ZKGroth16Verify Interface
+*
+* The interface through which solidity contracts will interact with ZKGroth16Verify
+* Address :    0x0000000000000000000000000000000000008888
+*/
+interface IZKGroth16Verify {
+    /**
+    * @notice Verifies a Groth16 zkSNARK proof.
+    *
+    * @param proof_a The first element of the zkSNARK proof.
+    * @param proof_b The second element of the zkSNARK proof.
+    * @param proof_c The third element of the zkSNARK proof.
+    * @param vk_alpha The first element of the verification key.
+    * @param vk_beta The second element of the verification key.
+    * @param vk_gamma The third element of the verification key.
+    * @param vk_delta The fourth element of the verification key.
+    * @param vk_ic The array of the rest of the elements of the verification key.
+    * @param input The array of public inputs to the zkSNARK.
+    *
+    * @return valid A boolean value representing whether the proof is valid or not.
+    */
+    function verify(
+        uint[2] memory proof_a,
+        uint[2][2] memory proof_b,
+        uint[2] memory proof_c,
+        uint[2] memory vk_alpha,
+        uint[2][2] memory vk_beta,
+        uint[2][2] memory vk_gamma,
+        uint[2][2] memory vk_delta,
+        uint[2][] memory vk_ic,
+        uint[] memory input
+    ) external view returns (bool valid);
+}
+
+contract Groth16Verifier {
+    // Verification Key data
+    uint256[2] vk_alpha = [
+        <%=vk_alpha_1[0]%>,
+        <%=vk_alpha_1[1]%>
+    ];
+
+    uint256[2][2] vk_beta = [
+        [
+            <%=vk_beta_2[0][0]%>,
+            <%=vk_beta_2[0][1]%>
+        ],
+        [
+            <%=vk_beta_2[1][0]%>,
+            <%=vk_beta_2[1][1]%>
+        ]
+    ];
+    uint256[2][2] vk_gamma = [
+        [
+            <%=vk_gamma_2[0][0]%>,
+            <%=vk_gamma_2[0][1]%>
+        ],
+        [
+            <%=vk_gamma_2[1][0]%>,
+            <%=vk_gamma_2[1][1]%>
+        ]
+    ];
+    uint256[2][2] vk_delta = [
+        [
+            <%=vk_delta_2[0][0]%>,
+            <%=vk_delta_2[0][1]%>
+        ],
+        [
+            <%=vk_delta_2[1][0]%>,
+            <%=vk_delta_2[1][1]%>
+        ]
+    ];
+
+    uint256[2][] vk_ic = [<% for i in 0..ic.len() { %>
+        [
+          <%=ic[i][0]%>,
+          <%=ic[i][1]%>
+        ]<% if i != ic.len()-1 {%>,<% } %><% } %>
+    ];
+
+    function verifyProof(uint[2] calldata _pA, uint[2][2] calldata _pB, uint[2] calldata _pC, uint[<%=ic.len()-1%>] calldata _pubSignals) public view returns (bool) {
+        uint[] memory input = new uint[](_pubSignals.length);
+        <% for i in 0..ic.len()-1 { %>input[<%=i%>] = _pubSignals[<%=i%>];<% } %>
+
+        uint[2][2] memory pB;
+        pB[0][0] = _pB[0][1];
+        pB[0][1] = _pB[0][0];
+        pB[1][0] = _pB[1][1];
+        pB[1][1] = _pB[1][0];
+
+        return IZKGroth16Verify(0x0000000000000000000000000000000000008888).verify(
+            _pA,
+            pB,
+            _pC,
+            vk_alpha,
+            vk_beta,
+            vk_gamma,
+            vk_delta,
+            vk_ic,
+            input
+        );
+    }
+ }

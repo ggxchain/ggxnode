@@ -1,0 +1,18 @@
+[package]
+name = "zkutils"
+version = "0.1.0"
+edition = "2021"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+clap = { workspace = true }
+serde = { workspace = true, features = ["derive"] }
+serde_json = { workspace = true }
+sailfish = { workspace = true }
+
+[dev-dependencies]
+assert_cmd = { workspace = true }
+tempfile = { workspace = true }
+tokio = { workspace = true, features = ["macros", "time", "parking_lot", "rt"] }
+ethers = { workspace = true }
