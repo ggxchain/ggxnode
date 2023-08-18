@@ -40,7 +40,7 @@ jobs:
       - name: ArgoCD Deployment
         env:
           CHAIN: ${{ inputs.chain }}
-          APPS: ${{ env.${CHAIN}_apps }}
+          APPS: ${{ env.${{ inputs.chain }}_apps }}
         run: |
           echo "Deployment Image selected for $CHAIN: ggxchain-node:$TAG"
           declare -a apps=$APPS
