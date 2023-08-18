@@ -1,0 +1,39 @@
+name: ArgoCD
+
+on:
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: 'Chain'
+        required: true
+        default: 'brooklyn'
+        type: choice
+        options:
+        - brooklyn
+        - sydney
+
+
+jobs:
+  argocd-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Get Image Tag
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+          CHAIN: ${{ inputs.chain }}
+        run: |
+          echo "Chain: $CHAIN"
+          aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
+          echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
+
+      - name: ArgoCD Deployment
+        run: |
+          CHAIN: ${{ inputs.chain }}
+          echo "Deployment Image selected for $CHAIN: ggxchain-node:$TAG"
