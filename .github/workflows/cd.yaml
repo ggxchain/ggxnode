@@ -12,6 +12,10 @@ on:
         - brooklyn
         - sydney
 
+env:
+  ## DO NOT INCLUDE "00" validators, they are initial bootnodes that requires manual updates ONLY.
+  brooklyn_apps: ("archive", "validator-01")
+  sydney_apps: ("archive")
 
 jobs:
   argocd-deploy:
@@ -36,5 +40,14 @@ jobs:
       - name: ArgoCD Deployment
         env:
           CHAIN: ${{ inputs.chain }}
+          APPS: ${{ env.${CHAIN}_apps }}
         run: |
           echo "Deployment Image selected for $CHAIN: ggxchain-node:$TAG"
+          declare -a apps=$APPS
+          for app in ${apps[@]}; do
+            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$TAG/" sts.yaml && cd ..
+            echo $app
+          done
+          if [ $? -ne 0 ]; then
+            echo "Failed to update manifests"
+          fi
