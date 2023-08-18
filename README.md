@@ -1,5 +1,9 @@
 ## Node set-up
 
+> **NOTE:** Here you can find manual on how to run a node locally.
+> Visit [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for full documentation.
+
+
 ### Dependencies
 
 The following dependencies are required to build the node:
@@ -17,21 +21,19 @@ sudo apt install build-essential protobuf-compiler libclang-dev
 #### Nix
 
 ```bash
-# Downloads all necessary dependendencies
+# Downloads all necessary dependencies
 nix develop --impure
 ```
 
+#### MacOS
 
-#### Prerequisites for contract compile:
 ```bash
-# Install wasm32-unknown-unknown target
-rustup target add wasm32-unknown-unknown
-rustup component add rust-src
+# Install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
 
-# Install dylint
-cargo install cargo-dylint dylint-link
+# Install protoc
+brew install protobuf
 ```
-
 
 ## Docker
 
@@ -39,6 +41,29 @@ Due to the highly CPU dependent nature of 'cargo build' command, it's strongly r
 It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
 
 From the repository's root directory execute following commands in order:
+
+### Sydney - our public testnet:
+
+```bash
+mkdir data-sydney
+
+docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
+
+docker run \
+    -it \
+    --rm \
+    --name ggx-local-node \
+    -u $(id -g):$(id -u) \
+    -p 30333:30333 \
+    -v $(pwd)/custom-spec-files:/tmp \
+    -v $(pwd)/data-sydney:/data-sydney \
+    ggxchain-node:sydney \
+    --base-path=/data-sydney \
+    --chain /tmp/sydney.json \
+    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
+    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+```
+
 
 ### Brooklyn
 
@@ -62,28 +87,6 @@ docker run \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 
-
-### Sydney
-
-```bash
-mkdir data-sydney
-
-docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
-
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
-    -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-sydney:/data-sydney \
-    ggxchain-node:sydney \
-    --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
-    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
-```
 
 You can use the following optional flags:
 
@@ -119,4 +122,16 @@ cargo run --release -- --dev
 nix run .#single-fast # to run an one node network
 nix run .#multi-fast # to run 3-node network
 nix run .#prune-running # to stop nodes
+```
+
+
+
+##### If you want to compile WASM contracts, you'll need additional dependencies:
+```bash
+# Install wasm32-unknown-unknown target
+rustup target add wasm32-unknown-unknown
+rustup component add rust-src
+
+# Install dylint
+cargo install cargo-dylint dylint-link
 ```
