@@ -2,29 +2,25 @@
 
 ### Dependencies
 
-The following dependencies are required to run the node:
+The following dependencies are required to build the node:
 
-* rust
-* build-essential
-* protobuf-compiler
-* libclang-dev
-
-In order to compile WASM contracts you need additional dependencies:
-* wasm32-unknown-unknown target
-* dylint
-
-#### Ubuntu example
+#### Linux
 
 ```bash
 # Install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
 
-# Install additional needed dependencies
-sudo apt update
-sudo apt install build-essential
-sudo apt install protobuf-compiler
-sudo apt install libclang-dev
+# Install support software
+sudo apt install build-essential protobuf-compiler libclang-dev
 ```
+
+#### Nix
+
+```bash
+# Downloads all necessary dependendencies
+nix develop --impure
+```
+
 
 #### Prerequisites for contract compile:
 ```bash
@@ -36,12 +32,6 @@ rustup component add rust-src
 cargo install cargo-dylint dylint-link
 ```
 
-#### Nix example
-
-```bash
-# Downloads all necessary dependendencies
-nix develop --impure
-```
 
 ## Docker
 
@@ -116,7 +106,7 @@ You can use the following optional flags:
 #### Build
 
 ```bash
-cargo build --release --features="fast-runtime"
+cargo build --release
 # or using nix
 nix build .#node
 ```
