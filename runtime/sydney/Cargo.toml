@@ -1,6 +1,6 @@
 [package]
 name = "ggxchain-runtime-sydney"
-version = "0.0.0"
+version.workspace = true
 license = "Unlicense"
 description = "GGX Chain PoS Runtime"
 publish = false
