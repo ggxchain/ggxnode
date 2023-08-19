@@ -91,4 +91,7 @@ pub enum Subcommand {
 	/// Db meta columns information.
 	#[cfg(feature = "brooklyn")]
 	FrontierDb(fc_cli::FrontierDbCmd),
+
+	/// Node version information.
+	Version,
 }

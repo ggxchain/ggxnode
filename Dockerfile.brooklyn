@@ -18,15 +18,20 @@ RUN rustup target add wasm32-unknown-unknown
 
 WORKDIR /usr/src/app
 
-COPY  . .
+COPY . .
 
-RUN cargo build --locked --release --config net.git-fetch-with-cli=true --features="brooklyn"
+RUN cargo build --locked --release --package ggxchain-node --no-default-features --features="brooklyn" --config net.git-fetch-with-cli=true
 
 
 FROM debian:11 as production
 
+ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME /usr/src/app
+
 WORKDIR $HOME
+
+RUN apt-get update --yes && \
+    apt-get install curl --yes --no-install-recommends
 
 COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
 

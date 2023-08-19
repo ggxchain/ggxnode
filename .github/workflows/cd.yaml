@@ -1,0 +1,72 @@
+name: ArgoCD
+
+on:
+  workflow_dispatch:
+    inputs:
+      chain:
+        description: 'Chain'
+        required: true
+        type: choice
+        options:
+        - brooklyn
+        - sydney
+
+env:
+  ## DO NOT INCLUDE "00" validators, they are initial bootnodes that requires manual updates ONLY.
+  BROOKLYN_APPS: ("archive", "validator-01")
+  SYDNEY_APPS: ("archive")
+
+jobs:
+  argocd-deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v2
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: eu-central-1
+
+      - name: Get Image Tag
+        env:
+          S3_BUCKET: ggx-docker-image-tags
+          CHAIN: ${{ inputs.chain }}
+        run: |
+          echo "Chain: $CHAIN"
+          aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
+          echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
+
+      - name: ArgoCD Deployment Brookyln
+        if:  ${{ inputs.chain == 'brooklyn' }}
+        env:
+          CHAIN: ${{ inputs.chain }}
+          APPS: ${{ env.BROOKLYN_APPS }}
+        run: |
+          echo "IMAGE=brooklyn-$TAG"
+          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
+          declare -a apps=$APPS
+          for app in ${apps[@]}; do
+            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
+            echo $app
+          done
+          if [ $? -ne 0 ]; then
+            echo "Failed to update manifests"
+          fi
+
+
+      - name: ArgoCD Deployment Sydney
+        if:  ${{ inputs.chain  == 'sydney' }}
+        env:
+          CHAIN: ${{ inputs.chain }}
+          APPS: ${{ env.SYDNEY_APPS }}
+        run: |
+          echo "IMAGE=sydney-$TAG"
+          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
+          declare -a apps=$APPS
+          for app in ${apps[@]}; do
+            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
+            echo $app
+          done
+          if [ $? -ne 0 ]; then
+            echo "Failed to update manifests"
+          fi

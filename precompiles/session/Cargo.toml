@@ -1,7 +1,7 @@
 [package]
 name = "pallet-evm-precompile-session"
 description = "A Precompile to make pallet-session accessible to pallet-evm"
-version = "0.0.0"
+version.workspace = true
 license = "Unlicense"
 publish = false
 authors.workspace = true
@@ -40,10 +40,9 @@ scale-codec = { package = "parity-scale-codec", workspace = true }
 pallet-timestamp.workspace = true
 sp-runtime.workspace = true
 sp-staking.workspace = true
-pallet-balances.workspace = true
 
 [features]
-default = [ "std" ]
+default = ["std"]
 std = [
 	"scale-codec/std",
 	"fp-evm/std",

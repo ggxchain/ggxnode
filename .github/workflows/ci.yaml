@@ -4,7 +4,6 @@ name: GGX-Substrate-Node
 on:
   push:
     branches: [main]
-    tags: [release**]
   pull_request:
     # The branches below must be a subset of the branches above
     branches: [main]
@@ -22,7 +21,7 @@ jobs:
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: cachix-install-nix-action
-        uses: cachix/install-nix-action@4b933aa7ebcc94a6174cf1364864e957b4910265
+        uses: cachix/install-nix-action@6ed004b9ccb68dbc28e7c85bee15fa93dbd214ac
         with:
           install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
           nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
@@ -32,7 +31,7 @@ jobs:
             system-features = kvm
             http2 = true
       - name: cachix-cachix-action
-        uses: cachix/cachix-action@ea6f6e9b45e696e7d061ffdbec262b68272d07eb
+        uses: cachix/cachix-action@acbd3b149a22261304d9971efa484a48cc2f6c58
         with:
           authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
           name: ${{ env.CACHIX_NAME }}
@@ -47,10 +46,8 @@ jobs:
           persist-credentials: false
       - run: nix build --log-lines 100 .#lint-all
 
-  docker-build-push-sydney:
-    if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
-    needs: build-lint-all
+  docker-build-sydney:
+    if: github.ref == 'refs/heads/main'
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Configure AWS Credentials
@@ -77,7 +74,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: c6u3u5c0
-          REPOSITORY: golden-gate-node
+          REPOSITORY: ggxchain-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA -f Dockerfile.sydney .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA
@@ -94,10 +91,8 @@ jobs:
       - name: Log out of Amazon ECR
         run: docker logout ${{ steps.login-ecr-public.outputs.registry }}
 
-  docker-build-push-brooklyn:
-    if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
-    needs: build-lint-all
+  docker-build-brooklyn:
+    if: github.ref == 'refs/heads/main'
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Configure AWS Credentials
@@ -124,7 +119,7 @@ jobs:
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
           REGISTRY_ALIAS: c6u3u5c0
-          REPOSITORY: golden-gate-node
+          REPOSITORY: ggxchain-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA -f Dockerfile.brooklyn .
           docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA
@@ -140,115 +135,3 @@ jobs:
 
       - name: Log out of Amazon ECR
         run: docker logout ${{ steps.login-ecr-public.outputs.registry }}
-
-
-  deploy-brooklyn-dev:
-    if: startsWith(github.ref, 'refs/tags/prerelease-brooklyn')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
-
-      - name: Get Image Tag
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          aws s3 cp s3://$S3_BUCKET/brooklyn_version brooklyn_version
-          echo "TAG=$(cat brooklyn_version)" >> $GITHUB_ENV
-
-      - name: ArgoCD Deployment
-        run: |
-          echo "Docker Image for this deployment is: $TAG"
-          echo "will be impletemented after EKS provisioning"
-
-      - name: Store Image Tag on AWS S3
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          echo "$TAG" > release_brooklyn 
-          aws s3 cp release_brooklyn s3://$S3_BUCKET/release_brooklyn
-          echo "This image will be used in future production deployments.."
-
-
-  deploy-sydney-dev:
-    if: startsWith(github.ref, 'refs/tags/prerelease-sydney')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
-
-      - name: Get Image Tag
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          aws s3 cp s3://$S3_BUCKET/sydney_version sydney_version
-          echo "TAG=$(cat sydney_version)" >> $GITHUB_ENV
-
-      - name: ArgoCD Deployment
-        run: |
-          echo "Docker Image for this deployment is: $TAG"
-          echo "will be impletemented after EKS provisioning"
-
-      - name: Store Image Tag on AWS S3
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          echo "$TAG" > release_sydney
-          aws s3 cp release_sydney s3://$S3_BUCKET/release_sydney
-          echo "This image will be used in future production deployments.."
-
-
-  deploy-brooklyn-prod:
-    if: startsWith(github.ref, 'refs/tags/release-brooklyn')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
-
-      - name: Get Image Tag
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          aws s3 cp s3://$S3_BUCKET/release_brooklyn release_brooklyn
-          echo "TAG=$(cat release_brooklyn)" >> $GITHUB_ENV
-
-      - name: ArgoCD Deployment
-        run: |
-          echo "Docker Image for this deployment is: $TAG"
-          echo "will be impletemented after EKS provisioning"
-
-
-  deploy-sydney-prod:
-    if: startsWith(github.ref, 'refs/tags/release-sydney')
-    runs-on: ubuntu-latest
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: eu-central-1
-
-      - name: Get Image Tag
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          aws s3 cp s3://$S3_BUCKET/release_sydney release_sydney
-          echo "TAG=$(cat release_sydney)" >> $GITHUB_ENV
-
-      - name: ArgoCD Deployment
-        run: |
-          echo "Docker Image for this deployment is: $TAG"
-          echo "will be impletemented after EKS provisioning"
