@@ -244,10 +244,6 @@ pub fn run() -> sc_cli::Result<()> {
 				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
 			})
 		}
-		Some(Subcommand::Version) => {
-			println!("{}: {}", Cli::impl_name(), Cli::impl_version());
-			Ok(())
-		}
 		None => {
 			let runner = cli.create_runner(&cli.run.base)?;
 			runner.run_node_until_exit(|config| async move {

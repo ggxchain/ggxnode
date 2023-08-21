@@ -7020,7 +7020,6 @@ dependencies = [
  "libsecp256k1",
  "log",
  "num_enum 0.5.11",
- "pallet-balances",
  "pallet-evm",
  "pallet-session",
  "pallet-timestamp",
