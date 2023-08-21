@@ -244,9 +244,20 @@ pub fn run() -> sc_cli::Result<()> {
 				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
 			})
 		}
+		Some(Subcommand::Version) => {
+			println!("{}: {}", Cli::impl_name(), Cli::impl_version());
+			Ok(())
+		}
 		None => {
 			let runner = cli.create_runner(&cli.run.base)?;
-			runner.run_node_until_exit(|config| async move {
+			runner.run_node_until_exit(|mut config| async move {
+				config.prometheus_config = config.prometheus_config.map(|mut prometheus_config| {
+					prometheus_config.registry =
+						prometheus::Registry::new_custom(Some("ggxnode".to_owned()), None)
+							.expect("failed to create prometheus registry");
+					prometheus_config
+				});
+
 				service::new_full(config, &cli).map_err(sc_cli::Error::Service)
 			})
 		}
