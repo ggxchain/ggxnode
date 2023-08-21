@@ -42,7 +42,6 @@ log.workspace = true
 ethabi.workspace = true
 
 [dev-dependencies]
-fp-account.workspace = true
 fp-evm.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
