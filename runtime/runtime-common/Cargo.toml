@@ -77,7 +77,6 @@ std = [
 	"sp-staking/std",
 	"sp-std/std",
 	"frame-benchmarking/std",
-	# "rlp/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",
