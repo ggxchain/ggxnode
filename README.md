@@ -118,7 +118,7 @@ You can use the following optional flags:
 
 ### 3.2 Without Docker
 
-All required parameters for `run` command you can take from Docker example.
+All required parameters (--name, -u, -p etc.) for `run` command you can take from Docker example.
 
 #### Linux / MacOS
 
