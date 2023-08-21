@@ -1,10 +1,17 @@
-## Node set-up
+# GGX Chain node set-up
 
-> **NOTE:** Here you can find manual on how to run a node locally.
+> **NOTE:** Here you can find manual on how to run a node locally.  
 > Visit [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for full documentation.
 
+## 1. Clone repo
 
-### Dependencies
+To get started download this repository and navigate to `ggxnode` folder, e.g.:
+```bash
+git clone https://github.com/ggxchain/ggxnode.git
+cd ggxchain
+```
+
+## 2. Install dependencies
 
 The following dependencies are required to build the node:
 
@@ -16,13 +23,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install support software
 sudo apt install build-essential protobuf-compiler libclang-dev
-```
 
-#### Nix
-
-```bash
-# Downloads all necessary dependencies
-nix develop --impure
+# Install wasm32-unknown-unknown target
+rustup target add wasm32-unknown-unknown
+rustup component add rust-src
 ```
 
 #### MacOS
@@ -35,14 +39,22 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 brew install protobuf
 ```
 
-## Docker
+#### Nix
+
+```bash
+# If you have nix package manager, downloads all necessary dependencies
+nix develop --impure
+```
+## 3. Build & Run
+
+### 3.1 With Docker
 
 Due to the highly CPU dependent nature of 'cargo build' command, it's strongly recommended that you have at least 8 core enabled for this method.
-It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
+It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser processor power during the docker build operation.
 
 From the repository's root directory execute following commands in order:
 
-### Sydney - our public testnet:
+#### Sydney - our public testnet:
 
 ```bash
 mkdir data-sydney
@@ -59,13 +71,13 @@ docker run \
     -v $(pwd)/data-sydney:/data-sydney \
     ggxchain-node:sydney \
     --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
+    --chain sydney \
     --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
 
-### Brooklyn - development network:
+#### Brooklyn - development network:
 
 ```bash
 mkdir data-brooklyn
@@ -82,7 +94,7 @@ docker run \
     -v $(pwd)/data-brooklyn:/data-brooklyn \
     ggxchain-node:brooklyn \
     --base-path=/data-brooklyn \
-    --chain /tmp/brooklyn.json \
+    --chain brooklyn \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
     --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
@@ -104,34 +116,41 @@ You can use the following optional flags:
 | `--password <password>`           | Specifies the password to use for the keystore. |
 | `--telemetry-url <url verbosity>` | Specifies the URL of the telemetry server to connect to. You can pass <br>this flag multiple times to specify multiple telemetry endpoints. <br>Verbosity levels range from 0-9, with 0 denoting the least verbose. Use <br>the following format to specify the URL followed the verbosity option is `--telemetry-url 'wss://foo/bar 0'`. |
 
-## Without Docker
+### 3.2 Without Docker
 
-#### Build
+#### Linux / MacOS
 
 ```bash
-cargo build --release
-# or using nix
-nix build .#node
+#Sydney:
+cargo build --release  --features="sydney"
+cargo run --release -p ggxchain-node --features "sydney"
+
+#Brooklyn:
+cargo build --release  --features="brooklyn"
+cargo run --release -p ggxchain-node --features "brooklyn"
 ```
+To run in dev mode add `-- --dev` flag to run command
 
-#### Run
+#### nix
 
 ```bash
-cargo run --release -- --dev
-# or using nix
-nix run .#single-fast # to run an one node network
+#Sydney:
+nix build .#ggxchain-node-sydney
+nix run .#ggxchain-node-sydney --chain sydney
+
+#Brooklyn:
+nix build .#ggxchain-node-brooklyn
+nix run .#ggxchain-node-brooklyn  --chain brooklyn
+
 nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop nodes
+nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
 ```
+To run in dev mode use `nix run .#single-fast` for Brooklyn and `nix run .#single-fast sydney` for Syndey
 
 
 
 ##### If you want to compile WASM contracts, you'll need additional dependencies:
 ```bash
-# Install wasm32-unknown-unknown target
-rustup target add wasm32-unknown-unknown
-rustup component add rust-src
-
 # Install dylint
 cargo install cargo-dylint dylint-link
 ```
