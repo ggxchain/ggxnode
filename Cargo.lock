@@ -3868,6 +3868,7 @@ dependencies = [
  "pallet-transaction-payment-rpc",
  "parity-scale-codec 3.5.0",
  "polkadot-rpc",
+ "prometheus",
  "rand 0.8.5",
  "sc-basic-authorship",
  "sc-cli",
@@ -7021,7 +7022,6 @@ dependencies = [
  "libsecp256k1",
  "log",
  "num_enum 0.5.11",
- "pallet-balances",
  "pallet-evm",
  "pallet-session",
  "pallet-timestamp",
@@ -9033,7 +9033,6 @@ name = "runtime-common"
 version = "0.1.0"
 dependencies = [
  "ethabi 18.0.0",
- "fp-account",
  "fp-evm",
  "frame-benchmarking",
  "frame-support",

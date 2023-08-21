@@ -42,7 +42,6 @@ log.workspace = true
 ethabi.workspace = true
 
 [dev-dependencies]
-fp-account.workspace = true
 fp-evm.workspace = true
 pallet-balances.workspace = true
 pallet-timestamp.workspace = true
@@ -78,7 +77,6 @@ std = [
 	"sp-staking/std",
 	"sp-std/std",
 	"frame-benchmarking/std",
-	# "rlp/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",

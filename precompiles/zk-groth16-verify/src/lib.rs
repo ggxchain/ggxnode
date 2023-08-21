@@ -79,7 +79,7 @@ impl ZKGroth16Verify {
 		// Read the offset of vk_ic and skip the length field
 		let vk_ic_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
-		// Read the offset of input
+		// Read the offset of input and skip the length field
 		let input_offset = U256::from_big_endian(next()).low_u32() as usize + 32;
 
 		// Read the vk_ic array
