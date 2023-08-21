@@ -1,6 +1,6 @@
 [package]
 name = "ggxchain-node"
-version = "0.0.1"
+version = "0.1.0"
 license = "Unlicense"
 build = "build.rs"
 description = "A fresh FRAME-based Substrate node, ready for hacking."
@@ -24,6 +24,7 @@ scale-codec = { package = "parity-scale-codec", workspace = true }
 # Substrate
 mmr-gadget.workspace = true
 mmr-rpc.workspace = true
+prometheus.workspace = true
 sc-basic-authorship.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
