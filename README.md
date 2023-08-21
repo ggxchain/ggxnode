@@ -118,6 +118,8 @@ You can use the following optional flags:
 
 ### 3.2 Without Docker
 
+Parameters for `run` command you can take from Docker example:
+
 #### Linux / MacOS
 
 ```bash
