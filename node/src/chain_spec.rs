@@ -188,7 +188,11 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 			)
 		},
 		// Some dns bootnodes
-		vec![],
+		vec![
+			"/dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC".parse().unwrap(),
+			"/dns/moon.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWCxnYzFkiFL5Dc6iEXXTVeFYFHmCqbhSosovEDid59TFR".parse().unwrap(),
+			"/dns/earth.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWQxwb6tTHqaPy8s3133yqBuJZVvqJfH6GJGy2PspDAYzQ".parse().unwrap(),
+			],
 		// Telemetry
 		Some(
 			TelemetryEndpoints::new(vec![(
