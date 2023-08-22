@@ -160,7 +160,7 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 					),
 					(
 						sr25519::Public::from_ss58check(
-							"5CtKi5GCuzQLTA25cwJKCZLea3rBUYDLsdPXyrPnPuUpNTxg",
+							"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
 						)
 						.unwrap()
 						.into_account()
@@ -180,8 +180,8 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 				// Initial Validator
 				vec![ValidatorIdentity::from_pub(
 					"5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
-					"5CtKi5GCuzQLTA25cwJKCZLea3rBUYDLsdPXyrPnPuUpNTxg",
-					"5DUNfB4c3yKXp1LprVeAqUhgJtxuxqFiB3KUdXScSf9mpFdj",
+					"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+					"5GwiY7NjgEAyn8dtYEaAr5GVpwJZncVGQxX2ayBsVCASirfY",
 				)],
 				8886,
 				false,

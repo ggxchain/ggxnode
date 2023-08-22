@@ -72,7 +72,7 @@ docker run \
     ggxchain-node:sydney \
     --base-path=/data-sydney \
     --chain sydney \
-    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
+    --bootnodes /ip4/18.198.233.34/tcp/30333/p2p/12D3KooWFnFkPBYHdPzh8g5p33xCRZfga77kkYaR2gknxKM2HE6q \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
