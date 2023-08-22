@@ -3,7 +3,9 @@
   "id": "GGX",
   "chainType": "Live",
   "bootNodes": [
-    "/ip4/127.0.0.1/tcp/30333/p2p/12D3KooWJqiwbrJAdGkM1tpb2GQvzSy3PZVmtqfneC6mQ1WK4jyS"
+    "/dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC",
+    "/dns/moon.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWCxnYzFkiFL5Dc6iEXXTVeFYFHmCqbhSosovEDid59TFR",
+    "/dns/earth.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWQxwb6tTHqaPy8s3133yqBuJZVvqJfH6GJGy2PspDAYzQ"
   ],
   "telemetryEndpoints": [
     [
