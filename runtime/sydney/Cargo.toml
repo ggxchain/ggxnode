@@ -93,6 +93,9 @@ pallet-xvm = { workspace = true, default-features = false, features = ["evm", "w
 pallet-contracts-primitives.workspace = true
 pallet-contracts.workspace = true
 
+# oracle
+pallet-oracle.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 

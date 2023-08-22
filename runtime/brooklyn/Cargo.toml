@@ -92,6 +92,9 @@ ibc.workspace = true
 ibc-proto.workspace = true
 prost.workspace = true
 
+# oracle
+pallet-oracle.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
