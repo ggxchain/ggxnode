@@ -1,99 +1,65 @@
-# 🛠🚧🏗 Under Construction 🛠🚧🏗
+# GGX Chain node set-up
 
-## Node set-up
+> **NOTE:** Here you can find manual on how to run a node locally.  
+> Visit [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for full documentation.
 
-### Dependencies
+## 1. Clone repo
 
-The following dependencies are required to run the project:
+To get started download this repository and navigate to `ggxnode` folder, e.g.:
+```bash
+git clone https://github.com/ggxchain/ggxnode.git
+cd ggxchain
+```
 
-* rust, wasm32-unknown-unknown target
-* protobuf
-* dylint
+## 2. Install dependencies
 
-#### Ubuntu example
+The following dependencies are required to build the node:
+
+#### Linux
 
 ```bash
 # Install rust
 curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
 
+# Install support software
+sudo apt install build-essential protobuf-compiler libclang-dev
+
 # Install wasm32-unknown-unknown target
 rustup target add wasm32-unknown-unknown
 rustup component add rust-src
-
-# Install protobuf
-sudo apt install protobuf-compiler
-
-# Install dylint
-cargo install cargo-dylint dylint-link
 ```
 
-#### Nix example
+#### MacOS
 
 ```bash
-# Downloads all necessary dependendencies
-nix develop --impure
+# Install rust
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+
+# Install protoc
+brew install protobuf
 ```
 
-## Docker
+#### Nix
+
+```bash
+# If you have nix package manager, downloads all necessary dependencies
+nix develop --impure
+```
+## 3. Build & Run
+
+### 3.1 With Docker
 
 Due to the highly CPU dependent nature of 'cargo build' command, it's strongly recommended that you have at least 8 core enabled for this method.
-It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
+It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser processor power during the docker build operation.
 
 From the repository's root directory execute following commands in order:
 
-### Brooklyn
-
-#### Mainnet
-
-```bash
-mkdir data-brooklyn
-
-docker build -f Dockerfile.brooklyn -t golden-gate-node:brooklyn .
-
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
-    -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-brooklyn:/data-brooklyn \
-    golden-gate-node:brooklyn \
-    --base-path=/data-brooklyn \
-    --chain /tmp/brooklyn.json \
-    --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
-```
-
-#### Testnet
-
-```bash
-mkdir data-brooklyn-testnet
-
-docker build -f Dockerfile.brooklyn-testnet -t golden-gate-node:brooklyn-testnet .
-
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node-testnet \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
-    -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-brooklyn-testnet:/data-brooklyn \
-    golden-gate-node:brooklyn-testnet \
-    --base-path=/data-brooklyn \
-    --chain /tmp/brooklyn.json \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
-```
-
-### Sydney
-
-#### Mainnet
+#### Sydney - our public testnet:
 
 ```bash
 mkdir data-sydney
 
-docker build -f Dockerfile.sydney -t golden-gate-node:sydney .
+docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
 
 docker run \
     -it \
@@ -103,33 +69,36 @@ docker run \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney:/data-sydney \
-    golden-gate-node:sydney \
+    ggxchain-node:sydney \
     --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
-    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
+    --chain sydney \
+    --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
     --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
-#### Testnet
+
+#### Brooklyn - development network:
 
 ```bash
-mkdir data-sydney-testnet
+mkdir data-brooklyn
 
-docker build -f Dockerfile.sydney-testnet -t golden-gate-node:sydney-testnet .
+docker build -f Dockerfile.brooklyn -t ggxchain-node:brooklyn .
 
 docker run \
     -it \
     --rm \
-    --name ggx-local-node-testnet \
+    --name ggx-local-node \
     -u $(id -g):$(id -u) \
     -p 30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
-    -v $(pwd)/data-sydney-testnet:/data-sydney \
-    golden-gate-node:sydney-testnet \
-    --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+    -v $(pwd)/data-brooklyn:/data-brooklyn \
+    ggxchain-node:brooklyn \
+    --base-path=/data-brooklyn \
+    --chain brooklyn \
+    --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
+    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
+
 
 You can use the following optional flags:
 
@@ -147,20 +116,43 @@ You can use the following optional flags:
 | `--password <password>`           | Specifies the password to use for the keystore. |
 | `--telemetry-url <url verbosity>` | Specifies the URL of the telemetry server to connect to. You can pass <br>this flag multiple times to specify multiple telemetry endpoints. <br>Verbosity levels range from 0-9, with 0 denoting the least verbose. Use <br>the following format to specify the URL followed the verbosity option is `--telemetry-url 'wss://foo/bar 0'`. |
 
-#### Build
+### 3.2 Without Docker
+
+All required parameters (--name, -u, -p etc.) for `run` command you can take from Docker example.
+
+#### Linux / MacOS
 
 ```bash
-cargo build --release
-# or using nix
-nix build .#node
+#Sydney:
+cargo build --release  --features="sydney"
+cargo run --release -p ggxchain-node --features "sydney"
+
+#Brooklyn:
+cargo build --release  --features="brooklyn"
+cargo run --release -p ggxchain-node --features "brooklyn"
 ```
+To run in dev mode add `-- --dev` flag to run command
 
-#### Run
+#### nix
 
 ```bash
-cargo run --release -- --dev
-# or using nix
-nix run .#single-fast # to run an one node network
+#Sydney:
+nix build .#ggxchain-node-sydney
+nix run .#ggxchain-node-sydney --chain sydney
+
+#Brooklyn:
+nix build .#ggxchain-node-brooklyn
+nix run .#ggxchain-node-brooklyn  --chain brooklyn
+
 nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop nodes
+nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
+```
+To run in dev mode use `nix run .#single-fast` for Brooklyn and `nix run .#single-fast sydney` for Syndey
+
+
+
+##### If you want to compile WASM contracts, you'll need additional dependencies:
+```bash
+# Install dylint
+cargo install cargo-dylint dylint-link
 ```

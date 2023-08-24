@@ -1,7 +1,7 @@
 # Adding a user to allowlist
 
 This document shows how to add the user to the allowlist.
-Currently, the Golden Gate allows only the user from the allowlist to interact with the chain.
+Currently, the GGXChain allows only the user from the allowlist to interact with the chain.
 There are two ways to add the user to the allowlist:
 
 * Using the sudo extrinsic to the account_filter pallet.

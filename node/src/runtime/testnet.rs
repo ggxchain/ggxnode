@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, str::FromStr};
 
-pub use golden_gate_runtime_testnet::{opaque::SessionKeys, *};
+pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
@@ -27,6 +27,7 @@ impl ValidatorIdentity {
 		}
 	}
 
+	#[allow(dead_code)]
 	pub fn from_pub(ed: &str, sr: &str, ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
@@ -50,13 +51,11 @@ impl ValidatorIdentity {
 pub fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
-	endowed_accounts: Vec<AccountId>,
+	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
-	token_supply_in_ggx: u64,
+	_nominate: bool,
 ) -> GenesisConfig {
-	let endowment: Balance = (token_supply_in_ggx / endowed_accounts.len() as u64) as Balance * GGX;
-
 	GenesisConfig {
 		// System
 		system: SystemConfig {
@@ -74,7 +73,7 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.cloned()
-				.map(|k| (k, endowment))
+				.map(|(k, endowment)| (k, endowment as u128 * GGX))
 				.collect(),
 		},
 		transaction_payment: Default::default(),

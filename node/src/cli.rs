@@ -44,6 +44,7 @@ pub struct CmdRunner {
 }
 
 #[derive(Debug, clap::Parser)]
+#[command(version = format!("v{}", env!("CARGO_PKG_VERSION")))]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
@@ -89,6 +90,9 @@ pub enum Subcommand {
 	Benchmark,
 
 	/// Db meta columns information.
-	#[cfg(feature = "testnet")]
+	#[cfg(feature = "brooklyn")]
 	FrontierDb(fc_cli::FrontierDbCmd),
+
+	/// Node version information.
+	Version,
 }

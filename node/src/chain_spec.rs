@@ -1,6 +1,5 @@
 use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
-use sp_runtime::traits::IdentifyAccount;
 
 use crate::runtime::{
 	get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
@@ -9,15 +8,16 @@ use crate::runtime::{
 
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
-fn properties() -> Option<Properties> {
+fn properties(token_symbol: &str) -> Option<Properties> {
 	let mut properties = Properties::new();
-	properties.insert("tokenSymbol".into(), "GGX Test".into());
+	properties.insert("tokenSymbol".into(), token_symbol.into());
 	properties.insert("tokenDecimals".into(), 18u32.into());
 	Some(properties)
 }
 
 pub fn development_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+	let balance = 200_000_000;
 
 	Ok(ChainSpec::from_genesis(
 		// Name
@@ -33,21 +33,35 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				// Pre-funded accounts
 				vec![
 					// Alice pub in EVM is: 0xd43593c715fdd31c61141abd04a99fd6822c8558
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
-					get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						balance,
+					),
+					(get_account_id_from_seed::<sr25519::Public>("Bob"), balance),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice//stash"),
+						balance,
+					),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Bob//stash"),
+						balance,
+					),
 					// Arrakis.TEST account in MetaMask
 					// Import known test account with private key
 					// 0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391
 					// H160 address: 0xaaafB3972B05630fCceE866eC69CdADd9baC2771
-					AccountId::from_ss58check("5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT")
+					(
+						AccountId::from_ss58check(
+							"5FQedkNQcF2fJPwkB6Z1ZcMgGti4vcJQNs6x85YPv3VhjBBT",
+						)
 						.unwrap(),
+						balance,
+					),
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
 				888888,
-				1_000_000_000,
+				true,
 			)
 		},
 		// Bootnodes
@@ -55,10 +69,10 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("Golden Gate Dev"),
+		Some("GGX chain Dev"),
 		None,
 		// Properties
-		properties(),
+		properties("GGX Dev"),
 		// Extensions
 		None,
 	))
@@ -66,7 +80,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 
 pub fn local_testnet_config() -> Result<ChainSpec, String> {
 	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
-
+	let balance = 333_333_333;
 	Ok(ChainSpec::from_genesis(
 		// Name
 		"Local Testnet",
@@ -81,16 +95,22 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				get_account_id_from_seed::<sr25519::Public>("Alice"),
 				// Pre-funded accounts
 				vec![
-					get_account_id_from_seed::<sr25519::Public>("Alice"),
-					get_account_id_from_seed::<sr25519::Public>("Bob"),
-					get_account_id_from_seed::<sr25519::Public>("Charlie"),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Alice"),
+						balance,
+					),
+					(get_account_id_from_seed::<sr25519::Public>("Bob"), balance),
+					(
+						get_account_id_from_seed::<sr25519::Public>("Charlie"),
+						balance,
+					),
 				],
 				vec![
 					ValidatorIdentity::from_seed("Alice"),
 					ValidatorIdentity::from_seed("Bob"),
 				],
 				888888,
-				1_000_000_000,
+				true,
 			)
 		},
 		// Bootnodes
@@ -98,82 +118,94 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Telemetry
 		None,
 		// Protocol ID
-		Some("Golden Gate"),
+		Some("GGX Chain Local"),
 		None,
 		// Properties
-		properties(),
+		properties("GGX Local"),
 		// Extensions
 		None,
 	))
 }
 
-pub fn remote_testnet_config() -> Result<ChainSpec, String> {
-	let wasm_binary = WASM_BINARY.ok_or_else(|| "Development wasm not available".to_string())?;
+#[cfg(not(feature = "brooklyn"))]
+pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
+	use sc_telemetry::TelemetryEndpoints;
+	use sp_runtime::traits::IdentifyAccount;
+
+	let wasm_binary = WASM_BINARY.ok_or_else(|| "Runtime wasm not available".to_string())?;
 
 	Ok(ChainSpec::from_genesis(
-		"Remote Testnet",
-		"remote_testnet",
+		"GGX Chain Sydney Testnet",
+		"GGX",
 		ChainType::Live,
 		move || {
 			testnet_genesis(
 				wasm_binary,
-				// Initial PoA authorities
 				// Sudo account
-				sr25519::Public::from_ss58check("5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw")
+				// Multisig
+				sr25519::Public::from_ss58check("5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz")
 					.unwrap()
 					.into_account()
 					.into(),
 				// Pre-funded accounts
 				vec![
-					sr25519::Public::from_ss58check(
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-					sr25519::Public::from_ss58check(
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-					)
-					.unwrap()
-					.into_account()
-					.into(),
-				],
-				vec![
-					ValidatorIdentity::from_pub(
-						"5GWHWMD1eFZkkZZ2XRMSwhsbdXhwirfKHJm4LYh66khuwxgT",
-						"5EHkPQgHPKLT4XTEkZcVWpwvLziBS3Qf2oUg94YAk79YVFdw",
-						"KW5iGDUzxmzxkRHjXvMALXQqLfX1WCi7wVbWTCHHZfykuNKYt", //subkey generate --scheme ecdsa, Public key (SS58)
+					(
+						sr25519::Public::from_ss58check(
+							"5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						1_000_000_000 - 10_000 - 1100,
 					),
-					ValidatorIdentity::from_pub(
-						"5Dos85SfdWJbh2RAkTLpViwjJXcSpkZjn9B5FGRCsCWQ4cT3",
-						"5HfttHcGC3JLXepPFmeLvgNaejUwhfC8icgxWwxFLqb6uJXU",
-						"KWAG8WAPa2VTnrpSwCqiFoPYssAJamNobdDNCjQLXYTeC3UXF",
+					(
+						sr25519::Public::from_ss58check(
+							"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						1100,
 					),
-					ValidatorIdentity::from_pub(
-						"5DMjxJDSWR1uBQ8fN5o7fxUxpE3MeePf3b5f5iqTxm4KaLBY",
-						"5GsmpjRRkTt8XRnyiupJUBbjEtYio7cjqM8DcArT7mdiZZF7",
-						"KWDsp2vLX45UKMTt9Hm7MjnyKFKUP9aPunjBNDrpvbQy1J2NW",
+					(
+						sr25519::Public::from_ss58check(
+							"5GxBFw4nqvhX9X1C6apRpvWm57QaRb6MkVSF7YzQXLq2VJ6m",
+						)
+						.unwrap()
+						.into_account()
+						.into(),
+						10_000,
 					),
 				],
-				888888,
-				1_000_000_000,
+				// Initial Validator
+				vec![ValidatorIdentity::from_pub(
+					"5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
+					"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+					"5GwiY7NjgEAyn8dtYEaAr5GVpwJZncVGQxX2ayBsVCASirfY",
+				)],
+				8886,
+				false,
 			)
 		},
-		// Bootnodes
-		vec![],
+		// Some dns bootnodes
+		vec![
+			"/dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC".parse().unwrap(),
+			"/dns/moon.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWCxnYzFkiFL5Dc6iEXXTVeFYFHmCqbhSosovEDid59TFR".parse().unwrap(),
+			"/dns/earth.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWQxwb6tTHqaPy8s3133yqBuJZVvqJfH6GJGy2PspDAYzQ".parse().unwrap(),
+			],
 		// Telemetry
-		None,
+		Some(
+			TelemetryEndpoints::new(vec![(
+				"wss://testnet.telemetry.sydney.ggxchain.io/submit/".into(),
+				0,
+			)])
+			.expect("Telemetry url is valid"),
+		),
 		// Protocol ID
-		Some("Golden Gate"),
+		Some("GGX Sydney"),
 		None,
 		// Properties
-		properties(),
+		properties("GGXT"),
 		// Extensions
 		None,
 	))
