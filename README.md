@@ -73,7 +73,7 @@ docker run \
     --base-path=/data-sydney \
     --chain sydney \
     --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+    --telemetry-url "ws://test.telemetry.sydney.ggxchain.io/submit 0"
 ```
 
 
@@ -96,7 +96,7 @@ docker run \
     --base-path=/data-brooklyn \
     --chain brooklyn \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
+    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 
 
