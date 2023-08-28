@@ -24,6 +24,7 @@ impl ValidatorIdentity {
 		}
 	}
 
+	#[allow(dead_code)]
 	pub fn from_pub(ed: &str, sr: &str, _ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
