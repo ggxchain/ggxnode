@@ -148,11 +148,3 @@ nix run .#multi-fast # to run 3-node network
 nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
 ```
 To run in dev mode use `nix run .#single-fast` for Brooklyn and `nix run .#single-fast sydney` for Syndey
-
-
-
-##### If you want to compile WASM contracts, you'll need additional dependencies:
-```bash
-# Install dylint
-cargo install cargo-dylint dylint-link
-```
