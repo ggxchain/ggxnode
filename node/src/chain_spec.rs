@@ -1,9 +1,12 @@
 use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
 
-use crate::runtime::{
-	get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
-	WASM_BINARY,
+use crate::{
+	chain_spec,
+	runtime::{
+		get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
+		WASM_BINARY,
+	},
 };
 
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
@@ -128,7 +131,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 }
 
 #[cfg(not(feature = "brooklyn"))]
-pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
+pub fn sydney_devnet_config() -> Result<ChainSpec, String> {
 	use sc_telemetry::TelemetryEndpoints;
 	use sp_runtime::traits::IdentifyAccount;
 
@@ -209,4 +212,11 @@ pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 		// Extensions
 		None,
 	))
+}
+
+#[cfg(not(feature = "brooklyn"))]
+pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
+	chain_spec::ChainSpec::from_json_bytes(
+		&include_bytes!("../../custom-spec-files/sydney-testnet.json")[..],
+	)
 }
