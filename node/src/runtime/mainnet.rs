@@ -1,7 +1,7 @@
 pub use ggxchain_runtime_sydney::{opaque::SessionKeys, *};
 
 use rand::SeedableRng;
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
+use sp_core::sr25519;
 use sp_runtime::traits::IdentifyAccount;
 
 use super::{get_from_seed, AccountPublic};
@@ -20,22 +20,6 @@ impl ValidatorIdentity {
 				aura: get_from_seed::<AuraId>(s),
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
-			},
-		}
-	}
-
-	pub fn from_pub(ed: &str, sr: &str, _ecdsa: &str) -> ValidatorIdentity {
-		let ed = ed25519::Public::from_ss58check(ed)
-			.unwrap()
-			.into_account()
-			.into();
-		let sr = sr25519::Public::from_ss58check(sr).unwrap().into_account();
-		ValidatorIdentity {
-			id: sr.into(),
-			session_keys: SessionKeys {
-				aura: sr.into(),
-				grandpa: ed,
-				im_online: sr.into(),
 			},
 		}
 	}

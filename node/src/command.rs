@@ -60,8 +60,6 @@ impl SubstrateCli for Cli {
 			"" | "local" => Box::new(chain_spec::local_testnet_config()?),
 			// on """release""", replace with  included resource
 			#[cfg(not(feature = "brooklyn"))]
-			"sydney-devnet" => Box::new(chain_spec::sydney_devnet_config()?),
-			#[cfg(not(feature = "brooklyn"))]
 			"sydney" => Box::new(chain_spec::sydney_testnet_config()?),
 			path => Box::new(chain_spec::ChainSpec::from_json_file(
 				std::path::PathBuf::from(path),
