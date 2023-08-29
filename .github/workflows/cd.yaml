@@ -89,7 +89,7 @@ jobs:
           title: "Update ggxchain-node version to ${{ env.TAG }}"
           branch: ggxchain-node-${{ env.TAG}}
           delete-branch: true
-          commit-message: "auto deploy explorer-${{ env.TAG }}"
+          commit-message: "auto deploy ggxchain-node-${{ env.TAG }}"
 
       - name: Check outputs
         if: ${{ steps.cpr.outputs.pull-request-number }}
