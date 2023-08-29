@@ -11,6 +11,11 @@ on:
         - brooklyn
         - sydney
 
+permissions:
+      contents: write
+      pull-requests: write
+      id-token: write
+
 jobs:
   argocd-deploy:
     runs-on: ubuntu-latest
