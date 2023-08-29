@@ -11,11 +11,6 @@ on:
         - brooklyn
         - sydney
 
-env:
-  ## DO NOT INCLUDE "00" validators, they are initial bootnodes that requires manual updates ONLY.
-  BROOKLYN_APPS: ("archive", "validator-01")
-  SYDNEY_APPS: ("archive")
-
 jobs:
   argocd-deploy:
     runs-on: ubuntu-latest
@@ -28,6 +23,7 @@ jobs:
           aws-region: eu-central-1
 
       - name: Get Image Tag
+        id: image_full_ref
         env:
           S3_BUCKET: ggx-docker-image-tags
           CHAIN: ${{ inputs.chain }}
@@ -35,38 +31,62 @@ jobs:
           echo "Chain: $CHAIN"
           aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
+          echo "BROOKLYN_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:brooklyn-$TAG" >> "$GITHUB_OUTPUT"
+          echo "SYDNEY_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:sydney-$TAG" >> "$GITHUB_OUTPUT"
+          # for now they're build with the same commit IDs. Pipeline may change in future.
 
-      - name: ArgoCD Deployment Brookyln
+      - name: Generate Token
+        id: generate_token
+        uses: getsentry/action-github-app-token@v2
+        with:
+          private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
+          app_id: ${{ secrets.GH_APP_ID }}
+
+      - name: Check out argocd code
+        uses: actions/checkout@v3
+        with:
+          repository: ggxchain/ggx-argocd-apps
+          ref: main
+          path: eksdeploy
+          token: ${{ steps.generate_token.outputs.token }}
+
+      - name: Update Image Version in the related deployment manifest
         if:  ${{ inputs.chain == 'brooklyn' }}
-        env:
-          CHAIN: ${{ inputs.chain }}
-          APPS: ${{ env.BROOKLYN_APPS }}
         run: |
-          echo "IMAGE=brooklyn-$TAG"
-          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
-          declare -a apps=$APPS
-          for app in ${apps[@]}; do
-            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
-            echo $app
-          done
-          if [ $? -ne 0 ]; then
-            echo "Failed to update manifests"
-          fi
+          echo "brooklyn nodes are not yet deployed.. Contact Slack for more info."
 
+      - name: Update Image Version of Sydney Archive
+        if:  ${{ inputs.chain == 'sydney' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/sydney/archive/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.SYDNEY_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
 
-      - name: ArgoCD Deployment Sydney
-        if:  ${{ inputs.chain  == 'sydney' }}
-        env:
-          CHAIN: ${{ inputs.chain }}
-          APPS: ${{ env.SYDNEY_APPS }}
+      - name: Update Image Version of Sydney Validator-01
+        if:  ${{ inputs.chain == 'sydney' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/sydney/validator-01/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.SYDNEY_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
+
+      - name: Create Pull Request
+        id: cpr
+        uses: peter-evans/create-pull-request@v5
+        with:
+          path: eksdeploy
+          token: ${{ steps.generate_token.outputs.token }}
+          title: "Update ggxchain-node version to ${{ env.TAG }}"
+          branch: ggxchain-node-${{ env.TAG}}
+          delete-branch: true
+          commit-message: "auto deploy explorer-${{ env.TAG }}"
+
+      - name: Check outputs
+        if: ${{ steps.cpr.outputs.pull-request-number }}
         run: |
-          echo "IMAGE=sydney-$TAG"
-          echo "Deployment Image selected for $CHAIN: ggxchain-node:$IMAGE"
-          declare -a apps=$APPS
-          for app in ${apps[@]}; do
-            ##cd $app && sed -i "/^[[:space:]]*image:/,/^[^[:space:]]/ s/\(public.ecr.aws\/c6u3u5c0\/ggxchain-node:\).*$/\1$IMAGE/" sts.yaml && cd ..
-            echo $app
-          done
-          if [ $? -ne 0 ]; then
-            echo "Failed to update manifests"
-          fi
+          echo "Accept Pull Request to deploy this version - ${{ steps.cpr.outputs.pull-request-url }}" >> $GITHUB_STEP_SUMMARY
