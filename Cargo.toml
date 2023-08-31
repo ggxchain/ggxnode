@@ -228,7 +228,7 @@ ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
 
 # oracle
-pallet-oracle = { git = "https://github.com/ComposableFi/composable", tag = "release-v9.10035.5", package = "pallet-oracle"}
+pallet-oracle = { git = "https://github.com/luckychacha/composable", branch = "release-v9.10035.3-branch", package = "pallet-oracle", default-features = false }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]
