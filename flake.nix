@@ -168,8 +168,6 @@
                 # risky, until we move code into separate repo as rust can do include_str! as doc, but good optimization
                 isMarkdownFile = name: type:
                   type == "regular" && pkgs.lib.strings.hasSuffix ".md" name;
-                isJsonFile = name: type:
-                  type == "regular" && pkgs.lib.strings.hasSuffix ".json" name;
                 isGitIgnoreFile = name: type:
                   type == "regular" && pkgs.lib.strings.hasSuffix ".gitignore" name;
                 customFilter = name: type:
@@ -178,19 +176,22 @@
                     isGithubDir
                     isTerraformDir
                     isMarkdownFile
-                    isJsonFile
                   ];
               in pkgs.nix-gitignore.gitignoreFilterPure customFilter [ ./.gitignore ] ./.;
             };
 
+            custom-spec-files = pkgs.stdenv.mkDerivation {
+              name = "custom-spec-files";
+              src = builtins.path { path = ./.; name = "custom-spec-files"; };
+              installPhase = ''
+                mkdir -p $out
+                cp $src/custom-spec-files/* $out/
+              '';
+            };
+
             common-native-release-attrs = common-attrs // rec {
               runtime = "brooklyn";
-              cargoExtraArgs =
-                let features =
-                  if runtime == "brooklyn"
-                  then "--features=${runtime}"
-                  else "";
-                in ''--package ${pname}  --no-default-features ${features}'';
+              cargoExtraArgs = "--package ${pname} --no-default-features --features=${runtime}";
               pname = "ggxchain-node";
               nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
             };
@@ -405,7 +406,7 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key tf-base tf-brooklyn node-image inspect-node-key doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm;
+                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key tf-base tf-brooklyn node-image inspect-node-key doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm;
                 subkey = pkgs.subkey;
                 ggxchain-node = ggxchain-node-brooklyn;
                 node = ggxchain-node;
@@ -426,6 +427,20 @@
                   name = "prune-running";
                   text = ''
                     pkill ggx-nod 
+                  '';
+                };
+
+                sydney-node = pkgs.writeShellApplication rec {
+                  name = "sydney-node";
+                  text = ''
+                    ${pkgs.lib.meta.getExe ggxchain-node-sydney} --chain=sydney
+                  '';
+                };
+
+                brooklyn-node = pkgs.writeShellApplication rec {
+                  name = "brooklyn-node";
+                  text = ''
+                    ${pkgs.lib.meta.getExe ggxchain-node-brooklyn} --chain=${custom-spec-files}/brooklyn.json
                   '';
                 };
 
