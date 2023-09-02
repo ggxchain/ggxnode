@@ -456,7 +456,10 @@
                 single-fast = pkgs.writeShellApplication rec {
                   name = "single-fast";
                   text = ''
-                    [[ ''${1:-""} == "sydney" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-sydney} || package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
+                    package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
+                    if [[ ''${1:-""} = "sydney" ]]; then
+                      package=${pkgs.lib.meta.getExe ggxchain-node-sydney}
+                    fi
                     $package --dev  
                   '';
                 };
