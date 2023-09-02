@@ -426,7 +426,7 @@
                 prune-running = pkgs.writeShellApplication rec {
                   name = "prune-running";
                   text = ''
-                    pkill ggx-nod 
+                    pkill ggxchain-node
                   '';
                 };
 
