@@ -469,14 +469,19 @@
                 multi-fast = pkgs.writeShellApplication rec {
                   name = "multi-fast";
                   text = ''
-                    [[ ''${1:-""} == "sydney" ]] && package=${pkgs.lib.meta.getExe ggxchain-node-sydney} || package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
+                    package=${pkgs.lib.meta.getExe ggxchain-node-brooklyn}
+                    if [[ ''${1:-""} = "sydney" ]]; then
+                      package=${pkgs.lib.meta.getExe ggxchain-node-sydney}
+                    fi
+
                     WS_PORT_ALICE=''${WS_PORT_ALICE:-9944}
                     WS_PORT_BOB=''${WS_PORT_BOB:-9945}
                     WS_PORT_CHARLIE=''${WS_PORT_CHARLIE:-9946}
                     ( $package --chain=local --rpc-cors=all --alice --tmp --ws-port="$WS_PORT_ALICE" &> alice.log ) &
                     ( $package --chain=local --rpc-cors=all --bob --tmp --ws-port="$WS_PORT_BOB" &> bob.log ) &
                     ( $package --chain=local --rpc-cors=all --charlie --tmp --ws-port="$WS_PORT_CHARLIE" &> charlie.log ) &
-                    echo https://test.explorer.ggxchain.io/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
+
+                    echo https://explorer.ggxchain.io/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
                   '';
                 };
 
