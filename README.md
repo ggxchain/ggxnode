@@ -142,7 +142,11 @@ nix build .#ggxchain-node-sydney
 nix run .#ggxchain-node-sydney --chain sydney
 ```
 
-To run in dev mode use `nix run .#single-fast sydney`.
+To run in dev mode use
+
+```bash
+nix run .#single-fast sydney
+```
 
 ##### Brooklyn
 
@@ -151,11 +155,15 @@ nix build .#ggxchain-node-brooklyn
 nix run .#ggxchain-node-brooklyn  --chain brooklyn
 ```
 
-To run in dev mode use `nix run .#single-fast` for Brooklyn.
+To run in dev mode use
+
+```bash
+nix run .#single-fast`
+```
 
 ##### 3-node network
 
-```
+```bash
 nix run .#multi-fast # to run 3-node network
 nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
 ```
