@@ -148,6 +148,18 @@ To run in dev mode use
 nix run .#single-fast sydney
 ```
 
+To run 3-node network
+
+```bash
+nix run .#multi-fast sydney
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
+```
+
 ##### Brooklyn
 
 ```bash
@@ -161,9 +173,14 @@ To run in dev mode use
 nix run .#single-fast`
 ```
 
-##### 3-node network
+To run 3-node network
 
 ```bash
-nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
+nix run .#multi-fast
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
 ```
