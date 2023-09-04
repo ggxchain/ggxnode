@@ -189,20 +189,21 @@
               '';
             };
 
-            common-native-release-attrs = common-attrs // rec {
+            common-native-release-attrs = { runtime, version }:
+              common-attrs // rec {
+                  inherit version;
+                  cargoExtraArgs = "--package ${pname} --no-default-features --features=${runtime}";
+                  pname = "ggxchain-node";
+                  nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
+              };
+
+            common-native-sydney-attrs = common-native-release-attrs {
+              runtime = "sydney";
+              version = "0.1.1";
+            };
+
+            common-native-brooklyn-attrs = common-native-release-attrs {
               runtime = "brooklyn";
-              cargoExtraArgs = "--package ${pname} --no-default-features --features=${runtime}";
-              pname = "ggxchain-node";
-              nativeBuildInputs = common-attrs.nativeBuildInputs ++ [ pkgs.git ]; # parity does some git hacks in build.rs
-            };
-
-            common-native-sydney-attrs = common-native-release-attrs // rec {
-              runtime="sydney";
-              version = "0.1.0";
-            };
-
-            common-native-brooklyn-attrs = common-native-release-attrs // rec {
-              runtime="brooklyn";
               version = "0.2.0";
             };
 
