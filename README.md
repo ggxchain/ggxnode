@@ -135,16 +135,52 @@ To run in dev mode add `-- --dev` flag to run command
 
 #### nix
 
+##### Sydney
+
 ```bash
-#Sydney:
 nix build .#ggxchain-node-sydney
 nix run .#ggxchain-node-sydney --chain sydney
+```
 
-#Brooklyn:
+To run in dev mode use
+
+```bash
+nix run .#single-fast sydney
+```
+
+To run 3-node network
+
+```bash
+nix run .#multi-fast sydney
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
+```
+
+##### Brooklyn
+
+```bash
 nix build .#ggxchain-node-brooklyn
 nix run .#ggxchain-node-brooklyn  --chain brooklyn
-
-nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
 ```
-To run in dev mode use `nix run .#single-fast` for Brooklyn and `nix run .#single-fast sydney` for Syndey
+
+To run in dev mode use
+
+```bash
+nix run .#single-fast`
+```
+
+To run 3-node network
+
+```bash
+nix run .#multi-fast
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
+```
