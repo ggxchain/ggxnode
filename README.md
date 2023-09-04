@@ -73,7 +73,7 @@ docker run \
     --base-path=/data-sydney \
     --chain sydney \
     --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+    --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
 ```
 
 
@@ -96,7 +96,7 @@ docker run \
     --base-path=/data-brooklyn \
     --chain brooklyn \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
+    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 
 
@@ -135,24 +135,52 @@ To run in dev mode add `-- --dev` flag to run command
 
 #### nix
 
+##### Sydney
+
 ```bash
-#Sydney:
 nix build .#ggxchain-node-sydney
 nix run .#ggxchain-node-sydney --chain sydney
+```
 
-#Brooklyn:
+To run in dev mode use
+
+```bash
+nix run .#single-fast sydney
+```
+
+To run 3-node network
+
+```bash
+nix run .#multi-fast sydney
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
+```
+
+##### Brooklyn
+
+```bash
 nix build .#ggxchain-node-brooklyn
 nix run .#ggxchain-node-brooklyn  --chain brooklyn
-
-nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop .#multi-fast or .#single-fast nodes
 ```
-To run in dev mode use `nix run .#single-fast` for Brooklyn and `nix run .#single-fast sydney` for Syndey
 
+To run in dev mode use
 
-
-##### If you want to compile WASM contracts, you'll need additional dependencies:
 ```bash
-# Install dylint
-cargo install cargo-dylint dylint-link
+nix run .#single-fast`
+```
+
+To run 3-node network
+
+```bash
+nix run .#multi-fast
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
 ```
