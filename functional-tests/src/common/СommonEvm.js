@@ -3,7 +3,7 @@ import Web3 from "web3";
 import solc from "solc";
 
 class CommonEvm {
-    nodeUrl = 'https://testnet.node.sydney.ggxchain.io';
+    nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944';
     mnemonic = 'movie avoid rack lesson rival rice you average caution eternal distance wood';
 
     constructor() {
@@ -36,21 +36,25 @@ class CommonEvm {
 
     async compile(sourceCode, contractName) {
         return new Promise((resolve, reject) => {
-            // Create the Solidity Compiler Standard Input and Output JSON
-            const input = {
-                language: "Solidity",
-                sources: {main: {content: sourceCode}},
-                settings: {outputSelection: {"*": {"*": ["abi", "evm.bytecode"]}}},
-            };
+            try {
+                // Create the Solidity Compiler Standard Input and Output JSON
+                const input = {
+                    language: "Solidity",
+                    sources: {main: {content: sourceCode}},
+                    settings: {outputSelection: {"*": {"*": ["abi", "evm.bytecode"]}}},
+                };
 
-            // Parse the compiler output to retrieve the ABI and Bytecode
-            const output = solc.compile(JSON.stringify(input));
-            const artifact = JSON.parse(output).contracts.main[contractName];
+                // Parse the compiler output to retrieve the ABI and Bytecode
+                const output = solc.compile(JSON.stringify(input));
+                const artifact = JSON.parse(output).contracts.main[contractName];
 
-            resolve({
-                abi: artifact.abi,
-                bytecode: artifact.evm.bytecode.object,
-            });
+                resolve({
+                    abi: artifact.abi,
+                    bytecode: artifact.evm.bytecode.object,
+                });
+            } catch (e) {
+                reject(e);
+            }
         })
     }
 

@@ -1,6 +1,5 @@
 import CommonWasm from "../../src/common/CommonWasm.js";
 import {expect} from "chai";
-import { blake2AsU8a } from '@polkadot/util-crypto';
 
 describe('Referenda', async function () {
     this.timeout(60000);
@@ -16,7 +15,7 @@ describe('Referenda', async function () {
     });
 
     it('should able to submit proposal', async function ()  {
-        const preimageHash = '0xe8a006a5cbdfedb257da7778e16e34bfac83bc4899485e0a81d2beb037a43f1c';
+        const preimageHash = '0x30d961e7469425942c5c06a020b63c68d25ec5c36caf9bed88c6485da238f848';
         const proposalOrigin = 'system';
         const proposal = {'Legacy': preimageHash};
         const enactmentMoment = 'After';
@@ -37,5 +36,21 @@ describe('Referenda', async function () {
         const referendumPreimageHash = referendumInfo.toJSON().ongoing.proposal.legacy.hash;
         expect(referendumPreimageHash).to.be.equal(preimageHash);
         expect(referendumCountAfter - referendumCountBefore).to.be.equal(1);
+    });
+
+    it('should able to place decision deposit', async function ()  {
+        const referendumIndex = await commonWasm.getApi().query.referenda.referendumCount() - 1;
+
+        const proposalExtrinsic = commonWasm.getApi().tx.referenda.placeDecisionDeposit(referendumIndex);
+        await commonWasm.signAndSend(proposalExtrinsic, commonWasm.getAccount());
+
+        const referendumInfo = await commonWasm.getApi().query.referenda.referendumInfoFor(referendumIndex);
+        console.log('referendumInfo:', referendumInfo.toJSON());
+
+        const referendumDepositAccount = referendumInfo.toJSON().ongoing.decisionDeposit.who;
+        const referendumDepositAmount = commonWasm.hexToDecimal(referendumInfo.toJSON().ongoing.decisionDeposit.amount);
+
+        expect(referendumDepositAccount).to.be.equal(commonWasm.getAccount().address);
+        expect(referendumDepositAmount).to.be.equal(5e20);
     });
 });
