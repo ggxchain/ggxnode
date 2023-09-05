@@ -154,8 +154,8 @@ To run in dev mode add `-- --dev` flag to run command
 ##### Sydney
 
 ```bash
-nix build .#ggxchain-node-sydney
-nix run .#ggxchain-node-sydney --chain sydney
+nix build .#sydney-node
+nix run .#sydney-node
 ```
 
 To run in dev mode use
@@ -179,8 +179,8 @@ nix run .#prune-running
 ##### Brooklyn
 
 ```bash
-nix build .#ggxchain-node-brooklyn
-nix run .#ggxchain-node-brooklyn  --chain brooklyn
+nix build .#brooklyn-node
+nix run .#brooklyn-node
 ```
 
 To run in dev mode use
