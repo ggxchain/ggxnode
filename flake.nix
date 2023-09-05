@@ -199,7 +199,7 @@
 
             common-native-sydney-attrs = common-native-release-attrs {
               runtime = "sydney";
-              version = "0.1.1";
+              version = "0.1.2";
             };
 
             common-native-brooklyn-attrs = common-native-release-attrs {

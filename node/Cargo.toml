@@ -1,6 +1,6 @@
 [package]
 name = "ggxchain-node"
-version = "0.1.1"
+version = "0.1.2"
 license = "Unlicense"
 build = "build.rs"
 description = "A fresh FRAME-based Substrate node, ready for hacking."
