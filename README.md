@@ -52,7 +52,10 @@ It takes around 20 mins to complete with this suggested requirements, exponentia
 From the repository's root directory execute following commands in order:
 
 #### Sydney - our public testnet:
-**Make sure to check [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for requirements and documentation for running a Validator node.**
+You have to create keys before running a validator node and store a backup of them.
+**Make sure** to check [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for requirements and documentation for running a Validator node.
+
+
 
 ```bash
 docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
