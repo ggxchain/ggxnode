@@ -1,6 +1,6 @@
 import {ContractPromise} from '@polkadot/api-contract';
-import contract_file from './flipper.contract.json' assert {type: 'json'};
-import xvm_abi from "./xvm_abi.js";
+import contract_file from './resources/flipper.contract.json' assert {type: 'json'};
+import xvm_abi from "./resources/xvm_abi.js";
 import CommonWasm from "../../src/common/CommonWasm.js";
 import CommonEvm from "../../src/common/СommonEvm.js";
 import {expect} from "chai";

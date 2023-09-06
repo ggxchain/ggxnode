@@ -1,7 +1,7 @@
 import {expect} from 'chai';
 import {ContractPromise} from '@polkadot/api-contract';
-import wrapperContractFile from './flipper-wrapper.contract.json' assert {type: 'json'};
-import flipper_abi from "./flipper_abi.js";
+import wrapperContractFile from './resources/flipper-wrapper.contract.json' assert {type: 'json'};
+import flipper_abi from "./resources/flipper_abi.js";
 import * as path from "path";
 import {fileURLToPath} from 'url';
 import * as fs from "fs";

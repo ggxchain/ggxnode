@@ -14,7 +14,7 @@ describe('Staking', async function () {
         await commonWasm.disconnect();
     });
 
-    it('should able to perform bond', async function ()  {
+    it('should able to perform bond extra', async function ()  {
         const senderAddress = commonWasm.getAccount().address;
         const amountToBond = 100_000_000_000_000_000n;
 
