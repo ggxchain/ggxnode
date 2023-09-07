@@ -223,8 +223,8 @@ ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
 
 # webb-tools
-pallet-eth2-light-client = { git = "https://github.com/webb-tools/pallet-eth2-light-client.git", rev = "4d8a20ad325795a2d166fcd2a6118db3037581d3", default-features = false }
-eth2-to-substrate-relay = { git = "https://github.com/webb-tools/pallet-eth2-light-client.git", rev = "4d8a20ad325795a2d166fcd2a6118db3037581d3", default-features = false }
+pallet-eth2-light-client = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "pallet-eth2-light-client", default-features = false }
+eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # Temporary, leaks the std feature in the non-std env. Until https://github.com/AstarNetwork/frontier/pull/84 is merged.
 [patch."https://github.com/AstarNetwork/frontier.git"]

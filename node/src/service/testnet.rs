@@ -230,6 +230,23 @@ pub fn new_partial(
 			),
 		})
 	}
+
+	// // Start Eth2 Light client Relayer Gadget - (MAINNET RELAYER)
+	// task_manager.spawn_handle().spawn(
+	// 	"mainnet-relayer-gadget",
+	// 	None,
+	// 	pallet_eth2_light_client_relayer_gadget::start_gadget(
+	// 		pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
+	// 			local_keystore: keystore_container.local_keystore(),
+	// 			ew_config_dir: relayer_cmd.relayer_config_dir.clone(),
+	// 			lc_relay_config_path: relayer_cmd.light_client_relay_config_path.clone(),
+	// 			lc_init_config_path: relayer_cmd.light_client_init_pallet_config_path.clone(),
+	// 			database_path: database_path.clone(),
+	// 			rpc_addr,
+	// 			eth2_chain_id: TypedChainId::Evm(1),
+	// 		},
+	// 	),
+	// );
 }
 
 fn remote_keystore(_url: &str) -> Result<Arc<LocalKeystore>, &'static str> {

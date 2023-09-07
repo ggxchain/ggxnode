@@ -79,6 +79,12 @@ fp-storage = { workspace = true, features = ["std"] }
 golden-gate-runtime-mainnet = { workspace = true, features = ["std"] }
 golden-gate-runtime-testnet = { workspace = true, features = ["std"], optional = true }
 
+# webb-proposals = { git = "https://github.com/webb-tools/webb-rs.git", default-features = false, features = ["scale", "evm"] }
+# webb-consensus-types = { path = "../crates/consensus-types" }
+# pallet-eth2-light-client-relayer-gadget = { path = "../gadget" }
+# pallet-eth2-light-client-relayer-gadget-cli = { path = "../gadget/cli" }
+
+
 [dev-dependencies]
 assert_cmd = { workspace = true }
 ethers = { workspace = true }
