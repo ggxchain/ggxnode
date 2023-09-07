@@ -211,9 +211,9 @@ ibc = { version = "0.28.0", default-features = false, features = ["parity-scale-
 ibc-proto = { version = "0.25.0", default-features = false, features = [
 	"parity-scale-codec",
 ], git = "https://github.com/octopus-network/ibc-proto-rs", branch = "ibc" }
-pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "icf-m3" }
-pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git", default-features = false, branch = "icf-m3" }
-pallet-ics20-transfer = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "icf-m3" }
+pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "polkadot-v0.9.43" }
+pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git", default-features = false, branch = "polkadot-v0.9.43" }
+pallet-ics20-transfer = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "polkadot-v0.9.43" }
 prost = { version = "0.11", default-features = false }
 
 # zk precompile
