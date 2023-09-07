@@ -1,9 +1,12 @@
 use frame_support::{
 	log::{error, trace},
 	pallet_prelude::Weight,
-	traits::fungibles::{
-		approvals::{Inspect as AllowanceInspect, Mutate as AllowanceMutate},
-		Inspect, Transfer,
+	traits::{
+		fungibles::{
+			approvals::{Inspect as AllowanceInspect, Mutate as AllowanceMutate},
+			Inspect,
+		},
+		nonfungibles::Transfer,
 	},
 };
 use frame_system::RawOrigin;

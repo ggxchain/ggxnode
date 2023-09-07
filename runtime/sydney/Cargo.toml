@@ -24,6 +24,7 @@ sp-block-builder.workspace = true
 sp-consensus-aura.workspace = true
 sp-core.workspace = true
 sp-inherents.workspace = true
+sp-io.workspace = true
 sp-offchain.workspace = true
 sp-runtime.workspace = true
 sp-session.workspace = true
@@ -86,8 +87,10 @@ account-filter.workspace = true
 runtime-common = { workspace = true, features = ["precompiles"] }
 
 # Astar
+astar-primitives.workspace = true
 pallet-chain-extension-xvm.workspace = true
-pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
+pallet-ethereum-checked.workspace = true
+pallet-xvm = { workspace = true, default-features = false }
 
 # Wasm contracts
 pallet-contracts-primitives.workspace = true
@@ -98,7 +101,6 @@ substrate-wasm-builder.workspace = true
 
 [dev-dependencies]
 paste.workspace = true
-sp-io.workspace = true
 
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
@@ -115,6 +117,7 @@ std = [
 	"sp-consensus-aura/std",
 	"sp-core/std",
 	"sp-inherents/std",
+	"sp-io/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
 	"sp-session/std",
@@ -123,12 +126,12 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	# Substrate FRAME
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"frame-election-provider-support/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
-	"frame-system-benchmarking/std",
+	"frame-system-benchmarking?/std",
 	"frame-system-rpc-runtime-api/std",
 	"pallet-aura/std",
 	"pallet-authorship/std",
@@ -173,7 +176,9 @@ std = [
 	"account-filter/std",
 	"runtime-common/std",
 	# Astar
+	"astar-primitives/std",
 	"pallet-chain-extension-xvm/std",
+	"pallet-ethereum-checked/std",
 	"pallet-xvm/std",
 	# Wasm contracts
 	"pallet-contracts/std",

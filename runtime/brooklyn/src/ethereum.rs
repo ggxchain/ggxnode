@@ -1,5 +1,6 @@
 use crate::{
-	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO,
+	prelude::*, BlockWeights, EthereumChecked, FindAuthorTruncated, UncheckedExtrinsic, Xvm,
+	MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
 };
 
 use super::{Balances, Runtime, RuntimeEvent, Timestamp};
@@ -11,8 +12,8 @@ use pallet_ethereum::PostLogContent;
 use runtime_common::precompiles::GoldenGatePrecompiles;
 
 use pallet_evm::{AddressMapping, EnsureAddressTruncated, Error, HashedAddressMapping, Pallet};
-use sp_core::H160;
-use sp_runtime::Perbill;
+use sp_core::{H160, U256};
+use sp_runtime::{traits::BlakeTwo256, Perbill, Permill};
 
 use frame_support::traits::{
 	Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, WithdrawReasons,
@@ -142,7 +143,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
 		NORMAL_DISPATCH_RATIO * BlockWeights::get().max_block.ref_time() / WEIGHT_PER_GAS
 	);
-	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
+	pub PrecompilesValue: GoldenGatePrecompiles<Runtime, Xvm> = GoldenGatePrecompiles::<_, _>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	pub ChainId: u64 = 888866;
 }
@@ -159,7 +160,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = GoldenGatePrecompiles<Self>;
+	type PrecompilesType = GoldenGatePrecompiles<Self, Xvm>;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;
@@ -216,18 +217,35 @@ impl pallet_dynamic_fee::Config for Runtime {
 	type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-parameter_types! {
-	pub EvmId: u8 = 0x0F;
-	pub WasmId: u8 = 0x1F;
+pub struct HashedAccountMapping;
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+	fn into_h160(account_id: AccountId) -> H160 {
+		let data = (b"evm:", account_id);
+		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
+	}
 }
 
-use pallet_xvm::{evm, wasm};
-use sp_core::U256;
-use sp_runtime::{traits::BlakeTwo256, Permill};
+parameter_types! {
+	/// Equal to normal class dispatch weight limit.
+	pub XvmTxWeightLimit: Weight = NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT;
+	pub const ReservedXcmpWeight: Weight = Weight::zero();
+}
+
+impl pallet_ethereum_checked::Config for Runtime {
+	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type XvmTxWeightLimit = XvmTxWeightLimit;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type AccountMapping = HashedAccountMapping;
+	type XcmTransactOrigin = pallet_ethereum_checked::EnsureXcmEthereumTx<AccountId>;
+	type WeightInfo = pallet_ethereum_checked::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_xvm::Config for Runtime {
-	type SyncVM = (evm::EVM<EvmId, Self>, wasm::WASM<WasmId, Self>);
-	type AsyncVM = ();
-	type RuntimeEvent = RuntimeEvent;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type AccountMapping = HashedAccountMapping;
+	type EthereumTransact = EthereumChecked;
+	type WeightInfo = pallet_xvm::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {

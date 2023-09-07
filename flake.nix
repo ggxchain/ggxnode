@@ -87,7 +87,9 @@
               LD_LIBRARY_PATH = pkgs.lib.strings.makeLibraryPath [
                 pkgs.stdenv.cc.cc.lib
                 pkgs.llvmPackages.libclang.lib
+                (pkgs.lib.makeLibraryPath [pkgs.openssl])
               ];
+              OPENSSL_DIR = "${pkgs.openssl.dev}";
               LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
               PROTOC = "${pkgs.protobuf}/bin/protoc";
               ROCKSDB_LIB_DIR = "${pkgs.rocksdb}/lib";
