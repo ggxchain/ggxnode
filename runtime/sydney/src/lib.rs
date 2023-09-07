@@ -164,6 +164,7 @@ pub type OptionalSignedExtension = (
 pub type OptionalSignedExtension = (pallet_transaction_payment::ChargeTransactionPayment<Runtime>,);
 
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
