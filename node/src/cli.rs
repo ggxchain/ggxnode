@@ -44,6 +44,7 @@ pub struct CmdRunner {
 }
 
 #[derive(Debug, clap::Parser)]
+#[command(version = format!("v{}", env!("CARGO_PKG_VERSION")))]
 pub struct Cli {
 	#[command(subcommand)]
 	pub subcommand: Option<Subcommand>,
