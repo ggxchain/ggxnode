@@ -35,6 +35,8 @@ parameter_types! {
 	.get(DispatchClass::Normal)
 	.max_total
 	.unwrap_or(BlockWeights::get().max_block);
+	// Fallback value if storage deposit limit not set by the user
+	pub const DefaultDepositLimit: Balance = deposit(16, 16 * 1024);
 
 	pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
 }
@@ -57,6 +59,7 @@ impl pallet_contracts::Config for Runtime {
 	type CallFilter = frame_support::traits::Nothing;
 	type DepositPerItem = DepositPerItem;
 	type DepositPerByte = DepositPerByte;
+	type DefaultDepositLimit = DefaultDepositLimit;
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;

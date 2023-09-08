@@ -146,6 +146,12 @@ parameter_types! {
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime, Xvm> = GoldenGatePrecompiles::<_, _>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	pub ChainId: u64 = 888866;
+
+	/// The amount of gas per PoV size. Value is calculated as:
+	///
+	/// max_gas_limit = max_tx_ref_time / WEIGHT_PER_GAS = max_pov_size * gas_limit_pov_size_ratio
+	/// gas_limit_pov_size_ratio = ceil((max_tx_ref_time / WEIGHT_PER_GAS) / max_pov_size)
+	pub const GasLimitPovSizeRatio: u64 = 4; // !!!!! TODO: ADJUST IT
 }
 
 impl pallet_evm_chain_id::Config for Runtime {}
@@ -169,6 +175,7 @@ impl pallet_evm::Config for Runtime {
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type Timestamp = Timestamp;
 	type OnCreate = ();
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type WeightInfo = ();
 }
 
