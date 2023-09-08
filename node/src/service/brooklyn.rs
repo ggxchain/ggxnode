@@ -14,7 +14,6 @@ use std::{
 // Substrate
 use mmr_gadget::MmrGadget;
 use mmr_rpc::{Mmr, MmrApiServer};
-use sc_cli::SubstrateCli;
 use sc_client_api::{
 	backend::{Backend, StateBackend},
 	AuxStore, BlockchainEvents, StorageProvider,
@@ -25,17 +24,16 @@ use sc_network::NetworkService;
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_service::{
-	error::Error as ServiceError, BasePath, Configuration, TaskManager, TransactionPool,
+	error::Error as ServiceError, Configuration, TaskManager, TransactionPool,
 };
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
 use sp_core::{crypto::Ss58AddressFormat, U256};
-use sp_runtime::traits::{BlakeTwo256, Block as BlockT};
+use sp_runtime::traits::BlakeTwo256;
 // Frontier
 use fc_consensus::FrontierBlockImport;
-use fc_db::kv::Backend as FrontierBackend;
 use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
 use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
@@ -963,8 +961,7 @@ where
 	}
 	use fc_rpc::{
 		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
-		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, TxPoolApiServer, Web3,
-		Web3ApiServer,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, Web3, Web3ApiServer,
 	};
 	io.merge(
 		Eth::new(
