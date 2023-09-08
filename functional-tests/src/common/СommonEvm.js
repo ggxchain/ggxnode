@@ -59,6 +59,8 @@ class CommonEvm {
     }
 
     async deployContract(abi, bytecode) {
+        const web3 = this.getWeb3();
+
         return new Promise(async (resolve, reject) => {
             try {
                 const accounts = await this.getWeb3().eth.getAccounts();
@@ -67,18 +69,20 @@ class CommonEvm {
                 const transactionParameters = {
                     from: accounts[0],
                     gas: '3000000',
+                    gasLimit: '3000000'
                 };
 
                 const contract = this.getContract(abi);
-                const result = await contract.deploy({
+
+                await contract.deploy({
                     data: '0x' + bytecode,
                     arguments: [true]
-                })
-                    .send(transactionParameters);
+                }).send(transactionParameters).on('receipt', function (receipt) {
+                    console.log('deployContract receipt', receipt);
 
-                console.log('Contract deployed to', result.options.address);
-
-                resolve(result);
+                    const checksummedContractAddress = web3.utils.toChecksumAddress(receipt.contractAddress);
+                    resolve(checksummedContractAddress);
+                });
             } catch (e) {
                 reject(e);
             }
