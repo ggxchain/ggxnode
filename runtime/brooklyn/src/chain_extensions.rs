@@ -4,17 +4,18 @@ use frame_support::{
 	traits::{
 		fungibles::{
 			approvals::{Inspect as AllowanceInspect, Mutate as AllowanceMutate},
-			Inspect,
+			Inspect, Mutate,
 		},
-		nonfungibles::Transfer,
+		tokens::Preservation,
 	},
 };
 use frame_system::RawOrigin;
 use ibc::{applications::transfer::msgs::transfer::TYPE_URL, core::ics24_host::identifier::PortId};
 use ibc_proto::ibc::applications::transfer::v1::MsgTransfer;
 use pallet_assets::WeightInfo;
-use pallet_contracts::chain_extension::{
-	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
+use pallet_contracts::{
+	chain_extension::{ChainExtension, Environment, Ext, InitState, RetVal, SysConfig},
+	Origin,
 };
 use pallet_ibc::ToString;
 
@@ -400,14 +401,26 @@ where
 	);
 
 	let input: Psp37TransferInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let sender = env.ext().caller();
+	let sender = match env.ext().caller().clone() {
+		Origin::Signed(address) => address,
+		Origin::Root => {
+			trace!(
+					target: "runtime",
+					"root origin not supported"
+			);
+			// TODO: expand XvmErrors with BadOrigin
+			return Err(DispatchError::Other(
+				"ChainExtension root origin not supported",
+			));
+		}
+	};
 
-	let result = <pallet_assets::Pallet<T> as Transfer<T::AccountId>>::transfer(
+	let result = <pallet_assets::Pallet<T> as Mutate<T::AccountId>>::transfer(
 		input.asset_id,
-		sender,
+		&sender,
 		&input.to,
 		input.value,
-		true,
+		Preservation::Preserve,
 	);
 
 	match result {
@@ -441,12 +454,24 @@ where
 	);
 
 	let input: Psp37TransferFromInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let spender = env.ext().caller();
+	let spender = match env.ext().caller().clone() {
+		Origin::Signed(address) => address,
+		Origin::Root => {
+			trace!(
+					target: "runtime",
+					"root origin not supported"
+			);
+			// TODO: expand XvmErrors with BadOrigin
+			return Err(DispatchError::Other(
+				"ChainExtension root origin not supported",
+			));
+		}
+	};
 
 	let result = <pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::transfer_from(
 		input.asset_id,
 		&input.from,
-		spender,
+		&spender,
 		&input.to,
 		input.value,
 	);
@@ -482,7 +507,19 @@ where
 	);
 
 	let input: Psp37ApproveInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let owner = env.ext().caller();
+	let owner = match env.ext().caller().clone() {
+		Origin::Signed(address) => address,
+		Origin::Root => {
+			trace!(
+					target: "runtime",
+					"root origin not supported"
+			);
+			// TODO: expand XvmErrors with BadOrigin
+			return Err(DispatchError::Other(
+				"ChainExtension root origin not supported",
+			));
+		}
+	};
 
 	if input.asset_id.is_none() {
 		trace!(
@@ -496,7 +533,7 @@ where
 
 	let result = <pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::approve(
 		input.asset_id.unwrap(),
-		owner,
+		&owner,
 		&input.spender,
 		input.value,
 	);
