@@ -538,7 +538,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		runtime: client.clone(),
 		key_store: keystore_opt.clone(),
 		network_params,
-		min_block_delta: 2,
+		min_block_delta: 8,
 		prometheus_registry: prometheus_registry.clone(),
 		links: beefy_voter_links,
 		on_demand_justifications_handler: beefy_on_demand_justifications_handler,
