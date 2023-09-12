@@ -1,8 +1,8 @@
 // TODO: benchmark and set proper weight for calls
 
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
+use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime, WithdrawReasons};
 use frame_system::pallet_prelude::*;
-use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
+use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_core::Get;
@@ -56,6 +56,7 @@ impl ValidatorCommissionAlgorithm {
 	}
 }
 
+const STAKING_ID: LockIdentifier = *b"staking ";
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -274,10 +275,25 @@ where
 			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
 			RewardDestination::Staked => {
 				// We can't update staking internal fields, so we supposed to do like that...
-				log::warn!(
-					target: "runtime::session_payout",
-					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
-				T::Currency::deposit_into_existing(stash, amount).ok()
+				// log::warn!(
+				// 	target: "runtime::session_payout",
+				// 	"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
+				// T::Currency::deposit_into_existing(stash, amount).ok()
+				pallet_staking::Pallet::<T>::bonded(stash)
+					.and_then(|c| pallet_staking::Pallet::<T>::ledger(&c).map(|l| (c, l)))
+					.and_then(|(controller, mut l)| {
+						l.active += amount;
+						l.total += amount;
+						let r = T::Currency::deposit_into_existing(stash, amount).ok();
+						T::Currency::set_lock(
+							STAKING_ID,
+							&l.stash,
+							l.active,
+							WithdrawReasons::all(),
+						);
+						Ledger::insert(&controller, l);
+						r
+					})
 			}
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
