@@ -1,6 +1,8 @@
 // TODO: benchmark and set proper weight for calls
 
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime, WithdrawReasons};
+use frame_support::traits::{
+	Currency, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons,
+};
 use frame_system::pallet_prelude::*;
 use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
