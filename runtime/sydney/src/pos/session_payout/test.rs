@@ -185,6 +185,55 @@ fn static_validator_percent() {
 	});
 }
 
+#[test]
+fn ten_sessions_validator_reward_is_correct() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs_without_nominator(1);
+	ext.execute_with(|| {
+		const VALIDATOR_ID: u32 = 0;
+		for session in 1..=10 {
+			println!("-------------");
+			println!("Session: {}", session);
+			let current_era = mock::Staking::active_era().unwrap().index;
+			println!("Current era: {}", current_era);
+			let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
+			println!("Stake 0: {:?}", stake);
+
+			let validator_comission = Perbill::from_percent(1);
+			let current_era = mock::Staking::active_era().unwrap().index;
+			let total_issuance = mock::Balances::total_issuance();
+			println!("Total issuance: {}", total_issuance);
+			let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
+			let total_stake = mock::Staking::eras_total_stake(current_era);
+			let year_reward = mock::SessionPayout::year_reward().0;
+			let time_per_session = mock::SESSION_PERIOD * mock::BLOCK_TIME;
+			let total_session_reward =
+				Perbill::from_rational(time_per_session, YEAR_IN_MILLIS as u64)
+					* (Perbill::one() - mock::CurrencyManager::treasury_commission_from_staking())
+					* year_reward;
+
+			let validator_reward =
+				Perbill::from_rational(total_stake, total_issuance) * total_session_reward;
+			let comission_reward = validator_comission * validator_reward;
+			println!("Validator reward: {}", validator_reward);
+			println!("Comission reward: {}", comission_reward);
+			let reward_after_comission = Perbill::from_rational(stake.own, stake.total) // Stake to nominator ratio
+					* (validator_reward - comission_reward);
+			println!("Reward after comission: {}", reward_after_comission);
+
+			// let stake_1 = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID_1);
+			// println!("Stake 1: {:?}", stake_1);
+			// let stake_2 = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID_2);
+			// println!("Stake 2: {:?}", stake_2);
+			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
+			println!(
+				"stash: {} total: {} active: {}",
+				ledger_validator.stash, ledger_validator.total, ledger_validator.active
+			);
+			mock::skip_with_reward_n_sessions(1);
+		}
+	});
+}
+
 fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 	const VALIDATOR_ID: u32 = 0;
 	let nominator_id: u32 = validator_count;
@@ -197,7 +246,6 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 		total_stake > 0,
 		"Total staked must be greater than 0 at {current_era} era"
 	);
-	println!("total_stake: {}", total_stake);
 
 	let year_reward = mock::SessionPayout::year_reward().0;
 	let time_per_session = mock::SESSION_PERIOD * mock::BLOCK_TIME;
@@ -211,68 +259,16 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 	let comission_reward = validator_comission * validator_reward;
 	let reward_after_comission = Perbill::from_rational(stake.own, stake.total) // Stake to nominator ratio
 			* (validator_reward - comission_reward);
-	println!("comission_reward: {}", comission_reward);
 
 	let total_reward_expected = reward_after_comission + comission_reward;
 
 	let validator_balance = mock::Balances::free_balance(VALIDATOR_ID);
-	let validator_unusable_balance = mock::Balances::usable_balance(VALIDATOR_ID);
 	let nominator_balance = mock::Balances::free_balance(nominator_id);
-	let nominator_unusable_balance = mock::Balances::usable_balance(nominator_id);
-	println!(
-		"Session 0: VALIDATOR_ID: {} validator_unusable_balance: {} validator_balance: {}",
-		VALIDATOR_ID, validator_unusable_balance, validator_balance
-	);
-	println!(
-		"Session 0: nominator_id: {} nominator_unusable_balance: {} nominator_balance: {}",
-		nominator_id, nominator_unusable_balance, nominator_balance
-	);
 
 	mock::skip_with_reward_n_sessions(1);
 
 	let validator_balance_after = mock::Balances::free_balance(VALIDATOR_ID);
-	let validator_unusable_balance_after = mock::Balances::usable_balance(VALIDATOR_ID);
-	println!(
-		"Session 1: VALIDATOR_ID: {} validator_unusable_balance: {} validator_balance: {}",
-		VALIDATOR_ID, validator_unusable_balance_after, validator_balance_after
-	);
 	let nominator_balance_after = mock::Balances::free_balance(nominator_id);
-	let nominator_unusable_balance_after = mock::Balances::usable_balance(nominator_id);
-	println!(
-		"Session 1: nominator_id: {} nominator_unusable_balance: {} nominator_balance: {}",
-		nominator_id, nominator_unusable_balance_after, nominator_balance_after
-	);
-	let current_era = mock::Staking::active_era().unwrap().index;
-	let total_stake = mock::Staking::eras_total_stake(current_era);
-	let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
-	println!("current_era: {} total_stake: {}", current_era, total_stake);
-	println!(
-		"stash: {} total: {} active: {}",
-		ledger_validator.stash, ledger_validator.total, ledger_validator.active
-	);
-	mock::skip_with_reward_n_sessions(1);
-
-	let validator_balance_after_after = mock::Balances::free_balance(VALIDATOR_ID);
-	let validator_unusable_balance_after_after = mock::Balances::usable_balance(VALIDATOR_ID);
-	println!(
-		"Session 2: VALIDATOR_ID: {} validator_unusable_balance: {} validator_balance: {}",
-		VALIDATOR_ID, validator_unusable_balance_after_after, validator_balance_after_after
-	);
-	let nominator_balance_after_after = mock::Balances::free_balance(nominator_id);
-	let nominator_unusable_balance_after_after = mock::Balances::usable_balance(nominator_id);
-	println!(
-		"Session 2: nominator_id: {} nominator_unusable_balance: {} nominator_balance: {}",
-		nominator_id, nominator_unusable_balance_after_after, nominator_balance_after_after
-	);
-
-	let current_era = mock::Staking::active_era().unwrap().index;
-	let total_stake = mock::Staking::eras_total_stake(current_era);
-	let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
-	println!(
-		"stash: {} total: {} active: {}",
-		ledger_validator.stash, ledger_validator.total, ledger_validator.active
-	);
-	println!("current_era: {} total_stake: {}", current_era, total_stake);
 
 	assert!(total_reward_expected > 0);
 	assert_eq!(
