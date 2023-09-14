@@ -40,15 +40,15 @@ use sp_consensus_beefy::{
 };
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
-	ConstU64,
-	OpaqueMetadata, H160, H256, U256,
+	ConstU64, OpaqueMetadata, H160, H256, U256,
 };
 use sp_mmr_primitives as mmr;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-		IdentifyAccount, Keccak256, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
+		IdentifyAccount, Keccak256, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto,
+		Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, MultiSignature, Perbill, Permill,
@@ -73,9 +73,8 @@ pub use frame_support::{
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{
-		AsEnsureOriginWithArg,
-		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance, KeyOwnerProofSystem,
-		Randomness,
+		AsEnsureOriginWithArg, ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance,
+		KeyOwnerProofSystem, Randomness,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
