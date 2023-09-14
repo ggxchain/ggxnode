@@ -9,38 +9,40 @@
 #[cfg(feature = "std")]
 include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 
-mod chain_extensions;
+/// Max size for serialized extrinsic params for this testing runtime.
+/// This is a quite arbitrary but empirically battle tested value.
+#[cfg(test)]
+pub const CALL_PARAMS_MAX_SIZE: usize = 304;
+
 pub mod ethereum;
+pub mod governance;
 mod ibc;
 mod ink;
-pub mod poa;
+pub mod pos;
 mod prelude;
 
 mod version;
 pub use version::VERSION;
 
+use core::cmp::Ordering;
+
+#[cfg(feature = "std")]
+pub use fp_evm::GenesisAccount;
 use frame_support::{
 	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
-use sp_consensus_beefy::{
-	crypto::{AuthorityId as BeefyId, Signature as BeefySignature},
-	mmr::MmrLeafVersion,
-};
-
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
-	ConstU64, OpaqueMetadata, H160, H256, U256,
+	OpaqueMetadata, H160, H256, U256,
 };
-use sp_mmr_primitives as mmr;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-		IdentifyAccount, Keccak256, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto,
-		Verify,
+		IdentifyAccount, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, MultiSignature, Perbill, Permill,
@@ -54,10 +56,9 @@ use frame_support::weights::constants::ParityDbWeight as RuntimeDbWeight;
 use frame_support::weights::constants::RocksDbWeight as RuntimeDbWeight;
 pub use pallet_grandpa::AuthorityId as GrandpaId;
 use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
-use pallet_transaction_payment::CurrencyAdapter;
-use sp_consensus_beefy as beefy_primitives;
-
 use pallet_session::historical::{self as pallet_session_historical};
+use pallet_transaction_payment::CurrencyAdapter;
+use pos::{currency, session_payout};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -65,7 +66,8 @@ pub use frame_support::{
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{
-		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, KeyOwnerProofSystem, Randomness,
+		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance, KeyOwnerProofSystem,
+		Randomness,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
@@ -79,10 +81,11 @@ pub use pallet_balances::Call as BalancesCall;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use pallet_timestamp::Call as TimestampCall;
 
-pub use runtime_common::{
-	chain_spec::{self, RuntimeConfig},
-	validator_manager,
-};
+pub use pallet_staking::StakerStatus;
+pub use runtime_common::chain_spec::{self, RuntimeConfig};
+
+pub use runtime_common::precompiles::GoldenGatePrecompiles;
+pub type Precompiles = GoldenGatePrecompiles<Runtime>;
 
 /// Type of block number.
 pub type BlockNumber = u32;
@@ -131,7 +134,6 @@ pub mod opaque {
 			pub aura: Aura,
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
-			pub beefy: Beefy,
 		}
 	}
 }
@@ -147,6 +149,20 @@ pub type SignedBlock = generic::SignedBlock<Block>;
 /// BlockId type as expected by this runtime.
 pub type BlockId = generic::BlockId<Block>;
 /// The SignedExtension to the basic transaction logic.
+
+// Hacky way to get around the fact that we can't use #[cfg] attribute inside type declaration.
+#[cfg(feature = "allowlist")]
+pub type OptionalSignedExtension = (
+	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	// The pallet will live in the runtime and will be possible to configure,
+	// but will start working only after enabling in the SignedExtra.
+	account_filter::AllowAccount<Runtime>,
+);
+
+// Contain one mandatory signed extension to compile as () doesn't work either.
+#[cfg(not(feature = "allowlist"))]
+pub type OptionalSignedExtension = (pallet_transaction_payment::ChargeTransactionPayment<Runtime>,);
+
 pub type SignedExtra = (
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
@@ -154,8 +170,9 @@ pub type SignedExtra = (
 	frame_system::CheckEra<Runtime>,
 	frame_system::CheckNonce<Runtime>,
 	frame_system::CheckWeight<Runtime>,
-	pallet_transaction_payment::ChargeTransactionPayment<Runtime>,
+	OptionalSignedExtension,
 );
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
@@ -176,6 +193,7 @@ pub type Executive = frame_executive::Executive<
 /// Constant values used within the runtime.
 pub const MILLIGGX: Balance = 1_000_000_000_000_000;
 pub const GGX: Balance = 1000 * MILLIGGX;
+pub const KGGX: Balance = 1000 * GGX;
 pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
 
 /// Charge fee for stored bytes and items.
@@ -187,7 +205,7 @@ pub const fn deposit(items: u32, bytes: u32) -> Balance {
 #[cfg(feature = "std")]
 pub fn native_version() -> sp_version::NativeVersion {
 	sp_version::NativeVersion {
-		runtime_version: VERSION,
+		runtime_version: crate::VERSION,
 		can_author_with: Default::default(),
 	}
 }
@@ -196,33 +214,33 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
-/// We allow for 1 seconds of compute with a 2 second average block time.
 const MAXIMUM_BLOCK_WEIGHT: Weight =
 	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND, 5 * WEIGHT_PROOF_SIZE_PER_MB);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
 	pub const BlockHashCount: BlockNumber = 2400;
+	/// We allow for 1 seconds of compute with a 2 second average block time.
 	pub const MaximumBlockWeight: Weight = MAXIMUM_BLOCK_WEIGHT;
 
-	pub BlockWeights: frame_system::limits::BlockWeights =  frame_system::limits::BlockWeights::builder()
-	.base_block(BlockExecutionWeight::get())
-	.for_class(DispatchClass::all(), |weights| {
-		weights.base_extrinsic = ExtrinsicBaseWeight::get();
-	})
-	.for_class(DispatchClass::Normal, |weights| {
-		weights.max_total = Some(NORMAL_DISPATCH_RATIO * MaximumBlockWeight::get());
-	})
-	.for_class(DispatchClass::Operational, |weights| {
-		weights.max_total = Some(MaximumBlockWeight::get());
-		// Operational transactions have some extra reserved space, so that they
-		// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
-		weights.reserved = Some(
-			MaximumBlockWeight::get() - NORMAL_DISPATCH_RATIO * MaximumBlockWeight::get()
-		);
-	})
-	.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
-	.build_or_panic();
+	pub BlockWeights: frame_system::limits::BlockWeights  = frame_system::limits::BlockWeights::builder()
+		.base_block(BlockExecutionWeight::get())
+		.for_class(DispatchClass::all(), |weights| {
+			weights.base_extrinsic = ExtrinsicBaseWeight::get();
+		})
+		.for_class(DispatchClass::Normal, |weights| {
+			weights.max_total = Some(NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT);
+		})
+		.for_class(DispatchClass::Operational, |weights| {
+			weights.max_total = Some(MAXIMUM_BLOCK_WEIGHT);
+			// Operational transactions have some extra reserved space, so that they
+			// are included even if block reached `MAXIMUM_BLOCK_WEIGHT`.
+			weights.reserved = Some(
+				MAXIMUM_BLOCK_WEIGHT - NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT
+			);
+		})
+		.avg_block_initialization(AVERAGE_ON_INITIALIZE_RATIO)
+		.build_or_panic();
 	pub BlockLength: frame_system::limits::BlockLength = frame_system::limits::BlockLength::max_with_normal_ratio(5 * 1024 * 1024, NORMAL_DISPATCH_RATIO);
 	pub storage Minutes: BlockNumber = (60_000 / RuntimeSpecification::chain_spec().block_time_in_millis) as u32;
 	pub storage Hours: BlockNumber = Minutes::get() * 60;
@@ -230,16 +248,7 @@ parameter_types! {
 	pub storage EpochDurationInBlocks: BlockNumber = (RuntimeSpecification::chain_spec().session_time_in_seconds / (RuntimeSpecification::chain_spec().block_time_in_millis / 1000)) as u32;
 
 	pub ReportLongevity: u64 = EpochDurationInBlocks::get() as u64 * 10;
-}
-
-#[cfg(not(feature = "brooklyn"))]
-parameter_types! {
 	pub const SS58Prefix: u16 = 8886;
-}
-
-#[cfg(feature = "brooklyn")]
-parameter_types! {
-	pub const SS58Prefix: u16 = 42;
 }
 
 // Configure FRAME pallets to include in runtime.
@@ -306,61 +315,27 @@ impl pallet_aura::Config for Runtime {
 	type DisabledValidators = ();
 }
 
-impl pallet_beefy::Config for Runtime {
-	type BeefyId = BeefyId;
-	type MaxAuthorities = MaxAuthorities;
-	type MaxSetIdSessionEntries = ConstU64<0>;
-	type OnNewValidatorSet = MmrLeaf;
-	type WeightInfo = ();
-	type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, BeefyId)>>::Proof;
-	type EquivocationReportSystem =
-		pallet_beefy::EquivocationReportSystem<Self, Offences, Historical, ReportLongevity>;
-}
+impl chain_spec::Config for Runtime {}
 
-type MmrHash = <Keccak256 as sp_runtime::traits::Hash>::Output;
-
-impl pallet_mmr::Config for Runtime {
-	const INDEXING_PREFIX: &'static [u8] = mmr::INDEXING_PREFIX;
-	type Hashing = Keccak256;
-	type Hash = MmrHash;
-	type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
-	type WeightInfo = ();
-	type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
-}
-
-parameter_types! {
-	/// Version of the produced MMR leaf.
-	///
-	/// The version consists of two parts;
-	/// - `major` (3 bits)
-	/// - `minor` (5 bits)
-	///
-	/// `major` should be updated only if decoding the previous MMR Leaf format from the payload
-	/// is not possible (i.e. backward incompatible change).
-	/// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
-	/// encoding does not prevent old leafs from being decoded.
-	///
-	/// Hence we expect `major` to be changed really rarely (think never).
-	/// See [`MmrLeafVersion`] type documentation for more details.
-	pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
-}
-
-pub struct BeefyDummyDataProvider;
-
-impl sp_consensus_beefy::mmr::BeefyDataProvider<H256> for BeefyDummyDataProvider {
-	fn extra_data() -> H256 {
-		Default::default()
+pub struct FindAuthorTruncated<F>(PhantomData<F>);
+impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
+	fn find_author<'a, I>(digests: I) -> Option<H160>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		if let Some(author_index) = F::find_author(digests) {
+			let authority_id = Aura::authorities()[author_index as usize].clone();
+			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
+		}
+		None
 	}
 }
 
-impl pallet_beefy_mmr::Config for Runtime {
-	type LeafVersion = LeafVersion;
-	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
-	type LeafExtra = H256;
-	type BeefyDataProvider = BeefyDummyDataProvider;
-}
+impl pallet_randomness_collective_flip::Config for Runtime {}
 
-impl chain_spec::Config for Runtime {}
+parameter_types! {
+	pub const MaxSetIdSessionEntries: u32 = pos::BondingDuration::get() * pos::SessionsPerEra::get();
+}
 
 impl pallet_grandpa::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -369,7 +344,7 @@ impl pallet_grandpa::Config for Runtime {
 		pallet_grandpa::EquivocationReportSystem<Self, Offences, Historical, ReportLongevity>;
 	type WeightInfo = ();
 	type MaxAuthorities = MaxAuthorities;
-	type MaxSetIdSessionEntries = ConstU64<0>;
+	type MaxSetIdSessionEntries = MaxSetIdSessionEntries;
 }
 
 parameter_types! {
@@ -389,7 +364,7 @@ impl pallet_timestamp::Config for Runtime {
 
 impl pallet_authorship::Config for Runtime {
 	type FindAuthor = pallet_session::FindAccountFromAuthorIndex<Self, Aura>;
-	type EventHandler = ImOnline;
+	type EventHandler = (Staking, ImOnline);
 }
 
 parameter_types! {
@@ -414,7 +389,7 @@ impl pallet_balances::Config for Runtime {
 
 impl pallet_transaction_payment::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
-	type OnChargeTransaction = CurrencyAdapter<Balances, ()>;
+	type OnChargeTransaction = CurrencyAdapter<Balances, CurrencyManager>;
 	type OperationalFeeMultiplier = ConstU8<5>;
 	type WeightToFee = IdentityFee<Balance>;
 	type LengthToFee = IdentityFee<Balance>;
@@ -424,11 +399,35 @@ impl pallet_transaction_payment::Config for Runtime {
 impl pallet_offences::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
-	type OnOffenceHandler = ();
+	type OnOffenceHandler = Staking;
+}
+
+impl pallet_assets::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = u128;
+	type AssetId = u32;
+	type AssetIdParameter = scale_codec::Compact<u32>;
+	type Currency = Balances;
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type ForceOrigin = EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = ConstU128<GGX>;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = StringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type CallbackHandle = ();
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Runtime>;
+	type RemoveItemsLimit = ConstU32<1000>;
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
 }
 
 parameter_types! {
 	pub const ImOnlineUnsignedPriority: TransactionPriority = TransactionPriority::max_value();
+	pub const StakingUnsignedPriority: TransactionPriority = TransactionPriority::max_value() / 2;
 	pub const MaxKeys: u32 = 10_000;
 	pub const MaxPeerInHeartbeats: u32 = 10_000;
 	pub const MaxPeerDataEncodingSize: u32 = 1_000;
@@ -438,7 +437,7 @@ impl pallet_im_online::Config for Runtime {
 	type AuthorityId = ImOnlineId;
 	type RuntimeEvent = RuntimeEvent;
 	type ValidatorSet = Historical;
-	type NextSessionRotation = poa::PeriodicSessions;
+	type NextSessionRotation = pos::PeriodicSessions;
 	type ReportUnresponsiveness = Offences;
 	type UnsignedPriority = ImOnlineUnsignedPriority;
 	type WeightInfo = pallet_im_online::weights::SubstrateWeight<Runtime>;
@@ -452,21 +451,19 @@ impl pallet_sudo::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 }
 
-pub struct FindAuthorTruncated<F>(PhantomData<F>);
-impl<F: FindAuthor<u32>> FindAuthor<H160> for FindAuthorTruncated<F> {
-	fn find_author<'a, I>(digests: I) -> Option<H160>
-	where
-		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
-	{
-		if let Some(author_index) = F::find_author(digests) {
-			let authority_id = Aura::authorities()[author_index as usize].clone();
-			return Some(H160::from_slice(&authority_id.to_raw_vec()[4..24]));
-		}
-		None
-	}
+parameter_types! {
+	pub const PreimageBaseDeposit: Balance = deposit(2, 64);
+	pub const PreimageByteDeposit: Balance = deposit(0, 1);
 }
 
-impl pallet_randomness_collective_flip::Config for Runtime {}
+impl pallet_preimage::Config for Runtime {
+	type WeightInfo = pallet_preimage::weights::SubstrateWeight<Self>;
+	type RuntimeEvent = RuntimeEvent;
+	type Currency = Balances;
+	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
+	type BaseDeposit = PreimageBaseDeposit;
+	type ByteDeposit = PreimageByteDeposit;
+}
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
@@ -483,14 +480,16 @@ construct_runtime!(
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
 		TransactionPayment: pallet_transaction_payment,
+		// Authorship must go before session in order to track the correct author of the block.
 		Authorship: pallet_authorship,
 		Offences: pallet_offences,
+		Staking: pallet_staking,
 		Session: pallet_session,
 		Grandpa: pallet_grandpa,
-		Treasury: pallet_treasury,
-		Bounties: pallet_bounties,
 		Assets: pallet_assets,
+		Bounties: pallet_bounties,
 		Vesting: pallet_vesting,
+		Scheduler: pallet_scheduler,
 		Indices: pallet_indices,
 		Proxy: pallet_proxy,
 		Multisig: pallet_multisig,
@@ -498,7 +497,15 @@ construct_runtime!(
 		Sudo: pallet_sudo,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
-		ValidatorManager: validator_manager,
+		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
+
+		// Goverment pallets
+		Treasury: pallet_treasury,
+		ConvictionVoting: pallet_conviction_voting,
+		Referenda: pallet_referenda,
+		Whitelist: pallet_whitelist,
+		Society: pallet_society,
+		Preimage: pallet_preimage,
 
 		// EVM pallets
 		Ethereum: pallet_ethereum,
@@ -507,22 +514,18 @@ construct_runtime!(
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
+
+		// GGX pallets
+		CurrencyManager: currency,
+		SessionPayout: session_payout,
+		AccountFilter: account_filter,
+
 		// Wasm contracts
 		Contracts: pallet_contracts,
 		// Astar
 		Xvm: pallet_xvm,
-		// IBC
-		Ibc: pallet_ibc,
-		Ics20Transfer: pallet_ics20_transfer,
-		//BEEFY Bridges support.
-		Mmr: pallet_mmr,
-		Beefy: pallet_beefy,
-		MmrLeaf: pallet_beefy_mmr,
-
 	}
 );
-
-pub type MmrHashing = <Runtime as pallet_mmr::Config>::Hashing;
 
 impl<C> frame_system::offchain::SendTransactionTypes<C> for Runtime
 where
@@ -668,101 +671,6 @@ impl_runtime_apis! {
 
 		fn authorities() -> Vec<AuraId> {
 			Aura::authorities().to_vec()
-		}
-	}
-
-	#[api_version(2)]
-	impl beefy_primitives::BeefyApi<Block> for Runtime {
-		fn beefy_genesis() -> Option<BlockNumber> {
-			Beefy::genesis_block()
-		}
-
-		fn validator_set() -> Option<beefy_primitives::ValidatorSet<BeefyId>> {
-			Beefy::validator_set()
-		}
-
-		fn submit_report_equivocation_unsigned_extrinsic(
-			equivocation_proof: beefy_primitives::EquivocationProof<
-				BlockNumber,
-				BeefyId,
-				BeefySignature,
-			>,
-			key_owner_proof: beefy_primitives::OpaqueKeyOwnershipProof,
-		) -> Option<()> {
-			let key_owner_proof = key_owner_proof.decode()?;
-
-			Beefy::submit_unsigned_equivocation_report(
-				equivocation_proof,
-				key_owner_proof,
-			)
-		}
-
-		fn generate_key_ownership_proof(
-			_set_id: beefy_primitives::ValidatorSetId,
-			authority_id: BeefyId,
-		) -> Option<beefy_primitives::OpaqueKeyOwnershipProof> {
-
-			Historical::prove((beefy_primitives::KEY_TYPE, authority_id))
-				.map(|p| p.encode())
-				.map(beefy_primitives::OpaqueKeyOwnershipProof::new)
-		}
-	}
-
-	#[api_version(2)]
-	impl mmr::MmrApi<Block, Hash, BlockNumber> for Runtime {
-		fn mmr_root() -> Result<Hash, mmr::Error> {
-			Ok(Mmr::mmr_root())
-		}
-
-		fn mmr_leaf_count() -> Result<mmr::LeafIndex, mmr::Error> {
-			Ok(Mmr::mmr_leaves())
-		}
-
-		fn generate_proof(
-			block_numbers: Vec<BlockNumber>,
-			best_known_block_number: Option<BlockNumber>,
-		) -> Result<(Vec<mmr::EncodableOpaqueLeaf>, mmr::Proof<Hash>), mmr::Error> {
-			Mmr::generate_proof(block_numbers, best_known_block_number).map(
-				|(leaves, proof)| {
-					(
-						leaves
-							.into_iter()
-							.map(|leaf| mmr::EncodableOpaqueLeaf::from_leaf(&leaf))
-							.collect(),
-						proof,
-					)
-				},
-			)
-		}
-
-		fn verify_proof(leaves: Vec<mmr::EncodableOpaqueLeaf>, proof: mmr::Proof<Hash>)
-			-> Result<(), mmr::Error>
-		{
-			pub type MmrLeaf = <<Runtime as pallet_mmr::Config>::LeafData as mmr::LeafDataProvider>::LeafData;
-			let leaves = leaves.into_iter().map(|leaf|
-				leaf.into_opaque_leaf()
-				.try_decode()
-				.ok_or(mmr::Error::Verify)).collect::<Result<Vec<MmrLeaf>, mmr::Error>>()?;
-			Mmr::verify_leaves(leaves, proof)
-		}
-
-		fn verify_proof_stateless(
-			root: Hash,
-			leaves: Vec<mmr::EncodableOpaqueLeaf>,
-			proof: mmr::Proof<Hash>
-		) -> Result<(), mmr::Error> {
-			let nodes = leaves.into_iter().map(|leaf|mmr::DataOrHash::Data(leaf.into_opaque_leaf())).collect();
-			pallet_mmr::verify_leaves_proof::<MmrHashing, _>(root, nodes, proof)
-		}
-	}
-
-	impl pallet_beefy_mmr::BeefyMmrApi<Block, Hash> for RuntimeApi {
-		fn authority_set_proof() -> beefy_primitives::mmr::BeefyAuthoritySet<Hash> {
-			MmrLeaf::authority_set_proof()
-		}
-
-		fn next_authority_set_proof() -> beefy_primitives::mmr::BeefyNextAuthoritySet<Hash> {
-			MmrLeaf::next_authority_set_proof()
 		}
 	}
 
@@ -951,7 +859,6 @@ impl_runtime_apis! {
 		fn query_weight_to_fee(weight: Weight) -> Balance {
 			TransactionPayment::weight_to_fee(weight)
 		}
-
 		fn query_length_to_fee(length: u32) -> Balance {
 			TransactionPayment::length_to_fee(length)
 		}
@@ -970,6 +877,7 @@ impl_runtime_apis! {
 		) -> pallet_transaction_payment::FeeDetails<Balance> {
 			TransactionPayment::query_call_fee_details(call, len)
 		}
+
 		fn query_weight_to_fee(weight: Weight) -> Balance {
 			TransactionPayment::weight_to_fee(weight)
 		}
@@ -1064,60 +972,93 @@ impl_runtime_apis! {
 	}
 
 	impl pallet_contracts::ContractsApi<
-		Block, AccountId, Balance, BlockNumber, Hash,
-	>
-		for Runtime
+	Block, AccountId, Balance, BlockNumber, Hash,
+>
+	for Runtime
+{
+	fn call(
+		origin: AccountId,
+		dest: AccountId,
+		value: Balance,
+		gas_limit: Option<Weight>,
+		storage_deposit_limit: Option<Balance>,
+		input_data: Vec<u8>,
+	) -> pallet_contracts_primitives::ContractExecResult<Balance> {
+		let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
+		Contracts::bare_call(
+			origin,
+			dest,
+			value,
+			gas_limit,
+			storage_deposit_limit,
+			input_data,
+			true,
+			pallet_contracts::Determinism::Deterministic,
+		)
+	}
+
+	fn instantiate(
+		origin: AccountId,
+		value: Balance,
+		gas_limit: Option<Weight>,
+		storage_deposit_limit: Option<Balance>,
+		code: pallet_contracts_primitives::Code<Hash>,
+		data: Vec<u8>,
+		salt: Vec<u8>,
+	) -> pallet_contracts_primitives::ContractInstantiateResult<AccountId, Balance>
 	{
-		fn call(
-			origin: AccountId,
-			dest: AccountId,
-			value: Balance,
-			gas_limit: Option<Weight>,
-			storage_deposit_limit: Option<Balance>,
-			input_data: Vec<u8>,
-		) -> pallet_contracts_primitives::ContractExecResult<Balance> {
-			let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
-			Contracts::bare_call(
-				origin,
-				dest,
-				value,
-				gas_limit,
-				storage_deposit_limit,
-				input_data,
-				true,
-				pallet_contracts::Determinism::Deterministic,
-			)
-		}
+		let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
+		Contracts::bare_instantiate(origin, value, gas_limit, storage_deposit_limit, code, data, salt, true)
+	}
 
-		fn instantiate(
-			origin: AccountId,
-			value: Balance,
-			gas_limit: Option<Weight>,
-			storage_deposit_limit: Option<Balance>,
-			code: pallet_contracts_primitives::Code<Hash>,
-			data: Vec<u8>,
-			salt: Vec<u8>,
-		) -> pallet_contracts_primitives::ContractInstantiateResult<AccountId, Balance>
-		{
-			let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
-			Contracts::bare_instantiate(origin, value, gas_limit, storage_deposit_limit, code, data, salt, true)
-		}
+	fn upload_code(
+		origin: AccountId,
+		code: Vec<u8>,
+		storage_deposit_limit: Option<Balance>,
+		determinism: pallet_contracts::Determinism,
+	) -> pallet_contracts_primitives::CodeUploadResult<Hash, Balance>
+	{
+		Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
+	}
 
-		fn upload_code(
-			origin: AccountId,
-			code: Vec<u8>,
-			storage_deposit_limit: Option<Balance>,
-			determinism: pallet_contracts::Determinism,
-		) -> pallet_contracts_primitives::CodeUploadResult<Hash, Balance>
-		{
-			Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
-		}
+	fn get_storage(
+		address: AccountId,
+		key: Vec<u8>,
+	) -> pallet_contracts_primitives::GetStorageResult {
+		Contracts::get_storage(address, key)
+	}
+}
+}
 
-		fn get_storage(
-			address: AccountId,
-			key: Vec<u8>,
-		) -> pallet_contracts_primitives::GetStorageResult {
-			Contracts::get_storage(address, key)
-		}
+#[cfg(test)]
+mod tests {
+	use crate::{pos::MaxNominations, CALL_PARAMS_MAX_SIZE};
+
+	use super::{Runtime, RuntimeCall};
+
+	use frame_election_provider_support::NposSolution;
+	use sp_runtime::UpperOf;
+
+	#[test]
+	fn perbill_as_onchain_accuracy() {
+		type OnChainAccuracy =
+			<<Runtime as pallet_election_provider_multi_phase::MinerConfig>::Solution as NposSolution>::Accuracy;
+		let maximum_chain_accuracy: Vec<UpperOf<OnChainAccuracy>> = (0..MaxNominations::get())
+			.map(|_| <UpperOf<OnChainAccuracy>>::from(OnChainAccuracy::one().deconstruct()))
+			.collect();
+		let _: UpperOf<OnChainAccuracy> = maximum_chain_accuracy
+			.iter()
+			.fold(0, |acc, x| acc.checked_add(*x).unwrap());
+	}
+
+	#[test]
+	fn call_size() {
+		let size = core::mem::size_of::<RuntimeCall>();
+		assert!(
+			size <= CALL_PARAMS_MAX_SIZE,
+			"size of RuntimeCall {size} is more than {CALL_PARAMS_MAX_SIZE} bytes.
+			 Some calls have too big arguments, use Box to reduce the size of RuntimeCall.
+			 If the limit is too strong, maybe consider increase the limit.",
+		);
 	}
 }

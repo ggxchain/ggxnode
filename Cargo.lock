@@ -759,15 +759,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "binary-merkle-tree"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
-dependencies = [
- "hash-db 0.16.0",
- "log",
-]
-
-[[package]]
 name = "bincode"
 version = "1.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2388,9 +2379,9 @@ checksum = "e48c92028aaa870e83d51c64e5d4e0b6981b360c522198c23959f219a4e1b15b"
 
 [[package]]
 name = "erased-serde"
-version = "0.3.25"
+version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f2b0c2380453a92ea8b6c8e5f64ecaafccddde8ceab55ff7a8ac1029f894569"
+checksum = "c6984864d65d092d9e9ada107007a846a09f75d2e24046bcce9a38d14aa52052"
 dependencies = [
  "serde",
 ]
@@ -3191,7 +3182,6 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c606d892c9de11507fa0dcffc116434f94e105d0bbdc4e405b61519464c49d7b"
 dependencies = [
- "eyre",
  "paste",
 ]
 
@@ -3916,9 +3906,11 @@ dependencies = [
 name = "ggxchain-runtime-brooklyn"
 version = "0.1.2"
 dependencies = [
+ "fp-evm",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",
+ "frame-election-provider-support",
  "frame-executive",
  "frame-support",
  "frame-system",
@@ -3926,18 +3918,18 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
- "pallet-assets",
+ "log",
  "pallet-aura",
  "pallet-authorship",
  "pallet-balances",
  "pallet-base-fee",
- "pallet-beefy",
- "pallet-beefy-mmr",
  "pallet-bounties",
  "pallet-chain-extension-xvm",
  "pallet-contracts",
  "pallet-contracts-primitives",
+ "pallet-conviction-voting",
  "pallet-dynamic-fee",
+ "pallet-election-provider-multi-phase",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
@@ -3950,29 +3942,37 @@ dependencies = [
  "pallet-im-online",
  "pallet-indices",
  "pallet-insecure-randomness-collective-flip",
- "pallet-mmr",
  "pallet-multisig",
  "pallet-offences",
+ "pallet-preimage",
  "pallet-proxy",
+ "pallet-ranked-collective",
+ "pallet-referenda",
+ "pallet-scheduler",
  "pallet-session",
+ "pallet-society",
+ "pallet-staking",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-vesting",
+ "pallet-whitelist",
  "pallet-xvm",
  "parity-scale-codec 3.5.0",
+ "paste",
  "prost",
  "runtime-common",
  "scale-info",
+ "serde",
  "sp-api",
+ "sp-arithmetic",
  "sp-block-builder",
  "sp-consensus-aura",
- "sp-consensus-beefy",
  "sp-core",
  "sp-inherents",
- "sp-mmr-primitives",
+ "sp-io",
  "sp-offchain",
  "sp-runtime",
  "sp-session",
@@ -3980,6 +3980,7 @@ dependencies = [
  "sp-std 5.0.0",
  "sp-transaction-pool",
  "sp-version",
+ "substrate-account-filter",
  "substrate-wasm-builder",
 ]
 
@@ -6639,21 +6640,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-assets"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec 3.5.0",
- "scale-info",
- "sp-core",
- "sp-runtime",
- "sp-std 5.0.0",
-]
-
-[[package]]
 name = "pallet-aura"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
@@ -6710,49 +6696,6 @@ dependencies = [
  "scale-info",
  "sp-core",
  "sp-runtime",
-]
-
-[[package]]
-name = "pallet-beefy"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
-dependencies = [
- "frame-support",
- "frame-system",
- "pallet-authorship",
- "pallet-session",
- "parity-scale-codec 3.5.0",
- "scale-info",
- "serde",
- "sp-consensus-beefy",
- "sp-runtime",
- "sp-session",
- "sp-staking",
- "sp-std 5.0.0",
-]
-
-[[package]]
-name = "pallet-beefy-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
-dependencies = [
- "array-bytes",
- "binary-merkle-tree",
- "frame-support",
- "frame-system",
- "log",
- "pallet-beefy",
- "pallet-mmr",
- "pallet-session",
- "parity-scale-codec 3.5.0",
- "scale-info",
- "serde",
- "sp-api",
- "sp-consensus-beefy",
- "sp-core",
- "sp-io",
- "sp-runtime",
- "sp-std 5.0.0",
 ]
 
 [[package]]
@@ -7186,7 +7129,6 @@ name = "pallet-ibc"
 version = "4.0.0-dev"
 source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=icf-m3#2e06929aced42fe3224bd5e5f71f0fc02ecce3dd"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
  "ibc 0.28.0 (git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3)",
@@ -7210,7 +7152,6 @@ name = "pallet-ibc-utils"
 version = "0.1.0"
 source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=icf-m3#2e06929aced42fe3224bd5e5f71f0fc02ecce3dd"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "ibc 0.28.0 (git+https://github.com/octopus-network/ibc-rs.git?branch=icf-m3)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
@@ -7225,7 +7166,6 @@ name = "pallet-ics20-transfer"
 version = "4.0.0-dev"
 source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=icf-m3#2e06929aced42fe3224bd5e5f71f0fc02ecce3dd"
 dependencies = [
- "frame-benchmarking",
  "frame-support",
  "frame-system",
  "hex",
@@ -7306,23 +7246,6 @@ dependencies = [
  "parity-scale-codec 3.5.0",
  "safe-mix",
  "scale-info",
- "sp-runtime",
- "sp-std 5.0.0",
-]
-
-[[package]]
-name = "pallet-mmr"
-version = "4.0.0-dev"
-source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.40#98f2e3451c9143278ec53c6718940aeabcd3b68a"
-dependencies = [
- "frame-benchmarking",
- "frame-support",
- "frame-system",
- "parity-scale-codec 3.5.0",
- "scale-info",
- "sp-core",
- "sp-io",
- "sp-mmr-primitives",
  "sp-runtime",
  "sp-std 5.0.0",
 ]
@@ -10836,9 +10759,9 @@ dependencies = [
 
 [[package]]
 name = "serde_bytes"
-version = "0.11.9"
+version = "0.11.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "416bda436f9aab92e02c8e10d49a15ddd339cea90b6e340fe51ed97abb548294"
+checksum = "f3c5113243e4a3a1c96587342d067f3e6b0f50790b6cf40d2868eb647a3eef0e"
 dependencies = [
  "serde",
 ]
@@ -10867,9 +10790,9 @@ dependencies = [
 
 [[package]]
 name = "serde_repr"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcec881020c684085e55a25f7fd888954d56609ef363479dc5a1305eb0d40cab"
+checksum = "6f0a21fba416426ac927b1691996e82079f8b6156e920c85345f135b2e9ba2de"
 dependencies = [
  "proc-macro2",
  "quote",

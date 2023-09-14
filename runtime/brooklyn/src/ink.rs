@@ -1,10 +1,5 @@
 use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEvent, Timestamp};
-use crate::{
-	chain_extensions::{IBCISC20Extension, Psp37Extension},
-	deposit,
-	prelude::*,
-	Balance, BlockWeights,
-};
+use crate::{deposit, prelude::*, Balance, BlockWeights, AVERAGE_ON_INITIALIZE_RATIO};
 
 pub use frame_support::dispatch::DispatchClass;
 use frame_support::weights::Weight;
@@ -17,24 +12,12 @@ impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
 	const ID: u16 = 1;
 }
 
-impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
-	const ID: u16 = 2;
-}
-
-impl RegisteredChainExtension<Runtime> for Psp37Extension {
-	const ID: u16 = 3;
-}
-
 parameter_types! {
 	pub const DepositPerItem: Balance = deposit(1, 0);
 	pub const DepositPerByte: Balance = deposit(0, 1);
 	pub const MaxValueSize: u32 = 16 * 1024;
 	// The lazy deletion runs inside on_initialize.
-	pub DeletionWeightLimit: Weight = BlockWeights::get()
-	.per_class
-	.get(DispatchClass::Normal)
-	.max_total
-	.unwrap_or(BlockWeights::get().max_block);
+	pub DeletionWeightLimit: Weight = AVERAGE_ON_INITIALIZE_RATIO * BlockWeights::get().max_block;
 
 	pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
 }
@@ -60,7 +43,7 @@ impl pallet_contracts::Config for Runtime {
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (XvmExtension<Self>, IBCISC20Extension, Psp37Extension);
+	type ChainExtension = XvmExtension<Self>;
 	type DeletionQueueDepth = ConstU32<128>;
 	type DeletionWeightLimit = DeletionWeightLimit;
 	type Schedule = Schedule;
