@@ -116,6 +116,7 @@ sp-io.workspace = true
 
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
+brooklyn = []
 fast-runtime = []
 
 std = [
