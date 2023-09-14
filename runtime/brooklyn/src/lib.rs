@@ -475,10 +475,10 @@ impl pallet_offences::Config for Runtime {
 
 parameter_types! {
 	pub const AssetDeposit: Balance = 100 * GGX;
-	pub const ApprovalDeposit: Balance = 1 * GGX;
+	pub const ApprovalDeposit: Balance = GGX;
 	pub const StringLimit: u32 = 50;
 	pub const MetadataDepositBase: Balance = 10 * GGX;
-	pub const MetadataDepositPerByte: Balance = 1 * GGX;
+	pub const MetadataDepositPerByte: Balance = GGX;
 }
 
 impl pallet_assets::Config for Runtime {
