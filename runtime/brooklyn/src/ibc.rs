@@ -1,4 +1,4 @@
-use crate::prelude::*;
+use crate::{prelude::*, Balance, Balances, Runtime, RuntimeEvent, RuntimeSpecification};
 
 use super::{Assets, Ics20Transfer};
 

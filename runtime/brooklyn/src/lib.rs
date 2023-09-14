@@ -34,15 +34,21 @@ use frame_support::{
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
+use sp_consensus_beefy::{
+	crypto::{AuthorityId as BeefyId, Signature as BeefySignature},
+	mmr::MmrLeafVersion,
+};
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
+	ConstU64,
 	OpaqueMetadata, H160, H256, U256,
 };
+use sp_mmr_primitives as mmr;
 use sp_runtime::{
 	generic, impl_opaque_keys,
 	traits::{
 		AccountIdLookup, BlakeTwo256, Block as BlockT, DispatchInfoOf, Dispatchable,
-		IdentifyAccount, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
+		IdentifyAccount, Keccak256, NumberFor, OpaqueKeys, PostDispatchInfoOf, UniqueSaturatedInto, Verify,
 	},
 	transaction_validity::{TransactionSource, TransactionValidity, TransactionValidityError},
 	ApplyExtrinsicResult, MultiSignature, Perbill, Permill,
@@ -66,6 +72,7 @@ pub use frame_support::{
 	dispatch::DispatchClass,
 	parameter_types,
 	traits::{
+		AsEnsureOriginWithArg,
 		ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance, KeyOwnerProofSystem,
 		Randomness,
 	},
@@ -76,7 +83,7 @@ pub use frame_support::{
 	ConsensusEngineId, StorageValue,
 };
 
-pub use frame_system::Call as SystemCall;
+pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
 pub use pallet_timestamp::Call as TimestampCall;
@@ -134,6 +141,7 @@ pub mod opaque {
 			pub aura: Aura,
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
+			pub beefy: Beefy,
 		}
 	}
 }
@@ -315,6 +323,60 @@ impl pallet_aura::Config for Runtime {
 	type DisabledValidators = ();
 }
 
+impl pallet_beefy::Config for Runtime {
+	type BeefyId = BeefyId;
+	type MaxAuthorities = MaxAuthorities;
+	type MaxSetIdSessionEntries = ConstU64<0>;
+	type OnNewValidatorSet = MmrLeaf;
+	type WeightInfo = ();
+	type KeyOwnerProof = <Historical as KeyOwnerProofSystem<(KeyTypeId, BeefyId)>>::Proof;
+	type EquivocationReportSystem =
+		pallet_beefy::EquivocationReportSystem<Self, Offences, Historical, ReportLongevity>;
+}
+
+type MmrHash = <Keccak256 as sp_runtime::traits::Hash>::Output;
+
+impl pallet_mmr::Config for Runtime {
+	const INDEXING_PREFIX: &'static [u8] = mmr::INDEXING_PREFIX;
+	type Hashing = Keccak256;
+	type Hash = MmrHash;
+	type OnNewRoot = pallet_beefy_mmr::DepositBeefyDigest<Runtime>;
+	type WeightInfo = ();
+	type LeafData = pallet_beefy_mmr::Pallet<Runtime>;
+}
+
+parameter_types! {
+	/// Version of the produced MMR leaf.
+	///
+	/// The version consists of two parts;
+	/// - `major` (3 bits)
+	/// - `minor` (5 bits)
+	///
+	/// `major` should be updated only if decoding the previous MMR Leaf format from the payload
+	/// is not possible (i.e. backward incompatible change).
+	/// `minor` should be updated if fields are added to the previous MMR Leaf, which given SCALE
+	/// encoding does not prevent old leafs from being decoded.
+	///
+	/// Hence we expect `major` to be changed really rarely (think never).
+	/// See [`MmrLeafVersion`] type documentation for more details.
+	pub LeafVersion: MmrLeafVersion = MmrLeafVersion::new(0, 0);
+}
+
+pub struct BeefyDummyDataProvider;
+
+impl sp_consensus_beefy::mmr::BeefyDataProvider<H256> for BeefyDummyDataProvider {
+	fn extra_data() -> H256 {
+		Default::default()
+	}
+}
+
+impl pallet_beefy_mmr::Config for Runtime {
+	type LeafVersion = LeafVersion;
+	type BeefyAuthorityToMerkleLeaf = pallet_beefy_mmr::BeefyEcdsaToEthereum;
+	type LeafExtra = H256;
+	type BeefyDataProvider = BeefyDummyDataProvider;
+}
+
 impl chain_spec::Config for Runtime {}
 
 pub struct FindAuthorTruncated<F>(PhantomData<F>);
@@ -400,6 +462,14 @@ impl pallet_offences::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type IdentificationTuple = pallet_session::historical::IdentificationTuple<Self>;
 	type OnOffenceHandler = Staking;
+}
+
+parameter_types! {
+	pub const AssetDeposit: Balance = 100 * GGX;
+	pub const ApprovalDeposit: Balance = 1 * GGX;
+	pub const StringLimit: u32 = 50;
+	pub const MetadataDepositBase: Balance = 10 * GGX;
+	pub const MetadataDepositPerByte: Balance = 1 * GGX;
 }
 
 impl pallet_assets::Config for Runtime {
@@ -524,6 +594,14 @@ construct_runtime!(
 		Contracts: pallet_contracts,
 		// Astar
 		Xvm: pallet_xvm,
+		// IBC
+		Ibc: pallet_ibc,
+		Ics20Transfer: pallet_ics20_transfer,
+		//BEEFY Bridges support.
+		Mmr: pallet_mmr,
+		Beefy: pallet_beefy,
+		MmrLeaf: pallet_beefy_mmr,
+
 	}
 );
 
