@@ -152,7 +152,7 @@ std = [
 	"pallet-authorship/std",
 	"pallet-balances/std",
 	"pallet-beefy/std",
-    "pallet-beefy-mmr/std",
+	"pallet-beefy-mmr/std",
 	"pallet-bounties/std",
 	"pallet-conviction-voting/std",
 	"pallet-election-provider-multi-phase/std",
@@ -200,9 +200,9 @@ std = [
 	"pallet-contracts/std",
 	"pallet-contracts-primitives/std",
 	# IBC
-    "pallet-ibc/std",
-    "pallet-ics20-transfer/std",
-    "pallet-ibc-utils/std",
+	"pallet-ibc/std",
+	"pallet-ics20-transfer/std",
+	"pallet-ibc-utils/std",
 ]
 aura = []
 allowlist = []
