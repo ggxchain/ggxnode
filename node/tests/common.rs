@@ -266,7 +266,7 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 			data.push('\n');
 
 			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
+			let sock_addr = match line.split_once("Running JSON-RPC server: addr=") {
 				None => return None,
 				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
@@ -282,7 +282,7 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 		.lines()
 		.find_map(|line| {
 			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC HTTP server: addr=") {
+			let sock_addr = match line.split_once("Running JSON-RPC server: addr=") {
 				None => return None,
 				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
