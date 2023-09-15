@@ -920,7 +920,7 @@ mod tests {
 
 		parameter_types! {
 			pub BlockGasLimit: U256 = U256::max_value();
-			pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+			pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
 			/// The amount of gas per PoV size. Value is calculated as:
 			///
 			/// max_gas_limit = max_tx_ref_time / WEIGHT_PER_GAS = max_pov_size * gas_limit_pov_size_ratio
