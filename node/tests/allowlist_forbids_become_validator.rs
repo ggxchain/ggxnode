@@ -37,7 +37,6 @@ async fn allowlist_forbids_become_validator() -> Result<(), Box<dyn std::error::
 	let dave_pair = sp_keyring::AccountKeyring::Dave.pair();
 	let dave_signer = common::pair_signer::PairSigner::new(dave_pair.clone());
 	let tx = ggx::tx().staking().bond(
-		dave_addr,
 		1000 * common::GGX,
 		ggx::runtime_types::pallet_staking::RewardDestination::Staked,
 	);
