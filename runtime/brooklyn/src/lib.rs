@@ -14,6 +14,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
+mod chain_extensions;
 pub mod ethereum;
 pub mod governance;
 mod ibc;
