@@ -473,36 +473,5 @@ pub fn skip_with_reward_n_sessions(n: u64) {
 
 pub fn reward_validators() {
 	let iter = (0..Staking::validator_count()).into_iter().map(|i| (i, 1));
-
-	// let new_planned_era = CurrentEra::<T>::mutate(|s| {
-	// 	*s = Some(s.map(|s| s + 1).unwrap_or(0));
-	// 	s.unwrap()
-	// });
-	//
-	// ErasStartSessionIndex::<T>::insert(&new_planned_era, &start_session_index);
-	//
-	// // Clean old era information.
-	// if let Some(old_era) = new_planned_era.checked_sub(T::HistoryDepth::get() + 1) {
-	// 	Self::clear_era_information(old_era);
-	// }
-
-	if let Some(active_era) = mock::Staking::active_era() {
-		let era_reward_points = mock::Staking::eras_reward_points(active_era.index);
-		log::info!(
-			target: "runtime::session_payout::mock::reward_validators",
-			"before: active_era: {:?}, era_reward_points: {:?}",
-			mock::Staking::active_era(),
-			era_reward_points,
-		);
-	}
-	Staking::reward_by_ids(iter);
-	if let Some(active_era) = mock::Staking::active_era() {
-		let era_reward_points = mock::Staking::eras_reward_points(active_era.index);
-		log::info!(
-			target: "runtime::session_payout::mock::reward_validators",
-			"end: active_era: {:?}, era_reward_points: {:?}",
-			mock::Staking::active_era(),
-			era_reward_points,
-		);
-	}
+	Staking::reward_by_ids(iter)
 }

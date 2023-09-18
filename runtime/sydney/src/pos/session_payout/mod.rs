@@ -4,7 +4,7 @@ use frame_support::traits::{
 	Currency, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons,
 };
 use frame_system::pallet_prelude::*;
-use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination};
+use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination, StakingLedger};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_core::Get;
@@ -184,7 +184,6 @@ where
 		let ledger =
 			<pallet_staking::Ledger<T>>::get(&controller).ok_or(Error::<T>::NotController)?;
 		let exposure = <pallet_staking::ErasStakersClipped<T>>::get(era, &ledger.stash);
-		log::info!(target: "runtime::session_payout::do_validator_payout", "session_points: {:?}", session_points);
 
 		let validator_reward_points = session_points
 			.individual
@@ -254,11 +253,23 @@ where
 				payout += imbalance.peek();
 			}
 		}
-		let ledger =
-			<pallet_staking::Ledger<T>>::get(&controller).ok_or(Error::<T>::NotController)?;
-		log::info!("new ledger: {:?}", ledger);
 		debug_assert!(nominator_payout_count <= T::MaxNominatorRewardedPerValidator::get());
 		Ok(payout)
+	}
+
+	/// Update the ledger for a controller.
+	///
+	/// This will also update the stash lock.
+	///
+	/// This function is taken from `pallet_staking::impls.rs` because update_ledger function is pub(crate).
+	pub(crate) fn update_ledger(controller: &T::AccountId, ledger: &StakingLedger<T>) {
+		T::Currency::set_lock(
+			STAKING_ID,
+			&ledger.stash,
+			ledger.total,
+			WithdrawReasons::all(),
+		);
+		Ledger::insert(&controller, ledger);
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
@@ -284,8 +295,7 @@ where
 					l.active += amount;
 					l.total += amount;
 					let r = T::Currency::deposit_into_existing(stash, amount).ok();
-					T::Currency::set_lock(STAKING_ID, &l.stash, l.active, WithdrawReasons::all());
-					Ledger::insert(&controller, l);
+					Self::update_ledger(&controller, &l);
 					r
 				}),
 			RewardDestination::Account(dest_account) => {
@@ -328,15 +338,11 @@ where
 			LastEra::<T>::set(current_era);
 			// This is the first session in this era, so we don't need to calculate difference
 			// We need to load it again to clone. Original type doesn't support it...
-			log::info!(target: "runtime::session_payout", "first session in this era: total_session_points: {:?}", <pallet_staking::ErasRewardPoints<T>>::get(current_era));
 			<pallet_staking::ErasRewardPoints<T>>::get(current_era)
 		} else {
 			let era_reward_points = <pallet_staking::ErasRewardPoints<T>>::get(current_era);
 			let last_era_points = LastEraPoints::<T>::get();
-			log::info!(target: "runtime::session_payout", "Not first session in this era: era_reward_points: {:?}, last_era_points: {:?}", era_reward_points, last_era_points);
-			let current = substract_era_points(era_reward_points, last_era_points);
-			log::info!(target: "runtime::session_payout", "Not first session in this era: current: {:?}", current);
-			current
+			substract_era_points(era_reward_points, last_era_points)
 		};
 
 		LastEraPoints::<T>::set(era_reward_points);
@@ -379,7 +385,6 @@ where
 	T: pallet_balances::Config<Balance = BalanceOf<T>>,
 {
 	fn new_session(new_index: u32) -> Option<Vec<T::ValidatorId>> {
-		log::info!(target: "runtime::session_payout", "new_session start: new_index: {:?}", new_index);
 		<T as pallet::Config>::WrappedSessionManager::new_session(new_index)
 	}
 
@@ -388,14 +393,10 @@ where
 	}
 
 	fn start_session(new_index: u32) {
-		log::info!(target: "runtime::session_payout", "start_session: new_index: {:?}", new_index);
 		<T as pallet::Config>::WrappedSessionManager::start_session(new_index)
 	}
 
 	fn end_session(session_index: u32) {
-		log::info!(target: "runtime::session_payout", "end_session: session_index: {:?}", session_index);
-		// let current_era = <pallet_staking::Pallet<T>>::current_era();
-		// let active_era = <pallet_staking::Pallet<T>>::active_era();
 		let current_era = <pallet_staking::Pallet<T>>::active_era().map(|era| era.index);
 
 		let now_as_millis = T::TimeProvider::now().as_millis();
