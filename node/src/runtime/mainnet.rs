@@ -109,7 +109,6 @@ pub fn testnet_genesis(
 						let nominations = initial_authorities
 							.as_slice()
 							.choose_multiple(&mut rng, count)
-							.into_iter()
 							.map(|choice| choice.id.clone())
 							.collect::<Vec<_>>();
 						StakerStatus::Nominator(nominations)
@@ -149,7 +148,6 @@ pub fn testnet_genesis(
 						},
 					)
 				})
-				.into_iter()
 				.collect(),
 		},
 		ethereum: Default::default(),

@@ -115,7 +115,7 @@ pub struct HashedAccountMapping;
 impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
 		let data = (b"evm:", account_id);
-		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
+		H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20])
 	}
 }
 
