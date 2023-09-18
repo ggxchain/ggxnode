@@ -23,9 +23,7 @@ use sc_keystore::LocalKeystore;
 use sc_network::NetworkService;
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
-use sc_service::{
-	error::Error as ServiceError, Configuration, TaskManager, TransactionPool,
-};
+use sc_service::{error::Error as ServiceError, Configuration, TaskManager, TransactionPool};
 use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
