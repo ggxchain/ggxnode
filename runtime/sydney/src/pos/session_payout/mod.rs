@@ -88,7 +88,7 @@ pub mod pallet {
 	}
 
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	#[pallet::generate_deposit(pub (super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		SessionPayout {
 			session_index: u32,
@@ -184,6 +184,7 @@ where
 		let ledger =
 			<pallet_staking::Ledger<T>>::get(&controller).ok_or(Error::<T>::NotController)?;
 		let exposure = <pallet_staking::ErasStakersClipped<T>>::get(era, &ledger.stash);
+		log::info!(target: "runtime::session_payout::do_validator_payout", "session_points: {:?}", session_points);
 
 		let validator_reward_points = session_points
 			.individual
@@ -253,7 +254,9 @@ where
 				payout += imbalance.peek();
 			}
 		}
-
+		let ledger =
+			<pallet_staking::Ledger<T>>::get(&controller).ok_or(Error::<T>::NotController)?;
+		log::info!("new ledger: {:?}", ledger);
 		debug_assert!(nominator_payout_count <= T::MaxNominatorRewardedPerValidator::get());
 		Ok(payout)
 	}
@@ -265,7 +268,7 @@ where
 	/// * RewardDestination::Staked is not supported by us, so we will reward to controller.
 	fn make_payout(stash: &T::AccountId, amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
 		let dest = pallet_staking::Pallet::<T>::payee(stash);
-		log::debug!(
+		log::info!(
 			target: "runtime::session_payout::make_payout",
 			"stash: {:?}, amount: {:?}, dest: {:?}",
 			stash,
@@ -275,28 +278,16 @@ where
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
 				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
 			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::Staked => {
-				// We can't update staking internal fields, so we supposed to do like that...
-				// log::warn!(
-				// 	target: "runtime::session_payout",
-				// 	"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
-				// T::Currency::deposit_into_existing(stash, amount).ok()
-				pallet_staking::Pallet::<T>::bonded(stash)
-					.and_then(|c| pallet_staking::Pallet::<T>::ledger(&c).map(|l| (c, l)))
-					.and_then(|(controller, mut l)| {
-						l.active += amount;
-						l.total += amount;
-						let r = T::Currency::deposit_into_existing(stash, amount).ok();
-						T::Currency::set_lock(
-							STAKING_ID,
-							&l.stash,
-							l.active,
-							WithdrawReasons::all(),
-						);
-						Ledger::insert(&controller, l);
-						r
-					})
-			}
+			RewardDestination::Staked => pallet_staking::Pallet::<T>::bonded(stash)
+				.and_then(|c| pallet_staking::Pallet::<T>::ledger(&c).map(|l| (c, l)))
+				.and_then(|(controller, mut l)| {
+					l.active += amount;
+					l.total += amount;
+					let r = T::Currency::deposit_into_existing(stash, amount).ok();
+					T::Currency::set_lock(STAKING_ID, &l.stash, l.active, WithdrawReasons::all());
+					Ledger::insert(&controller, l);
+					r
+				}),
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
 			}
@@ -337,11 +328,15 @@ where
 			LastEra::<T>::set(current_era);
 			// This is the first session in this era, so we don't need to calculate difference
 			// We need to load it again to clone. Original type doesn't support it...
+			log::info!(target: "runtime::session_payout", "first session in this era: total_session_points: {:?}", <pallet_staking::ErasRewardPoints<T>>::get(current_era));
 			<pallet_staking::ErasRewardPoints<T>>::get(current_era)
 		} else {
 			let era_reward_points = <pallet_staking::ErasRewardPoints<T>>::get(current_era);
 			let last_era_points = LastEraPoints::<T>::get();
-			substract_era_points(era_reward_points, last_era_points)
+			log::info!(target: "runtime::session_payout", "Not first session in this era: era_reward_points: {:?}, last_era_points: {:?}", era_reward_points, last_era_points);
+			let current = substract_era_points(era_reward_points, last_era_points);
+			log::info!(target: "runtime::session_payout", "Not first session in this era: current: {:?}", current);
+			current
 		};
 
 		LastEraPoints::<T>::set(era_reward_points);
@@ -384,6 +379,7 @@ where
 	T: pallet_balances::Config<Balance = BalanceOf<T>>,
 {
 	fn new_session(new_index: u32) -> Option<Vec<T::ValidatorId>> {
+		log::info!(target: "runtime::session_payout", "new_session start: new_index: {:?}", new_index);
 		<T as pallet::Config>::WrappedSessionManager::new_session(new_index)
 	}
 
@@ -392,11 +388,16 @@ where
 	}
 
 	fn start_session(new_index: u32) {
+		log::info!(target: "runtime::session_payout", "start_session: new_index: {:?}", new_index);
 		<T as pallet::Config>::WrappedSessionManager::start_session(new_index)
 	}
 
 	fn end_session(session_index: u32) {
-		let current_era = <pallet_staking::Pallet<T>>::current_era();
+		log::info!(target: "runtime::session_payout", "end_session: session_index: {:?}", session_index);
+		// let current_era = <pallet_staking::Pallet<T>>::current_era();
+		// let active_era = <pallet_staking::Pallet<T>>::active_era();
+		let current_era = <pallet_staking::Pallet<T>>::active_era().map(|era| era.index);
+
 		let now_as_millis = T::TimeProvider::now().as_millis();
 
 		if session_index == 0 {

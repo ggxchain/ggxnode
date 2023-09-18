@@ -3987,6 +3987,7 @@ dependencies = [
 name = "ggxchain-runtime-sydney"
 version = "0.1.2"
 dependencies = [
+ "env_logger",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",

@@ -187,6 +187,7 @@ fn static_validator_percent() {
 
 #[test]
 fn ten_sessions_validator_reward_is_correct() {
+	let _ = env_logger::try_init();
 	let (_, mut ext) = mock::new_test_ext_with_pairs_without_nominator(1);
 	ext.execute_with(|| {
 		const VALIDATOR_ID: u32 = 0;

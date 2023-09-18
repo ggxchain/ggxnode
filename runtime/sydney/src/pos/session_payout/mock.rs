@@ -1,6 +1,7 @@
 use super::pallet as pallet_session_payout;
 use crate::pos::currency as pallet_currency;
 
+use crate::pos::session_payout::mock;
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use frame_support::{
 	pallet_prelude::Weight,
@@ -446,8 +447,25 @@ pub fn run_to_block(n: u64) {
 
 pub fn skip_with_reward_n_sessions(n: u64) {
 	let current_block = System::block_number();
-	println!("current_block: {}", current_block);
+	log::info!("current_block: {}", current_block);
 	for i in 1..=n {
+		let current_era = mock::Staking::current_era().unwrap();
+		log::info!(
+			target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
+			"current_era: {:?}, active_era: {:?}",
+			mock::Staking::current_era(),
+			mock::Staking::active_era(),
+		);
+		// Iterate through all historical eras using a loop
+		for era in current_era.saturating_sub(84)..=current_era {
+			// Use the `get` method of `StorageMap` to retrieve reward points information for the specified era
+			log::info!(
+				target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
+				"era: {:?}, points: {:?}",
+				era,
+				mock::Staking::eras_reward_points(era),
+			);
+		}
 		reward_validators();
 		run_to_block(current_block + i * SESSION_PERIOD);
 	}
@@ -455,5 +473,36 @@ pub fn skip_with_reward_n_sessions(n: u64) {
 
 pub fn reward_validators() {
 	let iter = (0..Staking::validator_count()).into_iter().map(|i| (i, 1));
-	Staking::reward_by_ids(iter)
+
+	// let new_planned_era = CurrentEra::<T>::mutate(|s| {
+	// 	*s = Some(s.map(|s| s + 1).unwrap_or(0));
+	// 	s.unwrap()
+	// });
+	//
+	// ErasStartSessionIndex::<T>::insert(&new_planned_era, &start_session_index);
+	//
+	// // Clean old era information.
+	// if let Some(old_era) = new_planned_era.checked_sub(T::HistoryDepth::get() + 1) {
+	// 	Self::clear_era_information(old_era);
+	// }
+
+	if let Some(active_era) = mock::Staking::active_era() {
+		let era_reward_points = mock::Staking::eras_reward_points(active_era.index);
+		log::info!(
+			target: "runtime::session_payout::mock::reward_validators",
+			"before: active_era: {:?}, era_reward_points: {:?}",
+			mock::Staking::active_era(),
+			era_reward_points,
+		);
+	}
+	Staking::reward_by_ids(iter);
+	if let Some(active_era) = mock::Staking::active_era() {
+		let era_reward_points = mock::Staking::eras_reward_points(active_era.index);
+		log::info!(
+			target: "runtime::session_payout::mock::reward_validators",
+			"end: active_era: {:?}, era_reward_points: {:?}",
+			mock::Staking::active_era(),
+			era_reward_points,
+		);
+	}
 }
