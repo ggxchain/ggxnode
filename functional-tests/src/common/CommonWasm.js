@@ -3,7 +3,7 @@ import {cryptoWaitReady, decodeAddress} from "@polkadot/util-crypto";
 import {CodePromise} from "@polkadot/api-contract";
 
 class CommonWasm {
-    nodeUrl = 'wss://testnet.node.sydney.ggxchain.io'
+    nodeUrl = 'wss://sydney-archive.dev.ggxchain.io:9944'
     mnemonic = 'judge decrease owner toddler face album actor diary require junk crater grape'
 
     constructor() {
@@ -13,7 +13,7 @@ class CommonWasm {
         return new Promise( async (resolve, reject) => {
             try {
                 await cryptoWaitReady();
-                this.keyring = new Keyring({type: 'sr25519'});
+                this.keyring = new Keyring({ss58Format: 8886, type: 'sr25519'});
                 this.account = this.keyring.addFromMnemonic(this.mnemonic);
 
                 const provider = new WsProvider(this.nodeUrl);
