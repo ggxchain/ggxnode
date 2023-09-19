@@ -76,6 +76,7 @@ pub type PeriodicSessions = pallet_session::PeriodicSessions<SessionPeriod, Sess
 impl crate::validator_manager::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrivilegedOrigin = EnsureRoot<AccountId>;
+	type WeightInfo = runtime_common::weights::validator_manager::SubstrateWeight<Runtime>;
 }
 
 impl pallet_treasury::Config for Runtime {

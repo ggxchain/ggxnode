@@ -17,6 +17,7 @@ use super::*;
 
 pub mod currency;
 pub mod session_payout;
+pub mod weights;
 
 pub use opaque::SessionKeys;
 
@@ -539,6 +540,7 @@ impl currency::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
 	type DecayPeriod = DecayPeriod;
+	type WeightInfo = crate::pos::weights::currency::SubstrateWeight<Runtime>;
 }
 
 impl session_payout::Config for Runtime {
@@ -548,4 +550,5 @@ impl session_payout::Config for Runtime {
 	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
 	type CurrencyInfo = CurrencyManager;
+	type WeightInfo = crate::pos::weights::session_payout::SubstrateWeight<Runtime>;
 }

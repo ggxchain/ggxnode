@@ -37,6 +37,7 @@ pub trait CurrencyInfo {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	pub use crate::pos::weights::currency::WeightInfo;
 	use frame_support::{
 		dispatch::DispatchResult,
 		ensure,
@@ -74,6 +75,9 @@ pub mod pallet {
 				>>::NegativeImbalance,
 			>;
 		type DecayPeriod: Get<Self::BlockNumber>;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -134,7 +138,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_inflation_percent())]
 		pub fn change_inflation_percent(
 			origin: OriginFor<T>,
 			new_inflation: Perbill,
@@ -147,7 +151,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(1)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_inflation_decay())]
 		pub fn change_inflation_decay(origin: OriginFor<T>, new_decay: Perbill) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			InflationDecay::<T>::put(new_decay);
@@ -157,7 +161,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(2)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::yearly_inflation_decay())]
 		pub fn yearly_inflation_decay(origin: OriginFor<T>) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			let now = frame_system::Pallet::<T>::block_number();
@@ -178,7 +182,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(3)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission())]
 		pub fn change_treasury_commission(
 			origin: OriginFor<T>,
 			new_commission: Perbill,
@@ -190,7 +194,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(4)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission_from_fee())]
 		pub fn change_treasury_commission_from_fee(
 			origin: OriginFor<T>,
 			new_commission: Perbill,
@@ -202,7 +206,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(5)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission_from_tips())]
 		pub fn change_treasury_commission_from_tips(
 			origin: OriginFor<T>,
 			new_commission: Perbill,

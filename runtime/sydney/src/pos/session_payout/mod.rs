@@ -62,6 +62,7 @@ pub mod pallet {
 	use pallet_balances::NegativeImbalance;
 
 	use super::*;
+	pub use crate::pos::weights::session_payout::WeightInfo;
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
@@ -82,6 +83,9 @@ pub mod pallet {
 		>;
 		type TimeProvider: UnixTime;
 		type CurrencyInfo: CurrencyInfo;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -134,7 +138,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_validator_to_nominator_commission_algorithm())]
 		pub fn change_validator_to_nominator_commission_algorithm(
 			origin: OriginFor<T>,
 			algorithm: ValidatorCommissionAlgorithm,
