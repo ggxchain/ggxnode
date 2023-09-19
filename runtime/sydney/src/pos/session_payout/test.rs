@@ -129,7 +129,7 @@ fn can_change_algo() {
 			mock::RuntimeOrigin::root(),
 			new.clone(),
 		)
-		.unwrap();
+			.unwrap();
 		assert_eq!(mock::SessionPayout::validator_commission_algorithm(), new);
 	});
 }
@@ -180,7 +180,7 @@ fn static_validator_percent() {
 			mock::RuntimeOrigin::root(),
 			super::ValidatorCommissionAlgorithm::Static(commission),
 		)
-		.unwrap();
+			.unwrap();
 		test_one_session(2, commission);
 	});
 }
@@ -192,7 +192,7 @@ fn ten_sessions_validator_auto_compound_is_correct() {
 	ext.execute_with(|| {
 		const VALIDATOR_ID: u32 = 0;
 		let mut validator_staking_ledger_total_after_election = 0;
-		for session in 0..=10 {
+		for session in 0..10 {
 			println!("======Session {session}======");
 
 			let current_era = mock::Staking::active_era().unwrap().index;
@@ -238,7 +238,7 @@ fn ten_sessions_validator_with_nominator_auto_compound_is_correct() {
 		const NOMINATOR_ID: u32 = 1;
 		let mut validator_staking_ledger_total_after_election = 0;
 		let mut nominator_staking_ledger_total_after_election = 0;
-		for session in 0..=10 {
+		for session in 0..10 {
 			let current_era = mock::Staking::active_era().unwrap().index;
 			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
 				assert_eq!(
@@ -294,7 +294,7 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 		* total_session_reward;
 	let comission_reward = validator_comission * validator_reward;
 	let reward_after_comission = Perbill::from_rational(stake.own, stake.total) // Stake to nominator ratio
-			* (validator_reward - comission_reward);
+		* (validator_reward - comission_reward);
 
 	let total_reward_expected = reward_after_comission + comission_reward;
 
