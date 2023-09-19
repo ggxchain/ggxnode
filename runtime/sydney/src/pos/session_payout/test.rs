@@ -193,35 +193,16 @@ fn ten_sessions_validator_auto_compound_is_correct() {
 		const VALIDATOR_ID: u32 = 0;
 		let mut validator_staking_ledger_total_after_election = 0;
 		for session in 0..10 {
-			println!("======Session {session}======");
-
 			let current_era = mock::Staking::active_era().unwrap().index;
 			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
-				println!("New Era");
 				assert_eq!(
 					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID).own,
 					validator_staking_ledger_total_after_election
 				);
 			}
 
-			let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
-			println!("stake: {:?}", stake);
-			println!(
-				"stake2: {:?}",
-				mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID)
-			);
-			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
-			println!(
-				"before ledger: stash: {} total: {} active: {}",
-				ledger_validator.stash, ledger_validator.total, ledger_validator.active
-			);
 			mock::skip_with_reward_n_sessions(1);
 			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
-			println!(
-				"after ledger: stash: {} total: {} active: {}",
-				ledger_validator.stash, ledger_validator.total, ledger_validator.active
-			);
-
 			if session % mock::SessionsPerEra::get() == 0 {
 				validator_staking_ledger_total_after_election = ledger_validator.total;
 			}
@@ -255,10 +236,10 @@ fn ten_sessions_validator_with_nominator_auto_compound_is_correct() {
 					nominator_staking_ledger_total_after_election
 				);
 			}
+
 			mock::skip_with_reward_n_sessions(1);
 			let validator_ledger = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
 			let nominator_ledger = mock::Staking::ledger(&NOMINATOR_ID).unwrap();
-
 			if session % mock::SessionsPerEra::get() == 0 {
 				validator_staking_ledger_total_after_election = validator_ledger.total;
 				nominator_staking_ledger_total_after_election = nominator_ledger.total;
