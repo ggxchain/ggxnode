@@ -185,6 +185,18 @@ fn static_validator_percent() {
 	});
 }
 
+#[test]
+fn ten_sessions_should_work() {
+	let (_, mut ext) = mock::new_test_ext_with_pairs(1);
+	ext.execute_with(|| {
+		let validator_comission = Perbill::from_percent(1);
+		for session in 0..10 {
+			println!("======Session {session}=======");
+			test_one_session(1, validator_comission);
+		}
+	});
+}
+
 fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 	const VALIDATOR_ID: u32 = 0;
 	let nominator_id: u32 = validator_count;

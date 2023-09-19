@@ -378,22 +378,23 @@ where
 	}
 
 	fn end_session(session_index: u32) {
-		let current_era = <pallet_staking::Pallet<T>>::current_era();
+		let active_era = <pallet_staking::Pallet<T>>::active_era().map(|era| era.index);
 		let now_as_millis = T::TimeProvider::now().as_millis();
 
 		if session_index == 0 {
 			// First session is not payable, cause we can't set a timestamp for it. TimeProvider is not working yet.
 			Self::update_year_reward(now_as_millis);
-		} else if let Some(current_era) = current_era {
+		} else if let Some(active_era) = active_era {
 			// Make payout at the end of each session.
 			let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
 
 			let last_payout = SessionStartTime::<T>::get();
 			let session_duration = now_as_millis - last_payout;
+			// let session_duration = 24 * 3600 * 1000;
 
 			Self::update_year_reward(now_as_millis);
 
-			let staked = pallet_staking::Pallet::<T>::eras_total_stake(current_era);
+			let staked = pallet_staking::Pallet::<T>::eras_total_stake(active_era);
 			let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
 			let (year_reward, _) = YearReward::<T>::get();
 
@@ -412,8 +413,7 @@ where
 			});
 			log::debug!(target: "runtime::session_payout", "end_session: validator_payout: {:?}, remainder: {:?}", validator_payout, remainder);
 
-			let total_validator_payout =
-				Self::make_validators_payout(validator_payout, current_era);
+			let total_validator_payout = Self::make_validators_payout(validator_payout, active_era);
 			//  We can have a remainder due to rounding errors. Mostly, it's 1-3 units. But it's a lot on a large scale.
 			let failed_to_pay = validator_payout - total_validator_payout;
 			T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(
