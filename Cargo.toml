@@ -32,7 +32,7 @@ hex-literal = "0.3.1"
 impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
 libsecp256k1 = "0.7"
-log = { version = "0.4.17", default-features = false }
+log = { version = "0.4.17" }
 nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
@@ -53,6 +53,7 @@ tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
 tokio-util = { version = "0.7.4", features = ["compat"] }
 wait-timeout = "0.2"
 web3 = "0.18.0"
+env_logger = "0.10.0"
 
 # Substrate Client
 

@@ -279,7 +279,7 @@ where
 	/// * RewardDestination::Staked is not supported by us, so we will reward to controller.
 	fn make_payout(stash: &T::AccountId, amount: BalanceOf<T>) -> Option<PositiveImbalanceOf<T>> {
 		let dest = pallet_staking::Pallet::<T>::payee(stash);
-		log::info!(
+		log::debug!(
 			target: "runtime::session_payout::make_payout",
 			"stash: {:?}, amount: {:?}, dest: {:?}",
 			stash,

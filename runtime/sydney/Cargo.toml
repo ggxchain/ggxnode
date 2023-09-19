@@ -99,7 +99,7 @@ substrate-wasm-builder.workspace = true
 [dev-dependencies]
 paste.workspace = true
 sp-io.workspace = true
-env_logger = "0.10.0"
+env_logger.workspace = true
 
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
