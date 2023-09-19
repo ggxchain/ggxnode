@@ -7756,7 +7756,7 @@ dependencies = [
 [[package]]
 name = "pallet-ibc"
 version = "4.0.0-dev"
-source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#3ef0b0dba0000786b3481b281637ae360f9421f2"
+source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#25cb5fc6838a0688b8a20d2905c8678b9431e6d1"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7780,7 +7780,7 @@ dependencies = [
 [[package]]
 name = "pallet-ibc-utils"
 version = "0.1.0"
-source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#3ef0b0dba0000786b3481b281637ae360f9421f2"
+source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#25cb5fc6838a0688b8a20d2905c8678b9431e6d1"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -7795,7 +7795,7 @@ dependencies = [
 [[package]]
 name = "pallet-ics20-transfer"
 version = "4.0.0-dev"
-source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#3ef0b0dba0000786b3481b281637ae360f9421f2"
+source = "git+https://github.com/ibc-test/substrate-ibc.git?branch=polkadot-v0.9.43#25cb5fc6838a0688b8a20d2905c8678b9431e6d1"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
