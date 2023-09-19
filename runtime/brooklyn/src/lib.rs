@@ -20,6 +20,7 @@ pub mod governance;
 mod ibc;
 mod ink;
 pub mod pos;
+pub mod light_client;
 mod prelude;
 
 mod version;
@@ -621,6 +622,10 @@ construct_runtime!(
 		Mmr: pallet_mmr,
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
+
+		// Eth light client
+		Eth2Client: pallet_eth2_light_client,
+		EthReceiptRegistry: pallet_receipt_registry
 
 	}
 );

@@ -447,6 +447,29 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		pubsub_notification_sinks,
 	);
 
+	let light_client_relayer_cmd = cli.light_client_relayer_cmd;
+	if role.is_authority() {
+		task_manager.spawn_handle().spawn(
+			"mainnet-relayer-gadget",
+			None,
+			pallet_eth2_light_client_relayer_gadget::start_gadget(
+				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
+					lc_relay_config_path: light_client_relayer_cmd
+						.light_client_relay_config_path
+						.clone(),
+					lc_init_config_path: light_client_relayer_cmd
+						.light_client_init_pallet_config_path
+						.clone(),
+					eth2_chain_id: webb_proposals::TypedChainId::Evm(1),
+					local_keystore: keystore_container.keystore,
+					ew_config_dir: todo!(),
+					database_path: todo!(),
+					rpc_addr: todo!(),
+				},
+			),
+		);
+	}
+
 	let (block_import, grandpa_link) = consensus_result;
 
 	if role.is_authority() {

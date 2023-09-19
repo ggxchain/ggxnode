@@ -77,6 +77,11 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
+# Eth light client related
+pallet-eth2-light-client-relayer-gadget.workspace = true
+webb-consensus-types.workspace = true
+webb-proposals.workspace = true
+
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
 
@@ -102,7 +107,7 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["sydney"]
+default = ["brooklyn"]
 sydney = ["fast-runtime"]
 brooklyn = ["ggxchain-runtime-brooklyn"]
 fast-runtime = [

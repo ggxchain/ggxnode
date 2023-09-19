@@ -260,6 +260,7 @@ pub fn run() -> sc_cli::Result<()> {
 					prometheus_config
 				});
 
+				#[cfg(feature = "brooklyn")]
 				service::new_full(config, &cli).map_err(sc_cli::Error::Service)
 			})
 		}

@@ -658,11 +658,9 @@
                           rust-toolchain
                           binaryen
                           llvmPackages.bintools
-                          dylint-link
                           nodejs-18_x
                           nodePackages.markdownlint-cli2
                           jq
-                          subkey
                           openssl
                         ]
                         ++ rust-native-build-inputs ++ darwin ++ cloud-tools;

@@ -6,6 +6,7 @@ use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;
+use webb_consensus_types::network_config::{Network, NetworkConfig};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -208,6 +209,20 @@ pub fn testnet_genesis(
 		},
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
+		},
+		eth_2_client: Eth2ClientConfig {
+			// Vec<(TypedChainId, [u8; 32], ForkVersion, u64)>
+			networks: vec![
+				(
+					webb_proposals::TypedChainId::Evm(1),
+					NetworkConfig::new(&Network::Mainnet),
+				),
+				(
+					webb_proposals::TypedChainId::Evm(5),
+					NetworkConfig::new(&Network::Goerli),
+				),
+			],
+			phantom: std::marker::PhantomData,
 		},
 	}
 }
