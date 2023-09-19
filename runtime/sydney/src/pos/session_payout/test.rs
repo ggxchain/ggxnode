@@ -129,7 +129,7 @@ fn can_change_algo() {
 			mock::RuntimeOrigin::root(),
 			new.clone(),
 		)
-			.unwrap();
+		.unwrap();
 		assert_eq!(mock::SessionPayout::validator_commission_algorithm(), new);
 	});
 }
@@ -180,7 +180,7 @@ fn static_validator_percent() {
 			mock::RuntimeOrigin::root(),
 			super::ValidatorCommissionAlgorithm::Static(commission),
 		)
-			.unwrap();
+		.unwrap();
 		test_one_session(2, commission);
 	});
 }
@@ -255,9 +255,6 @@ fn ten_sessions_validator_with_nominator_auto_compound_is_correct() {
 					nominator_staking_ledger_total_after_election
 				);
 			}
-
-			let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
-			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
 			mock::skip_with_reward_n_sessions(1);
 			let validator_ledger = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
 			let nominator_ledger = mock::Staking::ledger(&NOMINATOR_ID).unwrap();
