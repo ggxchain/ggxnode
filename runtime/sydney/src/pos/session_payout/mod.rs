@@ -269,7 +269,7 @@ where
 			ledger.total,
 			WithdrawReasons::all(),
 		);
-		Ledger::insert(&controller, ledger);
+		Ledger::insert(controller, ledger);
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
