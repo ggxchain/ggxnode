@@ -1,15 +1,15 @@
 [workspace]
 members = [
-    "node",
-    "precompiles/session",
-    "precompiles/zk-groth16-verify",
-    "runtime/sydney",
-    "runtime/brooklyn",
-    "runtime/runtime-common",
+	"node",
+	"precompiles/session",
+	"precompiles/zk-groth16-verify",
+	"runtime/sydney",
+	"runtime/brooklyn",
+	"runtime/runtime-common",
 ]
 exclude = [
-    "examples/cross-vm-communication/evm-to-wasm/flipper",
-    "examples/cross-vm-communication/wasm-to-evm/flipper",
+	"examples/cross-vm-communication/evm-to-wasm/flipper",
+	"examples/cross-vm-communication/wasm-to-evm/flipper",
 ]
 resolver = "2"
 
@@ -32,7 +32,7 @@ hex-literal = "0.3.1"
 impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
 libsecp256k1 = "0.7"
-log = { version = "0.4.17" }
+log = "0.4.17"
 nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }
@@ -208,7 +208,7 @@ pallet-randomness-collective-flip = { package = "pallet-insecure-randomness-coll
 # IBC
 ibc = { version = "0.28.0", default-features = false, features = ["parity-scale-codec", "serde"] }
 ibc-proto = { version = "0.25.0", default-features = false, features = [
-    "parity-scale-codec",
+	"parity-scale-codec",
 ], git = "https://github.com/octopus-network/ibc-proto-rs", branch = "ibc" }
 pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "icf-m3" }
 pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git", default-features = false, branch = "icf-m3" }
