@@ -1,7 +1,6 @@
 use super::pallet as pallet_session_payout;
 use crate::pos::currency as pallet_currency;
 
-use crate::pos::session_payout::mock;
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use frame_support::{
 	pallet_prelude::Weight,
@@ -449,12 +448,12 @@ pub fn skip_with_reward_n_sessions(n: u64) {
 	let current_block = System::block_number();
 	log::debug!("current_block: {}", current_block);
 	for i in 1..=n {
-		let current_era = mock::Staking::current_era().unwrap();
+		let current_era = Staking::current_era().unwrap();
 		log::debug!(
 			target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
 			"current_era: {:?}, active_era: {:?}",
-			mock::Staking::current_era(),
-			mock::Staking::active_era(),
+			Staking::current_era(),
+			Staking::active_era(),
 		);
 		// Iterate through all historical eras using a loop
 		for era in current_era.saturating_sub(84)..=current_era {
@@ -463,7 +462,7 @@ pub fn skip_with_reward_n_sessions(n: u64) {
 				target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
 				"era: {:?}, points: {:?}",
 				era,
-				mock::Staking::eras_reward_points(era),
+				Staking::eras_reward_points(era),
 			);
 		}
 		reward_validators();
