@@ -446,25 +446,7 @@ pub fn run_to_block(n: u64) {
 
 pub fn skip_with_reward_n_sessions(n: u64) {
 	let current_block = System::block_number();
-	log::debug!("current_block: {}", current_block);
 	for i in 1..=n {
-		let current_era = Staking::current_era().unwrap();
-		log::debug!(
-			target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
-			"current_era: {:?}, active_era: {:?}",
-			Staking::current_era(),
-			Staking::active_era(),
-		);
-		// Iterate through all historical eras using a loop
-		for era in current_era.saturating_sub(84)..=current_era {
-			// Use the `get` method of `StorageMap` to retrieve reward points information for the specified era
-			log::debug!(
-				target: "runtime::session_payout::mock::skip_with_reward_n_sessions",
-				"era: {:?}, points: {:?}",
-				era,
-				Staking::eras_reward_points(era),
-			);
-		}
 		reward_validators();
 		run_to_block(current_block + i * SESSION_PERIOD);
 	}
