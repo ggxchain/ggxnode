@@ -241,7 +241,7 @@ pub fn run() -> sc_cli::Result<()> {
 			runner.sync_run(|config| {
 				let PartialComponents { client, other, .. } = service::new_partial(&config, &cli)?;
 				let frontier_backend = other.2;
-				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend.into())
+				cmd.run::<_, runtime::opaque::Block>(client, frontier_backend)
 			})
 		}
 		Some(Subcommand::Version) => {

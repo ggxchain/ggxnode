@@ -99,12 +99,7 @@ pub fn new_partial(
 		})
 		.transpose()?;
 
-	let executor = NativeElseWasmExecutor::<ExecutorDispatch>::new(
-		config.wasm_method,
-		config.default_heap_pages,
-		config.max_runtime_instances,
-		config.runtime_cache_size,
-	);
+	let executor = sc_service::new_native_or_wasm_executor(&config);
 
 	let (client, backend, keystore_container, task_manager) =
 		sc_service::new_full_parts::<Block, RuntimeApi, _>(
@@ -234,13 +229,6 @@ pub fn new_partial(
 			),
 		})
 	}
-}
-
-fn remote_keystore(_url: &str) -> Result<Arc<LocalKeystore>, &'static str> {
-	// FIXME: here would the concrete keystore be built,
-	//        must return a concrete type (NOT `LocalKeystore`) that
-	//        implements `CryptoStore` and `SyncCryptoStore`
-	Err("Remote Keystore not supported.")
 }
 
 /// Builds a new service for a full client.
