@@ -9,7 +9,7 @@ use frame_support::{
 		tokens::Preservation,
 	},
 };
-use frame_system::RawOrigin;
+use frame_system::{Config, RawOrigin};
 use ibc::{applications::transfer::msgs::transfer::TYPE_URL, core::ics24_host::identifier::PortId};
 use ibc_proto::ibc::applications::transfer::v1::MsgTransfer;
 use pallet_assets::WeightInfo;
@@ -329,6 +329,25 @@ impl TryFrom<u16> for FuncId {
 	}
 }
 
+fn get_address_from_caller<T>(call: Origin<T>) -> Result<<T as Config>::AccountId, DispatchError>
+where
+	T: pallet_contracts::Config,
+{
+	match call {
+		Origin::Signed(address) => Ok(address),
+		Origin::Root => {
+			trace!(
+					target: "runtime",
+					"root origin not supported"
+			);
+			// TODO: expand XvmErrors with BadOrigin
+			return Err(DispatchError::Other(
+				"ChainExtension root origin not supported",
+			));
+		}
+	}
+}
+
 fn query<T, E>(func_id: Query, env: Environment<E, InitState>) -> Result<(), DispatchError>
 where
 	T: pallet_assets::Config + pallet_contracts::Config,
@@ -401,19 +420,7 @@ where
 	);
 
 	let input: Psp37TransferInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let sender = match env.ext().caller().clone() {
-		Origin::Signed(address) => address,
-		Origin::Root => {
-			trace!(
-					target: "runtime",
-					"root origin not supported"
-			);
-			// TODO: expand XvmErrors with BadOrigin
-			return Err(DispatchError::Other(
-				"ChainExtension root origin not supported",
-			));
-		}
-	};
+	let sender = get_address_from_caller(env.ext().caller().clone())?;
 
 	let result = <pallet_assets::Pallet<T> as Mutate<T::AccountId>>::transfer(
 		input.asset_id,
@@ -454,19 +461,7 @@ where
 	);
 
 	let input: Psp37TransferFromInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let spender = match env.ext().caller().clone() {
-		Origin::Signed(address) => address,
-		Origin::Root => {
-			trace!(
-					target: "runtime",
-					"root origin not supported"
-			);
-			// TODO: expand XvmErrors with BadOrigin
-			return Err(DispatchError::Other(
-				"ChainExtension root origin not supported",
-			));
-		}
-	};
+	let spender = get_address_from_caller(env.ext().caller().clone())?;
 
 	let result = <pallet_assets::Pallet<T> as AllowanceMutate<T::AccountId>>::transfer_from(
 		input.asset_id,
@@ -507,19 +502,7 @@ where
 	);
 
 	let input: Psp37ApproveInput<T::AssetId, T::AccountId, T::Balance> = env.read_as()?;
-	let owner = match env.ext().caller().clone() {
-		Origin::Signed(address) => address,
-		Origin::Root => {
-			trace!(
-					target: "runtime",
-					"root origin not supported"
-			);
-			// TODO: expand XvmErrors with BadOrigin
-			return Err(DispatchError::Other(
-				"ChainExtension root origin not supported",
-			));
-		}
-	};
+	let owner = get_address_from_caller(env.ext().caller().clone())?;
 
 	if input.asset_id.is_none() {
 		trace!(
