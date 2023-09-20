@@ -341,9 +341,9 @@ where
 					"root origin not supported"
 			);
 			// TODO: expand XvmErrors with BadOrigin
-			return Err(DispatchError::Other(
+			Err(DispatchError::Other(
 				"ChainExtension root origin not supported",
-			));
+			))
 		}
 	}
 }
