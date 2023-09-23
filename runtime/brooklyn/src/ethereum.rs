@@ -28,7 +28,7 @@ parameter_types! {
 	);
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
-	pub ChainId: u64 = 8886;
+	pub ChainId: u64 = 888866;
 }
 
 impl pallet_evm_chain_id::Config for Runtime {}
