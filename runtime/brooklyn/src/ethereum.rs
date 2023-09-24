@@ -1,6 +1,6 @@
 use crate::{
-	prelude::*, BlockWeights, EthereumChecked, FindAuthorTruncated, UncheckedExtrinsic, Xvm,
-	MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
+	prelude::*, BlockWeights, EthereumChecked, FindAuthorTruncated, Precompiles,
+	UncheckedExtrinsic, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
 };
 
 use super::{Balances, Runtime, RuntimeEvent, Timestamp};
@@ -143,7 +143,7 @@ parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
 		NORMAL_DISPATCH_RATIO * BlockWeights::get().max_block.ref_time() / WEIGHT_PER_GAS
 	);
-	pub PrecompilesValue: GoldenGatePrecompiles<Runtime, Xvm> = GoldenGatePrecompiles::<_, _>::new();
+	pub PrecompilesValue: Precompiles = GoldenGatePrecompiles::<_>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
 	pub ChainId: u64 = 888866;
 
@@ -166,7 +166,7 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = GoldenGatePrecompiles<Self, Xvm>;
+	type PrecompilesType = Precompiles;
 	type PrecompilesValue = PrecompilesValue;
 	type ChainId = ChainId;
 	type BlockGasLimit = BlockGasLimit;

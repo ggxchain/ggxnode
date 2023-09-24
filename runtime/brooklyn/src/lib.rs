@@ -85,6 +85,9 @@ pub use runtime_common::{
 	validator_manager,
 };
 
+pub use runtime_common::precompiles::GoldenGatePrecompiles;
+pub type Precompiles = GoldenGatePrecompiles<Runtime>;
+
 /// Type of block number.
 pub type BlockNumber = u32;
 

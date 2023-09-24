@@ -17,7 +17,7 @@ use pallet_evm_precompile_xvm::XvmPrecompile;
 use pallet_evm_precompile_zk_groth16_verify::ZKGroth16Verify;
 
 #[derive(Default)]
-pub struct GoldenGatePrecompiles<R, XS>(PhantomData<(R, XS)>);
+pub struct GoldenGatePrecompiles<R>(PhantomData<R>);
 
 pub mod consts {
 	use sp_core::H160;
@@ -98,7 +98,7 @@ pub mod consts {
 	}
 }
 
-impl<R, XS> GoldenGatePrecompiles<R, XS> {
+impl<R> GoldenGatePrecompiles<R> {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
@@ -131,9 +131,9 @@ impl<R, XS> GoldenGatePrecompiles<R, XS> {
 	}
 }
 
-impl<R, XS> PrecompileSet for GoldenGatePrecompiles<R, XS>
+impl<R> PrecompileSet for GoldenGatePrecompiles<R>
 where
-	XvmPrecompile<R, XS>: Precompile,
+	XvmPrecompile<R, pallet_xvm::Pallet<R>>: Precompile,
 	SessionWrapper<R>: Precompile,
 	R: pallet_evm::Config + pallet_xvm::Config,
 {
@@ -159,7 +159,9 @@ where
 			a if a == consts::SR25519_VERIFY => Some(Sr25519Precompile::<R>::execute(handle)),
 			a if a == consts::ECDSA_VERIFY => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
 			// 0x5005 - is cross virtual machine (XVM)
-			a if a == consts::XVM => Some(XvmPrecompile::<R, XS>::execute(handle)),
+			a if a == consts::XVM => {
+				Some(XvmPrecompile::<R, pallet_xvm::Pallet<R>>::execute(handle))
+			}
 			a if a == consts::SESSION_WRAPPER => Some(SessionWrapper::<R>::execute(handle)),
 
 			// 0x8888 - is zk-groth16 verify

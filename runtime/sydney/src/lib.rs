@@ -84,7 +84,7 @@ pub use pallet_staking::StakerStatus;
 pub use runtime_common::chain_spec::{self, RuntimeConfig};
 
 pub use runtime_common::precompiles::GoldenGatePrecompiles;
-pub type Precompiles = GoldenGatePrecompiles<Runtime, Xvm>;
+pub type Precompiles = GoldenGatePrecompiles<Runtime>;
 
 /// Type of block number.
 pub type BlockNumber = u32;
