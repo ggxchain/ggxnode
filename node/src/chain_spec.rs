@@ -60,7 +60,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
-				888888,
+				8886,
 				true,
 			)
 		},
@@ -109,7 +109,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Alice"),
 					ValidatorIdentity::from_seed("Bob"),
 				],
-				888888,
+				8886,
 				true,
 			)
 		},
