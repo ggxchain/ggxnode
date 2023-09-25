@@ -122,14 +122,12 @@ and click `At Address`.
   
   ![The image shows successfully added precompiled contract with prefilled data](images/evm-contract.png)
 
-  * context: `0x1f0700e87648170284d71700`. The value is data encoded using `parity-scale-codec`, which is derived as follows:
-    * `1f` is an ID of the WASM VM
-    * `0700e8764817` - is 100000000000 ref time (weight system v2) in the context of gas
-    * `0284d717` - is 100000000 proof time (weight system v2) in the context of gas
-    * `00` is None for the environment
+  * vm_id: `0x1F`. The value means call Wasm vm.
   * to: the address of the Flipper contract from the above. Don't forget about leading `00`. In our case, it would be `0x00b5438f6d98dc2e11c6f9686ff48h5777f4778e86debdaea812a822165985eade`
   * input: we should put here a method selector from ink. The selector is an index for the method in the contract.
   In our case, it is `0xDEADBEEF` for the flip method. You can see it in the evm-to-wasm/flipper/lib.rs:40
+  * value: `0`. the amount of native token to transfer, used for payable calls.
+  * storage_deposit_limit: `11`. The maximum amount of storage space that can be used, in bytes. If the transaction requires more, it will fail.
   * Click transact and modify the gas price in the Metamask to at least 0.01 GGX
   (Currently, estimation of the gas price between VM is not implemented). The transaction should be successful.
   
