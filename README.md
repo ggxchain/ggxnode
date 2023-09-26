@@ -1,10 +1,14 @@
-## Node set-up
+# GGX Chain node set-up
 
-> **NOTE:** Here you can find manual on how to run a node locally.
-> Visit [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for full documentation.
+## 1. Clone repo
 
+To get started download this repository and navigate to `ggxnode` folder, e.g.:
+```bash
+git clone https://github.com/ggxchain/ggxnode.git
+cd ggxchain
+```
 
-### Dependencies
+## 2. Install dependencies
 
 The following dependencies are required to build the node:
 
@@ -16,13 +20,10 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install support software
 sudo apt install build-essential protobuf-compiler libclang-dev
-```
 
-#### Nix
-
-```bash
-# Downloads all necessary dependencies
-nix develop --impure
+# Install wasm32-unknown-unknown target
+rustup target add wasm32-unknown-unknown
+rustup component add rust-src
 ```
 
 #### MacOS
@@ -35,37 +36,64 @@ curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 brew install protobuf
 ```
 
-## Docker
+#### Nix
+
+```bash
+# If you have nix package manager, downloads all necessary dependencies
+nix develop --impure
+```
+## 3. Build & Run
+
+### 3.1 With Docker
 
 Due to the highly CPU dependent nature of 'cargo build' command, it's strongly recommended that you have at least 8 core enabled for this method.
-It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser proccessor power during the docker build operation.
+It takes around 20 mins to complete with this suggested requirements, exponentially more if you use lesser processor power during the docker build operation.
 
 From the repository's root directory execute following commands in order:
 
-### Sydney - our public testnet:
+#### Sydney - our public testnet:
+You have to create keys before running a validator node and store a backup of them.
+**Make sure** to check [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for requirements and documentation for running a Validator node.
+
+
 
 ```bash
-mkdir data-sydney
-
 docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
 
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
+mkdir -p data-sydney
+
+docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
+    --name <INSERT_UNIQUE_NAME> \
+    -p 127.0.0.1:9944:9944 \
+    -p 127.0.0.1:9933:9933 \
+    -p 127.0.0.1:9615:9615 \
+    -p 0.0.0.0:30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney:/data-sydney \
     ggxchain-node:sydney \
+    --wasm-execution Compiled \
+    --database rocksdb \
+    --rpc-cors all \
+    --sync warp \
+    --no-private-ip \
+    --no-mdns \
+    --state-pruning 256 \
+    --blocks-pruning 256 \
+    --node-key-type ed25519 \
+    --node-key-file /data-sydney/node.key \
+    --log info \
+    --rpc-methods unsafe \
+    --unsafe-rpc-external \
+    --prometheus-external \
+    --validator \
+    --chain sydney \
     --base-path=/data-sydney \
-    --chain /tmp/sydney.json \
-    --bootnodes /ip4/3.69.173.157/tcp/30333/p2p/12D3KooWSriyuFSmvuc188UWqV6Un7YYCTcGcoSJcoyhtTZEWi1n \
-    --telemetry-url "wss://test.telemetry.sydney.ggxchain.io/submit 0"
+    --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
+    --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
 ```
 
 
-### Brooklyn - development network:
+#### Brooklyn - development network:
 
 ```bash
 mkdir data-brooklyn
@@ -82,9 +110,9 @@ docker run \
     -v $(pwd)/data-brooklyn:/data-brooklyn \
     ggxchain-node:brooklyn \
     --base-path=/data-brooklyn \
-    --chain /tmp/brooklyn.json \
+    --chain brooklyn \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "wss://test.telemetry.brooklyn.ggxchain.io/submit 0"
+    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0"
 ```
 
 
@@ -104,34 +132,71 @@ You can use the following optional flags:
 | `--password <password>`           | Specifies the password to use for the keystore. |
 | `--telemetry-url <url verbosity>` | Specifies the URL of the telemetry server to connect to. You can pass <br>this flag multiple times to specify multiple telemetry endpoints. <br>Verbosity levels range from 0-9, with 0 denoting the least verbose. Use <br>the following format to specify the URL followed the verbosity option is `--telemetry-url 'wss://foo/bar 0'`. |
 
-## Without Docker
+### 3.2 Without Docker
 
-#### Build
+All required parameters (--name, -u, -p etc.) for `run` command you can take from Docker example.
+
+#### Linux / MacOS
 
 ```bash
-cargo build --release
-# or using nix
-nix build .#node
+#Sydney:
+cargo build --release  --features="sydney"
+cargo run --release -p ggxchain-node --features "sydney"
+
+#Brooklyn:
+cargo build --release  --features="brooklyn"
+cargo run --release -p ggxchain-node --features "brooklyn"
+```
+To run in dev mode add `-- --dev` flag to run command
+
+#### nix
+
+##### Sydney
+
+```bash
+nix build .#sydney-node
+nix run .#sydney-node
 ```
 
-#### Run
+To run in dev mode use
 
 ```bash
-cargo run --release -- --dev
-# or using nix
-nix run .#single-fast # to run an one node network
-nix run .#multi-fast # to run 3-node network
-nix run .#prune-running # to stop nodes
+nix run .#single-fast sydney
 ```
 
+To run 3-node network
 
-
-##### If you want to compile WASM contracts, you'll need additional dependencies:
 ```bash
-# Install wasm32-unknown-unknown target
-rustup target add wasm32-unknown-unknown
-rustup component add rust-src
+nix run .#multi-fast sydney
+```
 
-# Install dylint
-cargo install cargo-dylint dylint-link
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
+```
+
+##### Brooklyn
+
+```bash
+nix build .#brooklyn-node
+nix run .#brooklyn-node
+```
+
+To run in dev mode use
+
+```bash
+nix run .#single-fast`
+```
+
+To run 3-node network
+
+```bash
+nix run .#multi-fast
+```
+
+To stop .#multi-fast or .#single-fast nodes
+
+```bash
+nix run .#prune-running
 ```
