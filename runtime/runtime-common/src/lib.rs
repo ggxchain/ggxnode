@@ -8,6 +8,7 @@ pub mod precompiles;
 pub mod zk_precompile_gas_estimation;
 
 pub mod chain_spec;
+pub mod pos;
 pub mod validator_manager;
 
 #[macro_export]

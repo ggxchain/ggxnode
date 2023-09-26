@@ -154,9 +154,6 @@ pub fn create_benchmark_extrinsic(
 		)),
 		frame_system::CheckNonce::<runtime::Runtime>::from(nonce),
 		frame_system::CheckWeight::<runtime::Runtime>::new(),
-		#[cfg(feature = "brooklyn")]
-		pallet_transaction_payment::ChargeTransactionPayment::<runtime::Runtime>::from(0),
-		#[cfg(not(feature = "brooklyn"))]
 		(pallet_transaction_payment::ChargeTransactionPayment::<
 			runtime::Runtime,
 		>::from(0),),
@@ -173,9 +170,6 @@ pub fn create_benchmark_extrinsic(
 			best_hash,
 			(),
 			(),
-			#[cfg(feature = "brooklyn")]
-			(),
-			#[cfg(not(feature = "brooklyn"))]
 			((),),
 		),
 	);
