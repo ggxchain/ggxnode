@@ -14,7 +14,7 @@ pub trait XvmExtension {
 	type ErrorCode = XvmError;
 
 	#[ink(extension = 0x00010001)]
-	fn xvm_call(vm_id: u8, target: Vec<u8>, input: Vec<u8>) -> Result<()>;
+	fn xvm_call(vm_id: u8, target: Vec<u8>, input: Vec<u8>, value: u128) -> Result<()>;
 }
 
 /// XVM chain extension errors.
