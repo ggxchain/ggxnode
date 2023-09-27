@@ -38,6 +38,7 @@
             "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             1100000000000000000000
           ],
+          [
             "5DiGqKeNzJebWNLJi4ii977VoTSwVxbk6hWWcuWKkuxdEQ37",
             10000000000000000000000
           ]
@@ -79,7 +80,7 @@
             "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             {
               "aura": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
-              "grandpa": "5Gmuy4nNt56kJrca4KHdDnNwG5R8rn6mDGxXwM4nfongJ2v9",
+              "grandpa": "5GrWi3S64gdLH3S3QL3Kfq9Suy4N4ahu8DE41GjmCbVDuGjP",
               "im_online": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r"
             }
           ]
