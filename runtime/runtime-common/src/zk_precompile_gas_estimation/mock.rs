@@ -13,7 +13,7 @@ use sp_runtime::{
 use sp_std::marker::PhantomData;
 
 #[cfg(not(feature = "brooklyn"))]
-pub const CHAIN_ID: u64 = 8866u64;
+pub const CHAIN_ID: u64 = 8886u64;
 #[cfg(feature = "brooklyn")]
 pub const CHAIN_ID: u64 = 888866u64;
 
