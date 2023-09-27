@@ -197,6 +197,16 @@ pub fn testnet_genesis(
 						code: vec![0x00],
 					},
 				);
+				map.insert(
+					H160::from_str("1000000000000000000000000000000000000666")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						nonce: U256::from(1),
+						balance: U256::max_value(),
+						storage: Default::default(),
+						code: vec![], // No code, this is an EOA
+					},
+				);
 				map
 			},
 		},

@@ -172,7 +172,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -264,7 +264,7 @@ benchmarks! {
 		let is_transactional = true;
 		let validate = true;
 	}:{
-		let call_runner_results = <T as pallet_evm::Config>::Runner::call(
+		let call_runner_results: Result<pallet_evm::CallInfo, sp_runtime::DispatchError> = <T as pallet_evm::Config>::Runner::call(
 			caller,
 			contract_address,
 			encoded_call,
@@ -277,11 +277,11 @@ benchmarks! {
 			is_transactional,
 			validate,
 			<T as pallet_evm::Config>::config(),
+		).map_err(|e| e.error.into());
+		log::info!(
+			target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
+			"nconstraints_10 Benchmarking call end."
 		);
-		// log::info!(
-		// 	target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-		// 	"Benchmarking call end.",
-		// );
 		match call_runner_results {
 			Ok(info) => {
 				let output = info.value;
@@ -305,7 +305,8 @@ benchmarks! {
 			Err(e) => {
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					"nconstraints_10 Benchmarking failed",
+					"nconstraints_10 Benchmarking failed: {:?}",
+					e,
 				);
 				panic!("nconstraints_10 Benchmarking failed");
 			}
@@ -316,7 +317,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -465,7 +466,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -613,7 +614,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -762,7 +763,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -910,7 +911,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1058,7 +1059,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1206,7 +1207,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1354,7 +1355,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1503,7 +1504,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1651,7 +1652,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1800,7 +1801,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -1945,7 +1946,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2091,7 +2092,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2237,7 +2238,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2381,7 +2382,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2518,7 +2519,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2665,7 +2666,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2822,7 +2823,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -2994,7 +2995,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -3176,7 +3177,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -3368,7 +3369,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -3547,7 +3548,7 @@ benchmarks! {
 				let used_gas = info.used_gas;
 				log::info!(
 					target: "runtime::runtime-common::zk_precompile_gas_estimation::benchmarking",
-					"nconstraints_10 output result {:?} used_gas: {:?}",
+					"sumout_15 output result {:?} used_gas: {:?}",
 					output,
 					used_gas,
 				);
@@ -3575,7 +3576,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -3797,7 +3798,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -4029,7 +4030,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -4411,7 +4412,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -4558,7 +4559,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -4715,7 +4716,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -4897,7 +4898,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
@@ -5079,7 +5080,7 @@ benchmarks! {
 		use frame_benchmarking::vec;
 		use sp_core::{H160, U256, H256};
 
-		let caller = "d43593c715fdd31c61141abd04a99fd6822c8558".parse::<H160>().unwrap();
+		let caller = "1000000000000000000000000000000000000666".parse::<H160>().unwrap();
 		let contract_address = H160::from_low_u64_be(0x8888);
 
 		let proof = Proof::new(
