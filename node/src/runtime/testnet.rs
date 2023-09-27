@@ -211,7 +211,6 @@ pub fn testnet_genesis(
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
 		eth_2_client: Eth2ClientConfig {
-			// Vec<(TypedChainId, [u8; 32], ForkVersion, u64)>
 			networks: vec![
 				(
 					webb_proposals::TypedChainId::Evm(1),

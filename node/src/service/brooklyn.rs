@@ -11,6 +11,7 @@ use std::{
 	sync::{Arc, Mutex},
 	time::Duration,
 };
+use webb_proposals::TypedChainId;
 // Substrate
 use mmr_gadget::MmrGadget;
 use mmr_rpc::{Mmr, MmrApiServer};
@@ -135,6 +136,7 @@ pub fn new_partial(
 			},
 		},
 	)?);
+
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit: FeeHistoryCacheLimit = cli.run.fee_history_limit;
@@ -447,29 +449,6 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		pubsub_notification_sinks,
 	);
 
-	let light_client_relayer_cmd = cli.light_client_relayer_cmd;
-	if role.is_authority() {
-		task_manager.spawn_handle().spawn(
-			"mainnet-relayer-gadget",
-			None,
-			pallet_eth2_light_client_relayer_gadget::start_gadget(
-				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
-					lc_relay_config_path: light_client_relayer_cmd
-						.light_client_relay_config_path
-						.clone(),
-					lc_init_config_path: light_client_relayer_cmd
-						.light_client_init_pallet_config_path
-						.clone(),
-					eth2_chain_id: webb_proposals::TypedChainId::Evm(1),
-					local_keystore: keystore_container.keystore,
-					ew_config_dir: todo!(),
-					database_path: todo!(),
-					rpc_addr: todo!(),
-				},
-			),
-		);
-	}
-
 	let (block_import, grandpa_link) = consensus_result;
 
 	if role.is_authority() {
@@ -517,6 +496,20 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		task_manager
 			.spawn_essential_handle()
 			.spawn_blocking("aura", Some("block-authoring"), aura);
+
+		// Start Eth2 Light client Relayer Gadget - (MAINNET RELAYER)
+		let relayer_cmd = &cli.relayer_cmd;
+		task_manager.spawn_handle().spawn(
+			"eth-mainnet-relayer-gadget",
+			None,
+			pallet_eth2_light_client_relayer_gadget::start_gadget(
+				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
+					lc_relay_config_path: relayer_cmd.light_client_relay_config_path.clone(),
+					lc_init_config_path: relayer_cmd.light_client_init_pallet_config_path.clone(),
+					eth2_chain_id: TypedChainId::Evm(1),
+				},
+			),
+		);
 	}
 
 	// if the node isn't actively participating in consensus then it doesn't

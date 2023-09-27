@@ -556,6 +556,13 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -586,6 +593,7 @@ construct_runtime!(
 		Multisig: pallet_multisig,
 		Identity: pallet_identity,
 		Sudo: pallet_sudo,
+		Utility: pallet_utility,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
