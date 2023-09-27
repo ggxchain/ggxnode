@@ -37,7 +37,7 @@ pub trait CurrencyInfo {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
-	pub use crate::pos::weights::currency::WeightInfo;
+	pub use crate::weights::currency::WeightInfo;
 	use frame_support::{
 		dispatch::DispatchResult,
 		ensure,

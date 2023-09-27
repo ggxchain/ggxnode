@@ -534,6 +534,7 @@ impl currency::Config for Runtime {
 	type RuntimeCall = RuntimeCall;
 	type FeeComissionRecipient = Treasury;
 	type DecayPeriod = DecayPeriod;
+	type WeightInfo = runtime_common::weights::currency::SubstrateWeight<Runtime>;
 }
 
 impl session_payout::Config for Runtime {
@@ -543,4 +544,5 @@ impl session_payout::Config for Runtime {
 	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
 	type CurrencyInfo = CurrencyManager;
+	type WeightInfo = runtime_common::weights::session_payout::SubstrateWeight<Runtime>;
 }

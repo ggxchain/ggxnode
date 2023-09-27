@@ -62,7 +62,7 @@ pub mod pallet {
 	use pallet_balances::NegativeImbalance;
 
 	use super::*;
-	pub use crate::pos::weights::session_payout::WeightInfo;
+	pub use crate::weights::session_payout::WeightInfo;
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
