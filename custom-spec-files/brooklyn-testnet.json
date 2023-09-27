@@ -3,13 +3,11 @@
   "id": "GGX",
   "chainType": "Live",
   "bootNodes": [
-    "/dns/sun.brooklyn.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC",
-    "/dns/moon.brooklyn.ggxchain.io/tcp/30333/p2p/12D3KooWCxnYzFkiFL5Dc6iEXXTVeFYFHmCqbhSosovEDid59TFR",
-    "/dns/earth.brooklyn.ggxchain.io/tcp/30333/p2p/12D3KooWQxwb6tTHqaPy8s3133yqBuJZVvqJfH6GJGy2PspDAYzQ"
+    "/dns/sirius.brooklyn.ggxchain.io/tcp/30333/p2p/12D3KooWSYCVHFUMZy7WCcanFW6EFiJgpB6qc7verdEWaQ3qhh2p"
   ],
   "telemetryEndpoints": [
     [
-      "/dns/testnet.telemetry.brooklyn.ggxchain.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
+      "/dns/telemetry.brooklyn.ggxchain.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
       0
     ]
   ],
@@ -33,15 +31,15 @@
       "balances": {
         "balances": [
           [
-            "5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz",
+            "5G4Ug9EPQHqk5iJGjUFHeLHYCvX4JRPVrtxxFPmwuk9wj8GC",
             999988900000000000000000000
           ],
           [
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             1100000000000000000000
           ],
           [
-            "5GxBFw4nqvhX9X1C6apRpvWm57QaRb6MkVSF7YzQXLq2VJ6m",
+            "5DiGqKeNzJebWNLJi4ii977VoTSwVxbk6hWWcuWKkuxdEQ37",
             10000000000000000000000
           ]
         ]
@@ -64,8 +62,8 @@
         "canceledPayout": 0,
         "stakers": [
           [
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             1000000000000000000000,
             "Validator"
           ]
@@ -78,12 +76,12 @@
       "session": {
         "keys": [
           [
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             {
-              "aura": "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
-              "grandpa": "5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
-              "im_online": "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR"
+              "aura": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
+              "grandpa": "5GrWi3S64gdLH3S3QL3Kfq9Suy4N4ahu8DE41GjmCbVDuGjP",
+              "im_online": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r"
             }
           ]
         ]
@@ -98,7 +96,7 @@
         "indices": []
       },
       "sudo": {
-        "key": "5Fxk5MUYBQf4ALRFkmSr9UNGyVz52dLhv7w8PkgKKBkjA5Fz"
+        "key": "5G4Ug9EPQHqk5iJGjUFHeLHYCvX4JRPVrtxxFPmwuk9wj8GC"
       },
       "treasury": null,
       "society": {
@@ -342,7 +340,7 @@
       "accountFilter": {
         "allowedAccounts": [
           [
-            "5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+            "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
             null
           ]
         ]
