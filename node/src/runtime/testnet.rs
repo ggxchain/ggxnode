@@ -2,6 +2,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
+use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
 use sp_runtime::traits::IdentifyAccount;
@@ -54,8 +55,23 @@ pub fn testnet_genesis(
 	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
 	_chain_id: u64,
-	_nominate: bool,
+	nominate: bool,
 ) -> GenesisConfig {
+	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+	let stash = 1000 * GGX;
+
+	// This is supposed the be the simplest bytecode to revert without returning any data.
+	// We will pre-deploy it under all of our precompiles to ensure they can be called from
+	// within contracts.
+	// (PUSH1 0x00 PUSH1 0x00 REVERT)
+	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
+
+	let stakers: Vec<_> = if nominate {
+		endowed_accounts.iter().map(|i| i.0.clone()).collect()
+	} else {
+		initial_authorities.iter().map(|i| i.id.clone()).collect()
+	};
+
 	GenesisConfig {
 		// System
 		system: SystemConfig {
@@ -78,7 +94,39 @@ pub fn testnet_genesis(
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
+		staking: StakingConfig {
+			validator_count: 100,
+			minimum_validator_count: 1,
+			min_validator_bond: 1000 * GGX,
+			min_nominator_bond: 100 * GGX,
+			invulnerables: vec![],
+			stakers: stakers
+				.iter()
+				.map(|user| {
+					let status = if initial_authorities
+						.iter()
+						.any(|validator| validator.id == *user)
+					{
+						StakerStatus::Validator
+					} else {
+						use rand::{seq::SliceRandom, Rng};
+						let limit =
+							(pos::MaxNominations::get() as usize).min(initial_authorities.len());
+						let count = rng.gen::<usize>() % limit + 1;
+						let nominations = initial_authorities
+							.as_slice()
+							.choose_multiple(&mut rng, count)
+							.into_iter()
+							.map(|choice| choice.id.clone())
+							.collect::<Vec<_>>();
+						StakerStatus::Nominator(nominations)
+					};
 
+					(user.clone(), user.clone(), stash, status)
+				})
+				.collect::<Vec<_>>(),
+			..Default::default()
+		},
 		// Consensus
 		session: SessionConfig {
 			keys: initial_authorities
@@ -107,9 +155,9 @@ pub fn testnet_genesis(
 					fp_evm::GenesisAccount {
 						balance: U256::from_str("0xffffffffffffffffffffffffffffffff")
 							.expect("internal U256 is valid; qed"),
-						code: Default::default(),
 						nonce: Default::default(),
 						storage: Default::default(),
+						code: revert_bytecode,
 					},
 				);
 				map.insert(
@@ -151,6 +199,14 @@ pub fn testnet_genesis(
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
+		society: Default::default(),
+		currency_manager: CurrencyManagerConfig {},
+		account_filter: AccountFilterConfig {
+			allowed_accounts: initial_authorities
+				.iter()
+				.map(|x| (x.id.clone(), ()))
+				.collect(),
+		},
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},

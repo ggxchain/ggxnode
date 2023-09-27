@@ -3,7 +3,7 @@ use crate::{
 	chain_extensions::{IBCISC20Extension, Psp37Extension},
 	deposit,
 	prelude::*,
-	Balance, BlockWeights, Xvm,
+	Balance, BlockWeights, Xvm, AVERAGE_ON_INITIALIZE_RATIO,
 };
 
 pub use frame_support::dispatch::DispatchClass;
@@ -30,14 +30,9 @@ parameter_types! {
 	pub const DepositPerByte: Balance = deposit(0, 1);
 	pub const MaxValueSize: u32 = 16 * 1024;
 	// The lazy deletion runs inside on_initialize.
-	pub DeletionWeightLimit: Weight = BlockWeights::get()
-	.per_class
-	.get(DispatchClass::Normal)
-	.max_total
-	.unwrap_or(BlockWeights::get().max_block);
+	pub DeletionWeightLimit: Weight = AVERAGE_ON_INITIALIZE_RATIO * BlockWeights::get().max_block;
 	// Fallback value if storage deposit limit not set by the user
 	pub const DefaultDepositLimit: Balance = deposit(16, 16 * 1024);
-
 	pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
 }
 
