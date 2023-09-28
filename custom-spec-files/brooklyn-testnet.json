@@ -81,13 +81,19 @@
             {
               "aura": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
               "grandpa": "5GrWi3S64gdLH3S3QL3Kfq9Suy4N4ahu8DE41GjmCbVDuGjP",
-              "im_online": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r"
+              "im_online": "5DbwKgiFM6aXQ9wfj6VKx1knRDkJBtvGiGByjdrQgsh5MS4r",
+              "beefy": "KW7iBSQfDUN7n4btw7nVVPGwUVwVrcC8UXdNVKbBBtepdVzpu"
             }
           ]
         ]
       },
       "grandpa": {
         "authorities": []
+      },
+      "assets": {
+        "assets": [],
+        "metadata": [],
+        "accounts": []
       },
       "vesting": {
         "vesting": []
@@ -344,6 +350,18 @@
             null
           ]
         ]
+      },
+      "ics20Transfer": {
+        "assetIdByName": [
+          [
+            "ERT",
+            666
+          ]
+        ]
+      },
+      "beefy": {
+        "authorities": [],
+        "genesisBlock": 1
       }
     }
   }
