@@ -1,7 +1,7 @@
 ethereum_network = "Mainnet"
-beacon_endpoint = "https://lodestar-mainnet.chainsafe.io"
-eth1_endpoint = "https://mainnet.infura.io/v3/{YOUR_INFURA_KEY}"
-eth_requests_timeout_seconds = 30
+beacon_endpoint = "https://www.lightclientdata.org"
+eth1_endpoint = "https://mainnet.infura.io/v3/${YOUR_INFURA_KEY}"
+eth_requests_timeout_seconds = 60
 validate_updates = true
 verify_bls_signature = true
 hashes_gc_threshold = 51000
