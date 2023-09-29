@@ -6,15 +6,33 @@ describe('Staking', async function () {
 
     let commonWasm;
 
-    before( async () => {
+    before(async () => {
         commonWasm = await new CommonWasm().init();
     })
 
-    after(async function ()  {
+    after(async function () {
         await commonWasm.disconnect();
     });
 
-    it('should able to perform bond', async function ()  {
+    it('should able to perform bond', async function () {
+        const senderAddress = commonWasm.getAccount().address;
+        const amountToBond = 100_000_000_000_000_000n;
+
+        const transaction = commonWasm.getApi().tx.staking.bond(
+            {id: senderAddress},
+            amountToBond,
+            'Staked');
+        await commonWasm.signAndSend(transaction, commonWasm.getAccount());
+
+        const stakingLedger = await commonWasm.getApi().query.staking.ledger(senderAddress);
+        console.log('Staking Ledger After:', stakingLedger.toJSON());
+
+        const stakingLedgerTotal = commonWasm.hexToDecimal(stakingLedger.toJSON().total);
+
+        expect(stakingLedgerTotal).to.be.at.least(100_000_000_000_000_000);
+    });
+
+    it('should able to perform bond extra', async function () {
         const senderAddress = commonWasm.getAccount().address;
         const amountToBond = 100_000_000_000_000_000n;
 
@@ -33,7 +51,7 @@ describe('Staking', async function () {
         expect(difference).to.be.equal(amountToBond);
     });
 
-    it('should able to perform unbond', async function ()  {
+    it('should able to perform unbond', async function () {
         const senderAddress = commonWasm.getAccount().address;
         const amountToUnbond = 100_000_000_000_000_000n;
 
@@ -52,7 +70,7 @@ describe('Staking', async function () {
         expect(difference).to.be.equal(amountToUnbond);
     });
 
-    it('should able to perform nominate', async function ()  {
+    it('should able to perform nominate', async function () {
         const senderAddress = commonWasm.getAccount().address;
 
         const transaction = commonWasm.getApi().tx.staking.nominate([senderAddress]);
