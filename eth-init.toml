@@ -1,6 +1,6 @@
-ethereum_network = "Mainnet"
-beacon_endpoint = "https://www.lightclientdata.org"
-eth1_endpoint = "https://mainnet.infura.io/v3/${YOUR_INFURA_KEY}"
+ethereum_network = "Goerli"
+beacon_endpoint = "https://lodestar-goerli.chainsafe.io"
+eth1_endpoint = "https://lodestar-goerlirpc.chainsafe.io"
 eth_requests_timeout_seconds = 60
 validate_updates = true
 verify_bls_signature = true
@@ -10,3 +10,4 @@ beacon_rpc_version = "V1_5"
 substrate_network_name = "ggxchain"
 substrate_endpoint = "ws://127.0.0.1:9944"
 path_to_signer_secret_key = "./secret-key"
+init_block_root="0x1c1f016a64d8493b5c7a94494f70deb35266dc9a165a08397f65f86444d0e9e9"

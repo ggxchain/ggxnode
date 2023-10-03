@@ -3,6 +3,7 @@ members = [
 	"node",
 	"precompiles/session",
 	"precompiles/zk-groth16-verify",
+	"precompiles/eth-receipt-provider",
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
@@ -23,6 +24,7 @@ repository = "https://github.com/ggxchain/ggxnode/"
 # General purpose dependencies
 assert_cmd = "2.0.2"
 async-trait = "0.1"
+cfg-if = "1.0"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
 ethers = { version = "2.0.4" }
@@ -53,7 +55,6 @@ tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
 tokio-util = { version = "0.7.4", features = ["compat"] }
 wait-timeout = "0.2"
 web3 = "0.5.0"
-
 # Substrate Client
 
 mmr-gadget = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
@@ -188,6 +189,7 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Astar
 account-filter = { package = "substrate-account-filter", git = "https://github.com/ggxchain/ggx-frames.git", branch = "polkadot-v0.9.43", default-features = false }
 ggxchain-runtime-brooklyn = { path = "runtime/brooklyn", default-features = false }
 ggxchain-runtime-sydney = { path = "runtime/sydney", default-features = false }
+pallet-evm-eth-receipt-provider = { path = "precompiles/eth-receipt-provider", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
@@ -219,13 +221,13 @@ pallet-ics20-transfer = { default-features = false, git = "https://github.com/ib
 prost = { version = "0.11", default-features = false }
 
 # Eth - Light client
+eth-light-client-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 pallet-eth2-light-client = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 pallet-eth2-light-client-relayer-gadget = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
 pallet-eth2-light-client-relayer-gadget-cli = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
+pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 webb-consensus-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
-
-pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "ggxchain-msg-relaying", default-features = false }
 webb-proposals = { git = "https://github.com/ggxchain/webb-rs.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # zk precompile

@@ -500,13 +500,13 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		// Start Eth2 Light client Relayer Gadget - (MAINNET RELAYER)
 		let relayer_cmd = &cli.relayer_cmd;
 		task_manager.spawn_handle().spawn(
-			"eth-mainnet-relayer-gadget",
+			"goerli-relayer-gadget",
 			None,
 			pallet_eth2_light_client_relayer_gadget::start_gadget(
 				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
 					lc_relay_config_path: relayer_cmd.light_client_relay_config_path.clone(),
 					lc_init_config_path: relayer_cmd.light_client_init_pallet_config_path.clone(),
-					eth2_chain_id: TypedChainId::Evm(1),
+					eth2_chain_id: TypedChainId::Evm(5),
 				},
 			),
 		);

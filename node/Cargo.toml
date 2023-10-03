@@ -84,7 +84,7 @@ webb-consensus-types.workspace = true
 webb-proposals.workspace = true
 
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
-ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
+ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
 assert_cmd = { workspace = true }
@@ -112,10 +112,10 @@ default = ["brooklyn"]
 sydney = ["fast-runtime"]
 brooklyn = ["ggxchain-runtime-brooklyn"]
 fast-runtime = [
-	"ggxchain-runtime-sydney/fast-runtime",
+	"ggxchain-runtime-sydney?/fast-runtime",
 ]
 allowlist = [
-	"ggxchain-runtime-sydney/allowlist",
+	"ggxchain-runtime-sydney?/allowlist",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",

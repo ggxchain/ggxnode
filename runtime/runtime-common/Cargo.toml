@@ -24,6 +24,7 @@ pallet-authorship.workspace = true
 pallet-balances.workspace = true
 pallet-contracts = { workspace = true, optional = true }
 pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"], optional = true }
+pallet-evm-eth-receipt-provider = { workspace = true, optional = true }
 pallet-evm-precompile-blake2 = { workspace = true, optional = true }
 pallet-evm-precompile-bn128 = { workspace = true, optional = true }
 pallet-evm-precompile-ed25519 = { workspace = true, optional = true }
@@ -39,7 +40,10 @@ pallet-scheduler.workspace = true
 pallet-staking.workspace = true
 pallet-xvm = { workspace = true, optional = true }
 
+pallet-receipt-registry = { workspace = true, optional = true }
+
 # eth abi
+cfg-if.workspace = true
 log.workspace = true
 
 [dev-dependencies]
@@ -64,6 +68,12 @@ precompiles = [
 	"pallet-evm-precompile-zk-groth16-verify",
 	"pallet-xvm",
 ]
+eth-precompile = [
+	"precompiles",
+	"pallet-evm-eth-receipt-provider",
+	"pallet-receipt-registry",
+]
+
 std = [
 	"serde/std",
 	"scale-codec/std",
@@ -77,6 +87,7 @@ std = [
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",
+	"pallet-evm-eth-receipt-provider?/std",
 	"pallet-evm-precompile-blake2?/std",
 	"pallet-evm-precompile-bn128?/std",
 	"pallet-evm-precompile-ed25519?/std",
