@@ -242,7 +242,7 @@ ark-relations = { version = "0.4.0", default-features = false }
 ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
 
-[patch."https://github.com/ggxchain/transaction-receipt-relayer.git"]
-eth-light-client-types = { package = "types", path = "../eth-light-client/types" }
-pallet-evm-eth-receipt-provider = { path = "../eth-light-client/precompile" }
-pallet-receipt-registry = { path = "../eth-light-client/pallet" }
+# [patch."https://github.com/ggxchain/transaction-receipt-relayer.git"]
+# eth-light-client-types = { package = "types", path = "../eth-light-client/types" }
+# pallet-evm-eth-receipt-provider = { path = "../eth-light-client/precompile" }
+# pallet-receipt-registry = { path = "../eth-light-client/pallet" }
