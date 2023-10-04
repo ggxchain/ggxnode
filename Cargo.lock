@@ -8235,28 +8235,17 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
-version = "0.1.2"
+version = "0.1.0"
 dependencies = [
- "derive_more",
  "fp-evm",
  "frame-support",
  "frame-system",
- "hex-literal 0.3.4",
- "libsecp256k1",
  "log 0.4.20",
  "num_enum 0.5.11",
  "pallet-evm",
  "pallet-receipt-registry",
- "pallet-timestamp",
- "parity-scale-codec",
  "precompile-utils",
- "serde",
- "sha3 0.8.2",
  "sp-core 7.0.0",
- "sp-io 7.0.0",
- "sp-runtime 7.0.0",
- "sp-staking",
- "sp-std 5.0.0",
  "types 0.1.0",
  "webb-proposals",
 ]
@@ -8725,7 +8714,6 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#5b7ea9760deba4d72bf1829d0c157d9d4580a807"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -16050,7 +16038,6 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#5b7ea9760deba4d72bf1829d0c157d9d4580a807"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",

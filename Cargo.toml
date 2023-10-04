@@ -3,7 +3,6 @@ members = [
 	"node",
 	"precompiles/session",
 	"precompiles/zk-groth16-verify",
-	"precompiles/eth-receipt-provider",
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
@@ -189,7 +188,6 @@ pallet-hotfix-sufficients = { version = "1.0.0", git = "https://github.com/Astar
 account-filter = { package = "substrate-account-filter", git = "https://github.com/ggxchain/ggx-frames.git", branch = "polkadot-v0.9.43", default-features = false }
 ggxchain-runtime-brooklyn = { path = "runtime/brooklyn", default-features = false }
 ggxchain-runtime-sydney = { path = "runtime/sydney", default-features = false }
-pallet-evm-eth-receipt-provider = { path = "precompiles/eth-receipt-provider", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
@@ -226,6 +224,7 @@ eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light
 pallet-eth2-light-client = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 pallet-eth2-light-client-relayer-gadget = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
 pallet-eth2-light-client-relayer-gadget-cli = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
+pallet-evm-eth-receipt-provider = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 webb-consensus-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 webb-proposals = { git = "https://github.com/ggxchain/webb-rs.git", branch = "polkadot-v0.9.43", default-features = false }
@@ -242,3 +241,8 @@ ark-poly = { version = "0.4.1", default-features = false }
 ark-relations = { version = "0.4.0", default-features = false }
 ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
+
+[patch."https://github.com/ggxchain/transaction-receipt-relayer.git"]
+eth-light-client-types = { package = "types", path = "../eth-light-client/types" }
+pallet-evm-eth-receipt-provider = { path = "../eth-light-client/precompile" }
+pallet-receipt-registry = { path = "../eth-light-client/pallet" }
