@@ -1,8 +1,5 @@
 # GGX Chain node set-up
 
-> **NOTE:** Here you can find manual on how to run a node locally.  
-> Visit [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for full documentation.
-
 ## 1. Clone repo
 
 To get started download this repository and navigate to `ggxnode` folder, e.g.:
@@ -55,23 +52,42 @@ It takes around 20 mins to complete with this suggested requirements, exponentia
 From the repository's root directory execute following commands in order:
 
 #### Sydney - our public testnet:
+You have to create keys before running a validator node and store a backup of them.
+**Make sure** to check [https://docs.ggxchain.io/](https://docs.ggxchain.io/) for requirements and documentation for running a Validator node.
+
+
 
 ```bash
-mkdir data-sydney
-
 docker build -f Dockerfile.sydney -t ggxchain-node:sydney .
 
-docker run \
-    -it \
-    --rm \
-    --name ggx-local-node \
-    -u $(id -g):$(id -u) \
-    -p 30333:30333 \
+mkdir -p data-sydney
+
+docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
+    --name <INSERT_UNIQUE_NAME> \
+    -p 127.0.0.1:9944:9944 \
+    -p 127.0.0.1:9933:9933 \
+    -p 127.0.0.1:9615:9615 \
+    -p 0.0.0.0:30333:30333 \
     -v $(pwd)/custom-spec-files:/tmp \
     -v $(pwd)/data-sydney:/data-sydney \
     ggxchain-node:sydney \
-    --base-path=/data-sydney \
+    --wasm-execution Compiled \
+    --database rocksdb \
+    --rpc-cors all \
+    --sync warp \
+    --no-private-ip \
+    --no-mdns \
+    --state-pruning 256 \
+    --blocks-pruning 256 \
+    --node-key-type ed25519 \
+    --node-key-file /data-sydney/node.key \
+    --log info \
+    --rpc-methods unsafe \
+    --unsafe-rpc-external \
+    --prometheus-external \
+    --validator \
     --chain sydney \
+    --base-path=/data-sydney \
     --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
     --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
 ```
@@ -138,8 +154,8 @@ To run in dev mode add `-- --dev` flag to run command
 ##### Sydney
 
 ```bash
-nix build .#ggxchain-node-sydney
-nix run .#ggxchain-node-sydney --chain sydney
+nix build .#sydney-node
+nix run .#sydney-node
 ```
 
 To run in dev mode use
@@ -163,8 +179,8 @@ nix run .#prune-running
 ##### Brooklyn
 
 ```bash
-nix build .#ggxchain-node-brooklyn
-nix run .#ggxchain-node-brooklyn  --chain brooklyn
+nix build .#brooklyn-node
+nix run .#brooklyn-node
 ```
 
 To run in dev mode use

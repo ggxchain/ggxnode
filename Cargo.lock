@@ -2388,9 +2388,9 @@ checksum = "e48c92028aaa870e83d51c64e5d4e0b6981b360c522198c23959f219a4e1b15b"
 
 [[package]]
 name = "erased-serde"
-version = "0.3.25"
+version = "0.3.26"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f2b0c2380453a92ea8b6c8e5f64ecaafccddde8ceab55ff7a8ac1029f894569"
+checksum = "c6984864d65d092d9e9ada107007a846a09f75d2e24046bcce9a38d14aa52052"
 dependencies = [
  "serde",
 ]
@@ -3833,7 +3833,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-node"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "assert_cmd",
  "async-trait",
@@ -3914,11 +3914,13 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-brooklyn"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
+ "fp-evm",
  "fp-rpc",
  "fp-self-contained",
  "frame-benchmarking",
+ "frame-election-provider-support",
  "frame-executive",
  "frame-support",
  "frame-system",
@@ -3926,6 +3928,7 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
+ "log",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -3937,7 +3940,9 @@ dependencies = [
  "pallet-chain-extension-xvm",
  "pallet-contracts",
  "pallet-contracts-primitives",
+ "pallet-conviction-voting",
  "pallet-dynamic-fee",
+ "pallet-election-provider-multi-phase",
  "pallet-ethereum",
  "pallet-evm",
  "pallet-evm-chain-id",
@@ -3953,25 +3958,36 @@ dependencies = [
  "pallet-mmr",
  "pallet-multisig",
  "pallet-offences",
+ "pallet-preimage",
  "pallet-proxy",
+ "pallet-ranked-collective",
+ "pallet-referenda",
+ "pallet-scheduler",
  "pallet-session",
+ "pallet-society",
+ "pallet-staking",
  "pallet-sudo",
  "pallet-timestamp",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
  "pallet-vesting",
+ "pallet-whitelist",
  "pallet-xvm",
  "parity-scale-codec 3.5.0",
+ "paste",
  "prost",
  "runtime-common",
  "scale-info",
+ "serde",
  "sp-api",
+ "sp-arithmetic",
  "sp-block-builder",
  "sp-consensus-aura",
  "sp-consensus-beefy",
  "sp-core",
  "sp-inherents",
+ "sp-io",
  "sp-mmr-primitives",
  "sp-offchain",
  "sp-runtime",
@@ -3980,12 +3996,13 @@ dependencies = [
  "sp-std 5.0.0",
  "sp-transaction-pool",
  "sp-version",
+ "substrate-account-filter",
  "substrate-wasm-builder",
 ]
 
 [[package]]
 name = "ggxchain-runtime-sydney"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "fp-evm",
  "fp-rpc",
@@ -7011,7 +7028,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-session"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "derive_more",
  "fp-evm",
@@ -7108,7 +7125,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-zk-groth16-verify"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "ark-bn254",
  "ark-crypto-primitives",
@@ -9028,11 +9045,13 @@ dependencies = [
 
 [[package]]
 name = "runtime-common"
-version = "0.1.1"
+version = "0.1.2"
 dependencies = [
  "frame-support",
  "frame-system",
  "log",
+ "pallet-authorship",
+ "pallet-balances",
  "pallet-contracts",
  "pallet-evm",
  "pallet-evm-precompile-blake2",
@@ -9046,13 +9065,16 @@ dependencies = [
  "pallet-evm-precompile-substrate-ecdsa",
  "pallet-evm-precompile-xvm",
  "pallet-evm-precompile-zk-groth16-verify",
+ "pallet-scheduler",
  "pallet-session",
+ "pallet-staking",
  "pallet-xvm",
  "parity-scale-codec 3.5.0",
  "proptest",
  "scale-info",
  "serde",
  "sp-core",
+ "sp-runtime",
  "sp-staking",
  "sp-std 5.0.0",
  "test-strategy",
@@ -10836,9 +10858,9 @@ dependencies = [
 
 [[package]]
 name = "serde_bytes"
-version = "0.11.9"
+version = "0.11.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "416bda436f9aab92e02c8e10d49a15ddd339cea90b6e340fe51ed97abb548294"
+checksum = "f3c5113243e4a3a1c96587342d067f3e6b0f50790b6cf40d2868eb647a3eef0e"
 dependencies = [
  "serde",
 ]
@@ -10867,9 +10889,9 @@ dependencies = [
 
 [[package]]
 name = "serde_repr"
-version = "0.1.12"
+version = "0.1.13"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bcec881020c684085e55a25f7fd888954d56609ef363479dc5a1305eb0d40cab"
+checksum = "6f0a21fba416426ac927b1691996e82079f8b6156e920c85345f135b2e9ba2de"
 dependencies = [
  "proc-macro2",
  "quote",
