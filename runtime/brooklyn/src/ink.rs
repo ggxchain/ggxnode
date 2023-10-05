@@ -8,6 +8,7 @@ use crate::{
 
 pub use frame_support::dispatch::DispatchClass;
 use frame_support::weights::Weight;
+use pallet_chain_extension_receipt_registry::ReceiptRegistryExtension;
 use pallet_contracts::chain_extension::RegisteredChainExtension;
 
 pub use pallet_chain_extension_xvm::XvmExtension;
@@ -23,6 +24,10 @@ impl RegisteredChainExtension<Runtime> for IBCISC20Extension {
 
 impl RegisteredChainExtension<Runtime> for Psp37Extension {
 	const ID: u16 = 3;
+}
+
+impl RegisteredChainExtension<Runtime> for ReceiptRegistryExtension<Runtime> {
+	const ID: u16 = 4;
 }
 
 parameter_types! {
@@ -58,7 +63,12 @@ impl pallet_contracts::Config for Runtime {
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (XvmExtension<Self, Xvm>, IBCISC20Extension, Psp37Extension);
+	type ChainExtension = (
+		XvmExtension<Self, Xvm>,
+		IBCISC20Extension,
+		Psp37Extension,
+		ReceiptRegistryExtension<Self>,
+	);
 	type Schedule = Schedule;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type MaxCodeLen = ConstU32<{ 123 * 1024 }>;

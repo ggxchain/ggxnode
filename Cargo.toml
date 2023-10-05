@@ -221,6 +221,7 @@ prost = { version = "0.11", default-features = false }
 # Eth - Light client
 eth-light-client-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
+pallet-chain-extension-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", branch = "relayer-integration", default-features = false }
 pallet-eth2-light-client = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 pallet-eth2-light-client-relayer-gadget = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
 pallet-eth2-light-client-relayer-gadget-cli = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
@@ -246,3 +247,4 @@ ark-std = { version = "0.4.0", default-features = false }
 # eth-light-client-types = { package = "types", path = "../eth-light-client/types" }
 # pallet-evm-eth-receipt-provider = { path = "../eth-light-client/precompile" }
 # pallet-receipt-registry = { path = "../eth-light-client/pallet" }
+# pallet-chain-extension-receipt-registry = { path = "../eth-light-client/chain-extension" }
