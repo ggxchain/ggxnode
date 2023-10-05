@@ -7964,7 +7964,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#86cb481b1fa90e91c7f49659297264cefa784e86"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#120da1b46898e5b59767c0de64e9cfc82d1aaf04"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -8255,7 +8255,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#86cb481b1fa90e91c7f49659297264cefa784e86"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#120da1b46898e5b59767c0de64e9cfc82d1aaf04"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8734,7 +8734,7 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#86cb481b1fa90e91c7f49659297264cefa784e86"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#120da1b46898e5b59767c0de64e9cfc82d1aaf04"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -16059,7 +16059,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#86cb481b1fa90e91c7f49659297264cefa784e86"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#120da1b46898e5b59767c0de64e9cfc82d1aaf04"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",
