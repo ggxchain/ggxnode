@@ -21,7 +21,7 @@ jobs:
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: cachix-install-nix-action
-        uses: cachix/install-nix-action@6ed004b9ccb68dbc28e7c85bee15fa93dbd214ac
+        uses: cachix/install-nix-action@6a9a9e84a173d90b3ffb42c5ddaf9ea033fad011
         with:
           install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
           nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
@@ -40,7 +40,7 @@ jobs:
           nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
           nix-channel --update
           nix profile install nixpkgs#git
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
@@ -65,7 +65,7 @@ jobs:
           registry-type: public
 
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Image Tag
         run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
@@ -110,7 +110,7 @@ jobs:
           registry-type: public
 
       - name: Check out code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Set Image Tag
         run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
