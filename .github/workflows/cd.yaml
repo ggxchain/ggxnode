@@ -48,17 +48,42 @@ jobs:
           app_id: ${{ secrets.GH_APP_ID }}
 
       - name: Check out argocd code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           repository: ggxchain/ggx-argocd-apps
           ref: main
           path: eksdeploy
           token: ${{ steps.generate_token.outputs.token }}
 
-      - name: Update Image Version in the related deployment manifest
+      - name: Update Image Version of Brooklyn Archive
         if:  ${{ inputs.chain == 'brooklyn' }}
-        run: |
-          echo "brooklyn nodes are not yet deployed.. Contact Slack for more info."
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/brooklyn/archive/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.BROOKLYN_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
+
+      - name: Update Image Version of Brooklyn Validator-01
+        if:  ${{ inputs.chain == 'brooklyn' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/brooklyn/validator-01/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.BROOKLYN_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
+
+      - name: Update Image Version of Brooklyn Validator-02
+        if:  ${{ inputs.chain == 'brooklyn' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/brooklyn/validator-02/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.BROOKLYN_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
 
       - name: Update Image Version of Sydney Archive
         if:  ${{ inputs.chain == 'sydney' }}

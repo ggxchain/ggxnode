@@ -1,6 +1,6 @@
 import {ContractPromise} from '@polkadot/api-contract';
-import contract_file from './flipper.contract.json' assert {type: 'json'};
-import xvm_abi from "./xvm_abi.js";
+import contract_file from './assets/flipper.contract.json' assert {type: 'json'};
+import xvm_abi from "./assets/xvm_abi.js";
 import CommonWasm from "../../src/common/CommonWasm.js";
 import CommonEvm from "../../src/common/СommonEvm.js";
 import {expect} from "chai";
@@ -35,7 +35,7 @@ describe('EVM to WASM communication', async function () {
 
         //call Flipper.flip() from EVM:
         const evmAccount = await commonEvm.getAccount();
-        console.log(evmAccount)
+        console.log('evmAccount', evmAccount);
 
         const xvmContractAddress = '0x0000000000000000000000000000000000005005';
         const xvmContract = commonEvm.getContract(xvm_abi, xvmContractAddress);
@@ -68,8 +68,7 @@ describe('EVM to WASM communication', async function () {
         const gasLimit = await commonWasm.getGasLimit();
 
         let queryResult = await contractPromise.query.get(
-            commonWasm.getAccount().address,
-            {
+            commonWasm.getAccount().address, {
                 gasLimit,
                 storageDepositLimit,
             }

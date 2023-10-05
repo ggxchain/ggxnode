@@ -9,14 +9,12 @@ use frame_support::{
 };
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_election_provider_multi_phase::SolutionAccuracyOf;
+pub use runtime_common::pos::{currency, session_payout, YEAR_IN_MILLIS};
 use runtime_common::prod_or_fast;
 use sp_runtime::traits::ConvertInto;
 use sp_staking::SessionIndex;
 
 use super::*;
-
-pub mod currency;
-pub mod session_payout;
 
 pub use opaque::SessionKeys;
 
@@ -524,9 +522,6 @@ impl pallet_election_provider_multi_phase::Config for Runtime {
 	type BenchmarkingConfig = ElectionProviderBenchmarkConfig;
 	type WeightInfo = pallet_election_provider_multi_phase::weights::SubstrateWeight<Self>;
 }
-
-// 1 julian year to address leap years
-const YEAR_IN_MILLIS: u128 = 1000 * 3600 * 24 * 36525 / 100;
 
 parameter_types! {
 	pub storage DecayPeriod: BlockNumber = ((YEAR_IN_MILLIS
