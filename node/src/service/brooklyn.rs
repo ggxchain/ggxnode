@@ -496,9 +496,14 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		task_manager
 			.spawn_essential_handle()
 			.spawn_blocking("aura", Some("block-authoring"), aura);
+	}
 
-		// Start Eth2 Light client Relayer Gadget - (MAINNET RELAYER)
-		let relayer_cmd = &cli.relayer_cmd;
+	let relayer_cmd: &pallet_eth2_light_client_relayer_gadget_cli::LightClientRelayerCmd =
+		&cli.relayer_cmd;
+	if relayer_cmd.light_client_relay_config_path.is_some()
+		&& relayer_cmd.light_client_init_pallet_config_path.is_some()
+	{
+		// Start Eth2 Light client Relayer Gadget - (GOERLI RELAYER)
 		task_manager.spawn_handle().spawn(
 			"goerli-relayer-gadget",
 			None,
