@@ -41,7 +41,7 @@ use sp_consensus_beefy::{
 };
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
-	ConstU64, OpaqueMetadata, H160, H256, U256,
+	ConstU64, Get, OpaqueMetadata, H160, H256, U256,
 };
 use sp_mmr_primitives as mmr;
 use sp_runtime::{
@@ -600,6 +600,7 @@ construct_runtime!(
 		// EVM pallets
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
+		EVMChainId: pallet_evm_chain_id,
 		EthereumChecked: pallet_ethereum_checked,
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
@@ -885,7 +886,7 @@ impl_runtime_apis! {
 
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
-			<Runtime as pallet_evm::Config>::ChainId::get()
+			EVMChainId::get()
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
