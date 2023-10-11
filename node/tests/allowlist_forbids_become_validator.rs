@@ -1,5 +1,5 @@
 pub mod common;
-#[subxt::subxt(runtime_metadata_path = "./tests/allowlist_metadata.scale")]
+#[subxt::subxt(runtime_metadata_path = "./tests/data/scale/allowlist_metadata.scale")]
 pub mod ggx {}
 
 #[cfg(all(unix, feature = "allowlist"))]
