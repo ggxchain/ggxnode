@@ -623,6 +623,17 @@ construct_runtime!(
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
 
+		//BTC bridge
+		BTCRelay: btc_relay,
+		Fee: fee,
+		Issue: issue,
+		Oracle: oracle,
+		Redeem: redeem,
+		Replace: replace,
+		VaultRegistry: vault_registry,
+		// Refund:
+		Nomination: nomination,
+		ClientsInfo: clients_info
 	}
 );
 

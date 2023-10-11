@@ -228,3 +228,14 @@ ark-poly = { version = "0.4.1", default-features = false }
 ark-relations = { version = "0.4.0", default-features = false }
 ark-serialize = { version = "0.4.1", default-features = false }
 ark-std = { version = "0.4.0", default-features = false }
+
+# BTC bridge
+btc-relay = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+clients-info = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+fee = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+issue = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+nomination = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+oracle = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+redeem = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+replace = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+vault-registry = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }

@@ -110,6 +110,17 @@ pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
 prost.workspace = true
 
+# BTC bridge
+btc-relay.workspace = true
+clients-info.workspace = true
+fee.workspace = true
+issue.workspace = true
+nomination.workspace = true
+oracle.workspace = true
+redeem.workspace = true
+replace.workspace = true
+vault-registry.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -209,6 +220,16 @@ std = [
 	"pallet-ibc/std",
 	"pallet-ics20-transfer/std",
 	"pallet-ibc-utils/std",
+	# BTC bridge
+	"btc-relay/std",
+	"clients-info/std",
+	"fee/std",
+	"issue/std",
+	"nomination/std",
+	"oracle/std",
+	"redeem/std",
+	"replace/std",
+	"vault-registry/std",
 ]
 aura = []
 allowlist = []
