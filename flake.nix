@@ -2,7 +2,7 @@
   # like Cargo.toml or package.json dependencies, but on meta level (tools to run mentined files)
   inputs = {
     # base packages
-    nixpkgs.url = "github:NixOS/nixpkgs/nixos-22.11";
+    nixpkgs.url = "github:NixOS/nixpkgs/nixos-23.05";
 
     # shells
     devenv.url = "github:cachix/devenv";

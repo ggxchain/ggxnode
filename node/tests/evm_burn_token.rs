@@ -1,16 +1,7 @@
 #![cfg(unix)]
 
-use assert_cmd::cargo::cargo_bin;
 use sp_core::U256;
-use std::process::Command;
-use tempfile::tempdir;
 
-use nix::{
-	sys::signal::{kill, Signal::SIGINT},
-	unistd::Pid,
-};
-
-use std::process::{self};
 pub mod common;
 
 use ethers::{
@@ -61,32 +52,17 @@ async fn _print_balances(
 #[cfg(unix)]
 #[tokio::test]
 async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
-	let base_path = tempdir().expect("could not create a temp dir");
-
-	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
-		.stdout(process::Stdio::piped())
-		.stderr(process::Stdio::piped())
-		.args(["--dev"])
-		.arg("-d")
-		.arg(base_path.path())
-		.spawn()
-		.unwrap();
-
-	let stderr = cmd.stderr.take().unwrap();
-
-	let (ws_url, http_url, _) = common::find_ws_http_url_from_output(stderr);
-
-	let mut child = common::KillChildOnDrop(cmd);
+	let mut alice = common::start_node_for_local_chain("alice", "dev").await;
 
 	// Let it produce some blocks.
-	let _ = common::wait_n_finalized_blocks(1, 30, &ws_url).await;
+	let _ = common::wait_n_finalized_blocks(1, 30, &alice.ws_url).await;
 
 	assert!(
-		child.try_wait().unwrap().is_none(),
+		alice.child.try_wait().unwrap().is_none(),
 		"the process should still be running"
 	);
 
-	let provider: Provider<Http> = Provider::<Http>::try_from(http_url)?; // Change to correct network
+	let provider: Provider<Http> = Provider::<Http>::try_from(alice.http_url.clone())?; // Change to correct network
 
 	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391" // Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
 		.parse::<LocalWallet>()?
@@ -104,14 +80,14 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	let address_from = "aaafB3972B05630fCceE866eC69CdADd9baC2771".parse::<Address>()?;
 	let address_to = "0000000000000000000000000000000000000000".parse::<Address>()?;
 
-	let before_treasury = common::get_treasury_balance(&ws_url).await?;
+	let before_treasury = common::get_treasury_balance(&alice.ws_url).await?;
 
 	//print_balances(&provider, &address_from, &address_to).await?;
 	let tx = send_transaction(&client, &address_from, &address_to).await?;
-	let _ = common::wait_n_finalized_blocks(3, 30, &ws_url).await;
+	let _ = common::wait_n_finalized_blocks(3, 30, &alice.ws_url).await;
 	//print_balances(&provider, &address_from, &address_to).await?;
 
-	let after_treasury = common::get_treasury_balance(&ws_url).await?;
+	let after_treasury = common::get_treasury_balance(&alice.ws_url).await?;
 
 	let diff = after_treasury - before_treasury;
 
@@ -121,10 +97,7 @@ async fn evm_burn_token_test() -> Result<(), Box<dyn std::error::Error>> {
 	assert!(<u128 as Into<U256>>::into(diff) == sum_of_commission);
 
 	// Stop the process
-	kill(Pid::from_raw(child.id().try_into().unwrap()), SIGINT).unwrap();
-	assert!(common::wait_for(&mut child, 40)
-		.map(|x| x.success())
-		.unwrap());
+	alice.kill();
 
 	Ok(())
 }

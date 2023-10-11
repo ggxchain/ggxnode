@@ -87,9 +87,14 @@ ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = t
 ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
+alloy-rlp = { workspace = true }
 assert_cmd = { workspace = true }
+env_logger = { workspace = true }
+eth-registry-types = { workspace = true }
+eth-types.workspace = true
 ethers = { workspace = true }
 hex = { workspace = true }
+merkle-generator = { package = "types", workspace = true }
 nix = { workspace = true }
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
 pallet-balances = { workspace = true }
@@ -97,7 +102,8 @@ serde_json = { workspace = true }
 sp-keyring = { workspace = true }
 substrate-rpc-client = { workspace = true }
 substrate-test-utils = { workspace = true }
-subxt = { workspace = true, features = ["jsonrpsee-ws"] }
+subxt = { workspace = true }
+subxt-signer.workspace = true
 tempfile = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
@@ -108,7 +114,7 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["brooklyn"]
+default = ["brooklyn", "allowlist"]
 sydney = ["fast-runtime"]
 brooklyn = ["ggxchain-runtime-brooklyn"]
 fast-runtime = [
