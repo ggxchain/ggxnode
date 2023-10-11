@@ -23,7 +23,6 @@ use subxt::{utils::Static, OnlineClient, PolkadotConfig};
 const GOERLI: Static<webb_proposals::TypedChainId> = Static(webb_proposals::TypedChainId::Evm(5));
 
 async fn load_light_client_data(
-	ws_url: &str,
 	api: &OnlineClient<PolkadotConfig>,
 	key_pair: &subxt_signer::sr25519::Keypair,
 ) {
@@ -108,7 +107,7 @@ async fn eth_light_client_loads_data_and_accepts_merkle_proof(
 	let api = OnlineClient::<subxt::PolkadotConfig>::from_url(alice.ws_url.clone()).await?;
 	let alice_pair = subxt_signer::sr25519::dev::alice();
 
-	load_light_client_data(&alice.ws_url, &api, &alice_pair).await;
+	load_light_client_data(&api, &alice_pair).await;
 
 	alice.kill();
 

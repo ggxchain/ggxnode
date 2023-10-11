@@ -2,13 +2,12 @@ pub mod common;
 #[subxt::subxt(runtime_metadata_path = "./tests/allowlist_metadata.scale")]
 pub mod ggx {}
 
-use subxt_signer::sr25519::dev;
-
-use subxt::OnlineClient;
-
 #[cfg(all(unix, feature = "allowlist"))]
 #[tokio::test]
 async fn allowlist_forbids_become_validator() -> Result<(), Box<dyn std::error::Error>> {
+	use subxt::OnlineClient;
+	use subxt_signer::sr25519::dev;
+
 	let mut alice = common::start_node_for_local_chain("alice", "dev").await;
 
 	common::wait_n_finalized_blocks_from(1, &alice.ws_url).await;

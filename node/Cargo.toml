@@ -114,7 +114,7 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["brooklyn", "allowlist"]
+default = ["brooklyn"]
 sydney = ["fast-runtime"]
 brooklyn = ["ggxchain-runtime-brooklyn"]
 fast-runtime = [
