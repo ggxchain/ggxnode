@@ -61,7 +61,6 @@
                 pkgs.llvmPackages.libclang.lib
                 (pkgs.lib.makeLibraryPath [pkgs.openssl])
               ];
-              OPENSSL_DIR = "${pkgs.openssl.dev}";
               LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
               PROTOC = "${pkgs.protobuf}/bin/protoc";
               ROCKSDB_LIB_DIR = "${pkgs.rocksdb}/lib";
@@ -76,7 +75,6 @@
               buildInputs = with pkgs; [ openssl zstd ];
               nativeBuildInputs = with pkgs;
                 rust-native-build-inputs ++ [ openssl ] ++ darwin;
-              doCheck = false;
               cargoCheckCommand = "true";
               src = rust-src;
               pname = "...";
@@ -258,7 +256,6 @@
               });
 
               nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
-                pname = "ggxchain-node-brooklyn";
                 cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
               });
 
@@ -358,22 +355,26 @@
               };
 
             devShells = {
-              default = craneLib.devShell {
+              default = craneLib.devShell (rust-env // {
                 checks = self.checks.${system};
                 packages = with pkgs; [
                   rust-toolchain
-                  binaryen
-                  llvmPackages.bintools
                   nodejs-18_x
                   nodePackages.markdownlint-cli2
                   jq
-                ] ++ rust-native-build-inputs ++ darwin;
+                ];
+
+                inputsFrom = [
+                  ggxchain-runtimes
+                  ggxchain-node-brooklyn
+                  ggxchain-node-sydney
+                ];
                    
                 enterShell = ''
                   echo ggxshell
                 '';
                 name = "ggxshell";
-              };
+              });
             };
           }
         );
