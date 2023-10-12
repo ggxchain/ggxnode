@@ -1,0 +1,54 @@
+[
+	{
+		"inputs": [],
+		"stateMutability": "nonpayable",
+		"type": "constructor"
+	},
+	{
+		"anonymous": false,
+		"inputs": [
+			{
+				"indexed": false,
+				"internalType": "bytes32[]",
+				"name": "topics",
+				"type": "bytes32[]"
+			},
+			{
+				"indexed": false,
+				"internalType": "uint256[]",
+				"name": "data",
+				"type": "uint256[]"
+			}
+		],
+		"name": "LogRetrieved",
+		"type": "event"
+	},
+	{
+		"inputs": [
+			{
+				"internalType": "uint256",
+				"name": "chain_id",
+				"type": "uint256"
+			},
+			{
+				"internalType": "uint256",
+				"name": "block_number",
+				"type": "uint256"
+			},
+			{
+				"internalType": "bytes32",
+				"name": "receipt_hash",
+				"type": "bytes32"
+			},
+			{
+				"internalType": "address",
+				"name": "contract_addr",
+				"type": "address"
+			}
+		],
+		"name": "getAndEmitLogs",
+		"outputs": [],
+		"stateMutability": "nonpayable",
+		"type": "function"
+	}
+]

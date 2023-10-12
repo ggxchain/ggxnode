@@ -49,6 +49,11 @@ use scale_codec::DecodeAll;
 
 type AccountData = pallet_balances::AccountData<Balance>;
 
+#[cfg(not(feature = "brooklyn"))]
+pub const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
+pub const CHAIN_ID: u64 = 888866u64;
+
 /// Wait for the given `child` the given number of `secs`.
 ///
 /// Returns the `Some(exit status)` or `None` if the process did not finish in the given time.

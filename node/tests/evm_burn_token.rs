@@ -10,10 +10,7 @@ use ethers::{
 	utils,
 };
 
-#[cfg(not(feature = "brooklyn"))]
-const CHAIN_ID: u64 = 8886u64;
-#[cfg(feature = "brooklyn")]
-const CHAIN_ID: u64 = 888866u64;
+use common::CHAIN_ID;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 

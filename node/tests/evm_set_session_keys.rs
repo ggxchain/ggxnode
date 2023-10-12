@@ -10,10 +10,7 @@ use std::sync::Arc;
 
 pub mod common;
 
-#[cfg(not(feature = "brooklyn"))]
-const CHAIN_ID: u64 = 8886u64;
-#[cfg(feature = "brooklyn")]
-const CHAIN_ID: u64 = 888866u64;
+use common::CHAIN_ID;
 
 #[cfg(not(feature = "brooklyn"))]
 const SESSION_KEYS: &str = "9e510c81b1367424fa3a23c9e4ec003c9f746aa92b98a7a1a1b4c9521ef4ad2bb47e390470f0cbbc498ee4d37cd2cb0df5734076385c02febee48a6499148e2ada8e520afc48d0de6e327dd88f1b6fac0015c783f28f44eab07a98a7a28ff516";
