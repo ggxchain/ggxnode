@@ -4,7 +4,7 @@ use crate::pos::currency as pallet_currency;
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use frame_support::{
 	pallet_prelude::Weight,
-	parameter_types,
+	parameter_types, sp_io,
 	traits::{GenesisBuild, OnFinalize, OnInitialize},
 	weights::constants::RocksDbWeight,
 	PalletId,
@@ -241,6 +241,7 @@ impl pallet_session_payout::Config for Test {
 	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
 	type CurrencyInfo = CurrencyManager;
+	type WeightInfo = crate::weights::session_payout::SubstrateWeight<Test>;
 }
 
 pub const BALANCE: u64 = 10_000_000_000_000;

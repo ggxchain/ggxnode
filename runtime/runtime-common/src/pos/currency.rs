@@ -735,18 +735,12 @@ mod tests {
 			pallet_prelude::Weight,
 			parameter_types,
 			traits::{EqualPrivilegeOnly, FindAuthor, OnFinalize, OnInitialize},
-			weights::constants::RocksDbWeight,
 			ConsensusEngineId, PalletId,
 		};
 		use frame_system::{EnsureRoot, EnsureWithSuccess};
 		use pallet_evm::{AddressMapping, FeeCalculator};
-		use sp_core::{ConstU32, ConstU64, H160, H256, U256};
-		use sp_runtime::{
-			impl_opaque_keys,
-			testing::{Header, UintAuthorityId},
-			traits::IdentityLookup,
-			Perbill, Permill,
-		};
+		use sp_core::{ConstU32, H160, U256};
+		use sp_runtime::{impl_opaque_keys, testing::UintAuthorityId, Perbill, Permill};
 		use sp_std::convert::{TryFrom, TryInto};
 		use std::str::FromStr;
 
@@ -831,30 +825,30 @@ mod tests {
 		}
 
 		impl frame_system::Config for Test {
-			type BaseCallFilter = frame_support::traits::Everything;
-			type BlockWeights = BlockWeights;
-			type BlockLength = ();
-			type DbWeight = RocksDbWeight;
-			type RuntimeOrigin = RuntimeOrigin;
-			type Index = u64;
-			type BlockNumber = u64;
-			type RuntimeCall = RuntimeCall;
-			type Hash = H256;
-			type Version = ();
-			type Hashing = sp_runtime::traits::BlakeTwo256;
-			type AccountId = u32;
-			type Lookup = IdentityLookup<Self::AccountId>;
-			type Header = Header;
-			type RuntimeEvent = RuntimeEvent;
-			type BlockHashCount = ConstU64<250>;
-			type PalletInfo = PalletInfo;
 			type AccountData = pallet_balances::AccountData<u32>;
-			type OnNewAccount = ();
-			type OnKilledAccount = ();
-			type SystemWeightInfo = ();
-			type SS58Prefix = ();
-			type OnSetCode = ();
+			type AccountId = u32;
+			type BaseCallFilter = frame_support::traits::Everything;
+			type BlockHashCount = ();
+			type BlockLength = ();
+			type BlockNumber = u64;
+			type BlockWeights = ();
+			type DbWeight = ();
+			type Hash = sp_core::H256;
+			type Hashing = sp_runtime::traits::BlakeTwo256;
+			type Header = sp_runtime::testing::Header;
+			type Index = u64;
+			type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 			type MaxConsumers = frame_support::traits::ConstU32<16>;
+			type OnKilledAccount = ();
+			type OnNewAccount = ();
+			type OnSetCode = ();
+			type PalletInfo = PalletInfo;
+			type RuntimeCall = RuntimeCall;
+			type RuntimeEvent = RuntimeEvent;
+			type RuntimeOrigin = RuntimeOrigin;
+			type SS58Prefix = ();
+			type SystemWeightInfo = ();
+			type Version = ();
 		}
 
 		parameter_types! {
@@ -894,6 +888,7 @@ mod tests {
 			type PrivilegedOrigin = EnsureRoot<u32>;
 			type FeeComissionRecipient = Treasury;
 			type DecayPeriod = DecayPeriod;
+			type WeightInfo = crate::weights::currency::SubstrateWeight<Test>;
 		}
 
 		pub struct FixedGasPrice;
