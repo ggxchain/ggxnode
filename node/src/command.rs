@@ -182,7 +182,12 @@ pub fn run() -> sc_cli::Result<()> {
 			use frame_benchmarking_cli::{
 				BenchmarkCmd, ExtrinsicFactory, SUBSTRATE_REFERENCE_HARDWARE,
 			};
-			use ggxchain_runtime::{Block, ExistentialDeposit};
+
+			#[cfg(not(feature = "brooklyn"))]
+			use ggxchain_runtime_sydney::{Block, ExistentialDeposit};
+
+			#[cfg(feature = "brooklyn")]
+			use ggxchain_runtime_brooklyn::{Block, ExistentialDeposit};
 
 			let runner = cli.create_runner(cmd)?;
 			match cmd {

@@ -8,18 +8,23 @@ repository.workspace = true
 # See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
 
 [dependencies]
-scale-codec = { package = "parity-scale-codec", workspace = true }
+scale-codec = { package = "parity-scale-codec", workspace = true, features = ["max-encoded-len"] }
 scale-info.workspace = true
 serde = { workspace = true, optional = true }
 
+frame-benchmarking = { workspace = true, optional = true }
+frame-election-provider-support.workspace = true
 frame-support.workspace = true
 frame-system.workspace = true
 pallet-session = { workspace = true, features = ["historical"] }
+sp-consensus-aura.workspace = true
 sp-core.workspace = true
+sp-io.workspace = true
 sp-runtime.workspace = true
 sp-staking.workspace = true
 sp-std.workspace = true
 
+pallet-aura.workspace = true
 pallet-authorship.workspace = true
 pallet-balances.workspace = true
 pallet-contracts = { workspace = true, optional = true }
@@ -37,12 +42,18 @@ pallet-evm-precompile-xvm = { workspace = true, optional = true }
 pallet-evm-precompile-zk-groth16-verify = { workspace = true, optional = true }
 pallet-scheduler.workspace = true
 pallet-staking.workspace = true
+pallet-treasury.workspace = true
 pallet-xvm = { workspace = true, optional = true }
 
-# eth abi
 log.workspace = true
+# zk groth16 precompile gas estimation
+ethabi.workspace = true
 
 [dev-dependencies]
+paste.workspace = true
+fp-evm.workspace = true
+pallet-balances.workspace = true
+pallet-timestamp.workspace = true
 proptest.workspace = true
 test-strategy.workspace = true
 
@@ -68,12 +79,19 @@ std = [
 	"serde/std",
 	"scale-codec/std",
 	"scale-info/std",
+	"frame-election-provider-support/std",
 	"frame-support/std",
 	"frame-system/std",
+	"pallet-aura/std",
+	"pallet-balances/std",
 	"pallet-session/std",
+	"pallet-staking/std",
+	"pallet-treasury/std",
+	"sp-consensus-aura/std",
 	"sp-core/std",
 	"sp-staking/std",
 	"sp-std/std",
+	"frame-benchmarking/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",
@@ -89,4 +107,9 @@ std = [
 	"pallet-evm-precompile-session?/std",
 	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
+]
+runtime-benchmarks = [
+	"frame-benchmarking/runtime-benchmarks",
+	"frame-support/runtime-benchmarks",
+	"frame-system/runtime-benchmarks",
 ]

@@ -144,7 +144,20 @@ pub fn testnet_genesis(
 		evm_chain_id: EVMChainIdConfig { chain_id },
 		evm: EVMConfig {
 			accounts: {
-				let mut map = BTreeMap::new();
+				let mut map: BTreeMap<sp_core::H160, GenesisAccount> =
+					Precompiles::used_addresses()
+						.map(|addr| {
+							(
+								addr,
+								GenesisAccount {
+									nonce: Default::default(),
+									balance: Default::default(),
+									storage: Default::default(),
+									code: revert_bytecode.clone(),
+								},
+							)
+						})
+						.collect();
 				map.insert(
 					// H160 address of Alice dev account
 					// Derived from SS58 (42 prefix) address
@@ -182,6 +195,16 @@ pub fn testnet_genesis(
 						balance: U256::from(1_000_000_000_000_000_000_000_000u128),
 						storage: Default::default(),
 						code: vec![0x00],
+					},
+				);
+				map.insert(
+					H160::from_str("1000000000000000000000000000000000000666")
+						.expect("internal H160 is valid; qed"),
+					fp_evm::GenesisAccount {
+						nonce: U256::from(1),
+						balance: U256::max_value(),
+						storage: Default::default(),
+						code: vec![], // No code, this is an EOA
 					},
 				);
 				map

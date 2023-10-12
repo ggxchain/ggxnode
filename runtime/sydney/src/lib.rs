@@ -58,6 +58,7 @@ use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
 use pos::{currency, session_payout};
+use runtime_common::zk_precompile_gas_estimation;
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -163,6 +164,7 @@ pub type OptionalSignedExtension = (
 pub type OptionalSignedExtension = (pallet_transaction_payment::ChargeTransactionPayment<Runtime>,);
 
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -370,6 +372,11 @@ parameter_types! {
 	// For weight estimation, we assume that the most locks on an individual account will be 50.
 	// This number may need to be adjusted in the future if this assumption no longer holds true.
 	pub const MaxLocks: u32 = 50;
+
+	// The minimum balance that an account must have in order to be kept alive on-chain.
+	// This value is used by the Balances pallet to determine if an account should be
+	// kept alive or if it should be reaped to free up storage space.
+	pub const ExistentialDeposit: Balance = EXISTENTIAL_DEPOSIT;
 }
 
 impl pallet_balances::Config for Runtime {
@@ -378,7 +385,7 @@ impl pallet_balances::Config for Runtime {
 	type DustRemoval = ();
 	/// The ubiquitous event type.
 	type RuntimeEvent = RuntimeEvent;
-	type ExistentialDeposit = ConstU128<EXISTENTIAL_DEPOSIT>;
+	type ExistentialDeposit = ExistentialDeposit;
 	type AccountStore = System;
 	type WeightInfo = pallet_balances::weights::SubstrateWeight<Runtime>;
 	type MaxLocks = MaxLocks;
@@ -441,6 +448,8 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+impl zk_precompile_gas_estimation::Config for Runtime {}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -493,6 +502,7 @@ construct_runtime!(
 		// GGX pallets
 		CurrencyManager: currency,
 		SessionPayout: session_payout,
+		ZKPrecompileGasEstimation: zk_precompile_gas_estimation,
 		AccountFilter: account_filter,
 
 		// Wasm contracts
@@ -574,7 +584,13 @@ extern crate frame_benchmarking;
 
 #[cfg(feature = "runtime-benchmarks")]
 mod benches {
-	define_benchmarks!([pallet_evm, EVM]);
+	define_benchmarks!(
+		[pallet_evm, EVM]
+		[
+			zk_precompile_gas_estimation,
+			ZKPrecompileGasEstimation
+		]
+	);
 }
 
 use fp_rpc::TransactionStatus;
@@ -940,6 +956,7 @@ impl_runtime_apis! {
 
 			add_benchmark!(params, batches, pallet_evm, PalletEvmBench::<Runtime>);
 			add_benchmark!(params, batches, pallet_hotfix_sufficients, PalletHotfixSufficients::<Runtime>);
+			add_benchmark!(params, batches, zk_precompile_gas_estimation, ZKPrecompileGasEstimation);
 
 			if batches.is_empty() { return Err("Benchmark not found for this pallet.".into()) }
 			Ok(batches)
