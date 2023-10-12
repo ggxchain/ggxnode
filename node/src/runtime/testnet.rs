@@ -56,6 +56,8 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 	nominate: bool,
+	bitcoin_confirmations: u32,
+	disable_difficulty_check: bool,
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;
@@ -209,6 +211,13 @@ pub fn testnet_genesis(
 		},
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
+		},
+		btc_relay: BTCRelayConfig {
+			bitcoin_confirmations,
+			parachain_confirmations: bitcoin_confirmations
+				.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
+			disable_difficulty_check,
+			disable_inclusion_check: false,
 		},
 	}
 }

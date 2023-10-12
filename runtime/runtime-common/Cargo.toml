@@ -42,6 +42,19 @@ pallet-xvm = { workspace = true, optional = true }
 # eth abi
 log.workspace = true
 
+# BTC bridge
+btc-relay.workspace = true
+#clients-info.workspace = true
+fee.workspace = true
+issue.workspace = true
+nomination.workspace = true
+oracle.workspace = true
+primitives.workspace = true
+redeem.workspace = true
+replace.workspace = true
+security.workspace = true
+vault-registry.workspace = true
+
 [dev-dependencies]
 proptest.workspace = true
 test-strategy.workspace = true
@@ -89,4 +102,17 @@ std = [
 	"pallet-evm-precompile-session?/std",
 	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
+
+	# BTC bridge
+	"btc-relay/std",
+	#"clients-info/std",
+	"fee/std",
+	"issue/std",
+	"nomination/std",
+	"oracle/std",
+	"primitives/std",
+	"redeem/std",
+	"replace/std",
+	"security/std",
+	"vault-registry/std",
 ]

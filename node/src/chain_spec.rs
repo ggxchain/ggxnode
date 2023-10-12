@@ -62,6 +62,8 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				vec![ValidatorIdentity::from_seed("Alice")],
 				8886,
 				true,
+				0,
+				false,
 			)
 		},
 		// Bootnodes
@@ -111,6 +113,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				],
 				8886,
 				true,
+				0,
+				false,
 			)
 		},
 		// Bootnodes

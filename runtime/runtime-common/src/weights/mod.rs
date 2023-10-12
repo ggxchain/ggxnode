@@ -1,3 +1,11 @@
+pub mod btc_relay;
 pub mod currency;
+pub mod fee;
+pub mod nomination;
+pub mod oracle;
+pub mod redeem;
+pub mod replace;
+pub mod security;
 pub mod session_payout;
 pub mod validator_manager;
+pub mod vault_registry;

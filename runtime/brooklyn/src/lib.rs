@@ -14,6 +14,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
+pub mod btcbridge;
 mod chain_extensions;
 pub mod ethereum;
 pub mod governance;
@@ -120,6 +121,12 @@ pub type Hash = sp_core::H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
+
+/// Target Spacing: 10 minutes (600 seconds)
+// https://github.com/bitcoin/bitcoin/blob/5ba5becbb5d8c794efe579caeea7eea64f895a13/src/chainparams.cpp#L78
+pub const TARGET_SPACING: u32 = 10 * 60;
+
+pub const BITCOIN_SPACING_MS: u32 = TARGET_SPACING * 1000;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -625,15 +632,17 @@ construct_runtime!(
 
 		//BTC bridge
 		BTCRelay: btc_relay,
+		Security: security,
 		Fee: fee,
 		Issue: issue,
 		Oracle: oracle,
 		Redeem: redeem,
 		Replace: replace,
 		VaultRegistry: vault_registry,
-		// Refund:
+
+		// BTC Refund:
 		Nomination: nomination,
-		ClientsInfo: clients_info
+		//ClientsInfo: clients_info
 	}
 );
 
