@@ -80,6 +80,9 @@ fp-storage = { workspace = true, features = ["std"] }
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
 
+# BTC bridge
+primitives = { package = "interbtc-primitives", git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+
 [dev-dependencies]
 assert_cmd = { workspace = true }
 ethers = { workspace = true }

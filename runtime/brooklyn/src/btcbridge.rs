@@ -3,7 +3,10 @@ use frame_support::{traits::Contains, PalletId};
 use orml_traits::parameter_type_with_key;
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
-use sp_runtime::traits::{AccountIdConversion, Convert, Zero};
+use sp_runtime::{
+	traits::{AccountIdConversion, Zero},
+	FixedPointNumber,
+};
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![] // todo for product env
@@ -82,22 +85,53 @@ impl interbtc_currency::Config for Runtime {
 	type CurrencyConversion = CurrencyConvert;
 }
 
-// parameter_types! {
-//   pub const MaxExpectedValue: UnsignedFixedPoint = UnsignedFixedPoint::from_inner(<UnsignedFixedPoint as FixedPointNumber>::DIV);
-// }
+pub type VaultRewardsInstance = reward::Instance2;
+type VaultId = primitives::VaultId<AccountId, CurrencyId>;
 
-// impl fee::Config for Runtime {
-// 	type FeePalletId = FeePalletId;
-// 	type WeightInfo = runtime_common::weights::fee::WeightInfo<Runtime>;
-// 	type SignedFixedPoint = SignedFixedPoint;
-// 	type SignedInner = SignedInner;
-// 	type CapacityRewards = VaultCapacity;
-// 	type VaultRewards = VaultRewards;
-// 	type VaultStaking = VaultStaking;
-// 	type OnSweep = currency::SweepFunds<Runtime, FeeAccount>;
-// 	type MaxExpectedValue = MaxExpectedValue;
-// 	type NominationApi = Nomination;
-// }
+impl reward::Config<VaultRewardsInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type SignedFixedPoint = SignedFixedPoint;
+	type PoolId = CurrencyId;
+	type StakeId = VaultId;
+	type CurrencyId = CurrencyId;
+	type MaxRewardCurrencies = ConstU32<2>;
+}
+
+pub type VaultCapacityInstance = reward::Instance3;
+
+impl reward::Config<VaultCapacityInstance> for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type SignedFixedPoint = SignedFixedPoint;
+	type PoolId = ();
+	type StakeId = CurrencyId;
+	type CurrencyId = CurrencyId;
+	type MaxRewardCurrencies = ConstU32<2>;
+}
+
+impl staking::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type SignedFixedPoint = SignedFixedPoint;
+	type SignedInner = SignedInner;
+	type CurrencyId = CurrencyId;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
+}
+
+parameter_types! {
+  pub const MaxExpectedValue: UnsignedFixedPoint = UnsignedFixedPoint::from_inner(<UnsignedFixedPoint as FixedPointNumber>::DIV);
+}
+
+impl fee::Config for Runtime {
+	type FeePalletId = FeePalletId;
+	type WeightInfo = runtime_common::weights::fee::WeightInfo<Runtime>;
+	type SignedFixedPoint = SignedFixedPoint;
+	type SignedInner = SignedInner;
+	type CapacityRewards = VaultCapacity;
+	type VaultRewards = VaultRewards;
+	type VaultStaking = VaultStaking;
+	type OnSweep = interbtc_currency::SweepFunds<Runtime, FeeAccount>;
+	type MaxExpectedValue = MaxExpectedValue;
+	type NominationApi = Nomination;
+}
 
 // pub struct BlockNumberToBalance;
 
@@ -115,11 +149,13 @@ parameter_types! {
 
 // Pallet accounts
 parameter_types! {
+  pub const FeePalletId: PalletId = PalletId(*b"mod/fees");
   pub const TreasuryPalletId: PalletId = PalletId(*b"mod/trsy");
   pub const VaultRegistryPalletId: PalletId = PalletId(*b"mod/vreg");
 }
 
 parameter_types! {
+  pub FeeAccount: AccountId = FeePalletId::get().into_account_truncating();
   pub VaultRegistryAccount: AccountId = VaultRegistryPalletId::get().into_account_truncating();
 }
 
@@ -147,14 +183,14 @@ impl oracle::Config for Runtime {
 // 	type WeightInfo = runtime_common::weights::replace::WeightInfo<Runtime>;
 // }
 
-// impl vault_registry::Config for Runtime {
-// 	type PalletId = VaultRegistryPalletId;
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type WeightInfo = runtime_common::weights::vault_registry::WeightInfo<Runtime>;
-// 	type GetGriefingCollateralCurrencyId = GetNativeCurrencyId;
-// }
+impl vault_registry::Config for Runtime {
+	type PalletId = VaultRegistryPalletId;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = runtime_common::weights::vault_registry::WeightInfo<Runtime>;
+	type GetGriefingCollateralCurrencyId = GetNativeCurrencyId;
+}
 
-// impl nomination::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type WeightInfo = runtime_common::weights::nomination::WeightInfo<Runtime>;
-// }
+impl nomination::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = runtime_common::weights::nomination::WeightInfo<Runtime>;
+}

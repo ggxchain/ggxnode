@@ -195,6 +195,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "annuity"
+version = "1.0.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "interbtc-primitives",
+ "parity-scale-codec 3.6.5",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "ansi_term"
 version = "0.12.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2613,6 +2632,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "escrow"
+version = "1.0.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "interbtc-primitives",
+ "parity-scale-codec 3.6.5",
+ "reward",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "eth-keystore"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4085,6 +4124,7 @@ dependencies = [
  "ggxchain-runtime-brooklyn",
  "ggxchain-runtime-sydney",
  "hex",
+ "interbtc-primitives",
  "jsonrpsee",
  "log",
  "mmr-gadget",
@@ -4144,9 +4184,11 @@ dependencies = [
 name = "ggxchain-runtime-brooklyn"
 version = "0.1.2"
 dependencies = [
+ "annuity",
  "astar-primitives",
  "btc-relay",
  "currency",
+ "escrow",
  "fee",
  "fp-evm",
  "fp-rpc",
@@ -4218,6 +4260,7 @@ dependencies = [
  "prost",
  "redeem",
  "replace",
+ "reward",
  "runtime-common",
  "scale-info",
  "security",
@@ -4238,6 +4281,7 @@ dependencies = [
  "sp-std 5.0.0",
  "sp-transaction-pool",
  "sp-version",
+ "staking",
  "substrate-account-filter",
  "substrate-wasm-builder",
  "vault-registry",

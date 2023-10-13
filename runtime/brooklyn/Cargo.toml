@@ -115,7 +115,9 @@ orml-tokens.workspace = true
 orml-traits.workspace = true
 
 # BTC bridge
+annuity.workspace = true
 btc-relay.workspace = true
+escrow.workspace = true
 interbtc-currency.workspace = true
 #clients-info.workspace = true
 fee.workspace = true
@@ -125,7 +127,9 @@ oracle.workspace = true
 primitives.workspace = true
 redeem.workspace = true
 replace.workspace = true
+reward.workspace = true
 security.workspace = true
+staking.workspace = true
 vault-registry.workspace = true
 
 [build-dependencies]
@@ -231,7 +235,9 @@ std = [
 	"orml-tokens/std",
 	"orml-traits/std",
 	# BTC bridge
+	"annuity/std",
 	"btc-relay/std",
+	"escrow/std",
 	"interbtc-currency/std",
 	#"clients-info/std",
 	"fee/std",
@@ -241,7 +247,9 @@ std = [
 	"primitives/std",
 	"redeem/std",
 	"replace/std",
+	"reward/std",
 	"security/std",
+	"staking/std",
 	"vault-registry/std",
 ]
 aura = []

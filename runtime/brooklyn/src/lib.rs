@@ -637,15 +637,24 @@ construct_runtime!(
 		BTCRelay: btc_relay,
 		InterbtcCurrency: interbtc_currency,
 		Security: security,
-		// Fee: fee,
+		Fee: fee,
 		// Issue: issue,
 		Oracle: oracle,
 		// Redeem: redeem,
 		// Replace: replace,
-		// VaultRegistry: vault_registry,
+		VaultRegistry: vault_registry,
+
+		// Escrow: escrow,
+		// EscrowAnnuity: annuity::<Instance1>,
+		// EscrowRewards: reward::<Instance1>,
+
+		// VaultAnnuity: annuity::<Instance2>,
+		VaultRewards: reward::<Instance2>,
+		VaultStaking: staking,
+		VaultCapacity: reward::<Instance3>,
 
 		// BTC Refund:
-		//Nomination: nomination,
+		Nomination: nomination,
 		//ClientsInfo: clients_info
 	}
 );

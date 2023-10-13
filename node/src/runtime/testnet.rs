@@ -2,10 +2,12 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
+use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
+use primitives::{CurrencyId, VaultCurrencyPair, DOT};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
-use sp_runtime::traits::IdentifyAccount;
+use sp_runtime::{traits::IdentifyAccount, FixedPointNumber, FixedU128};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -46,6 +48,13 @@ impl ValidatorIdentity {
 				beefy: ecdsa.into(),
 			},
 		}
+	}
+}
+
+fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyId> {
+	VaultCurrencyPair {
+		collateral: currency_id,
+		wrapped: ggxchain_runtime_brooklyn::btcbridge::GetWrappedCurrencyId::get(),
 	}
 }
 
@@ -217,13 +226,47 @@ pub fn testnet_genesis(
 		oracle: OracleConfig {
 			authorized_oracles: vec![], //todo
 			max_delay: DEFAULT_MAX_DELAY_MS,
-	},
+		},
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
 			parachain_confirmations: bitcoin_confirmations
 				.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
 			disable_difficulty_check,
 			disable_inclusion_check: false,
+		},
+		vault_registry: VaultRegistryConfig {
+			minimum_collateral_vault: vec![(Token(DOT), 30 * DOT.one())],
+			punishment_delay: ggxchain_runtime_brooklyn::Days::get(),
+			system_collateral_ceiling: vec![(
+				default_pair_interlay(Token(DOT)),
+				2_450_000 * DOT.one(),
+			)],
+			secure_collateral_threshold: vec![(
+				default_pair_interlay(Token(DOT)),
+				/* 260% */
+				FixedU128::checked_from_rational(260, 100).unwrap(),
+			)],
+			premium_redeem_threshold: vec![(
+				default_pair_interlay(Token(DOT)),
+				/* 200% */
+				FixedU128::checked_from_rational(200, 100).unwrap(),
+			)],
+			liquidation_collateral_threshold: vec![(
+				default_pair_interlay(Token(DOT)),
+				/* 150% */
+				FixedU128::checked_from_rational(150, 100).unwrap(),
+			)],
+		},
+		fee: FeeConfig {
+			issue_fee: FixedU128::checked_from_rational(15, 10000).unwrap(), // 0.15%
+			issue_griefing_collateral: FixedU128::checked_from_rational(5, 1000).unwrap(), // 0.5%
+			redeem_fee: FixedU128::checked_from_rational(5, 1000).unwrap(),  // 0.5%
+			premium_redeem_fee: FixedU128::checked_from_rational(5, 100).unwrap(), // 5%
+			punishment_fee: FixedU128::checked_from_rational(1, 10).unwrap(), // 10%
+			replace_griefing_collateral: FixedU128::checked_from_rational(1, 10).unwrap(), // 10%
+		},
+		nomination: NominationConfig {
+			is_nomination_enabled: false,
 		},
 	}
 }

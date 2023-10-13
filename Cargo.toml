@@ -234,7 +234,9 @@ orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-li
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 
 # BTC bridge
+annuity = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 btc-relay = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+escrow = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 interbtc-currency = { package = "currency", git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 #clients-info = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 fee = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
@@ -244,5 +246,7 @@ oracle = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-
 primitives = { package = "interbtc-primitives", git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 redeem = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 replace = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+reward = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 security = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
+staking = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 vault-registry = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
