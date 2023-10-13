@@ -635,11 +635,11 @@ construct_runtime!(
 
 		// BTC bridge
 		BTCRelay: btc_relay,
-		//InterbtcCurrency: interbtc_currency,
+		InterbtcCurrency: interbtc_currency,
 		Security: security,
 		// Fee: fee,
 		// Issue: issue,
-		// Oracle: oracle,
+		Oracle: oracle,
 		// Redeem: redeem,
 		// Replace: replace,
 		// VaultRegistry: vault_registry,

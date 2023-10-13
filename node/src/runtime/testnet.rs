@@ -61,6 +61,7 @@ pub fn testnet_genesis(
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;
+	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
 
 	// This is supposed the be the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
@@ -213,6 +214,10 @@ pub fn testnet_genesis(
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
 		tokens: TokensConfig { balances: vec![] },
+		oracle: OracleConfig {
+			authorized_oracles: vec![], //todo
+			max_delay: DEFAULT_MAX_DELAY_MS,
+	},
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
 			parachain_confirmations: bitcoin_confirmations

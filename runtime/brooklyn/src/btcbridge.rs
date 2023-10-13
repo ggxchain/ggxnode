@@ -1,12 +1,9 @@
 use super::*;
-use frame_support::traits::Contains;
-use frame_support::PalletId;
+use frame_support::{traits::Contains, PalletId};
 use orml_traits::parameter_type_with_key;
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
-use sp_runtime::traits::AccountIdConversion;
-use sp_runtime::traits::Convert;
-use sp_runtime::traits::Zero;
+use sp_runtime::traits::{AccountIdConversion, Convert, Zero};
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
 	vec![] // todo for product env
@@ -133,12 +130,12 @@ parameter_types! {
 // 	type WeightInfo = runtime_common::weights::issue::WeightInfo<Runtime>;
 // }
 
-// impl oracle::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type OnExchangeRateChange = ();
-// 	type WeightInfo = runtime_common::weights::oracle::WeightInfo<Runtime>;
-// 	type MaxNameLength = ConstU32<255>;
-// }
+impl oracle::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type OnExchangeRateChange = ();
+	type WeightInfo = runtime_common::weights::oracle::WeightInfo<Runtime>;
+	type MaxNameLength = ConstU32<255>;
+}
 
 // impl redeem::Config for Runtime {
 // 	type RuntimeEvent = RuntimeEvent;
