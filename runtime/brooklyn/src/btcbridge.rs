@@ -14,7 +14,7 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 
 pub struct DustRemovalWhitelist;
 impl Contains<AccountId> for DustRemovalWhitelist {
-	fn contains(a: &AccountId) -> bool {
+	fn contains(_a: &AccountId) -> bool {
 		//get_all_module_accounts().contains(a)
 		true
 	}

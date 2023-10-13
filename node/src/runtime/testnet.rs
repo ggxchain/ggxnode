@@ -212,6 +212,7 @@ pub fn testnet_genesis(
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
+		tokens: TokensConfig { balances: vec![] },
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
 			parachain_confirmations: bitcoin_confirmations
