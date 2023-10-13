@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+#![recursion_limit = "2048"]
 #![allow(clippy::new_without_default, clippy::or_fun_call)]
 
 // Make the WASM binary available.
@@ -630,18 +630,22 @@ construct_runtime!(
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
 
-		//BTC bridge
+		// Orml
+		Tokens: orml_tokens,
+
+		// BTC bridge
 		BTCRelay: btc_relay,
+		//InterbtcCurrency: interbtc_currency,
 		Security: security,
-		Fee: fee,
-		Issue: issue,
-		Oracle: oracle,
-		Redeem: redeem,
-		Replace: replace,
-		VaultRegistry: vault_registry,
+		// Fee: fee,
+		// Issue: issue,
+		// Oracle: oracle,
+		// Redeem: redeem,
+		// Replace: replace,
+		// VaultRegistry: vault_registry,
 
 		// BTC Refund:
-		Nomination: nomination,
+		//Nomination: nomination,
 		//ClientsInfo: clients_info
 	}
 );

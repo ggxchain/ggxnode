@@ -3,6 +3,7 @@ pub mod currency;
 pub mod fee;
 pub mod nomination;
 pub mod oracle;
+pub mod orml_tokens;
 pub mod redeem;
 pub mod replace;
 pub mod security;

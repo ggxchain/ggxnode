@@ -4316,6 +4316,7 @@ version = "0.1.2"
 dependencies = [
  "astar-primitives",
  "btc-relay",
+ "currency",
  "fee",
  "fp-evm",
  "fp-rpc",
@@ -4329,10 +4330,13 @@ dependencies = [
  "frame-system-rpc-runtime-api",
  "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
+ "interbtc-primitives",
  "issue",
  "log 0.4.20",
  "nomination",
  "oracle",
+ "orml-tokens",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-assets",
  "pallet-aura",
  "pallet-authorship",
@@ -10249,6 +10253,8 @@ dependencies = [
  "log 0.4.20",
  "nomination",
  "oracle",
+ "orml-tokens",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-authorship",
  "pallet-balances",
  "pallet-contracts",
@@ -14548,7 +14554,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "matchers",
- "parking_lot 0.11.2",
+ "parking_lot 0.7.1",
  "regex",
  "serde",
  "serde_json",
@@ -14723,9 +14729,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 1.0.0",
+ "cfg-if 0.1.10",
  "digest 0.10.7",
- "rand 0.8.5",
+ "rand 0.4.6",
  "static_assertions",
 ]
 

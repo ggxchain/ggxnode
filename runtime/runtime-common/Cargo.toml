@@ -42,6 +42,10 @@ pallet-xvm = { workspace = true, optional = true }
 # eth abi
 log.workspace = true
 
+# Orml
+orml-tokens.workspace = true
+orml-traits.workspace = true
+
 # BTC bridge
 btc-relay.workspace = true
 #clients-info.workspace = true
@@ -103,6 +107,9 @@ std = [
 	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
 
+	# Orml
+	"orml-tokens/std",
+	"orml-traits/std",
 	# BTC bridge
 	"btc-relay/std",
 	#"clients-info/std",
