@@ -257,14 +257,17 @@
 
               nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
                 cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
+                doCheck = true;
               });
 
               nextest-sydney = craneLib.cargoNextest (common-native-sydney-attrs // {
                 cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
+                doCheck = true;
               });
 
               nextest-wasm = craneLib.cargoNextest (common-wasm-deps-attrs // {
                 cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
+                doCheck = true;
               });
 
               doclint = pkgs.writeShellApplication rec {
