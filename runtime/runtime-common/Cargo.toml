@@ -60,7 +60,16 @@ security.workspace = true
 vault-registry.workspace = true
 
 [dev-dependencies]
+frame-election-provider-support.workspace = true
+pallet-aura.workspace = true
+pallet-scheduler.workspace = true
+pallet-staking.workspace = true
+pallet-timestamp.workspace = true
+pallet-treasury.workspace = true
+paste.workspace = true
 proptest.workspace = true
+sp-consensus-aura.workspace = true
+sp-io.workspace = true
 test-strategy.workspace = true
 
 [features]
