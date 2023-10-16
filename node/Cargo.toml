@@ -94,6 +94,7 @@ eth-registry-types = { workspace = true }
 eth-types.workspace = true
 ethers = { workspace = true }
 hex = { workspace = true }
+hex-literal = { workspace = true }
 merkle-generator = { package = "types", workspace = true }
 nix = { workspace = true }
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }

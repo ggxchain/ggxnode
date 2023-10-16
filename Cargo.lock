@@ -4645,6 +4645,7 @@ dependencies = [
  "ggxchain-runtime-brooklyn",
  "ggxchain-runtime-sydney",
  "hex",
+ "hex-literal 0.3.4",
  "jsonrpsee",
  "log 0.4.20",
  "merkle-generator",
