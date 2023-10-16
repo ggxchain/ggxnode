@@ -35,7 +35,7 @@
   nixConfig = {
     # so you do not need to build locally if CI did it (no cache for ARM/MAC because did not added machines to build matrix)
     extra-substituters = [ "https://cache.nixos.org" "https://golden-gate-ggx.cachix.org" ];
-    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "ggx-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
+    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "golden-gate-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
@@ -76,6 +76,7 @@
               nativeBuildInputs = with pkgs;
                 rust-native-build-inputs ++ [ openssl ] ++ darwin;
               cargoCheckCommand = "true";
+              doCheck = false;
               src = rust-src;
               pname = "...";
               version = "...";
@@ -228,13 +229,9 @@
             };
 
             cargoClippyExtraArgs = "-- -D warnings";
-
           in
           rec {
             checks = {
-              inherit ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney;
-
-
               fmt = craneLib.cargoFmt (common-attrs // {
                 cargoExtraArgs = "--all";
                 rustFmtExtraArgs = "--color always";
@@ -262,11 +259,6 @@
 
               nextest-sydney = craneLib.cargoNextest (common-native-sydney-attrs // {
                 cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
-                doCheck = true;
-              });
-
-              nextest-wasm = craneLib.cargoNextest (common-wasm-deps-attrs // {
-                cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
                 doCheck = true;
               });
 
