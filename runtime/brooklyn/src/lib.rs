@@ -638,10 +638,10 @@ construct_runtime!(
 		InterbtcCurrency: interbtc_currency,
 		Security: security,
 		Fee: fee,
-		// Issue: issue,
+		Issue: issue,
 		Oracle: oracle,
-		// Redeem: redeem,
-		// Replace: replace,
+		Redeem: redeem,
+		Replace: replace,
 		VaultRegistry: vault_registry,
 
 		// Escrow: escrow,

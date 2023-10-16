@@ -4,7 +4,7 @@ use orml_traits::parameter_type_with_key;
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
 use sp_runtime::{
-	traits::{AccountIdConversion, Zero},
+	traits::{AccountIdConversion, Convert, Zero},
 	FixedPointNumber,
 };
 
@@ -15,7 +15,7 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 pub struct DustRemovalWhitelist;
 impl Contains<AccountId> for DustRemovalWhitelist {
 	fn contains(_a: &AccountId) -> bool {
-		//get_all_module_accounts().contains(a)
+		//get_all_module_accounts().contains(a) // todo for product env
 		true
 	}
 }
@@ -133,13 +133,13 @@ impl fee::Config for Runtime {
 	type NominationApi = Nomination;
 }
 
-// pub struct BlockNumberToBalance;
+pub struct BlockNumberToBalance;
 
-// impl Convert<BlockNumber, Balance> for BlockNumberToBalance {
-// 	fn convert(a: BlockNumber) -> Balance {
-// 		a.into()
-// 	}
-// }
+impl Convert<BlockNumber, Balance> for BlockNumberToBalance {
+	fn convert(a: BlockNumber) -> Balance {
+		a.into()
+	}
+}
 
 parameter_types! {
   pub const GetNativeCurrencyId: CurrencyId = runtime_common::constants::currency::NATIVE_CURRENCY_ID;
@@ -159,12 +159,12 @@ parameter_types! {
   pub VaultRegistryAccount: AccountId = VaultRegistryPalletId::get().into_account_truncating();
 }
 
-// impl issue::Config for Runtime {
-// 	type TreasuryPalletId = TreasuryPalletId;
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type BlockNumberToBalance = BlockNumberToBalance;
-// 	type WeightInfo = runtime_common::weights::issue::WeightInfo<Runtime>;
-// }
+impl issue::Config for Runtime {
+	type TreasuryPalletId = TreasuryPalletId;
+	type RuntimeEvent = RuntimeEvent;
+	type BlockNumberToBalance = BlockNumberToBalance;
+	type WeightInfo = runtime_common::weights::issue::WeightInfo<Runtime>;
+}
 
 impl oracle::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -173,15 +173,15 @@ impl oracle::Config for Runtime {
 	type MaxNameLength = ConstU32<255>;
 }
 
-// impl redeem::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type WeightInfo = runtime_common::weights::redeem::WeightInfo<Runtime>;
-// }
+impl redeem::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = runtime_common::weights::redeem::WeightInfo<Runtime>;
+}
 
-// impl replace::Config for Runtime {
-// 	type RuntimeEvent = RuntimeEvent;
-// 	type WeightInfo = runtime_common::weights::replace::WeightInfo<Runtime>;
-// }
+impl replace::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = runtime_common::weights::replace::WeightInfo<Runtime>;
+}
 
 impl vault_registry::Config for Runtime {
 	type PalletId = VaultRegistryPalletId;

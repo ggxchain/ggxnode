@@ -4104,6 +4104,7 @@ version = "0.1.2"
 dependencies = [
  "assert_cmd",
  "async-trait",
+ "bitcoin 1.2.0",
  "clap",
  "ethers",
  "fc-cli",

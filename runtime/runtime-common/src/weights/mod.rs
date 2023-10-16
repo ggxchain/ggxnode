@@ -1,6 +1,7 @@
 pub mod btc_relay;
 pub mod currency;
 pub mod fee;
+pub mod issue;
 pub mod nomination;
 pub mod oracle;
 pub mod orml_tokens;

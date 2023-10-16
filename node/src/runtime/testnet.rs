@@ -1,3 +1,6 @@
+use bitcoin::utils::{
+	virtual_transaction_size, InputType, TransactionInputMetadata, TransactionOutputMetadata,
+};
 use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
@@ -58,6 +61,20 @@ fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyI
 	}
 }
 
+fn expected_transaction_size() -> u32 {
+	virtual_transaction_size(
+		TransactionInputMetadata {
+			count: 4,
+			script_type: InputType::P2WPKHv0,
+		},
+		TransactionOutputMetadata {
+			num_op_return: 1,
+			num_p2pkh: 2,
+			num_p2sh: 0,
+			num_p2wpkh: 0,
+		},
+	)
+}
 pub fn testnet_genesis(
 	wasm_binary: &[u8],
 	sudo_key: AccountId,
@@ -71,6 +88,7 @@ pub fn testnet_genesis(
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;
 	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
+	const DEFAULT_DUST_VALUE: Balance = 1000;
 
 	// This is supposed the be the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
@@ -233,6 +251,19 @@ pub fn testnet_genesis(
 				.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
 			disable_difficulty_check,
 			disable_inclusion_check: false,
+		},
+		issue: IssueConfig {
+			issue_period: ggxchain_runtime_brooklyn::Days::get(),
+			issue_btc_dust_value: DEFAULT_DUST_VALUE,
+		},
+		redeem: RedeemConfig {
+			redeem_transaction_size: expected_transaction_size(),
+			redeem_period: ggxchain_runtime_brooklyn::Days::get() * 2,
+			redeem_btc_dust_value: DEFAULT_DUST_VALUE,
+		},
+		replace: ReplaceConfig {
+			replace_period: ggxchain_runtime_brooklyn::Days::get() * 2,
+			replace_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		vault_registry: VaultRegistryConfig {
 			minimum_collateral_vault: vec![(Token(DOT), 30 * DOT.one())],
