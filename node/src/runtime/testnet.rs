@@ -90,6 +90,11 @@ pub fn testnet_genesis(
 	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
 	const DEFAULT_DUST_VALUE: Balance = 1000;
 
+	let block_time_in_millis = 2000;
+	let minutes = (60_000 / block_time_in_millis) as u32;
+	let hours = minutes * 60;
+	let days = hours * 24;
+
 	// This is supposed the be the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
 	// within contracts.
@@ -247,27 +252,26 @@ pub fn testnet_genesis(
 		},
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
-			parachain_confirmations: bitcoin_confirmations
-				.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
+			parachain_confirmations: 1,//todo(smith) use bitcoin_confirmations.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
 			disable_difficulty_check,
 			disable_inclusion_check: false,
 		},
 		issue: IssueConfig {
-			issue_period: ggxchain_runtime_brooklyn::Days::get(),
+			issue_period: days,
 			issue_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		redeem: RedeemConfig {
 			redeem_transaction_size: expected_transaction_size(),
-			redeem_period: ggxchain_runtime_brooklyn::Days::get() * 2,
+			redeem_period: days * 2,
 			redeem_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		replace: ReplaceConfig {
-			replace_period: ggxchain_runtime_brooklyn::Days::get() * 2,
+			replace_period: days * 2,
 			replace_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		vault_registry: VaultRegistryConfig {
 			minimum_collateral_vault: vec![(Token(DOT), 30 * DOT.one())],
-			punishment_delay: ggxchain_runtime_brooklyn::Days::get(),
+			punishment_delay: days,
 			system_collateral_ceiling: vec![(
 				default_pair_interlay(Token(DOT)),
 				2_450_000 * DOT.one(),
