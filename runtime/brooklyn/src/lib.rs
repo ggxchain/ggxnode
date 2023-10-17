@@ -542,6 +542,13 @@ impl pallet_im_online::Config for Runtime {
 	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeCall = RuntimeCall;
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+	type PalletsOrigin = OriginCaller;
+}
+
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -595,6 +602,7 @@ construct_runtime!(
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
+		Utility: pallet_utility,
 
 		// Goverment pallets
 		Treasury: pallet_treasury,
@@ -631,11 +639,12 @@ construct_runtime!(
 		MmrLeaf: pallet_beefy_mmr,
 
 		// Orml
+		Currency: interbtc_currency,
 		Tokens: orml_tokens,
+		AssetRegistry: orml_asset_registry,
 
 		// BTC bridge
 		BTCRelay: btc_relay,
-		InterbtcCurrency: interbtc_currency,
 		Security: security,
 		Fee: fee,
 		Issue: issue,
@@ -655,7 +664,7 @@ construct_runtime!(
 
 		// BTC Refund:
 		Nomination: nomination,
-		//ClientsInfo: clients_info
+		ClientsInfo: clients_info
 	}
 );
 

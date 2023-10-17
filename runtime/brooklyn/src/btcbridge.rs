@@ -1,5 +1,9 @@
 use super::*;
-use frame_support::{traits::Contains, PalletId};
+use frame_support::{
+	traits::{Contains, EnsureOrigin, EnsureOriginWithArg},
+	PalletId,
+};
+use orml_asset_registry::SequentialId;
 use orml_traits::parameter_type_with_key;
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
@@ -44,6 +48,33 @@ impl orml_tokens::Config for Runtime {
 	type DustRemovalWhitelist = DustRemovalWhitelist;
 	type MaxReserves = ConstU32<0>; // we don't use named reserves
 	type ReserveIdentifier = (); // we don't use named reserves
+}
+
+pub struct AssetAuthority;
+impl EnsureOriginWithArg<RuntimeOrigin, Option<u32>> for AssetAuthority {
+	type Success = ();
+
+	fn try_origin(
+		origin: RuntimeOrigin,
+		_asset_id: &Option<u32>,
+	) -> Result<Self::Success, RuntimeOrigin> {
+		EnsureRoot::try_origin(origin)
+	}
+
+	#[cfg(feature = "runtime-benchmarks")]
+	fn try_successful_origin(_: &Option<u32>) -> Result<RuntimeOrigin, ()> {
+		EnsureRoot::try_successful_origin()
+	}
+}
+
+impl orml_asset_registry::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type CustomMetadata = primitives::CustomMetadata;
+	type AssetProcessor = SequentialId<Runtime>;
+	type AssetId = primitives::ForeignAssetId;
+	type AuthorityOrigin = AssetAuthority;
+	type WeightInfo = runtime_common::weights::orml_asset_registry::WeightInfo<Runtime>;
 }
 
 parameter_types! {
@@ -193,4 +224,11 @@ impl vault_registry::Config for Runtime {
 impl nomination::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type WeightInfo = runtime_common::weights::nomination::WeightInfo<Runtime>;
+}
+
+impl clients_info::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type WeightInfo = runtime_common::weights::clients_info::WeightInfo<Runtime>;
+	type MaxNameLength = ConstU32<255>;
+	type MaxUriLength = ConstU32<255>;
 }

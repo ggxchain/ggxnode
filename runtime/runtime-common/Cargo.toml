@@ -43,12 +43,13 @@ pallet-xvm = { workspace = true, optional = true }
 log.workspace = true
 
 # Orml
+orml-asset-registry.workspace = true
 orml-tokens.workspace = true
 orml-traits.workspace = true
 
 # BTC bridge
 btc-relay.workspace = true
-#clients-info.workspace = true
+clients-info.workspace = true
 fee.workspace = true
 issue.workspace = true
 nomination.workspace = true
@@ -117,11 +118,12 @@ std = [
 	"pallet-xvm?/std",
 
 	# Orml
+	"orml-asset-registry/std",
 	"orml-tokens/std",
 	"orml-traits/std",
 	# BTC bridge
 	"btc-relay/std",
-	#"clients-info/std",
+	"clients-info/std",
 	"fee/std",
 	"issue/std",
 	"nomination/std",

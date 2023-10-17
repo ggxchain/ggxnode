@@ -1455,6 +1455,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "cd7cc57abe963c6d3b9d8be5b06ba7c8957a930305ca90304f24ef040aa6f961"
 
 [[package]]
+name = "clients-info"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "fixed-hash 0.7.0",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec 3.6.5",
+ "scale-info",
+ "serde",
+ "sp-arithmetic",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "codespan-reporting"
 version = "0.11.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4188,6 +4208,7 @@ dependencies = [
  "annuity",
  "astar-primitives",
  "btc-relay",
+ "clients-info",
  "currency",
  "escrow",
  "fee",
@@ -4208,6 +4229,7 @@ dependencies = [
  "log",
  "nomination",
  "oracle",
+ "orml-asset-registry",
  "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-assets",
@@ -4253,6 +4275,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
+ "pallet-utility",
  "pallet-vesting",
  "pallet-whitelist",
  "pallet-xvm",
@@ -7055,6 +7078,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "orml-asset-registry"
+version = "0.4.1-dev"
+source = "git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a#28a2e6f0df9540d91db4018c7ecebb8bfc217a2a"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "pallet-xcm",
+ "parity-scale-codec 3.6.5",
+ "scale-info",
+ "serde",
+ "sp-runtime",
+ "sp-std 5.0.0",
+ "xcm",
+ "xcm-builder",
+ "xcm-executor",
+]
+
+[[package]]
 name = "orml-oracle"
 version = "0.4.1-dev"
 source = "git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a#28a2e6f0df9540d91db4018c7ecebb8bfc217a2a"
@@ -8238,6 +8280,27 @@ dependencies = [
  "sp-runtime",
  "sp-std 5.0.0",
  "xcm",
+]
+
+[[package]]
+name = "pallet-xcm"
+version = "0.9.43"
+source = "git+https://github.com/paritytech/polkadot?branch=release-v0.9.43#ba42b9ce51d25bdaf52d2c61e0763a6e3da50d25"
+dependencies = [
+ "bounded-collections",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log",
+ "parity-scale-codec 3.6.5",
+ "scale-info",
+ "serde",
+ "sp-core",
+ "sp-io",
+ "sp-runtime",
+ "sp-std 5.0.0",
+ "xcm",
+ "xcm-executor",
 ]
 
 [[package]]
@@ -9740,6 +9803,7 @@ name = "runtime-common"
 version = "0.1.2"
 dependencies = [
  "btc-relay",
+ "clients-info",
  "fee",
  "frame-election-provider-support",
  "frame-support",
@@ -9749,6 +9813,7 @@ dependencies = [
  "log",
  "nomination",
  "oracle",
+ "orml-asset-registry",
  "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-aura",

@@ -1,9 +1,11 @@
 pub mod btc_relay;
+pub mod clients_info;
 pub mod currency;
 pub mod fee;
 pub mod issue;
 pub mod nomination;
 pub mod oracle;
+pub mod orml_asset_registry;
 pub mod orml_tokens;
 pub mod redeem;
 pub mod replace;

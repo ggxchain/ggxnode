@@ -73,6 +73,7 @@ pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 pallet-treasury.workspace = true
 pallet-vesting.workspace = true
+pallet-utility.workspace = true
 pallet-whitelist.workspace = true
 
 # Frontier
@@ -111,6 +112,7 @@ pallet-ics20-transfer.workspace = true
 prost.workspace = true
 
 # Orml
+orml-asset-registry.workspace = true
 orml-tokens.workspace = true
 orml-traits.workspace = true
 
@@ -119,7 +121,7 @@ annuity.workspace = true
 btc-relay.workspace = true
 escrow.workspace = true
 interbtc-currency.workspace = true
-#clients-info.workspace = true
+clients-info.workspace = true
 fee.workspace = true
 issue.workspace = true
 nomination.workspace = true
@@ -204,6 +206,7 @@ std = [
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-treasury/std",
 	"pallet-vesting/std",
+	"pallet-utility/std",
 	"pallet-whitelist/std",
 	# Frontier
 	"fp-evm/std",
@@ -239,7 +242,7 @@ std = [
 	"btc-relay/std",
 	"escrow/std",
 	"interbtc-currency/std",
-	#"clients-info/std",
+	"clients-info/std",
 	"fee/std",
 	"issue/std",
 	"nomination/std",

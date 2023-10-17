@@ -245,6 +245,7 @@ pub fn testnet_genesis(
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
+		asset_registry: Default::default(),
 		tokens: TokensConfig { balances: vec![] },
 		oracle: OracleConfig {
 			authorized_oracles: vec![], //todo
@@ -252,7 +253,7 @@ pub fn testnet_genesis(
 		},
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
-			parachain_confirmations: 1,//todo(smith) use bitcoin_confirmations.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
+			parachain_confirmations: 1, //todo(smith) use bitcoin_confirmations.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
 			disable_difficulty_check,
 			disable_inclusion_check: false,
 		},
