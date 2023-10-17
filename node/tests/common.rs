@@ -168,8 +168,11 @@ pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
 		.args(args)
 		.arg("-d")
 		.arg(base_path)
+		.arg("--rpc-cors=all")
 		.spawn()
 		.unwrap();
+
+	tokio::time::sleep(std::time::Duration::from_secs(2)).await;
 
 	let mut child = KillChildOnDrop(cmd, output_path);
 
@@ -319,7 +322,7 @@ pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> No
 		.unwrap();
 
 	let mut child = KillChildOnDrop(cmd, output_path);
-	tokio::time::sleep(std::time::Duration::from_secs(3)).await;
+	tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
 	let (ws_url, http_url, _) =
 		find_ws_http_url_from_output(std::fs::File::open(&child.1).unwrap());

@@ -25,24 +25,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # virtual machine images - assembling VM is simple and fast as OCI image :) 
-    nixos-generators = {
-      url = "github:nix-community/nixos-generators";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # terraform generator to manage clouds/managed services
-    terranix = {
-      url = "github:terranix/terranix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
-    # fixed derivation for terraform packages
-    nixpkgs-terraform-providers-bin = {
-      url = "github:nix-community/nixpkgs-terraform-providers-bin";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # for subkey
     substrate = {
       url = "github:dzmitry-lahoda-forks/substrate/8e8e54d99f5f86da1ff984646dc6cba3597a42f8";
@@ -53,22 +35,12 @@
   nixConfig = {
     # so you do not need to build locally if CI did it (no cache for ARM/MAC because did not added machines to build matrix)
     extra-substituters = [ "https://cache.nixos.org" "https://golden-gate-ggx.cachix.org" ];
-    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "ggx-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
+    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "golden-gate-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
-  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, terranix, nixos-generators, nixpkgs-terraform-providers-bin, substrate } @ inputs:
+  outputs = { self, nixpkgs, devenv, rust-overlay, crane, flake-utils, substrate } @ inputs:
     let
-      email = "<email>";
-      domain = "ggchain.technology";
-      org = "ggchaintesta";
-      region = "eu-west-1";
-      # could generate dynamic nixos module to be referenced
-      bootnode = "34-244-81-67";
-      bootnode-peer = "12D3KooWP3E64xQfgSdubAXpVrJTxL6a2Web2uiwC4PBxyEJFac3";
-      # can use envvars override to allow run non shared "cloud" for tests
-      age-pub = "age1a8k02z579lr0qr79pjhlneffjw3dvy3a8j5r4fw3zlphd6cyaf5qukkat5";
-
       per_system = flake-utils.lib.eachDefaultSystem
         (system:
           let
@@ -103,8 +75,8 @@
               buildInputs = with pkgs; [ openssl zstd ];
               nativeBuildInputs = with pkgs;
                 rust-native-build-inputs ++ [ openssl ] ++ darwin;
-              doCheck = false;
               cargoCheckCommand = "true";
+              doCheck = false;
               src = rust-src;
               pname = "...";
               version = "...";
@@ -130,13 +102,6 @@
             # calls `cargo vendor` on package deps 
             common-wasm-deps =
               craneLib.buildDepsOnly (common-wasm-attrs // { });
-
-            doclint = pkgs.writeShellApplication rec {
-              name = "doclint";
-              text = ''
-                ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target" "#terraform" "#result"
-              '';
-            };
 
             fix = pkgs.writeShellApplication rec {
               name = "fix";
@@ -227,69 +192,6 @@
               cargoArtifacts = common-native-release-brooklyn-deps;
             });
 
-            fmt = craneLib.cargoFmt (common-attrs // {
-              cargoExtraArgs = "--all";
-              rustFmtExtraArgs = "--color always";
-            });
-
-            cargoClippyExtraArgs = "-- -D warnings";
-
-            clippy-node-brooklyn = craneLib.cargoClippy (common-native-brooklyn-attrs // {
-              inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
-            });
-
-            clippy-node-sydney = craneLib.cargoClippy (common-native-sydney-attrs // {
-              inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
-            });
-
-            clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
-              inherit cargoClippyExtraArgs;
-              cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
-            });
-
-            tf-init = pkgs.writeShellApplication rec {
-              name = "tf-init";
-              text = ''
-                # here you manually obtain login key
-                aws configure
-              '';
-            };
-
-            cloud-tools = with pkgs; [
-              awscli2
-              terraform
-              sops
-              age
-              nixos-rebuild
-            ];
-
-            # seldom to change node image to terraform onto cloud as template
-            node-image = nixos-generators.nixosGenerate {
-              system = "x86_64-linux";
-              modules = [
-                ./flake/nixos-amazon.nix
-              ] ++ [ ({ ... }: { amazonImage.sizeMB = 16 * 1024; }) ]
-              ;
-              format = "amazon";
-            };
-
-            # send variables to terraform
-            terraformattrs = {
-              TF_VAR_VALIDATOR_NAME = org;
-              TF_VAR_AWS_REGION = region;
-            };
-
-            terraformbrooklyn = terraformattrs // {
-              TF_VAR_DOMAIN_NAME = domain;
-            };
-
-            terraformbase = terraformattrs // {
-              TF_VAR_NODE_IMAGE = "\"$(find ${node-image} -type f -name '*.vhd')\"";
-            };
-
-
             # generates node secrtekey and gets public key of
             gen-node-key = pkgs.writeShellApplication {
               name = "gen-node-key";
@@ -326,96 +228,55 @@
               '';
             };
 
-            # need to generalize for generic TF_VAR consumption
-            mkTerraformRun = tfname: config: attrs: pkgs.writeShellApplication (rec  {
-              name = "
-                tf-${tfname}";
-              runtimeInputs = cloud-tools;
-              text =
-                # just way to put attrs as export variables
-                with builtins; concatStringsSep "\n" (attrValues (mapAttrs (name: value: "${name}=${value} && export ${name}") attrs)) +
-                  ''
-                
-                cd ./terraform/${tfname}  
-                # generate terraform input from nix
-                cp --force ${config} config-${tfname}.tf.json
-            
-                # silly check to avoid providers rechek all the time (nixified version would be more robust)
-                if [[ ! -d .terraform/providers ]]; then
-                  terraform init --upgrade
-                fi
-            
-                # decrypt secret state (should run only on CI eventually for safety)
-                # if there is encrypted state, decrypt it
-                if [[ -f terraform-${tfname}.tfstate.sops ]]; then
-                  # uses age, so can use any of many providers (including aws)
-                  echo "decrypting state"
-                  sops --decrypt --age ${age-pub} terraform-${tfname}.tfstate.sops > terraform-${tfname}.tfstate
-                  # testing that we can finally reencrypt          
-                  sops --encrypt --age ${age-pub} terraform-${tfname}.tfstate > terraform-${tfname}.tfstate.sops   
-                fi
-            
-                # so we can store part of changes before exit
-                set +o errexit
-                # apply state to cloud, eventually should manually approve in CI
-                terraform "$@" # for example `-- apply -auto-approve`
-                TERRAFORM_RESULT=$?
-                set -o errexit
-              
-                # encrypt update state back and push it (later in CI special job)
-                echo "encrypting current state"
-                if [[ -f terraform-${tfname}.tfstate ]]; then
-                  sops --encrypt --age ${age-pub} terraform-${tfname}.tfstate > terraform-${tfname}.tfstate.sops
-                fi
-
-                if [[ -f terraform-${tfname}.tfstate.backup ]]; then 
-                  echo "encrypting backup state"
-                  sops --encrypt --age ${age-pub} terraform-${tfname}.tfstate.backup > terraform-${tfname}.tfstate.backup.sops
-                fi
-              
-                exit $TERRAFORM_RESULT
-              '';
-            });
-
-            tf-brooklyn = mkTerraformRun "brooklyn" tf-config-brooklyn terraformbrooklyn;
-            tf-base = mkTerraformRun "base" tf-config-base terraformbase;
-
-
-            tf-config-base = terranix.lib.terranixConfiguration {
-              inherit system;
-              modules = [ ./flake/terraform/base.nix ];
-            };
-            tf-config-brooklyn = terranix.lib.terranixConfiguration {
-              inherit system;
-              modules = [ ./flake/terraform/brooklyn.nix ];
-            };
-
-            mkNixosAwsRemoteRebuild = ip: region: name: pkgs.writeShellApplication
-              {
-                name = "deploy-" + name;
-                runtimeInputs = [ pkgs.nixos-rebuild ];
-                text = ''
-                  # builds node locally and delta copies nix store to remote machine, and applies nix config
-                  # should read from tfstate here to avoid cp paste of name       
-                  NIX_SSHOPTS="-i ./terraform/brooklyn/id_rsa.pem"         
-                  export NIX_SSHOPTS
-                  # first run will be slow, so can consider variouse optimization later
-                  nixos-rebuild switch --fast --flake .#${name}  --target-host root@ec2-${ip}.${region}.compute.amazonaws.com
-                '';
-              };
+            cargoClippyExtraArgs = "-- -D warnings";
           in
           rec {
+            checks = {
+              fmt = craneLib.cargoFmt (common-attrs // {
+                cargoExtraArgs = "--all";
+                rustFmtExtraArgs = "--color always";
+              });
+
+              clippy-node-brooklyn = craneLib.cargoClippy (common-native-brooklyn-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
+              });
+
+              clippy-node-sydney = craneLib.cargoClippy (common-native-sydney-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
+              });
+
+              clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
+              });
+
+              nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
+                cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
+                doCheck = true;
+              });
+
+              nextest-sydney = craneLib.cargoNextest (common-native-sydney-attrs // {
+                cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
+                doCheck = true;
+              });
+
+              doclint = pkgs.writeShellApplication rec {
+                name = "doclint";
+                text = ''
+                  ${pkgs.lib.meta.getExe pkgs.nodePackages.markdownlint-cli2} "**/*.md" "#.devenv" "#target" "#terraform" "#result"
+                '';
+              };
+            };
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key tf-base tf-brooklyn node-image inspect-node-key doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm;
+                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
                 subkey = pkgs.subkey;
                 ggxchain-node = ggxchain-node-brooklyn;
                 node = ggxchain-node;
-                lint-all = pkgs.symlinkJoin {
-                  name = "lint-all";
-                  paths = [ doclint fmt clippy-node-brooklyn clippy-node-sydney clippy-wasm ];
-                };
+                
                 release = pkgs.symlinkJoin {
                   name = "release";
                   paths = [ node ggxchain-runtimes ];
@@ -486,195 +347,29 @@
                     echo https://explorer.ggxchain.io/?rpc=ws://127.0.0.1:"$WS_PORT_ALICE"#/explorer
                   '';
                 };
-
-                deploy-brooklyn-node-a = mkNixosAwsRemoteRebuild bootnode region "brooklyn-node-a";
-                deploy-brooklyn-node-b = mkNixosAwsRemoteRebuild "34-243-72-53" region "brooklyn-node-b";
-                deploy-brooklyn-node-c = mkNixosAwsRemoteRebuild "54-246-50-70" region "brooklyn-node-c";
-                deploy-brooklyn-node-d = mkNixosAwsRemoteRebuild "3-253-35-79" region "brooklyn-node-d";
-
-                run-brooklyn-node-a = pkgs.writeShellApplication {
-                  name = "run-brooklyn-node-a";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
-                  text = ''
-
-                    RUST_LOG=info,libp2p=info,grandpa=info
-                    export RUST_LOG
-                    NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
-                    rm -r -f chains
-                    
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme=sr25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type aura \
-                      --keystore-path ~/chains/remote_brooklyn/keystore
-
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme ed25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type gran \
-                      --keystore-path ~/chains/remote_brooklyn/keystore  
-
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-a --base-path=/root/ 
-                  '';
-                };
-
-                run-brooklyn-node-b = pkgs.writeShellApplication {
-                  name = "run-brooklyn-node-b";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
-                  text = ''
-                    RUST_LOG=info,libp2p=info,grandpa=info
-                    export RUST_LOG
-                    NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
-                    rm -r -f /root/chains
-                    
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme=sr25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type aura \
-                      --keystore-path ~/chains/remote_brooklyn/keystore
-
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme ed25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type gran \
-                      --keystore-path ~/chains/remote_brooklyn/keystore  
-
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-b --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
-                  '';
-                };
-
-                run-brooklyn-node-c = pkgs.writeShellApplication {
-                  name = "run-brooklyn-node-c";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
-                  text = ''
-                    RUST_LOG=info,libp2p=info,grandpa=info
-                    export RUST_LOG
-                    NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
-                    rm -r -f /root/chains
-                    
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme=sr25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type aura \
-                      --keystore-path ~/chains/remote_brooklyn/keystore
-
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme ed25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type gran \
-                      --keystore-path ~/chains/remote_brooklyn/keystore  
-
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-c --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
-                  '';
-                };
-                run-brooklyn-node-d = pkgs.writeShellApplication {
-                  name = "run-brooklyn-node-d";
-                  runtimeInputs = [ pkgs.subkey pkgs.jq ggxchain-node ];
-                  text = ''
-                    RUST_LOG=info,libp2p=info,grandpa=info
-                    export RUST_LOG
-                    NODE_KEY=$(jq --raw-output .secretSeed /root/ed25519.json)
-                    rm -r -f /root/chains
-                    
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme=sr25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type aura \
-                      --keystore-path ~/chains/remote_brooklyn/keystore
-
-                    ggxchain-node key insert \
-                      --base-path=/root/ \
-                      --chain=brooklyn \
-                      --scheme ed25519 \
-                      --suri "$NODE_KEY" \
-                      --key-type gran \
-                      --keystore-path ~/chains/remote_brooklyn/keystore  
-
-                    ggxchain-node --node-key "$NODE_KEY" --unsafe-ws-external --validator --rpc-methods=unsafe --unsafe-rpc-external --rpc-cors=all --blocks-pruning archive  --chain=brooklyn --name=node-d --base-path=/root/ --bootnodes=/ip4/34.244.81.67/tcp/30333/p2p/${bootnode-peer}
-                  '';
-                };
               };
 
             devShells = {
-              default = devenv.lib.mkShell {
-                inherit inputs pkgs;
-                modules =
-                  let
+              default = craneLib.devShell (rust-env // {
+                checks = self.checks.${system};
+                packages = with pkgs; [
+                  rust-toolchain
+                  nodejs-18_x
+                  nodePackages.markdownlint-cli2
+                  jq
+                ];
 
-                    dylib = {
-                      buildInputs = with pkgs; [ openssl ] ++ darwin;
-                      nativeBuildInputs = rust-native-build-inputs;
-                      doCheck = false;
-                    };
-                    rust-deps = pkgs.makeRustPlatform {
-                      inherit pkgs;
-                      # dylint needs nightly
-                      cargo = pkgs.rust-bin.beta.latest.default;
-                      rustc = pkgs.rust-bin.beta.latest.default;
-                    };
-                    cargo-dylint = with pkgs; rust-deps.buildRustPackage (rec {
-                      pname = "cargo-dylint";
-                      version = "2.1.5";
-                      src = fetchCrate {
-                        inherit pname version;
-                        sha256 = "sha256-kH6dhUFaQpQ0kvzNyLIXjFAO8VNa2jah6ZaDO7LQKO0=";
-                      };
-
-                      cargoHash = "sha256-YvQI3H/4eWe6r2Tg8qHJqfnw/NpuGHtkRuTL4EzF0xo=";
-                      cargoDepsName = pname;
-                    } // dylib);
-                    dylint-link = with pkgs; rust-deps.buildRustPackage (rec {
-                      pname = "dylint-link";
-                      version = "2.1.5";
-                      src = fetchCrate {
-                        inherit pname version;
-                        sha256 = "sha256-oarEYhv0i2wAPmahx0vgWN3kmfEsK3s6D3+qkOqF9pc=";
-                      };
-
-                      cargoHash = "sha256-pMr9hddHAIyIclHRpxqdUaHphjSAVDnvfNjWGDA2EM4=";
-                      cargoDepsName = pname;
-                    } // dylib);
-                    # can `cargo-contract` and nodejs ui easy here 
-                  in
-                  [
-                    {
-                      packages = with pkgs;
-                        [
-                          rust-toolchain
-                          binaryen
-                          llvmPackages.bintools
-                          nodejs-18_x
-                          nodePackages.markdownlint-cli2
-                          jq
-                          openssl
-                        ]
-                        ++ rust-native-build-inputs ++ darwin ++ cloud-tools;
-                      env = rust-env;
-                      # can do systemd/docker stuff here
-                      enterShell = ''
-                        echo ggxshell
-                      '';
-                      name = "ggxshell";
-
-                      # GH Codespace easy to run (e.g. for Mac users, low spec machines or Frontend developers or hackatons)
-                      devcontainer.enable = true;
-                    }
-                  ];
-              };
+                inputsFrom = [
+                  ggxchain-runtimes
+                  ggxchain-node-brooklyn
+                  ggxchain-node-sydney
+                ];
+                   
+                enterShell = ''
+                  echo ggxshell
+                '';
+                name = "ggxshell";
+              });
             };
           }
         );
@@ -696,245 +391,7 @@
           };
         in
         {
-          # so basically cp pasted config to remote node with node binry
-          # really should generate config after terraform run and load it dynamically
-          brooklyn-node-a = let name = "node-a"; in nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              {
-                nixpkgs.overlays = [
-                  (_: _: {
-                    ggxchain-node = pkgs.ggxchain-node;
-                  })
-                ];
-              }
-              ./flake/web3nix-module.nix
-              ./flake/nixos-amazon.nix
-            ]
-            ++ [
-              ({ ... }: {
-                web3nix.admin.email = email;
-                services.nginx.virtualHosts = {
-                  "${name}.${domain}" = {
-                    addSSL = true;
-                    enableACME = true;
-                    root = "/var/www/default";
-                    # just stub for root page, can route to any usefull info or landing
-                    locations."/" = {
-                      root = pkgs.runCommand "testdir" { } ''
-                        mkdir "$out"
-                        echo "here could be ggx chain pwa" > "$out/index.html"
-                      '';
-                    };
-                    locations."/substrate/client" = {
-                      # any all to external servers is routed to node
-                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
-                      proxyWebsockets = true;
-                    };
-                  };
-                };
-                security = {
-                  acme = {
-                    defaults.email = email;
-                    acceptTerms = true;
-                  };
-                };
-                environment.systemPackages = [ pkgs.ggxchain-node ];
-                systemd.services.ggxchain-node = {
-                  wantedBy = [ "multi-user.target" ];
-                  after = [ "network.target" ];
-                  description = "substrate-node";
-                  serviceConfig =
-                    {
-                      Type = "simple";
-                      User = "root";
-                      # yeah, tune each unsafe on release
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-a}";
-                      Restart = "always";
-                    };
-                };
-
-              })
-            ];
-          };
-
-          brooklyn-node-b = let name = "node-b"; in nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              {
-                nixpkgs.overlays = [
-                  (_: _: {
-                    ggxchain-node = pkgs.ggxchain-node;
-                  })
-                ];
-              }
-              ./flake/web3nix-module.nix
-              ./flake/nixos-amazon.nix
-            ]
-            ++ [
-              ({ ... }: {
-                web3nix.admin.email = email;
-                services.nginx.virtualHosts = {
-                  "${name}.${domain}" = {
-                    addSSL = true;
-                    enableACME = true;
-                    root = "/var/www/default";
-                    # just stub for root page, can route to any usefull info or landing
-                    locations."/" = {
-                      root = pkgs.runCommand "testdir" { } ''
-                        mkdir "$out"
-                        echo "here could be ggx chain pwa" > "$out/index.html"
-                      '';
-                    };
-                    locations."/substrate/client" = {
-                      # any all to external servers is routed to node
-                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
-                      proxyWebsockets = true;
-                    };
-                  };
-                };
-                security = {
-                  acme = {
-                    defaults.email = email;
-                    acceptTerms = true;
-                  };
-                };
-                environment.systemPackages = [ pkgs.ggxchain-node ];
-                systemd.services.ggxchain-node =
-                  {
-                    wantedBy = [ "multi-user.target" ];
-                    after = [ "network.target" ];
-                    description = "substrate-node";
-                    serviceConfig = {
-                      Type = "simple";
-                      User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-b}";
-                      Restart = "always";
-                    };
-                  };
-
-              })
-            ];
-          };
-
-          brooklyn-node-c = let name = "node-c"; in nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              {
-                nixpkgs.overlays = [
-                  (_: _: {
-                    ggxchain-node = pkgs.ggxchain-node;
-                  })
-                ];
-              }
-              ./flake/web3nix-module.nix
-              ./flake/nixos-amazon.nix
-            ]
-            ++ [
-              ({ ... }: {
-                web3nix.admin.email = email;
-                services.nginx.virtualHosts = {
-                  "${name}.${domain}" = {
-                    addSSL = true;
-                    enableACME = true;
-                    root = "/var/www/default";
-                    # just stub for root page, can route to any usefull info or landing
-                    locations."/" = {
-                      root = pkgs.runCommand "testdir" { } ''
-                        mkdir "$out"
-                        echo "here could be ggx chain pwa" > "$out/index.html"
-                      '';
-                    };
-                    locations."/substrate/client" = {
-                      # any all to external servers is routed to node
-                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
-                      proxyWebsockets = true;
-                    };
-                  };
-                };
-                security = {
-                  acme = {
-                    defaults.email = email;
-                    acceptTerms = true;
-                  };
-                };
-                environment.systemPackages = [ pkgs.ggxchain-node ];
-                systemd.services.ggxchain-node =
-                  {
-                    wantedBy = [ "multi-user.target" ];
-                    after = [ "network.target" ];
-                    description = "substrate-node";
-                    serviceConfig = {
-                      Type = "simple";
-                      User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-c}";
-                      Restart = "always";
-                    };
-                  };
-
-              })
-            ];
-          };
-
-          brooklyn-node-d = let name = "node-d"; in nixpkgs.lib.nixosSystem {
-            inherit system;
-            modules = [
-              {
-                nixpkgs.overlays = [
-                  (_: _: {
-                    ggxchain-node = pkgs.ggxchain-node;
-                  })
-                ];
-              }
-              ./flake/web3nix-module.nix
-              ./flake/nixos-amazon.nix
-            ]
-            ++ [
-              ({ ... }: {
-                web3nix.admin.email = email;
-                services.nginx.virtualHosts = {
-                  "${name}.${domain}" = {
-                    addSSL = true;
-                    enableACME = true;
-                    root = "/var/www/default";
-                    # just stub for root page, can route to any usefull info or landing
-                    locations."/" = {
-                      root = pkgs.runCommand "testdir" { } ''
-                        mkdir "$out"
-                        echo "here could be ggx chain pwa" > "$out/index.html"
-                      '';
-                    };
-                    locations."/substrate/client" = {
-                      # any all to external servers is routed to node
-                      proxyPass = "http://127.0.0.1:${builtins.toString 9944}";
-                      proxyWebsockets = true;
-                    };
-                  };
-                };
-                security = {
-                  acme = {
-                    defaults.email = email;
-                    acceptTerms = true;
-                  };
-                };
-                environment.systemPackages = [ pkgs.ggxchain-node ];
-                systemd.services.ggxchain-node =
-                  {
-                    wantedBy = [ "multi-user.target" ];
-                    after = [ "network.target" ];
-                    description = "substrate-node";
-                    serviceConfig = {
-                      Type = "simple";
-                      User = "root";
-                      ExecStart = "${pkgs.lib.meta.getExe per_system.packages.${system}.run-brooklyn-node-d}";
-                      Restart = "always";
-                    };
-                  };
-
-              })
-            ];
-          };
         };
     };
-}
+  }
 

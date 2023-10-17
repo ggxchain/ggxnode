@@ -217,7 +217,6 @@ ibc-proto = { version = "0.25.0", default-features = false, features = [
 pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "polkadot-v0.9.43" }
 pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git", default-features = false, branch = "polkadot-v0.9.43" }
 pallet-ics20-transfer = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "polkadot-v0.9.43" }
-
 prost = { version = "0.11", default-features = false }
 
 # Eth - Light client

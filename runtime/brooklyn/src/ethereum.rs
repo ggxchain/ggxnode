@@ -1,6 +1,6 @@
 use crate::{
-	prelude::*, BlockWeights, EthereumChecked, FindAuthorTruncated, UncheckedExtrinsic, Xvm,
-	MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
+	prelude::*, BlockWeights, EVMChainId, EthereumChecked, FindAuthorTruncated, UncheckedExtrinsic,
+	Xvm, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
 };
 
 use super::{Balances, Runtime, RuntimeEvent, Timestamp};
@@ -32,7 +32,6 @@ parameter_types! {
 	);
 	pub PrecompilesValue: GoldenGatePrecompiles<Runtime, Xvm> = GoldenGatePrecompiles::<_, _>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
-	pub ChainId: u64 = 888866;
 
 	/// The amount of gas per PoV size. Value is calculated as:
 	///
@@ -55,7 +54,7 @@ impl pallet_evm::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PrecompilesType = GoldenGatePrecompiles<Self, Xvm>;
 	type PrecompilesValue = PrecompilesValue;
-	type ChainId = ChainId;
+	type ChainId = EVMChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
 	type OnChargeTransaction = CurrencyManager;

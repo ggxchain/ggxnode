@@ -55,7 +55,7 @@ pub fn testnet_genesis(
 	sudo_key: AccountId,
 	endowed_accounts: Vec<(AccountId, u64)>,
 	initial_authorities: Vec<ValidatorIdentity>,
-	_chain_id: u64,
+	chain_id: u64,
 	nominate: bool,
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
@@ -141,6 +141,7 @@ pub fn testnet_genesis(
 		beefy: BeefyConfig::default(),
 
 		// EVM compatibility
+		evm_chain_id: EVMChainIdConfig { chain_id },
 		evm: EVMConfig {
 			accounts: {
 				let mut map = BTreeMap::new();
