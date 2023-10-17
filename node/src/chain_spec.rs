@@ -6,6 +6,11 @@ use crate::runtime::{
 	WASM_BINARY,
 };
 
+#[cfg(not(feature = "brooklyn"))]
+const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
+const CHAIN_ID: u64 = 888866u64;
+
 pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
 
 fn properties(token_symbol: &str) -> Option<Properties> {
@@ -60,7 +65,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
-				888888,
+				CHAIN_ID,
 				true,
 			)
 		},
@@ -109,7 +114,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Alice"),
 					ValidatorIdentity::from_seed("Bob"),
 				],
-				888888,
+				CHAIN_ID,
 				true,
 			)
 		},

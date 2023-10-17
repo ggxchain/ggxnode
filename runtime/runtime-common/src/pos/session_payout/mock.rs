@@ -4,7 +4,7 @@ use crate::pos::currency as pallet_currency;
 use frame_election_provider_support::{onchain, SequentialPhragmen};
 use frame_support::{
 	pallet_prelude::Weight,
-	parameter_types,
+	parameter_types, sp_io,
 	traits::{GenesisBuild, OnFinalize, OnInitialize},
 	weights::constants::RocksDbWeight,
 	PalletId,
@@ -69,6 +69,10 @@ impl pallet_balances::Config for Test {
 	type MaxLocks = ConstU32<50>;
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
+	type HoldIdentifier = ();
+	type FreezeIdentifier = ();
+	type MaxHolds = ConstU32<0>;
+	type MaxFreezes = ConstU32<0>;
 }
 
 parameter_types! {
@@ -237,6 +241,7 @@ impl pallet_session_payout::Config for Test {
 	type RemainderDestination = Treasury;
 	type TimeProvider = Timestamp;
 	type CurrencyInfo = CurrencyManager;
+	type WeightInfo = crate::weights::session_payout::SubstrateWeight<Test>;
 }
 
 pub const BALANCE: u64 = 10_000_000_000_000;
