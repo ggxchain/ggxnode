@@ -44,7 +44,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - run: nix flake check --log-lines 100 
+      - run: nix flake check --log-lines 100 --accept-flake-config
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'

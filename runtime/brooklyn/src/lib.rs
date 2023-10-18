@@ -19,8 +19,8 @@ pub mod ethereum;
 pub mod governance;
 mod ibc;
 mod ink;
-pub mod pos;
 pub mod light_client;
+pub mod pos;
 mod prelude;
 
 mod version;
