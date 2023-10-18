@@ -377,6 +377,6 @@ pub fn skip_with_reward_n_sessions(n: u64) {
 }
 
 pub fn reward_validators() {
-	let iter = (0..Staking::validator_count()).into_iter().map(|i| (i, 1));
+	let iter = (0..Staking::validator_count()).map(|i| (i, 1));
 	Staking::reward_by_ids(iter)
 }

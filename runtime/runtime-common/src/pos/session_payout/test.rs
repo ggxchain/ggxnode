@@ -191,7 +191,7 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 
 	let current_era = mock::Staking::active_era().unwrap().index;
 	let total_issuance = mock::Balances::total_issuance();
-	let stake = mock::Staking::eras_stakers(current_era, &VALIDATOR_ID);
+	let stake = mock::Staking::eras_stakers(current_era, VALIDATOR_ID);
 	let total_stake = mock::Staking::eras_total_stake(current_era);
 	assert!(
 		total_stake > 0,
