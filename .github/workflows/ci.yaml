@@ -13,6 +13,7 @@ env:
   NIXPKGS_CHANNEL: nixos-22.11
   CACHIX_NAME: golden-gate-ggx
   OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
+  GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
   build-lint-all:
