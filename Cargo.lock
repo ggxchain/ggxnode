@@ -1149,6 +1149,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "btc-relay-rpc"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "btc-relay-rpc-runtime-api",
+ "jsonrpsee",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "btc-relay-rpc-runtime-api"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "build-helper"
 version = "0.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2672,6 +2696,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "escrow-rpc"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "escrow-rpc-runtime-api",
+ "jsonrpsee",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "escrow-rpc-runtime-api"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+]
+
+[[package]]
 name = "eth-keystore"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4125,7 +4173,9 @@ dependencies = [
  "assert_cmd",
  "async-trait",
  "bitcoin 1.2.0",
+ "btc-relay-rpc",
  "clap",
+ "escrow-rpc",
  "ethers",
  "fc-cli",
  "fc-consensus",
@@ -4146,12 +4196,14 @@ dependencies = [
  "ggxchain-runtime-sydney",
  "hex",
  "interbtc-primitives",
+ "issue-rpc",
  "jsonrpsee",
  "log",
  "mmr-gadget",
  "mmr-rpc",
  "nix 0.26.4",
  "num-bigint",
+ "oracle-rpc",
  "pallet-balances",
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc",
@@ -4159,6 +4211,9 @@ dependencies = [
  "polkadot-rpc",
  "prometheus",
  "rand 0.8.5",
+ "redeem-rpc",
+ "replace-rpc",
+ "reward-rpc",
  "sc-basic-authorship",
  "sc-cli",
  "sc-client-api",
@@ -4197,6 +4252,7 @@ dependencies = [
  "tempfile",
  "tokio",
  "tokio-util 0.7.9",
+ "vault-registry-rpc",
  "wait-timeout",
  "web3",
 ]
@@ -4208,9 +4264,11 @@ dependencies = [
  "annuity",
  "astar-primitives",
  "btc-relay",
+ "btc-relay-rpc-runtime-api",
  "clients-info",
  "currency",
  "escrow",
+ "escrow-rpc-runtime-api",
  "fee",
  "fp-evm",
  "fp-rpc",
@@ -4226,9 +4284,11 @@ dependencies = [
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "interbtc-primitives",
  "issue",
+ "issue-rpc-runtime-api",
  "log",
  "nomination",
  "oracle",
+ "oracle-rpc-runtime-api",
  "orml-asset-registry",
  "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
@@ -4283,8 +4343,11 @@ dependencies = [
  "paste",
  "prost",
  "redeem",
+ "redeem-rpc-runtime-api",
  "replace",
+ "replace-rpc-runtime-api",
  "reward",
+ "reward-rpc-runtime-api",
  "runtime-common",
  "scale-info",
  "security",
@@ -4309,6 +4372,7 @@ dependencies = [
  "substrate-account-filter",
  "substrate-wasm-builder",
  "vault-registry",
+ "vault-registry-rpc-runtime-api",
 ]
 
 [[package]]
@@ -5240,6 +5304,30 @@ dependencies = [
  "sp-std 5.0.0",
  "traits",
  "vault-registry",
+]
+
+[[package]]
+name = "issue-rpc"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "issue-rpc-runtime-api",
+ "jsonrpsee",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "issue-rpc-runtime-api"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
 ]
 
 [[package]]
@@ -7075,6 +7163,31 @@ dependencies = [
  "sp-std 5.0.0",
  "staking",
  "traits",
+]
+
+[[package]]
+name = "oracle-rpc"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "jsonrpsee",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "oracle-rpc-runtime-api"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "interbtc-primitives",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
 ]
 
 [[package]]
@@ -9454,6 +9567,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "redeem-rpc"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "jsonrpsee",
+ "parity-scale-codec 3.6.5",
+ "redeem-rpc-runtime-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "redeem-rpc-runtime-api"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "redox_syscall"
 version = "0.2.16"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9589,6 +9726,30 @@ dependencies = [
 ]
 
 [[package]]
+name = "replace-rpc"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "jsonrpsee",
+ "parity-scale-codec 3.6.5",
+ "replace-rpc-runtime-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "replace-rpc-runtime-api"
+version = "1.2.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
+]
+
+[[package]]
 name = "reqwest"
 version = "0.11.20"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -9658,6 +9819,31 @@ dependencies = [
  "sp-io",
  "sp-runtime",
  "sp-std 5.0.0",
+]
+
+[[package]]
+name = "reward-rpc"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "jsonrpsee",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "reward-rpc-runtime-api",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+]
+
+[[package]]
+name = "reward-rpc-runtime-api"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
 ]
 
 [[package]]
@@ -14198,6 +14384,32 @@ dependencies = [
  "sp-std 5.0.0",
  "staking",
  "traits",
+]
+
+[[package]]
+name = "vault-registry-rpc"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "jsonrpsee",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-blockchain",
+ "sp-runtime",
+ "vault-registry-rpc-runtime-api",
+]
+
+[[package]]
+name = "vault-registry-rpc-runtime-api"
+version = "0.3.0"
+source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
+dependencies = [
+ "frame-support",
+ "oracle-rpc-runtime-api",
+ "parity-scale-codec 3.6.5",
+ "sp-api",
+ "sp-std 5.0.0",
 ]
 
 [[package]]

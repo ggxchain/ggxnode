@@ -134,6 +134,15 @@ security.workspace = true
 staking.workspace = true
 vault-registry.workspace = true
 
+btc-relay-rpc-runtime-api.workspace = true
+oracle-rpc-runtime-api.workspace = true
+vault-registry-rpc-runtime-api.workspace = true
+escrow-rpc-runtime-api.workspace = true
+reward-rpc-runtime-api.workspace = true
+issue-rpc-runtime-api.workspace = true
+redeem-rpc-runtime-api.workspace = true
+replace-rpc-runtime-api.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -254,6 +263,15 @@ std = [
 	"security/std",
 	"staking/std",
 	"vault-registry/std",
+
+  "btc-relay-rpc-runtime-api/std",
+  "escrow-rpc-runtime-api/std",
+  "issue-rpc-runtime-api/std",
+  "oracle-rpc-runtime-api/std",
+  "redeem-rpc-runtime-api/std",
+  "replace-rpc-runtime-api/std",
+  "reward-rpc-runtime-api/std",
+  "vault-registry-rpc-runtime-api/std",
 ]
 aura = []
 allowlist = []

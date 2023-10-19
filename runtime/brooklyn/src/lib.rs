@@ -31,7 +31,8 @@ use core::cmp::Ordering;
 #[cfg(feature = "std")]
 pub use fp_evm::GenesisAccount;
 use frame_support::{
-	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
+	pallet_prelude::{DispatchError, TransactionPriority},
+	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
@@ -85,6 +86,13 @@ pub use frame_support::{
 	ConsensusEngineId, StorageValue,
 };
 
+use btcbridge::GetWrappedCurrencyId;
+use interbtc_currency::Amount;
+use primitives::{
+	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, BalanceWrapper,
+	CurrencyId, H256Le, UnsignedFixedPoint,
+};
+
 pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
 pub use pallet_balances::Call as BalancesCall;
 pub use pallet_im_online::sr25519::AuthorityId as ImOnlineId;
@@ -121,6 +129,8 @@ pub type Hash = sp_core::H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
+
+type VaultId = primitives::VaultId<AccountId, CurrencyId>;
 
 /// Target Spacing: 10 minutes (600 seconds)
 // https://github.com/bitcoin/bitcoin/blob/5ba5becbb5d8c794efe579caeea7eea64f895a13/src/chainparams.cpp#L78
@@ -653,7 +663,6 @@ construct_runtime!(
 		Replace: replace,
 		VaultRegistry: vault_registry,
 
-		// Escrow: escrow,
 		// EscrowAnnuity: annuity::<Instance1>,
 		// EscrowRewards: reward::<Instance1>,
 
@@ -1370,6 +1379,213 @@ impl_runtime_apis! {
 			Contracts::get_storage(address, key)
 		}
   }
+
+
+	impl btc_relay_rpc_runtime_api::BtcRelayApi<
+		Block,
+		H256Le,
+	> for Runtime {
+		fn verify_block_header_inclusion(block_hash: H256Le) -> Result<(), DispatchError> {
+				BTCRelay::verify_block_header_inclusion(block_hash, None).map(|_| ())
+		}
+	}
+
+	impl oracle_rpc_runtime_api::OracleApi<
+		Block,
+		Balance,
+		CurrencyId
+	> for Runtime {
+		fn wrapped_to_collateral( amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::wrapped_to_collateral(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
+
+		fn collateral_to_wrapped(amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::collateral_to_wrapped(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
+	}
+
+	impl vault_registry_rpc_runtime_api::VaultRegistryApi<
+		Block,
+		VaultId,
+		Balance,
+		UnsignedFixedPoint,
+		CurrencyId,
+		AccountId,
+	> for Runtime {
+		fn get_vault_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::compute_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_vaults_by_account_id(account_id: AccountId) -> Result<Vec<VaultId>, DispatchError> {
+				VaultRegistry::get_vaults_by_account_id(account_id)
+		}
+
+		fn get_vault_total_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_backing_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_premium_redeem_vaults() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_premium_redeem_vaults()?;
+				Ok(result.iter().map(|v| (v.0.clone(), BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_issuable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_issuable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_redeemable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_redeemable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_issuable_tokens_from_vault(vault: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_issuable_tokens_from_vault(&vault)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_collateralization_from_vault(vault: VaultId, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				VaultRegistry::get_collateralization_from_vault(vault, only_issued)
+		}
+
+		fn get_collateralization_from_vault_and_collateral(vault: VaultId, collateral: BalanceWrapper<Balance>, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				let amount = Amount::new(collateral.amount, vault.collateral_currency());
+				VaultRegistry::get_collateralization_from_vault_and_collateral(vault, &amount, only_issued)
+		}
+
+		fn get_required_collateral_for_wrapped(amount_btc: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let amount_btc = Amount::new(amount_btc.amount, GetWrappedCurrencyId::get());
+				let result = VaultRegistry::get_required_collateral_for_wrapped(&amount_btc, currency_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_required_collateral_for_vault(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_required_collateral_for_vault(vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+	}
+
+	// impl escrow_rpc_runtime_api::EscrowApi<
+	// 	Block,
+	// 	AccountId,
+	// 	BlockNumber,
+	// 	Balance
+	// > for Runtime {
+	// 	fn balance_at(account_id: AccountId, height: Option<BlockNumber>) -> BalanceWrapper<Balance> {
+	// 			BalanceWrapper{amount: Escrow::balance_at(&account_id, height)}
+	// 	}
+
+	// 	fn free_stakable(account_id: AccountId) -> BalanceWrapper<Balance> {
+	// 			BalanceWrapper{amount: Escrow::free_stakable(&account_id)}
+	// 	}
+
+	// 	fn total_supply(height: Option<BlockNumber>) -> BalanceWrapper<Balance> {
+	// 			BalanceWrapper{amount: Escrow::total_supply(height)}
+	// 	}
+	// }
+
+	// impl reward_rpc_runtime_api::RewardApi<
+	// 	Block,
+	// 	AccountId,
+	// 	VaultId,
+	// 	CurrencyId,
+	// 	Balance,
+	// 	BlockNumber,
+	// 	UnsignedFixedPoint
+	// > for Runtime {
+	// 	fn compute_escrow_reward(account_id: AccountId, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+	// 			let amount = <EscrowRewards as reward::RewardsApi<(), AccountId, Balance>>::compute_reward(&(), &account_id, currency_id)?;
+	// 			let balance = BalanceWrapper::<Balance> { amount };
+	// 			Ok(balance)
+	// 	}
+
+	// 	fn compute_farming_reward(account_id: AccountId, pool_currency_id: CurrencyId, reward_currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+	// 			let amount = <FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::compute_reward(&pool_currency_id, &account_id, reward_currency_id)?;
+	// 			let balance = BalanceWrapper::<Balance> { amount };
+	// 			Ok(balance)
+	// 	}
+
+	// 	fn compute_vault_reward(vault_id: VaultId, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+	// 			let amount = Fee::compute_vault_rewards(&vault_id, &vault_id.account_id, currency_id)?.amount();
+	// 			let balance = BalanceWrapper::<Balance> { amount };
+	// 			Ok(balance)
+	// 	}
+
+	// 	fn estimate_escrow_reward_rate(
+	// 			account_id: AccountId,
+	// 			amount: Option<Balance>,
+	// 			lock_time: Option<BlockNumber>,
+	// 	) -> Result<UnsignedFixedPoint, DispatchError> {
+	// 			runtime_common::estimate_escrow_reward_rate::<Runtime, EscrowAnnuityInstance, EscrowRewards, _>(account_id, amount, lock_time)
+	// 	}
+
+	// 	fn estimate_farming_reward(
+	// 			account_id: AccountId,
+	// 			pool_currency_id: CurrencyId,
+	// 			reward_currency_id: CurrencyId,
+	// 	) -> Result<BalanceWrapper<Balance>, DispatchError> {
+	// 			<FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::withdraw_reward(&pool_currency_id, &account_id, reward_currency_id)?;
+	// 			<FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::distribute_reward(&pool_currency_id, reward_currency_id, Farming::total_rewards(&pool_currency_id, &reward_currency_id))?;
+	// 			let amount = <FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::compute_reward(&pool_currency_id, &account_id, reward_currency_id)?;
+	// 			let balance = BalanceWrapper::<Balance> { amount };
+	// 			Ok(balance)
+	// 	}
+
+	// 	fn estimate_vault_reward_rate(
+	// 			vault_id: VaultId,
+	// 	) -> Result<UnsignedFixedPoint, DispatchError> {
+	// 			runtime_common::estimate_vault_reward_rate::<Runtime, VaultAnnuityInstance, VaultStaking, VaultCapacity, _>(vault_id)
+	// 	}
+	// }
+
+	impl issue_rpc_runtime_api::IssueApi<
+		Block,
+		AccountId,
+		H256,
+		IssueRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_issue_requests(account_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_account(account_id)
+		}
+
+		fn get_vault_issue_requests(vault_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_vault(vault_id)
+		}
+	}
+
+	impl redeem_rpc_runtime_api::RedeemApi<
+		Block,
+		AccountId,
+		H256,
+		RedeemRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_account(account_id)
+		}
+
+		fn get_vault_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_vault(account_id)
+		}
+	}
+
+	impl replace_rpc_runtime_api::ReplaceApi<
+		Block,
+		AccountId,
+		H256,
+		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_old_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_old_vault(vault_id)
+		}
+
+		fn get_new_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_new_vault(vault_id)
+		}
+	}
 }
 
 #[cfg(test)]
