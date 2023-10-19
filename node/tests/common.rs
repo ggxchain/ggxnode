@@ -172,12 +172,12 @@ pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
 		.spawn()
 		.unwrap();
 
-	tokio::time::sleep(std::time::Duration::from_secs(2)).await;
+	tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
 	let mut child = KillChildOnDrop(cmd, output_path);
 
 	stderr_file.sync_all().unwrap();
-	let (ws_url, _) = find_ws_url_from_output(stderr_file);
+	let (ws_url, _, _) = find_ws_http_url_from_output(stderr_file).unwrap();
 
 	// Let it produce some blocks.
 	let _ = wait_n_finalized_blocks(3, 30, &ws_url).await;
@@ -232,66 +232,28 @@ impl DerefMut for KillChildOnDrop {
 	}
 }
 
-/// Read the WS address from the output.
-///
-/// This is hack to get the actual binded sockaddr because
-/// substrate assigns a random port if the specified port was already binded.
-pub fn find_ws_url_from_output(read: impl Read + Send) -> (String, String) {
-	let mut data = String::new();
-
-	let ws_url = BufReader::new(read)
-		.lines()
-		.find_map(|line| {
-			let line =
-				line.expect("failed to obtain next line from stdout for WS address discovery");
-			data.push_str(&line);
-			data.push('\n');
-
-			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
-
-			Some(format!("ws://{sock_addr}"))
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a WebSocket address")
-		});
-
-	(ws_url, data)
-}
-
 /// Read the WS HTTP address from the output.
-pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, String) {
+pub fn find_ws_http_url_from_output(read: impl Read + Send) -> Option<(String, String, String)> {
 	let mut data = String::new();
 
-	let base_url = BufReader::new(read)
-		.lines()
-		.find_map(|line| {
-			let line =
-				line.expect("failed to obtain next line from stdout for WS address discovery");
-			data.push_str(&line);
-			data.push('\n');
+	let base_url = BufReader::new(read).lines().find_map(|line| {
+		let line = line.expect("failed to obtain next line from stdout for WS address discovery");
+		data.push_str(&line);
+		data.push('\n');
 
-			// does the line contain our port (we expect this specific output from substrate).
-			let base_url = match line.split_once("Running JSON-RPC server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
+		// does the line contain our port (we expect this specific output from substrate).
+		let base_url = match line.split_once("Running JSON-RPC server: addr=") {
+			None => return None,
+			Some((_, after)) => after.split_once(',').unwrap().0,
+		};
 
-			Some(base_url.to_string())
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a WebSocket address")
-		});
+		Some(base_url.to_string())
+	})?;
 
 	let ws_url = format!("ws://{base_url}");
 	let http_url = format!("http://{base_url}");
 
-	(ws_url, http_url, data)
+	Some((ws_url, http_url, data))
 }
 
 pub struct Node {
@@ -322,10 +284,24 @@ pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> No
 		.unwrap();
 
 	let mut child = KillChildOnDrop(cmd, output_path);
-	tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
-	let (ws_url, http_url, _) =
-		find_ws_http_url_from_output(std::fs::File::open(&child.1).unwrap());
+	let (mut ws_url, mut http_url) = Default::default();
+	for i in 0..5 {
+		if let Some((ws, http, _)) =
+			find_ws_http_url_from_output(std::fs::File::open(&child.1).unwrap())
+		{
+			ws_url = ws;
+			http_url = http;
+			break;
+		} else {
+			println!("### wait for node start, try {} times", i);
+			tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+		}
+	}
+
+	if ws_url.is_empty() || http_url.is_empty() {
+		panic!("### failed to start node");
+	}
 
 	assert!(
 		child.try_wait().unwrap().is_none(),
