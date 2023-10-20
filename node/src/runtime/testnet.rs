@@ -6,7 +6,7 @@ use std::{collections::BTreeMap, str::FromStr};
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
-use primitives::{CurrencyId, VaultCurrencyPair, DOT};
+use primitives::{CurrencyId, TokenSymbol::INTR, VaultCurrencyPair, DOT};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
@@ -246,7 +246,17 @@ pub fn testnet_genesis(
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
 		asset_registry: Default::default(),
-		tokens: TokensConfig { balances: vec![] },
+		tokens: TokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|k| {
+					vec![
+						(k.clone().0, Token(INTR), 1 << 60),
+						(k.clone().0, Token(DOT), 1 << 60),
+					]
+				})
+				.collect(),
+		},
 		oracle: OracleConfig {
 			authorized_oracles: vec![], //todo
 			max_delay: DEFAULT_MAX_DELAY_MS,
