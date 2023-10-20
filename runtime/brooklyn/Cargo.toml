@@ -123,6 +123,7 @@ escrow.workspace = true
 interbtc-currency.workspace = true
 clients-info.workspace = true
 fee.workspace = true
+loans.workspace = true
 issue.workspace = true
 nomination.workspace = true
 oracle.workspace = true
@@ -253,6 +254,7 @@ std = [
 	"interbtc-currency/std",
 	"clients-info/std",
 	"fee/std",
+	"loans/std",
 	"issue/std",
 	"nomination/std",
 	"oracle/std",

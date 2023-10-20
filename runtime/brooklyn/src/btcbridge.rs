@@ -3,8 +3,9 @@ use frame_support::{
 	traits::{Contains, EnsureOrigin, EnsureOriginWithArg},
 	PalletId,
 };
+use loans::{OnSlashHook, PostDeposit, PostTransfer, PreDeposit, PreTransfer};
 use orml_asset_registry::SequentialId;
-use orml_traits::parameter_type_with_key;
+use orml_traits::{currency::MutationHooks, parameter_type_with_key};
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
 use sp_runtime::{
@@ -35,6 +36,21 @@ parameter_type_with_key! {
 }
 
 pub struct CurrencyHooks<T>(PhantomData<T>);
+impl<T: orml_tokens::Config + loans::Config>
+	MutationHooks<T::AccountId, T::CurrencyId, <T as interbtc_currency::Config>::Balance>
+	for CurrencyHooks<T>
+where
+	T::AccountId: From<sp_runtime::AccountId32>,
+{
+	type OnDust = orml_tokens::TransferDust<T, FeeAccount>;
+	type OnSlash = OnSlashHook<T>;
+	type PreDeposit = PreDeposit<T>;
+	type PostDeposit = PostDeposit<T>;
+	type PreTransfer = PreTransfer<T>;
+	type PostTransfer = PostTransfer<T>;
+	type OnNewTokenAccount = ();
+	type OnKilledTokenAccount = ();
+}
 
 impl orml_tokens::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
@@ -43,7 +59,7 @@ impl orml_tokens::Config for Runtime {
 	type CurrencyId = CurrencyId;
 	type WeightInfo = runtime_common::weights::orml_tokens::WeightInfo<Runtime>;
 	type ExistentialDeposits = ExistentialDeposits;
-	type CurrencyHooks = (); //todo
+	type CurrencyHooks = CurrencyHooks<Runtime>;
 	type MaxLocks = MaxLocks;
 	type DustRemovalWhitelist = DustRemovalWhitelist;
 	type MaxReserves = ConstU32<0>; // we don't use named reserves
@@ -93,18 +109,6 @@ impl security::Config for Runtime {
 	type WeightInfo = runtime_common::weights::security::WeightInfo<Runtime>;
 }
 
-pub struct CurrencyConvert;
-impl interbtc_currency::CurrencyConversion<interbtc_currency::Amount<Runtime>, CurrencyId>
-	for CurrencyConvert
-{
-	fn convert(
-		_amount: &interbtc_currency::Amount<Runtime>,
-		_to: CurrencyId,
-	) -> Result<interbtc_currency::Amount<Runtime>, sp_runtime::DispatchError> {
-		unimplemented!()
-	}
-}
-
 impl interbtc_currency::Config for Runtime {
 	type SignedInner = SignedInner;
 	type SignedFixedPoint = SignedFixedPoint;
@@ -113,7 +117,7 @@ impl interbtc_currency::Config for Runtime {
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type GetRelayChainCurrencyId = GetRelayChainCurrencyId;
 	type GetWrappedCurrencyId = GetWrappedCurrencyId;
-	type CurrencyConversion = CurrencyConvert;
+	type CurrencyConversion = interbtc_currency::CurrencyConvert<Runtime, Oracle, Loans>;
 }
 
 pub type VaultRewardsInstance = reward::Instance2;
@@ -231,4 +235,20 @@ impl clients_info::Config for Runtime {
 	type WeightInfo = runtime_common::weights::clients_info::WeightInfo<Runtime>;
 	type MaxNameLength = ConstU32<255>;
 	type MaxUriLength = ConstU32<255>;
+}
+
+parameter_types! {
+  pub const LoansPalletId: PalletId = PalletId(*b"par/loan");
+}
+
+impl loans::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type PalletId = LoansPalletId;
+	type ReserveOrigin = EnsureRoot<AccountId>;
+	type UpdateOrigin = EnsureRoot<AccountId>;
+	type WeightInfo = runtime_common::weights::loans::WeightInfo<Runtime>;
+	type UnixTime = Timestamp;
+	type RewardAssetId = GetNativeCurrencyId;
+	type ReferenceAssetId = GetWrappedCurrencyId;
+	type OnExchangeRateChange = vault_registry::PoolManager<Runtime>;
 }

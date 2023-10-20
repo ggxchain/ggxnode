@@ -673,7 +673,10 @@ construct_runtime!(
 
 		// BTC Refund:
 		Nomination: nomination,
-		ClientsInfo: clients_info
+		ClientsInfo: clients_info,
+
+		// Lending & AMM
+		Loans: loans,
 	}
 );
 

@@ -3,6 +3,7 @@ pub mod clients_info;
 pub mod currency;
 pub mod fee;
 pub mod issue;
+pub mod loans;
 pub mod nomination;
 pub mod oracle;
 pub mod orml_asset_registry;
