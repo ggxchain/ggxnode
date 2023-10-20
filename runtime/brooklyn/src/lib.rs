@@ -22,6 +22,7 @@ mod ink;
 pub mod light_client;
 pub mod pos;
 mod prelude;
+mod schnorr;
 
 mod version;
 pub use version::VERSION;
@@ -174,6 +175,7 @@ pub type OptionalSignedExtension = (
 pub type OptionalSignedExtension = (pallet_transaction_payment::ChargeTransactionPayment<Runtime>,);
 
 pub type SignedExtra = (
+	frame_system::CheckNonZeroSender<Runtime>,
 	frame_system::CheckSpecVersion<Runtime>,
 	frame_system::CheckTxVersion<Runtime>,
 	frame_system::CheckGenesis<Runtime>,
@@ -329,9 +331,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = ConstU32<16>;
 }
 
-parameter_types! {
-	pub const MaxAuthorities: u32 = 100;
-}
+pub type MaxAuthorities = dkg_runtime_primitives::CustomU32Getter<100>;
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -574,6 +574,12 @@ construct_runtime!(
 		System: frame_system,
 		Timestamp: pallet_timestamp,
 		RuntimeSpecification: chain_spec,
+
+		// DKG / offchain worker - the order and position of these pallet should not change
+		DKG: pallet_dkg_metadata,
+		DKGProposals: pallet_dkg_proposals,
+		DKGProposalHandler: pallet_dkg_proposal_handler,
+
 		Balances: pallet_balances,
 		Aura: pallet_aura,
 		ImOnline: pallet_im_online,
@@ -767,6 +773,105 @@ impl_runtime_apis! {
 			data: sp_inherents::InherentData,
 		) -> sp_inherents::CheckInherentsResult {
 			data.check_extrinsics(&block)
+		}
+	}
+
+	impl dkg_runtime_primitives::DKGApi<Block, dkg_runtime_primitives::crypto::AuthorityId, BlockNumber,  dkg_runtime_primitives::MaxProposalLength, MaxAuthorities> for Runtime {
+		fn authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
+			let authorities = DKG::authorities();
+			let authority_set_id = DKG::authority_set_id();
+
+			dkg_runtime_primitives::AuthoritySet {
+				authorities,
+				id: authority_set_id
+			}
+		}
+
+		fn queued_authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
+			let queued_authorities = DKG::next_authorities();
+			let queued_authority_set_id = DKG::authority_set_id() + 1u64;
+
+			dkg_runtime_primitives::AuthoritySet {
+				authorities: queued_authorities,
+				id: queued_authority_set_id
+			}
+		}
+
+		fn signature_threshold() -> u16 {
+			DKG::signature_threshold()
+		}
+
+		fn keygen_threshold() -> u16 {
+			DKG::keygen_threshold()
+		}
+
+		fn next_signature_threshold() -> u16 {
+			DKG::next_signature_threshold()
+		}
+
+		fn next_keygen_threshold() -> u16 {
+			DKG::next_keygen_threshold()
+		}
+
+		fn should_refresh(block_number: BlockNumber) -> bool {
+			DKG::should_refresh(block_number)
+		}
+
+		fn next_dkg_pub_key() -> Option<(dkg_runtime_primitives::AuthoritySetId, Vec<u8>)> {
+			DKG::next_dkg_public_key().map(|pub_key| (pub_key.0, pub_key.1.into()))
+		  }
+
+		  fn next_pub_key_sig() -> Option<Vec<u8>> {
+			DKG::next_public_key_signature().map(|pub_key_sig| pub_key_sig.into())
+		  }
+
+		fn get_current_session_progress(block_number: BlockNumber) -> Option<Permill> {
+			use frame_support::traits::EstimateNextSessionRotation;
+			<pallet_session::PeriodicSessions<pos::SessionPeriod, pos::SessionOffset> as EstimateNextSessionRotation<BlockNumber>>::estimate_current_session_progress(block_number).0
+		}
+
+		fn dkg_pub_key() -> (dkg_runtime_primitives::AuthoritySetId, Vec<u8>) {
+			(DKG::dkg_public_key().0, DKG::dkg_public_key().1.into())
+		  }
+
+		  fn get_best_authorities() -> Vec<(u16, schnorr::DKGId)> {
+			DKG::best_authorities().into()
+		  }
+
+		  fn get_next_best_authorities() -> Vec<(u16, schnorr::DKGId)> {
+			DKG::next_best_authorities().into()
+		  }
+
+		fn get_unsigned_proposal_batches() -> Vec<pallet_dkg_proposal_handler::StoredUnsignedProposalBatchOf<Runtime>> {
+			DKGProposalHandler::get_unsigned_proposal_batches()
+		}
+
+		fn get_authority_accounts() -> (Vec<AccountId>, Vec<AccountId>) {
+			(DKG::current_authorities_accounts().into(), DKG::next_authorities_accounts().into())
+		}
+
+		fn get_reputations(authorities: Vec<schnorr::DKGId>) -> Vec<(schnorr::DKGId, schnorr::Reputation)> {
+			authorities.iter().map(|a| (a.clone(), DKG::authority_reputations(a))).collect()
+		}
+
+		fn get_keygen_jailed(set: Vec<schnorr::DKGId>) -> Vec<schnorr::DKGId> {
+			set.iter().filter(|a| pallet_dkg_metadata::JailedKeygenAuthorities::<Runtime>::contains_key(a)).cloned().collect()
+		}
+
+		fn get_signing_jailed(set: Vec<schnorr::DKGId>) -> Vec<schnorr::DKGId> {
+			set.iter().filter(|a| pallet_dkg_metadata::JailedSigningAuthorities::<Runtime>::contains_key(a)).cloned().collect()
+		}
+
+		fn refresh_nonce() -> u32 {
+			DKG::refresh_nonce()
+		}
+
+		fn should_execute_new_keygen() -> (bool, bool) {
+			DKG::should_execute_new_keygen()
+		}
+
+		fn should_submit_proposer_vote() -> bool {
+			DKG::should_submit_proposer_vote()
 		}
 	}
 

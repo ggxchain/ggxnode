@@ -1693,7 +1693,7 @@ dependencies = [
  "coins-core",
  "digest 0.10.7",
  "hmac 0.12.1",
- "k256",
+ "k256 0.13.1",
  "serde",
  "sha2 0.10.8",
  "thiserror",
@@ -2655,6 +2655,28 @@ dependencies = [
 ]
 
 [[package]]
+name = "dkg-runtime-primitives"
+version = "0.0.1"
+dependencies = [
+ "ethabi 18.0.0",
+ "ethereum",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "frame-system",
+ "impl-trait-for-tuples",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-api",
+ "sp-application-crypto 7.0.0",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0",
+ "tiny-keccak 2.0.2",
+ "webb-proposals",
+]
+
+[[package]]
 name = "doc-comment"
 version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -2889,7 +2911,7 @@ dependencies = [
  "base64 0.21.4",
  "bytes 1.5.0",
  "hex",
- "k256",
+ "k256 0.13.1",
  "log 0.4.20",
  "rand 0.8.5",
  "rlp",
@@ -3362,7 +3384,7 @@ dependencies = [
  "elliptic-curve 0.13.6",
  "ethabi 18.0.0",
  "generic-array 0.14.7",
- "k256",
+ "k256 0.13.1",
  "num_enum 0.7.0",
  "once_cell",
  "open-fastrlp",
@@ -4242,7 +4264,7 @@ dependencies = [
  "frame-metadata 15.1.0",
  "frame-support-procedural",
  "impl-trait-for-tuples",
- "k256",
+ "k256 0.13.1",
  "log 0.4.20",
  "once_cell",
  "parity-scale-codec",
@@ -4713,6 +4735,7 @@ name = "ggxchain-runtime-brooklyn"
 version = "0.1.2"
 dependencies = [
  "astar-primitives",
+ "dkg-runtime-primitives",
  "fp-evm",
  "fp-rpc",
  "fp-self-contained",
@@ -4739,6 +4762,9 @@ dependencies = [
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-conviction-voting",
+ "pallet-dkg-metadata",
+ "pallet-dkg-proposal-handler",
+ "pallet-dkg-proposals",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
  "pallet-eth2-light-client",
@@ -6118,6 +6144,18 @@ dependencies = [
  "serde",
  "serde_json",
  "simple_asn1",
+]
+
+[[package]]
+name = "k256"
+version = "0.11.6"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "72c1e0b51e7ec0a97369623508396067a486bd0cbed95a2659a4b863d28cfc8b"
+dependencies = [
+ "cfg-if 1.0.0",
+ "ecdsa 0.14.8",
+ "elliptic-curve 0.12.3",
+ "sha2 0.10.8",
 ]
 
 [[package]]
@@ -8271,6 +8309,68 @@ dependencies = [
  "serde",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
+ "sp-std 5.0.0",
+]
+
+[[package]]
+name = "pallet-dkg-metadata"
+version = "0.2.0"
+dependencies = [
+ "dkg-runtime-primitives",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "libsecp256k1",
+ "log 0.4.20",
+ "pallet-session",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0",
+ "webb-proposals",
+]
+
+[[package]]
+name = "pallet-dkg-proposal-handler"
+version = "0.1.0"
+dependencies = [
+ "dkg-runtime-primitives",
+ "ethabi 18.0.0",
+ "frame-support",
+ "frame-system",
+ "log 0.4.20",
+ "pallet-dkg-metadata",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-staking",
+ "sp-std 5.0.0",
+ "webb-proposals",
+]
+
+[[package]]
+name = "pallet-dkg-proposals"
+version = "1.0.0"
+dependencies = [
+ "dkg-runtime-primitives",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "k256 0.11.6",
+ "log 0.4.20",
+ "pallet-balances",
+ "pallet-dkg-metadata",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-staking",
  "sp-std 5.0.0",
 ]
 
