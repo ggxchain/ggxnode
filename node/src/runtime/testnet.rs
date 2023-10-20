@@ -224,5 +224,7 @@ pub fn testnet_genesis(
 			],
 			phantom: std::marker::PhantomData,
 		},
+		dkg: Default::default(),
+		dkg_proposals: Default::default(),
 	}
 }

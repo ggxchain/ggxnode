@@ -83,6 +83,9 @@ pallet-eth2-light-client-relayer-gadget-cli = { workspace = true, optional = tru
 webb-consensus-types = { workspace = true, optional = true }
 webb-proposals = { workspace = true, optional = true }
 
+# Schnorr
+dkg-gadget = { workspace = true, optional = true }
+
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
 
@@ -123,6 +126,7 @@ brooklyn = [
 	"pallet-eth2-light-client-relayer-gadget-cli",
 	"webb-consensus-types",
 	"webb-proposals",
+	"dkg-gadget",
 ]
 fast-runtime = [
 	"ggxchain-runtime-sydney?/fast-runtime",
