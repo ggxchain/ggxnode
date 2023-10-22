@@ -6,7 +6,7 @@ use std::{collections::BTreeMap, str::FromStr};
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
-use primitives::{CurrencyId, TokenSymbol::INTR, VaultCurrencyPair, DOT};
+use primitives::{CurrencyId, Rate, TokenSymbol::INTR, VaultCurrencyPair, DOT};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
@@ -313,6 +313,10 @@ pub fn testnet_genesis(
 		},
 		nomination: NominationConfig {
 			is_nomination_enabled: false,
+		},
+		loans: LoansConfig {
+			max_exchange_rate: Rate::from_inner(loans::DEFAULT_MAX_EXCHANGE_RATE),
+			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 	}
 }

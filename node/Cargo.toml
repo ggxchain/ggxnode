@@ -88,6 +88,7 @@ btc-relay-rpc.workspace = true
 oracle-rpc.workspace = true
 vault-registry-rpc.workspace = true
 issue-rpc.workspace = true
+loans.workspace = true
 redeem-rpc.workspace = true
 replace-rpc.workspace = true
 escrow-rpc.workspace = true

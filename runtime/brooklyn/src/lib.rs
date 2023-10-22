@@ -675,7 +675,7 @@ construct_runtime!(
 		Nomination: nomination,
 		ClientsInfo: clients_info,
 
-		// Lending & AMM
+		// Lending
 		Loans: loans,
 	}
 );
