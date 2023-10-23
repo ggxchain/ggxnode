@@ -78,7 +78,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 				CHAIN_ID,
 				true,
 				0,
-				false,
+				true,
 			)
 		},
 		// Bootnodes
@@ -129,7 +129,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 				CHAIN_ID,
 				true,
 				0,
-				false,
+				true,
 			)
 		},
 		// Bootnodes
