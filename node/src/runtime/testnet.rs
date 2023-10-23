@@ -258,7 +258,10 @@ pub fn testnet_genesis(
 				.collect(),
 		},
 		oracle: OracleConfig {
-			authorized_oracles: vec![], //todo
+			authorized_oracles: endowed_accounts
+				.iter()
+				.flat_map(|k| vec![(k.clone().0, Default::default())])
+				.collect(),
 			max_delay: DEFAULT_MAX_DELAY_MS,
 		},
 		btc_relay: BTCRelayConfig {
