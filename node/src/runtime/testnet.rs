@@ -25,6 +25,7 @@ impl ValidatorIdentity {
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
 				beefy: get_from_seed::<BeefyId>(s),
+				dkg: get_from_seed::<DKGId>(s),
 			},
 		}
 	}
@@ -45,6 +46,7 @@ impl ValidatorIdentity {
 				grandpa: ed,
 				im_online: sr.into(),
 				beefy: ecdsa.into(),
+				dkg: ecdsa.into(),
 			},
 		}
 	}
@@ -224,7 +226,15 @@ pub fn testnet_genesis(
 			],
 			phantom: std::marker::PhantomData,
 		},
-		dkg: Default::default(),
+		dkg: DKGConfig {
+			authorities: initial_authorities
+				.iter()
+				.map(|x| x.session_keys.dkg.clone())
+				.collect::<_>(),
+			keygen_threshold: 2,
+			signature_threshold: 1,
+			authority_ids: initial_authorities.into_iter().map(|x| x.id).collect::<_>(),
+		},
 		dkg_proposals: Default::default(),
 	}
 }

@@ -2801,6 +2801,7 @@ dependencies = [
 [[package]]
 name = "dkg-gadget"
 version = "0.0.1"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "async-stream",
  "async-trait",
@@ -2852,6 +2853,7 @@ dependencies = [
 [[package]]
 name = "dkg-logging"
 version = "0.1.0"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "hex",
  "lazy_static",
@@ -2868,6 +2870,7 @@ dependencies = [
 [[package]]
 name = "dkg-mock-blockchain"
 version = "0.1.0"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "async-trait",
  "atomic",
@@ -2894,6 +2897,7 @@ dependencies = [
 [[package]]
 name = "dkg-primitives"
 version = "0.0.1"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "chacha20poly1305",
  "clap",
@@ -2917,6 +2921,7 @@ dependencies = [
 [[package]]
 name = "dkg-runtime-primitives"
 version = "0.0.1"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "ethabi 18.0.0",
  "ethereum",
@@ -4933,6 +4938,7 @@ dependencies = [
  "async-trait",
  "clap",
  "dkg-gadget",
+ "dkg-primitives",
  "env_logger 0.10.0",
  "eth-types",
  "ethers",
@@ -8789,6 +8795,7 @@ dependencies = [
 [[package]]
 name = "pallet-dkg-metadata"
 version = "0.2.0"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "dkg-runtime-primitives",
  "frame-support",
@@ -8809,6 +8816,7 @@ dependencies = [
 [[package]]
 name = "pallet-dkg-proposal-handler"
 version = "0.1.0"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "dkg-runtime-primitives",
  "ethabi 18.0.0",
@@ -8829,6 +8837,7 @@ dependencies = [
 [[package]]
 name = "pallet-dkg-proposals"
 version = "1.0.0"
+source = "git+https://github.com/ggxchain/dkg-substrate.git?branch=polkadot-v0.9.43#a09f56758f6d92407e62c08cfe1a6810ed3666df"
 dependencies = [
  "dkg-runtime-primitives",
  "frame-benchmarking",

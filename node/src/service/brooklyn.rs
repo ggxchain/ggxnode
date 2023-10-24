@@ -240,6 +240,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	// Use ethereum style for subscription ids
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let is_offchain_indexing_enabled = config.offchain_worker.indexing_enabled;
+	let debug_output = cli.output_path.clone();
 
 	let sc_service::PartialComponents {
 		client,
@@ -258,6 +259,17 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				(fee_history_cache, fee_history_cache_limit),
 			),
 	} = new_partial(&config, cli)?;
+
+	// TODO: it only works for dev seeds. Fix it later.
+	dkg_primitives::utils::insert_controller_account_keys_into_keystore(
+		&config,
+		Some(keystore_container.keystore()),
+	);
+
+	dkg_primitives::utils::insert_dkg_account_keys_into_keystore(
+		&config,
+		Some(keystore_container.keystore()),
+	);
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 

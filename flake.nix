@@ -365,6 +365,7 @@
                   nodejs-18_x
                   nodePackages.markdownlint-cli2
                   jq
+                  gmp
                 ];
 
                 inputsFrom = [

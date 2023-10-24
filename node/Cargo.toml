@@ -85,6 +85,7 @@ webb-proposals = { workspace = true, optional = true }
 
 # Schnorr
 dkg-gadget = { workspace = true, optional = true }
+dkg-primitives = { workspace = true, optional = true }
 
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
@@ -127,6 +128,7 @@ brooklyn = [
 	"webb-consensus-types",
 	"webb-proposals",
 	"dkg-gadget",
+	"dkg-primitives",
 ]
 fast-runtime = [
 	"ggxchain-runtime-sydney?/fast-runtime",

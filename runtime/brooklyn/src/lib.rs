@@ -24,6 +24,8 @@ pub mod pos;
 mod prelude;
 mod schnorr;
 
+pub use schnorr::DKGId;
+
 mod version;
 pub use version::VERSION;
 
@@ -145,6 +147,7 @@ pub mod opaque {
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
 			pub beefy: Beefy,
+			pub dkg: DKG,
 		}
 	}
 }
@@ -331,7 +334,7 @@ impl frame_system::Config for Runtime {
 	type MaxConsumers = ConstU32<16>;
 }
 
-pub type MaxAuthorities = dkg_runtime_primitives::CustomU32Getter<100>;
+pub type MaxAuthorities = dkg_runtime_primitives::CustomU32Getter<1024>;
 
 impl pallet_aura::Config for Runtime {
 	type AuthorityId = AuraId;
@@ -776,7 +779,7 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl dkg_runtime_primitives::DKGApi<Block, dkg_runtime_primitives::crypto::AuthorityId, BlockNumber,  dkg_runtime_primitives::MaxProposalLength, MaxAuthorities> for Runtime {
+	impl dkg_runtime_primitives::DKGApi<Block, schnorr::DKGId, BlockNumber,  dkg_runtime_primitives::MaxProposalLength, MaxAuthorities> for Runtime {
 		fn authority_set() -> dkg_runtime_primitives::AuthoritySet<dkg_runtime_primitives::crypto::AuthorityId, MaxAuthorities> {
 			let authorities = DKG::authorities();
 			let authority_set_id = DKG::authority_set_id();

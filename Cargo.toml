@@ -238,15 +238,12 @@ webb-consensus-types = { git = "https://github.com/ggxchain/pallet-eth2-light-cl
 webb-proposals = { git = "https://github.com/ggxchain/webb-rs.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # DKG substrate
-dkg-runtime-primitives = { path = "../dkg-substrate/dkg-runtime-primitives", default-features = false }
-pallet-dkg-metadata = { path = "../dkg-substrate/pallets/dkg-metadata", default-features = false }
-pallet-dkg-proposal-handler = { path = "../dkg-substrate/pallets/dkg-proposal-handler", default-features = false }
-pallet-dkg-proposals = { path = "../dkg-substrate/pallets/dkg-proposals", default-features = false }
-# pallet-bridge-registry = { git = "https://github.com/webb-tools/dkg-substrate.git", tag = "v0.4.6", default-features = false }
-dkg-gadget = { path = "../dkg-substrate/dkg-gadget" }
-dkg-primitives = { path = "../dkg-substrate/dkg-primitives" }
-# webb-relayer-gadget = { git = "https://github.com/webb-tools/dkg-substrate.git", tag = "v0.4.6" }
-# webb-relayer-gadget-cli = { git = "https://github.com/webb-tools/dkg-substrate.git", tag = "v0.4.6" }
+dkg-gadget = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43" }
+dkg-primitives = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43" }
+dkg-runtime-primitives = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43", default-features = false }
+pallet-dkg-metadata = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43", default-features = false }
+pallet-dkg-proposal-handler = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43", default-features = false }
+pallet-dkg-proposals = { git = "https://github.com/ggxchain/dkg-substrate.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # zk precompile
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
