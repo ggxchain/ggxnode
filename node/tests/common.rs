@@ -257,7 +257,7 @@ pub fn find_ws_url_from_output(read: impl Read + Send) -> (String, String) {
 pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, String) {
 	let mut data = String::new();
 
-	let ws_url = BufReader::new(read)
+	let base_url = BufReader::new(read)
 		.lines()
 		.find_map(|line| {
 			let line =
@@ -266,33 +266,20 @@ pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, 
 			data.push('\n');
 
 			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
+			let base_url = match line.split_once("Running JSON-RPC server: addr=") {
 				None => return None,
 				Some((_, after)) => after.split_once(',').unwrap().0,
 			};
 
-			Some(format!("ws://{sock_addr}"))
+			Some(base_url.to_string())
 		})
 		.unwrap_or_else(|| {
 			eprintln!("Observed node output:\n{data}");
 			panic!("We should get a WebSocket address")
 		});
 
-	let http_url = data
-		.lines()
-		.find_map(|line| {
-			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC HTTP server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
-
-			Some(format!("http://{sock_addr}"))
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a Http address")
-		});
+	let ws_url = format!("ws://{base_url}");
+	let http_url = format!("http://{base_url}");
 
 	(ws_url, http_url, data)
 }

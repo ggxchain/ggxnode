@@ -6,7 +6,9 @@ extern crate core;
 pub mod precompiles;
 
 pub mod chain_spec;
+pub mod pos;
 pub mod validator_manager;
+pub mod weights;
 
 #[macro_export]
 macro_rules! prod_or_fast {

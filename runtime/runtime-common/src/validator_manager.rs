@@ -26,6 +26,7 @@ type Session<T> = pallet_session::Pallet<T>;
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	pub use crate::weights::validator_manager::WeightInfo;
 	use frame_support::{dispatch::DispatchResult, pallet_prelude::*, traits::EnsureOrigin};
 	use frame_system::pallet_prelude::*;
 
@@ -41,6 +42,9 @@ pub mod pallet {
 
 		/// Privileged origin that can add or remove validators.
 		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -67,7 +71,7 @@ pub mod pallet {
 		///
 		/// The new validators will be active from current session + 2.
 		#[pallet::call_index(0)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::register_validators(validators.len() as u32))]
 		pub fn register_validators(
 			origin: OriginFor<T>,
 			validators: Vec<T::ValidatorId>,
@@ -86,7 +90,7 @@ pub mod pallet {
 		///
 		/// The removed validators will be deactivated from current session + 2.
 		#[pallet::call_index(1)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::deregister_validators(validators.len() as u32))]
 		pub fn deregister_validators(
 			origin: OriginFor<T>,
 			validators: Vec<T::ValidatorId>,
