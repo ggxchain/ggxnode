@@ -46,8 +46,8 @@ pallet-assets.workspace = true
 pallet-aura.workspace = true
 pallet-authorship.workspace = true
 pallet-balances.workspace = true
-pallet-beefy.workspace = true
 pallet-beefy-mmr.workspace = true
+pallet-beefy.workspace = true
 pallet-bounties.workspace = true
 pallet-conviction-voting.workspace = true
 pallet-election-provider-multi-phase.workspace = true
@@ -90,7 +90,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["precompiles"] }
+runtime-common = { workspace = true, features = ["precompiles", "pos"] }
 
 # Astar
 astar-primitives.workspace = true
