@@ -175,6 +175,7 @@
 
             common-native-runtime-common-attrs = common-attrs // rec {
               version = "0.1.2";
+              pname = "ggxchain-runtime-common";
               cargoExtraArgs = "--package runtime-common";
             };
 

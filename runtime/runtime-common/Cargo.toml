@@ -43,6 +43,7 @@ pallet-xvm = { workspace = true, optional = true }
 log.workspace = true
 
 [dev-dependencies]
+env_logger.workspace = true
 frame-election-provider-support = { workspace = true, features = ["std"] }
 pallet-aura = { workspace = true, features = ["std"] }
 pallet-evm = { workspace = true, features = ["std", "forbid-evm-reentrancy"] }

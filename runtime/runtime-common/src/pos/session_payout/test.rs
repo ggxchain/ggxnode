@@ -186,12 +186,64 @@ fn static_validator_percent() {
 }
 
 #[test]
-fn ten_sessions_should_work() {
+fn ten_sessions_validator_auto_compound_is_correct() {
+	let _ = env_logger::try_init();
+	let (_, mut ext) = mock::new_test_ext_with_pairs_without_nominator(1);
+	ext.execute_with(|| {
+		const VALIDATOR_ID: u32 = 0;
+		let mut validator_staking_ledger_total_after_election = 0;
+		for session in 0..10 {
+			let current_era = mock::Staking::active_era().unwrap().index;
+			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID).own,
+					validator_staking_ledger_total_after_election
+				);
+			}
+
+			mock::skip_with_reward_n_sessions(1);
+			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
+			if session % mock::SessionsPerEra::get() == 0 {
+				validator_staking_ledger_total_after_election = ledger_validator.total;
+			}
+		}
+	});
+}
+
+#[test]
+fn ten_sessions_validator_with_nominator_auto_compound_is_correct() {
+	let _ = env_logger::try_init();
 	let (_, mut ext) = mock::new_test_ext_with_pairs(1);
 	ext.execute_with(|| {
-		let validator_comission = Perbill::from_percent(1);
-		for _ in 0..10 {
-			test_one_session(1, validator_comission);
+		const VALIDATOR_ID: u32 = 0;
+		const NOMINATOR_ID: u32 = 1;
+		let mut validator_staking_ledger_total_after_election = 0;
+		let mut nominator_staking_ledger_total_after_election = 0;
+		for session in 0..10 {
+			let current_era = mock::Staking::active_era().unwrap().index;
+			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID).own,
+					validator_staking_ledger_total_after_election
+				);
+
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID)
+						.others
+						.iter()
+						.find(|&x| x.who == NOMINATOR_ID)
+						.map_or(0, |x| x.value),
+					nominator_staking_ledger_total_after_election
+				);
+			}
+
+			mock::skip_with_reward_n_sessions(1);
+			let validator_ledger = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
+			let nominator_ledger = mock::Staking::ledger(&NOMINATOR_ID).unwrap();
+			if session % mock::SessionsPerEra::get() == 0 {
+				validator_staking_ledger_total_after_election = validator_ledger.total;
+				nominator_staking_ledger_total_after_election = nominator_ledger.total;
+			}
 		}
 	});
 }

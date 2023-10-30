@@ -9248,6 +9248,7 @@ dependencies = [
 name = "runtime-common"
 version = "0.1.2"
 dependencies = [
+ "env_logger",
  "frame-election-provider-support",
  "frame-support",
  "frame-system",

@@ -1,8 +1,10 @@
 // TODO: benchmark and set proper weight for calls
 
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
+use frame_support::traits::{
+	Currency, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons,
+};
 use frame_system::pallet_prelude::*;
-use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
+use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination, StakingLedger};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_core::Get;
@@ -56,6 +58,7 @@ impl ValidatorCommissionAlgorithm {
 	}
 }
 
+const STAKING_ID: LockIdentifier = *b"staking ";
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -89,7 +92,7 @@ pub mod pallet {
 	}
 
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	#[pallet::generate_deposit(pub (super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		SessionPayout {
 			session_index: u32,
@@ -254,9 +257,23 @@ where
 				payout += imbalance.peek();
 			}
 		}
-
 		debug_assert!(nominator_payout_count <= T::MaxNominatorRewardedPerValidator::get());
 		Ok(payout)
+	}
+
+	/// Update the ledger for a controller.
+	///
+	/// This will also update the stash lock.
+	///
+	/// This function is taken from `pallet_staking::impls.rs` because update_ledger function is pub(crate).
+	pub(crate) fn update_ledger(controller: &T::AccountId, ledger: &StakingLedger<T>) {
+		T::Currency::set_lock(
+			STAKING_ID,
+			&ledger.stash,
+			ledger.total,
+			WithdrawReasons::all(),
+		);
+		Ledger::insert(controller, ledger);
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
@@ -276,13 +293,15 @@ where
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
 				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
 			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::Staked => {
-				// We can't update staking internal fields, so we supposed to do like that...
-				log::warn!(
-					target: "runtime::session_payout",
-					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
-				T::Currency::deposit_into_existing(stash, amount).ok()
-			}
+			RewardDestination::Staked => pallet_staking::Pallet::<T>::bonded(stash)
+				.and_then(|c| pallet_staking::Pallet::<T>::ledger(&c).map(|l| (c, l)))
+				.and_then(|(controller, mut l)| {
+					l.active += amount;
+					l.total += amount;
+					let r = T::Currency::deposit_into_existing(stash, amount).ok();
+					Self::update_ledger(&controller, &l);
+					r
+				}),
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
 			}
