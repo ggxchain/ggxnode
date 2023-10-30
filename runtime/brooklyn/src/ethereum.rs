@@ -1,23 +1,20 @@
 use crate::{
-	prelude::*, BlockWeights, FindAuthorTruncated, UncheckedExtrinsic, NORMAL_DISPATCH_RATIO,
+	prelude::*, BlockWeights, EVMChainId, EthereumChecked, FindAuthorTruncated, UncheckedExtrinsic,
+	Xvm, MAXIMUM_BLOCK_WEIGHT, NORMAL_DISPATCH_RATIO,
 };
 
 use super::{Balances, Runtime, RuntimeEvent, Timestamp};
 
 use super::opaque;
-use crate::Treasury;
+use crate::AccountId;
 use frame_support::weights::{constants::WEIGHT_REF_TIME_PER_SECOND, Weight};
 use pallet_ethereum::PostLogContent;
 use runtime_common::precompiles::GoldenGatePrecompiles;
+use sp_core::{H160, U256};
+use sp_runtime::{traits::BlakeTwo256, Permill};
 
-use pallet_evm::{AddressMapping, EnsureAddressTruncated, Error, HashedAddressMapping, Pallet};
-use sp_core::H160;
-use sp_runtime::Perbill;
-
-use frame_support::traits::{
-	Currency, ExistenceRequirement, Imbalance, OnUnbalanced, SignedImbalance, WithdrawReasons,
-};
-use sp_runtime::traits::{Saturating, UniqueSaturatedInto, Zero};
+use crate::CurrencyManager;
+use pallet_evm::{EnsureAddressTruncated, HashedAddressMapping};
 
 /// Current approximation of the gas/s consumption considering
 /// EVM execution over compiled WASM (on 4.4Ghz CPU).
@@ -29,122 +26,18 @@ pub const GAS_PER_SECOND: u64 = 40_000_000;
 /// u64 works for approximations because Weight is a very small unit compared to gas.
 pub const WEIGHT_PER_GAS: u64 = WEIGHT_REF_TIME_PER_SECOND.saturating_div(GAS_PER_SECOND);
 
-pub const TREASURY_COMMISSION_FROM_TIP: Perbill = Perbill::from_percent(25);
-/// Type alias for negative imbalance during fees
-type NegativeImbalanceOf<C, T> =
-	<C as Currency<<T as frame_system::Config>::AccountId>>::NegativeImbalance;
-
-/// Implements the transaction payment for a pallet implementing the `Currency`
-/// trait (eg. the pallet_balances) using an unbalance handler (implementing
-/// `OnUnbalanced`).
-/// Similar to `CurrencyAdapter` of `pallet_transaction_payment`
-pub struct GGXEVMCurrencyAdapter<C, OU>(sp_std::marker::PhantomData<(C, OU)>);
-
-impl<T, C, OU> pallet_evm::OnChargeEVMTransaction<T> for GGXEVMCurrencyAdapter<C, OU>
-where
-	T: pallet_evm::Config,
-	C: Currency<<T as frame_system::Config>::AccountId>,
-	C::PositiveImbalance: Imbalance<
-		<C as Currency<<T as frame_system::Config>::AccountId>>::Balance,
-		Opposite = C::NegativeImbalance,
-	>,
-	C::NegativeImbalance: Imbalance<
-		<C as Currency<<T as frame_system::Config>::AccountId>>::Balance,
-		Opposite = C::PositiveImbalance,
-	>,
-	OU: OnUnbalanced<NegativeImbalanceOf<C, T>>,
-	U256: UniqueSaturatedInto<<C as Currency<<T as frame_system::Config>::AccountId>>::Balance>,
-{
-	// Kept type as Option to satisfy bound of Default
-	type LiquidityInfo = Option<NegativeImbalanceOf<C, T>>;
-
-	fn withdraw_fee(who: &H160, fee: U256) -> Result<Self::LiquidityInfo, Error<T>> {
-		if fee.is_zero() {
-			return Ok(None);
-		}
-		let account_id = T::AddressMapping::into_account_id(*who);
-		let imbalance = C::withdraw(
-			&account_id,
-			fee.unique_saturated_into(),
-			WithdrawReasons::FEE,
-			ExistenceRequirement::AllowDeath,
-		)
-		.map_err(|_| Error::<T>::BalanceLow)?;
-		Ok(Some(imbalance))
-	}
-
-	fn correct_and_deposit_fee(
-		who: &H160,
-		corrected_fee: U256,
-		base_fee: U256,
-		already_withdrawn: Self::LiquidityInfo,
-	) -> Self::LiquidityInfo {
-		if let Some(paid) = already_withdrawn {
-			let account_id = T::AddressMapping::into_account_id(*who);
-
-			// Calculate how much refund we should return
-			let refund_amount = paid
-				.peek()
-				.saturating_sub(corrected_fee.unique_saturated_into());
-			// refund to the account that paid the fees. If this fails, the
-			// account might have dropped below the existential balance. In
-			// that case we don't refund anything.
-			let refund_imbalance = C::deposit_into_existing(&account_id, refund_amount)
-				.unwrap_or_else(|_| C::PositiveImbalance::zero());
-
-			// Make sure this works with 0 ExistentialDeposit
-			// https://github.com/paritytech/substrate/issues/10117
-			// If we tried to refund something, the account still empty and the ED is set to 0,
-			// we call `make_free_balance_be` with the refunded amount.
-			let refund_imbalance = if C::minimum_balance().is_zero()
-				&& refund_amount > C::Balance::zero()
-				&& C::total_balance(&account_id).is_zero()
-			{
-				// Known bug: Substrate tried to refund to a zeroed AccountData, but
-				// interpreted the account to not exist.
-				match C::make_free_balance_be(&account_id, refund_amount) {
-					SignedImbalance::Positive(p) => p,
-					_ => C::PositiveImbalance::zero(),
-				}
-			} else {
-				refund_imbalance
-			};
-
-			// merge the imbalance caused by paying the fees and refunding parts of it again.
-			let adjusted_paid = paid
-				.offset(refund_imbalance)
-				.same()
-				.unwrap_or_else(|_| C::NegativeImbalance::zero());
-
-			let (base_fee, tip) = adjusted_paid.split(base_fee.unique_saturated_into());
-			// Handle base fee. Can be either burned, rationed, etc ...
-			OU::on_unbalanced(base_fee);
-			return Some(tip);
-		}
-		None
-	}
-
-	fn pay_priority_fee(tip: Self::LiquidityInfo) {
-		// Default Ethereum behaviour: issue the tip to the block author.
-		if let Some(tip) = tip {
-			let account_id = T::AddressMapping::into_account_id(<Pallet<T>>::find_author());
-
-			let tip_commission = TREASURY_COMMISSION_FROM_TIP * tip.peek();
-			let (tip_commission, tip_after_commission) = tip.split(tip_commission);
-			OU::on_unbalanced(tip_commission);
-
-			let _ = C::deposit_into_existing(&account_id, tip_after_commission.peek());
-		}
-	}
-}
-
 parameter_types! {
 	pub BlockGasLimit: U256 = U256::from(
 		NORMAL_DISPATCH_RATIO * BlockWeights::get().max_block.ref_time() / WEIGHT_PER_GAS
 	);
-	pub PrecompilesValue: GoldenGatePrecompiles<Runtime> = GoldenGatePrecompiles::<_>::new();
+	pub PrecompilesValue: GoldenGatePrecompiles<Runtime, Xvm> = GoldenGatePrecompiles::<_, _>::new();
 	pub WeightPerGas: Weight = Weight::from_parts(WEIGHT_PER_GAS, 0);
-	pub ChainId: u64 = 888866;
+
+	/// The amount of gas per PoV size. Value is calculated as:
+	///
+	/// max_gas_limit = max_tx_ref_time / WEIGHT_PER_GAS = max_pov_size * gas_limit_pov_size_ratio
+	/// gas_limit_pov_size_ratio = ceil((max_tx_ref_time / WEIGHT_PER_GAS) / max_pov_size)
+	pub const GasLimitPovSizeRatio: u64 = 4; // !!!!! TODO: ADJUST IT
 }
 
 impl pallet_evm_chain_id::Config for Runtime {}
@@ -159,22 +52,23 @@ impl pallet_evm::Config for Runtime {
 	type AddressMapping = HashedAddressMapping<BlakeTwo256>;
 	type Currency = Balances;
 	type RuntimeEvent = RuntimeEvent;
-	type PrecompilesType = GoldenGatePrecompiles<Self>;
+	type PrecompilesType = GoldenGatePrecompiles<Self, Xvm>;
 	type PrecompilesValue = PrecompilesValue;
-	type ChainId = ChainId;
+	type ChainId = EVMChainId;
 	type BlockGasLimit = BlockGasLimit;
 	type Runner = pallet_evm::runner::stack::Runner<Self>;
-	type OnChargeTransaction = GGXEVMCurrencyAdapter<Balances, Treasury>;
+	type OnChargeTransaction = CurrencyManager;
 	type FindAuthor = FindAuthorTruncated<super::Aura>;
 	type Timestamp = Timestamp;
 	type OnCreate = ();
+	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 	type WeightInfo = ();
 }
 
 parameter_types! {
 	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
-	// Maximum length (in bytes) of revert message to include in Executed event
-	pub const ExtraDataLength: u32 = 30;
+		// Maximum length (in bytes) of revert message to include in Executed event
+			pub const ExtraDataLength: u32 = 30;
 }
 
 impl pallet_ethereum::Config for Runtime {
@@ -216,18 +110,35 @@ impl pallet_dynamic_fee::Config for Runtime {
 	type MinGasPriceBoundDivisor = BoundDivision;
 }
 
-parameter_types! {
-	pub EvmId: u8 = 0x0F;
-	pub WasmId: u8 = 0x1F;
+pub struct HashedAccountMapping;
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+	fn into_h160(account_id: AccountId) -> H160 {
+		let data = (b"evm:", account_id);
+		H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20])
+	}
 }
 
-use pallet_xvm::{evm, wasm};
-use sp_core::U256;
-use sp_runtime::{traits::BlakeTwo256, Permill};
+parameter_types! {
+	/// Equal to normal class dispatch weight limit.
+	pub XvmTxWeightLimit: Weight = NORMAL_DISPATCH_RATIO * MAXIMUM_BLOCK_WEIGHT;
+	pub const ReservedXcmpWeight: Weight = Weight::zero();
+}
+
+impl pallet_ethereum_checked::Config for Runtime {
+	type ReservedXcmpWeight = ReservedXcmpWeight;
+	type XvmTxWeightLimit = XvmTxWeightLimit;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type AccountMapping = HashedAccountMapping;
+	type XcmTransactOrigin = pallet_ethereum_checked::EnsureXcmEthereumTx<AccountId>;
+	type WeightInfo = pallet_ethereum_checked::weights::SubstrateWeight<Runtime>;
+}
+
 impl pallet_xvm::Config for Runtime {
-	type SyncVM = (evm::EVM<EvmId, Self>, wasm::WASM<WasmId, Self>);
-	type AsyncVM = ();
-	type RuntimeEvent = RuntimeEvent;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type AccountMapping = HashedAccountMapping;
+	type EthereumTransact = EthereumChecked;
+	type WeightInfo = pallet_xvm::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {

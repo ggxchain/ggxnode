@@ -3,7 +3,7 @@ use crate::{
 	chain_extensions::{IBCISC20Extension, Psp37Extension},
 	deposit,
 	prelude::*,
-	Balance, BlockWeights,
+	Balance, BlockWeights, Xvm, AVERAGE_ON_INITIALIZE_RATIO,
 };
 
 pub use frame_support::dispatch::DispatchClass;
@@ -13,7 +13,7 @@ use pallet_contracts::chain_extension::RegisteredChainExtension;
 pub use pallet_chain_extension_xvm::XvmExtension;
 use sp_core::{ConstBool, ConstU32};
 
-impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime> {
+impl RegisteredChainExtension<Runtime> for XvmExtension<Runtime, Xvm> {
 	const ID: u16 = 1;
 }
 
@@ -30,12 +30,9 @@ parameter_types! {
 	pub const DepositPerByte: Balance = deposit(0, 1);
 	pub const MaxValueSize: u32 = 16 * 1024;
 	// The lazy deletion runs inside on_initialize.
-	pub DeletionWeightLimit: Weight = BlockWeights::get()
-	.per_class
-	.get(DispatchClass::Normal)
-	.max_total
-	.unwrap_or(BlockWeights::get().max_block);
-
+	pub DeletionWeightLimit: Weight = AVERAGE_ON_INITIALIZE_RATIO * BlockWeights::get().max_block;
+	// Fallback value if storage deposit limit not set by the user
+	pub const DefaultDepositLimit: Balance = deposit(16, 16 * 1024);
 	pub Schedule: pallet_contracts::Schedule<Runtime> = Default::default();
 }
 
@@ -57,12 +54,11 @@ impl pallet_contracts::Config for Runtime {
 	type CallFilter = frame_support::traits::Nothing;
 	type DepositPerItem = DepositPerItem;
 	type DepositPerByte = DepositPerByte;
+	type DefaultDepositLimit = DefaultDepositLimit;
 	type CallStack = [pallet_contracts::Frame<Self>; 5];
 	type WeightPrice = pallet_transaction_payment::Pallet<Self>;
 	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
-	type ChainExtension = (XvmExtension<Self>, IBCISC20Extension, Psp37Extension);
-	type DeletionQueueDepth = ConstU32<128>;
-	type DeletionWeightLimit = DeletionWeightLimit;
+	type ChainExtension = (XvmExtension<Self, Xvm>, IBCISC20Extension, Psp37Extension);
 	type Schedule = Schedule;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
 	type MaxCodeLen = ConstU32<{ 123 * 1024 }>;

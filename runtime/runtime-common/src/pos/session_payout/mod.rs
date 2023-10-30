@@ -65,6 +65,7 @@ pub mod pallet {
 	use pallet_balances::NegativeImbalance;
 
 	use super::*;
+	pub use crate::weights::session_payout::WeightInfo;
 
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
@@ -85,6 +86,9 @@ pub mod pallet {
 		>;
 		type TimeProvider: UnixTime;
 		type CurrencyInfo: CurrencyInfo;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -137,7 +141,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_validator_to_nominator_commission_algorithm())]
 		pub fn change_validator_to_nominator_commission_algorithm(
 			origin: OriginFor<T>,
 			algorithm: ValidatorCommissionAlgorithm,
@@ -398,7 +402,6 @@ where
 
 	fn end_session(session_index: u32) {
 		let active_era = <pallet_staking::Pallet<T>>::active_era().map(|era| era.index);
-
 		let now_as_millis = T::TimeProvider::now().as_millis();
 
 		if session_index == 0 {
@@ -410,6 +413,7 @@ where
 
 			let last_payout = SessionStartTime::<T>::get();
 			let session_duration = now_as_millis - last_payout;
+			// let session_duration = 24 * 3600 * 1000;
 
 			Self::update_year_reward(now_as_millis);
 
