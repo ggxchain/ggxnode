@@ -173,11 +173,18 @@
               version = "0.2.0";
             };
 
+            common-native-runtime-common-attrs = common-attrs // rec {
+              version = "0.1.2";
+              cargoExtraArgs = "--package runtime-common";
+            };
+
             common-native-release-sydney-deps =
               craneLib.buildDepsOnly (common-native-sydney-attrs // { });
             common-native-release-brooklyn-deps =
               craneLib.buildDepsOnly (common-native-brooklyn-attrs // { });
             common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
+            common-native-runtime-common-deps =
+              craneLib.buildDepsOnly common-native-runtime-common-attrs;
 
             ggxchain-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
               pname = "ggxchain-runtimes";
@@ -190,6 +197,10 @@
 
             ggxchain-node-brooklyn = craneLib.buildPackage (common-native-brooklyn-attrs // {
               cargoArtifacts = common-native-release-brooklyn-deps;
+            });
+
+            ggxchain-runtime-common = craneLib.buildPackage (common-native-runtime-common-attrs // {
+              cargoArtifacts = common-native-runtime-common-deps;
             });
 
             # generates node secrtekey and gets public key of
@@ -252,6 +263,11 @@
                 cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
               });
 
+              clippy-runtime-common = craneLib.cargoClippy (common-native-runtime-common-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
+              });
+
               nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
                 cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
                 doCheck = true;
@@ -259,6 +275,11 @@
 
               nextest-sydney = craneLib.cargoNextest (common-native-sydney-attrs // {
                 cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
+                doCheck = true;
+              });
+
+              nextest-runtime-common = craneLib.cargoNextest (common-native-runtime-common-attrs // {
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
                 doCheck = true;
               });
 
@@ -272,7 +293,7 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
+                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney ggxchain-runtime-common gen-node-key inspect-node-key;
                 subkey = pkgs.subkey;
                 ggxchain-node = ggxchain-node-brooklyn;
                 node = ggxchain-node;
@@ -363,6 +384,7 @@
                   ggxchain-runtimes
                   ggxchain-node-brooklyn
                   ggxchain-node-sydney
+                  ggxchain-runtime-common
                 ];
                    
                 enterShell = ''

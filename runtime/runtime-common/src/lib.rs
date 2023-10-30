@@ -6,6 +6,7 @@ extern crate core;
 pub mod precompiles;
 
 pub mod chain_spec;
+#[cfg(feature = "pos")]
 pub mod pos;
 pub mod validator_manager;
 pub mod weights;
