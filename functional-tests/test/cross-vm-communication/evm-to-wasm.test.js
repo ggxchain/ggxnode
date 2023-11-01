@@ -40,11 +40,7 @@ describe('EVM to WASM communication', async function () {
         const xvmContractAddress = '0x0000000000000000000000000000000000005005';
         const xvmContract = commonEvm.getContract(xvm_abi, xvmContractAddress);
 
-        const transactionParameters = {
-            from: evmAccount,
-            gasPrice: '20000000000',
-            gas: '3000000',
-        };
+        const transactionParameters = await commonEvm.getTransactionParameters();
 
         await xvmContract.methods.xvm_call('0x1f0700e87648170284d71700', flipperContractPublicKey, '0xDEADBEEF')
             .send(transactionParameters)

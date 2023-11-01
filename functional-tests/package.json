@@ -12,8 +12,8 @@
   },
   "keywords": [
     "autotests",
-    "mocha",
-    "functional"
+    "polkadot-api",
+    "mocha"
   ],
   "author": "Maksym Nyrka",
   "bugs": {
@@ -27,9 +27,8 @@
     "@truffle/hdwallet-provider": "^2.1.13",
     "mocha": "^10.2.0",
     "solc": "^0.8.19",
-    "solc-js": "^1.0.1",
     "truffle-hdwallet-provider": "^1.0.17",
-    "web3": "^1.10.0",
+    "web3": "^4.1.1",
     "websocket": "^1.0.34"
   },
   "devDependencies": {

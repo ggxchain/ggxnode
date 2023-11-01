@@ -23,7 +23,7 @@ describe('WASM to EVM communication', async function () {
         await commonWasm.disconnect();
     });
 
-    it('should call WASM contract from EVM contract', async () => {
+    it('should call EVM contract from WASM contract', async () => {
         const __filename = fileURLToPath(import.meta.url);
         const __dirname = path.dirname(__filename);
         const contractPath = path.join(__dirname, '../../../examples/cross-vm-communication/wasm-to-evm/flipper.sol');
