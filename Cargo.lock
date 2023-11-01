@@ -7132,7 +7132,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "merkle-generator"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#8ae0104d7b2e29a93b76a5bae08e517a14305683"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
 dependencies = [
  "alloy-rlp",
  "serde",
@@ -8201,7 +8201,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#8ae0104d7b2e29a93b76a5bae08e517a14305683"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -8492,7 +8492,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#8ae0104d7b2e29a93b76a5bae08e517a14305683"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8971,7 +8971,7 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#8ae0104d7b2e29a93b76a5bae08e517a14305683"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -16631,7 +16631,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=relayer-integration#8ae0104d7b2e29a93b76a5bae08e517a14305683"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",
