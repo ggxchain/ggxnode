@@ -91,7 +91,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["precompiles", "eth-precompile"] }
+runtime-common = { workspace = true, features = ["precompiles", "eth-precompile", "pos"] }
 
 # Astar
 astar-primitives.workspace = true

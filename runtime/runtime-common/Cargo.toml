@@ -47,12 +47,12 @@ cfg-if.workspace = true
 log.workspace = true
 
 [dev-dependencies]
-frame-election-provider-support.workspace = true
-pallet-aura.workspace = true
-pallet-scheduler.workspace = true
-pallet-staking.workspace = true
-pallet-timestamp.workspace = true
-pallet-treasury.workspace = true
+env_logger.workspace = true
+frame-election-provider-support = { workspace = true, features = ["std"] }
+pallet-aura = { workspace = true, features = ["std"] }
+pallet-evm = { workspace = true, features = ["std", "forbid-evm-reentrancy"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+pallet-treasury = { workspace = true, features = ["std"] }
 paste.workspace = true
 proptest.workspace = true
 sp-consensus-aura.workspace = true
@@ -60,7 +60,7 @@ sp-io.workspace = true
 test-strategy.workspace = true
 
 [features]
-default = ["std"]
+default = ["std", "pos"]
 precompiles = [
 	"pallet-contracts",
 	"pallet-evm",
@@ -83,6 +83,7 @@ eth-precompile = [
 	"pallet-receipt-registry",
 ]
 
+pos = ["pallet-evm"]
 std = [
 	"serde/std",
 	"scale-codec/std",
@@ -93,6 +94,11 @@ std = [
 	"sp-core/std",
 	"sp-staking/std",
 	"sp-std/std",
+
+	"pallet-authorship/std",
+	"pallet-balances/std",
+	"pallet-staking/std",
+	"pallet-scheduler/std",
 
 	"pallet-contracts?/std",
 	"pallet-evm?/std",

@@ -176,12 +176,21 @@
               version = "0.2.0";
             };
 
+            common-native-runtime-common-attrs = common-attrs // rec {
+              version = "0.1.2";
+              pname = "ggxchain-runtime-common";
+              cargoExtraArgs = "--package runtime-common";
+            };
+
             common-native-release-sydney-deps =
               craneLib.buildDepsOnly (common-native-sydney-attrs // { });
             common-native-release-brooklyn-deps =
               craneLib.buildDepsOnly (common-native-brooklyn-attrs // { });
+
             wasm-sydney-release-deps = craneLib.buildDepsOnly common-wasm-sydney-attrs;
             wasm-brooklyn-release-deps = craneLib.buildDepsOnly common-wasm-brooklyn-attrs;
+            common-native-runtime-common-deps =
+              craneLib.buildDepsOnly common-native-runtime-common-attrs;
 
             ggxchain-sydney-runtime = craneLib.buildPackage (common-wasm-sydney-attrs // common-wasm-release-attrs // rec {
               cargoArtifacts = wasm-sydney-release-deps;
@@ -197,6 +206,10 @@
 
             ggxchain-node-brooklyn = craneLib.buildPackage (common-native-brooklyn-attrs // {
               cargoArtifacts = common-native-release-brooklyn-deps;
+            });
+
+            ggxchain-runtime-common = craneLib.buildPackage (common-native-runtime-common-attrs // {
+              cargoArtifacts = common-native-runtime-common-deps;
             });
 
             # generates node secrtekey and gets public key of
@@ -264,7 +277,11 @@
                 cargoArtifacts = ggxchain-brooklyn-runtime.cargoArtifacts;
               });
 
-              # Not all the test are covered here :C We still need to test runtime-common and runtimes, but it's hard to start test as our nix config compiles runtime as wasm
+              clippy-runtime-common = craneLib.cargoClippy (common-native-runtime-common-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
+              });
+
               nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
                 cargoArtifacts = ggxchain-node-brooklyn.cargoArtifacts;
                 doCheck = true;
@@ -272,6 +289,11 @@
 
               nextest-sydney = craneLib.cargoNextest (common-native-sydney-attrs // {
                 cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
+                doCheck = true;
+              });
+
+              nextest-runtime-common = craneLib.cargoNextest (common-native-runtime-common-attrs // {
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
                 doCheck = true;
               });
 
@@ -285,7 +307,7 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit custom-spec-files fix ggxchain-sydney-runtime ggxchain-brooklyn-runtime ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
+                inherit custom-spec-files fix ggxchain-sydney-runtime ggxchain-brooklyn-runtime ggxchain-runtime-common ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
                 subkey = pkgs.subkey;
                 ggxchain-node = ggxchain-node-sydney;
                 node = ggxchain-node;
@@ -372,6 +394,7 @@
                   ggxchain-brooklyn-runtime
                   ggxchain-node-brooklyn
                   ggxchain-node-sydney
+                  ggxchain-runtime-common
                 ];
                    
                 enterShell = ''

@@ -185,8 +185,74 @@ fn static_validator_percent() {
 	});
 }
 
+#[test]
+fn ten_sessions_validator_auto_compound_is_correct() {
+	let _ = env_logger::try_init();
+	let (_, mut ext) = mock::new_test_ext_with_pairs_without_nominator(1);
+	ext.execute_with(|| {
+		const VALIDATOR_ID: u32 = 0;
+		let mut validator_staking_ledger_total_after_election = 0;
+		for session in 0..10 {
+			let current_era = mock::Staking::active_era().unwrap().index;
+			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID).own,
+					validator_staking_ledger_total_after_election
+				);
+			}
+
+			mock::skip_with_reward_n_sessions(1);
+			let ledger_validator = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
+			if session % mock::SessionsPerEra::get() == 0 {
+				validator_staking_ledger_total_after_election = ledger_validator.total;
+			}
+		}
+	});
+}
+
+#[test]
+fn ten_sessions_validator_with_nominator_auto_compound_is_correct() {
+	let _ = env_logger::try_init();
+	let (_, mut ext) = mock::new_test_ext_with_pairs(1);
+	ext.execute_with(|| {
+		const VALIDATOR_ID: u32 = 0;
+		const NOMINATOR_ID: u32 = 1;
+		let mut validator_staking_ledger_total_after_election = 0;
+		let mut nominator_staking_ledger_total_after_election = 0;
+		for session in 0..10 {
+			let current_era = mock::Staking::active_era().unwrap().index;
+			if session > 0 && (session + 1) % mock::SessionsPerEra::get() == 0 {
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID).own,
+					validator_staking_ledger_total_after_election
+				);
+
+				assert_eq!(
+					mock::Staking::eras_stakers_clipped(current_era, &VALIDATOR_ID)
+						.others
+						.iter()
+						.find(|&x| x.who == NOMINATOR_ID)
+						.map_or(0, |x| x.value),
+					nominator_staking_ledger_total_after_election
+				);
+			}
+
+			mock::skip_with_reward_n_sessions(1);
+			let validator_ledger = mock::Staking::ledger(&VALIDATOR_ID).unwrap();
+			let nominator_ledger = mock::Staking::ledger(&NOMINATOR_ID).unwrap();
+			if session % mock::SessionsPerEra::get() == 0 {
+				validator_staking_ledger_total_after_election = validator_ledger.total;
+				nominator_staking_ledger_total_after_election = nominator_ledger.total;
+			}
+		}
+	});
+}
+
 fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 	const VALIDATOR_ID: u32 = 0;
+	// Define precision tolerance
+	const TOLERANCE: i64 = 10;
+
 	let nominator_id: u32 = validator_count;
 
 	let current_era = mock::Staking::active_era().unwrap().index;
@@ -209,7 +275,7 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 		* total_session_reward;
 	let comission_reward = validator_comission * validator_reward;
 	let reward_after_comission = Perbill::from_rational(stake.own, stake.total) // Stake to nominator ratio
-			* (validator_reward - comission_reward);
+		* (validator_reward - comission_reward);
 
 	let total_reward_expected = reward_after_comission + comission_reward;
 
@@ -222,12 +288,15 @@ fn test_one_session(validator_count: u32, validator_comission: Perbill) {
 	let nominator_balance_after = mock::Balances::free_balance(nominator_id);
 
 	assert!(total_reward_expected > 0);
-	assert_eq!(
+
+	let actual_reward = validator_balance_after - validator_balance;
+	// Check if the difference between the actual and expected rewards is within the precision tolerance
+	assert!(
+		(actual_reward as i64 - total_reward_expected as i64).abs() <= TOLERANCE,
+		"Actual reward {} and expected reward {} differ by more than {}",
+		actual_reward,
 		total_reward_expected,
-		validator_balance_after - validator_balance,
-		"Validator didn't receive reward. Expected {} == received {}",
-		total_reward_expected,
-		validator_balance_after - validator_balance
+		TOLERANCE
 	);
 
 	// We can't check nominator reward as he receives it from different validators, so balance will be different

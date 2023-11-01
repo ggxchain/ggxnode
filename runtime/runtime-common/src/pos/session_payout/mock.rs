@@ -332,6 +332,87 @@ pub fn new_test_ext_raw_authorities(authorities: Vec<AuthorityId>) -> sp_io::Tes
 	ext
 }
 
+pub fn new_test_ext_with_pairs_without_nominator(
+	authorities_len: usize,
+) -> (Vec<AuthorityPair>, sp_io::TestExternalities) {
+	let pairs = (0..authorities_len)
+		.map(|i| AuthorityPair::from_seed(&U256::from(i).into()))
+		.collect::<Vec<_>>();
+
+	let public = pairs.iter().map(|p| p.public()).collect();
+
+	(
+		pairs,
+		new_test_ext_raw_authorities_without_nominator(public),
+	)
+}
+
+pub fn new_test_ext_raw_authorities_without_nominator(
+	authorities: Vec<AuthorityId>,
+) -> sp_io::TestExternalities {
+	let mut t = frame_system::GenesisConfig::default()
+		.build_storage::<Test>()
+		.unwrap();
+
+	let balances: Vec<_> = (0..authorities.len())
+		.map(|i| (i as u32, BALANCE))
+		.chain(vec![(authorities.len() as u32, BALANCE)]) // nominator
+		.collect();
+
+	pallet_balances::GenesisConfig::<Test> { balances }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+	// controllers are same as stash
+	let stakers: Vec<_> = (0..authorities.len())
+		.map(|i| {
+			(
+				i as u32,
+				i as u32,
+				STAKE,
+				pallet_staking::StakerStatus::<u32>::Validator,
+			)
+		})
+		.collect();
+
+	let staking_config = pallet_staking::GenesisConfig::<Test> {
+		stakers,
+		validator_count: authorities.len() as u32,
+		..Default::default()
+	};
+	staking_config.assimilate_storage(&mut t).unwrap();
+
+	// stashes are the index.
+	let session_keys: Vec<_> = authorities
+		.iter()
+		.enumerate()
+		.map(|(i, k)| (i as u32, i as u32, MockSessionKeys { dummy: k.clone() }))
+		.collect();
+
+	pallet_session::GenesisConfig::<Test> { keys: session_keys }
+		.assimilate_storage(&mut t)
+		.unwrap();
+
+	let mut ext = sp_io::TestExternalities::from(t);
+
+	ext.execute_with(|| {
+		Timestamp::set_timestamp(INIT_TIMESTAMP);
+		for i in 0..authorities.len() {
+			Staking::validate(
+				RuntimeOrigin::signed(i as u32),
+				ValidatorPrefs {
+					commission: Perbill::from_percent((i + 1) as u32),
+					..Default::default()
+				},
+			)
+			.unwrap();
+		}
+		skip_with_reward_n_sessions(1);
+	});
+
+	ext
+}
+
 fn make_secondary_plain_pre_digest(slot: sp_consensus_aura::Slot) -> Digest {
 	let log = <DigestItem as CompatibleDigestItem<
 		sp_consensus_aura::sr25519::AuthoritySignature,
