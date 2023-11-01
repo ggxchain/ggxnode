@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 #![allow(clippy::new_without_default, clippy::or_fun_call)]
 
 // Make the WASM binary available.
@@ -19,6 +19,7 @@ pub mod ethereum;
 pub mod governance;
 mod ibc;
 mod ink;
+pub mod light_client;
 pub mod pos;
 mod prelude;
 
@@ -555,6 +556,13 @@ impl pallet_preimage::Config for Runtime {
 	type ByteDeposit = PreimageByteDeposit;
 }
 
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
+}
+
 // Create the runtime by composing the FRAME pallets that were previously configured.
 construct_runtime!(
 	pub enum Runtime where
@@ -585,6 +593,7 @@ construct_runtime!(
 		Multisig: pallet_multisig,
 		Identity: pallet_identity,
 		Sudo: pallet_sudo,
+		Utility: pallet_utility,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
@@ -622,6 +631,10 @@ construct_runtime!(
 		Mmr: pallet_mmr,
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
+
+		// Eth light client
+		Eth2Client: pallet_eth2_light_client,
+		EthReceiptRegistry: pallet_receipt_registry
 
 	}
 );

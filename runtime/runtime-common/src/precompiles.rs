@@ -4,6 +4,8 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
+#[cfg(feature = "eth-precompile")]
+use pallet_evm_eth_receipt_provider::EthReceiptPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_ed25519::Ed25519Verify;
@@ -50,7 +52,16 @@ pub mod consts {
 
 	pub const ZK_GROTH16_VERIFY: H160 = hash(0x8888);
 
-	pub const SUPPORTED_PRECOMPILES: [H160; 18] = [
+	#[cfg(feature = "eth-precompile")]
+	pub const ETH_RECEIPT_PROVIDER: H160 = hash(0x9999);
+
+	#[cfg(not(feature = "eth-precompile"))]
+	const ARRAY_SIZE: usize = 18;
+
+	#[cfg(feature = "eth-precompile")]
+	const ARRAY_SIZE: usize = 19;
+
+	pub const SUPPORTED_PRECOMPILES: [H160; ARRAY_SIZE] = [
 		EC_RECOVER,
 		SHA256,
 		RIPEMD160,
@@ -69,6 +80,8 @@ pub mod consts {
 		XVM,
 		SESSION_WRAPPER,
 		ZK_GROTH16_VERIFY,
+		#[cfg(feature = "eth-precompile")]
+		ETH_RECEIPT_PROVIDER,
 	];
 
 	const fn hash(a: u64) -> H160 {
@@ -131,11 +144,22 @@ impl<R, XS> GoldenGatePrecompiles<R, XS> {
 	}
 }
 
+// Hack to make it work with and without eth-precompile feature.
+cfg_if::cfg_if! {
+  if #[cfg(feature = "eth-precompile")] {
+	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config { }
+	impl<T: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config> RuntimeTrait for T { }
+  } else {
+	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config { }
+	impl<T: pallet_evm::Config + pallet_xvm::Config> RuntimeTrait for T { }
+  }
+}
+
 impl<R, XS> PrecompileSet for GoldenGatePrecompiles<R, XS>
 where
 	XvmPrecompile<R, XS>: Precompile,
 	SessionWrapper<R>: Precompile,
-	R: pallet_evm::Config + pallet_xvm::Config,
+	R: RuntimeTrait,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -164,6 +188,10 @@ where
 
 			// 0x8888 - is zk-groth16 verify
 			a if a == consts::ZK_GROTH16_VERIFY => Some(ZKGroth16Verify::execute(handle)),
+
+			// 0x9999 - is eth-receipt-registry get
+			#[cfg(feature = "eth-precompile")]
+			a if a == consts::ETH_RECEIPT_PROVIDER => Some(EthReceiptPrecompile::<R>::execute(handle)),
 			_ => None,
 		}
 	}

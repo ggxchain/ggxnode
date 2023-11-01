@@ -70,3 +70,5 @@ terraform.rc
 
 data-brooklyn
 data-sydney
+
+.direnv
