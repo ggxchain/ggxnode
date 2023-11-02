@@ -663,10 +663,6 @@ construct_runtime!(
 		Replace: replace,
 		VaultRegistry: vault_registry,
 
-		// EscrowAnnuity: annuity::<Instance1>,
-		// EscrowRewards: reward::<Instance1>,
-
-		// VaultAnnuity: annuity::<Instance2>,
 		VaultRewards: reward::<Instance2>,
 		VaultStaking: staking,
 		VaultCapacity: reward::<Instance3>,
@@ -1471,79 +1467,6 @@ impl_runtime_apis! {
 				Ok(BalanceWrapper{amount:result.amount()})
 		}
 	}
-
-	// impl escrow_rpc_runtime_api::EscrowApi<
-	// 	Block,
-	// 	AccountId,
-	// 	BlockNumber,
-	// 	Balance
-	// > for Runtime {
-	// 	fn balance_at(account_id: AccountId, height: Option<BlockNumber>) -> BalanceWrapper<Balance> {
-	// 			BalanceWrapper{amount: Escrow::balance_at(&account_id, height)}
-	// 	}
-
-	// 	fn free_stakable(account_id: AccountId) -> BalanceWrapper<Balance> {
-	// 			BalanceWrapper{amount: Escrow::free_stakable(&account_id)}
-	// 	}
-
-	// 	fn total_supply(height: Option<BlockNumber>) -> BalanceWrapper<Balance> {
-	// 			BalanceWrapper{amount: Escrow::total_supply(height)}
-	// 	}
-	// }
-
-	// impl reward_rpc_runtime_api::RewardApi<
-	// 	Block,
-	// 	AccountId,
-	// 	VaultId,
-	// 	CurrencyId,
-	// 	Balance,
-	// 	BlockNumber,
-	// 	UnsignedFixedPoint
-	// > for Runtime {
-	// 	fn compute_escrow_reward(account_id: AccountId, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
-	// 			let amount = <EscrowRewards as reward::RewardsApi<(), AccountId, Balance>>::compute_reward(&(), &account_id, currency_id)?;
-	// 			let balance = BalanceWrapper::<Balance> { amount };
-	// 			Ok(balance)
-	// 	}
-
-	// 	fn compute_farming_reward(account_id: AccountId, pool_currency_id: CurrencyId, reward_currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
-	// 			let amount = <FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::compute_reward(&pool_currency_id, &account_id, reward_currency_id)?;
-	// 			let balance = BalanceWrapper::<Balance> { amount };
-	// 			Ok(balance)
-	// 	}
-
-	// 	fn compute_vault_reward(vault_id: VaultId, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
-	// 			let amount = Fee::compute_vault_rewards(&vault_id, &vault_id.account_id, currency_id)?.amount();
-	// 			let balance = BalanceWrapper::<Balance> { amount };
-	// 			Ok(balance)
-	// 	}
-
-	// 	fn estimate_escrow_reward_rate(
-	// 			account_id: AccountId,
-	// 			amount: Option<Balance>,
-	// 			lock_time: Option<BlockNumber>,
-	// 	) -> Result<UnsignedFixedPoint, DispatchError> {
-	// 			runtime_common::estimate_escrow_reward_rate::<Runtime, EscrowAnnuityInstance, EscrowRewards, _>(account_id, amount, lock_time)
-	// 	}
-
-	// 	fn estimate_farming_reward(
-	// 			account_id: AccountId,
-	// 			pool_currency_id: CurrencyId,
-	// 			reward_currency_id: CurrencyId,
-	// 	) -> Result<BalanceWrapper<Balance>, DispatchError> {
-	// 			<FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::withdraw_reward(&pool_currency_id, &account_id, reward_currency_id)?;
-	// 			<FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::distribute_reward(&pool_currency_id, reward_currency_id, Farming::total_rewards(&pool_currency_id, &reward_currency_id))?;
-	// 			let amount = <FarmingRewards as reward::RewardsApi<CurrencyId, AccountId, Balance>>::compute_reward(&pool_currency_id, &account_id, reward_currency_id)?;
-	// 			let balance = BalanceWrapper::<Balance> { amount };
-	// 			Ok(balance)
-	// 	}
-
-	// 	fn estimate_vault_reward_rate(
-	// 			vault_id: VaultId,
-	// 	) -> Result<UnsignedFixedPoint, DispatchError> {
-	// 			runtime_common::estimate_vault_reward_rate::<Runtime, VaultAnnuityInstance, VaultStaking, VaultCapacity, _>(vault_id)
-	// 	}
-	// }
 
 	impl issue_rpc_runtime_api::IssueApi<
 		Block,

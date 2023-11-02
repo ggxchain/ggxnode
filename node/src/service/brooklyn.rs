@@ -936,28 +936,16 @@ where
 		H256,
 		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>,
 	>,
-	// C::Api: escrow_rpc::EscrowRuntimeApi<Block, AccountId, BlockNumber, Balance>,
-	// C::Api: reward_rpc::RewardRuntimeApi<
-	// 	Block,
-	// 	AccountId,
-	// 	VaultId<AccountId, CurrencyId>,
-	// 	CurrencyId,
-	// 	Balance,
-	// 	BlockNumber,
-	// 	FixedU128,
-	// >,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
 
 	use btc_relay_rpc::{BtcRelay, BtcRelayApiServer};
-	//use escrow_rpc::{Escrow, EscrowApiServer};
 	use issue_rpc::{Issue, IssueApiServer};
 	use oracle_rpc::{Oracle, OracleApiServer};
 	use redeem_rpc::{Redeem, RedeemApiServer};
 	use replace_rpc::{Replace, ReplaceApiServer};
-	// use reward_rpc::{Reward, RewardApiServer};
 	use vault_registry_rpc::{VaultRegistry, VaultRegistryApiServer};
 
 	let mut io = RpcModule::new(());
