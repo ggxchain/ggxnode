@@ -266,7 +266,7 @@ pub fn testnet_genesis(
 		},
 		btc_relay: BTCRelayConfig {
 			bitcoin_confirmations,
-			parachain_confirmations: 1, //todo(smith) use bitcoin_confirmations.saturating_mul(ggxchain_runtime_brooklyn::btcbridge::BitcoinBlockSpacing::get()),
+			parachain_confirmations: 1,
 			disable_difficulty_check,
 			disable_inclusion_check: false,
 		},
@@ -284,27 +284,51 @@ pub fn testnet_genesis(
 			replace_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		vault_registry: VaultRegistryConfig {
-			minimum_collateral_vault: vec![(Token(DOT), 30 * DOT.one())],
+			minimum_collateral_vault: vec![
+				(Token(INTR), 55 * INTR.one()),
+				(Token(DOT), 30 * DOT.one()),
+			],
 			punishment_delay: days,
-			system_collateral_ceiling: vec![(
-				default_pair_interlay(Token(DOT)),
-				2_450_000 * DOT.one(),
-			)],
-			secure_collateral_threshold: vec![(
-				default_pair_interlay(Token(DOT)),
-				/* 260% */
-				FixedU128::checked_from_rational(260, 100).unwrap(),
-			)],
-			premium_redeem_threshold: vec![(
-				default_pair_interlay(Token(DOT)),
-				/* 200% */
-				FixedU128::checked_from_rational(200, 100).unwrap(),
-			)],
-			liquidation_collateral_threshold: vec![(
-				default_pair_interlay(Token(DOT)),
-				/* 150% */
-				FixedU128::checked_from_rational(150, 100).unwrap(),
-			)],
+			system_collateral_ceiling: vec![
+				(default_pair_interlay(Token(INTR)), 26_200 * INTR.one()),
+				(default_pair_interlay(Token(DOT)), 2_450_000 * DOT.one()),
+			],
+			secure_collateral_threshold: vec![
+				(
+					default_pair_interlay(Token(INTR)),
+					/* 900% */
+					FixedU128::checked_from_rational(900, 100).unwrap(),
+				),
+				(
+					default_pair_interlay(Token(DOT)),
+					/* 260% */
+					FixedU128::checked_from_rational(260, 100).unwrap(),
+				),
+			],
+			premium_redeem_threshold: vec![
+				(
+					default_pair_interlay(Token(INTR)),
+					/* 650% */
+					FixedU128::checked_from_rational(650, 100).unwrap(),
+				),
+				(
+					default_pair_interlay(Token(DOT)),
+					/* 200% */
+					FixedU128::checked_from_rational(200, 100).unwrap(),
+				),
+			],
+			liquidation_collateral_threshold: vec![
+				(
+					default_pair_interlay(Token(INTR)),
+					/* 500% */
+					FixedU128::checked_from_rational(500, 100).unwrap(),
+				),
+				(
+					default_pair_interlay(Token(DOT)),
+					/* 150% */
+					FixedU128::checked_from_rational(150, 100).unwrap(),
+				),
+			],
 		},
 		fee: FeeConfig {
 			issue_fee: FixedU128::checked_from_rational(15, 10000).unwrap(), // 0.15%
