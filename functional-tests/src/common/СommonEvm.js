@@ -3,7 +3,7 @@ import Web3 from "web3";
 import solc from "solc";
 
 class CommonEvm {
-    nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944';
+    nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944?chainId=8886';
     mnemonic = 'movie avoid rack lesson rival rice you average caution eternal distance wood';
 
     constructor() {

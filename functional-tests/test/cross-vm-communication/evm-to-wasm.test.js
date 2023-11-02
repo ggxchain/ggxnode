@@ -11,17 +11,17 @@ describe('EVM to WASM communication', async function () {
     let commonWasm;
     let commonEvm;
 
-    before( async () => {
+    before(async () => {
         commonWasm = await new CommonWasm().init();
         commonEvm = new CommonEvm();
     })
 
-    after(async function ()  {
+    after(async function () {
         await commonEvm.disconnect();
         await commonWasm.disconnect();
     });
 
-    it('should call WASM contract from EVM contract', async function ()  {
+    it('should call WASM contract from EVM contract', async function () {
         const initBalance = 1;
         const flipperContract = await commonWasm.deployContract(contract_file, initBalance);
         const flipperContractAddress = flipperContract.address.toString();
@@ -34,15 +34,18 @@ describe('EVM to WASM communication', async function () {
         expect(flipperValueBefore).to.be.true;
 
         //call Flipper.flip() from EVM:
-        const evmAccount = await commonEvm.getAccount();
-        console.log('evmAccount', evmAccount);
-
         const xvmContractAddress = '0x0000000000000000000000000000000000005005';
         const xvmContract = commonEvm.getContract(xvm_abi, xvmContractAddress);
 
         const transactionParameters = await commonEvm.getTransactionParameters();
 
-        await xvmContract.methods.xvm_call('0x1f0700e87648170284d71700', flipperContractPublicKey, '0xDEADBEEF')
+        await xvmContract.methods.xvm_call(
+            '0x1F',
+            flipperContractPublicKey,
+            '0xDEADBEEF',
+            0,
+            11
+        )
             .send(transactionParameters)
             .on('transactionHash', (hash) => {
                 console.log('Transaction Hash:', hash);
