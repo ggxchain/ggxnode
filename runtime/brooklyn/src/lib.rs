@@ -652,7 +652,7 @@ construct_runtime!(
 		// Eth light client
 		Eth2Client: pallet_eth2_light_client,
 		EthReceiptRegistry: pallet_receipt_registry,
-		
+
 		// Orml
 		Currency: interbtc_currency,
 		Tokens: orml_tokens,
