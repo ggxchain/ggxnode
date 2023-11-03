@@ -1,8 +1,10 @@
 // TODO: benchmark and set proper weight for calls
 
-use frame_support::traits::{Currency, Imbalance, OnUnbalanced, UnixTime};
+use frame_support::traits::{
+	Currency, Imbalance, LockIdentifier, LockableCurrency, OnUnbalanced, UnixTime, WithdrawReasons,
+};
 use frame_system::pallet_prelude::*;
-use pallet_staking::{BalanceOf, EraRewardPoints, RewardDestination};
+use pallet_staking::{BalanceOf, EraRewardPoints, Ledger, RewardDestination, StakingLedger};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_core::Get;
@@ -56,6 +58,7 @@ impl ValidatorCommissionAlgorithm {
 	}
 }
 
+const STAKING_ID: LockIdentifier = *b"staking ";
 #[frame_support::pallet]
 pub mod pallet {
 	use frame_support::pallet_prelude::*;
@@ -89,7 +92,7 @@ pub mod pallet {
 	}
 
 	#[pallet::event]
-	#[pallet::generate_deposit(pub(super) fn deposit_event)]
+	#[pallet::generate_deposit(pub (super) fn deposit_event)]
 	pub enum Event<T: Config> {
 		SessionPayout {
 			session_index: u32,
@@ -254,9 +257,23 @@ where
 				payout += imbalance.peek();
 			}
 		}
-
 		debug_assert!(nominator_payout_count <= T::MaxNominatorRewardedPerValidator::get());
 		Ok(payout)
+	}
+
+	/// Update the ledger for a controller.
+	///
+	/// This will also update the stash lock.
+	///
+	/// This function is taken from `pallet_staking::impls.rs` because update_ledger function is pub(crate).
+	pub(crate) fn update_ledger(controller: &T::AccountId, ledger: &StakingLedger<T>) {
+		T::Currency::set_lock(
+			STAKING_ID,
+			&ledger.stash,
+			ledger.total,
+			WithdrawReasons::all(),
+		);
+		Ledger::insert(controller, ledger);
 	}
 
 	/// Actually make a payment to a staker. This uses the currency's reward function
@@ -276,13 +293,15 @@ where
 			RewardDestination::Controller => pallet_staking::Pallet::<T>::bonded(stash)
 				.map(|controller| T::Currency::deposit_creating(&controller, amount)),
 			RewardDestination::Stash => T::Currency::deposit_into_existing(stash, amount).ok(),
-			RewardDestination::Staked => {
-				// We can't update staking internal fields, so we supposed to do like that...
-				log::warn!(
-					target: "runtime::session_payout",
-					"make_payout: RewardDestination::Staked is not supported by us, so we will reward to stash.");
-				T::Currency::deposit_into_existing(stash, amount).ok()
-			}
+			RewardDestination::Staked => pallet_staking::Pallet::<T>::bonded(stash)
+				.and_then(|c| pallet_staking::Pallet::<T>::ledger(&c).map(|l| (c, l)))
+				.and_then(|(controller, mut l)| {
+					l.active += amount;
+					l.total += amount;
+					let r = T::Currency::deposit_into_existing(stash, amount).ok();
+					Self::update_ledger(&controller, &l);
+					r
+				}),
 			RewardDestination::Account(dest_account) => {
 				Some(T::Currency::deposit_creating(&dest_account, amount))
 			}
@@ -382,22 +401,23 @@ where
 	}
 
 	fn end_session(session_index: u32) {
-		let current_era = <pallet_staking::Pallet<T>>::current_era();
+		let active_era = <pallet_staking::Pallet<T>>::active_era().map(|era| era.index);
 		let now_as_millis = T::TimeProvider::now().as_millis();
 
 		if session_index == 0 {
 			// First session is not payable, cause we can't set a timestamp for it. TimeProvider is not working yet.
 			Self::update_year_reward(now_as_millis);
-		} else if let Some(current_era) = current_era {
+		} else if let Some(active_era) = active_era {
 			// Make payout at the end of each session.
 			let treasury_commission = T::CurrencyInfo::treasury_commission_from_staking();
 
 			let last_payout = SessionStartTime::<T>::get();
 			let session_duration = now_as_millis - last_payout;
+			// let session_duration = 24 * 3600 * 1000;
 
 			Self::update_year_reward(now_as_millis);
 
-			let staked = pallet_staking::Pallet::<T>::eras_total_stake(current_era);
+			let staked = pallet_staking::Pallet::<T>::eras_total_stake(active_era);
 			let issuance = <T as pallet_staking::Config>::Currency::total_issuance();
 			let (year_reward, _) = YearReward::<T>::get();
 
@@ -416,8 +436,7 @@ where
 			});
 			log::debug!(target: "runtime::session_payout", "end_session: validator_payout: {:?}, remainder: {:?}", validator_payout, remainder);
 
-			let total_validator_payout =
-				Self::make_validators_payout(validator_payout, current_era);
+			let total_validator_payout = Self::make_validators_payout(validator_payout, active_era);
 			//  We can have a remainder due to rounding errors. Mostly, it's 1-3 units. But it's a lot on a large scale.
 			let failed_to_pay = validator_payout - total_validator_payout;
 			T::RemainderDestination::on_unbalanced(pallet_balances::Pallet::<T>::issue(

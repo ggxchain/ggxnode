@@ -20,6 +20,7 @@ pub mod ethereum;
 pub mod governance;
 mod ibc;
 mod ink;
+pub mod light_client;
 pub mod pos;
 mod prelude;
 
@@ -552,13 +553,6 @@ impl pallet_im_online::Config for Runtime {
 	type MaxPeerDataEncodingSize = MaxPeerDataEncodingSize;
 }
 
-impl pallet_utility::Config for Runtime {
-	type RuntimeCall = RuntimeCall;
-	type RuntimeEvent = RuntimeEvent;
-	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
-	type PalletsOrigin = OriginCaller;
-}
-
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
@@ -577,6 +571,13 @@ impl pallet_preimage::Config for Runtime {
 	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
 	type BaseDeposit = PreimageBaseDeposit;
 	type ByteDeposit = PreimageByteDeposit;
+}
+
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -609,10 +610,10 @@ construct_runtime!(
 		Multisig: pallet_multisig,
 		Identity: pallet_identity,
 		Sudo: pallet_sudo,
+		Utility: pallet_utility,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
-		Utility: pallet_utility,
 
 		// Goverment pallets
 		Treasury: pallet_treasury,
@@ -648,6 +649,10 @@ construct_runtime!(
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
 
+		// Eth light client
+		Eth2Client: pallet_eth2_light_client,
+		EthReceiptRegistry: pallet_receipt_registry,
+		
 		// Orml
 		Currency: interbtc_currency,
 		Tokens: orml_tokens,

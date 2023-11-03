@@ -23,8 +23,10 @@ repository = "https://github.com/ggxchain/ggxnode/"
 # General purpose dependencies
 assert_cmd = "2.0.2"
 async-trait = "0.1"
+cfg-if = "1.0"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
+env_logger = "0.10.0"
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
 hex = "0.4"
@@ -52,8 +54,7 @@ test-strategy = "0.3.0"
 tokio = { version = "1.22.0", features = ["macros", "time", "parking_lot"] }
 tokio-util = { version = "0.7.4", features = ["compat"] }
 wait-timeout = "0.2"
-web3 = "0.18.0"
-
+web3 = "0.5.0"
 # Substrate Client
 
 mmr-gadget = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
@@ -78,7 +79,8 @@ sc-service = { version = "0.10.0-dev", git = "https://github.com/paritytech/subs
 sc-telemetry = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 sc-transaction-pool = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-rpc-client = { version = "0.10.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
-subxt = { version = "0.29.0", git = "https://github.com/paritytech/subxt", tag = "v0.29.0", default-features = false }
+subxt = { version = "0.31.0", git = "https://github.com/paritytech/subxt", tag = "v0.31.0" }
+subxt-signer = { version = "0.31.0", git = "https://github.com/paritytech/subxt", tag = "v0.31.0", features = ["subxt"] }
 
 # Substrate Primitive
 pallet-beefy = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
@@ -143,8 +145,8 @@ pallet-transaction-payment = { version = "4.0.0-dev", git = "https://github.com/
 pallet-transaction-payment-rpc = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-transaction-payment-rpc-runtime-api = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-treasury = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
-pallet-vesting = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-utility = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
+pallet-vesting = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 pallet-whitelist = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43", default-features = false }
 
 # Substrate Utility
@@ -216,6 +218,24 @@ pallet-ibc = { default-features = false, git = "https://github.com/ibc-test/subs
 pallet-ibc-utils = { git = "https://github.com/ibc-test/substrate-ibc.git", default-features = false, branch = "polkadot-v0.9.43" }
 pallet-ics20-transfer = { default-features = false, git = "https://github.com/ibc-test/substrate-ibc.git", branch = "polkadot-v0.9.43" }
 prost = { version = "0.11", default-features = false }
+
+# Eth - Light client
+alloy-rlp = "0.3.2"
+eth-light-client-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+eth-registry-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+eth-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false, features = [
+	"eth2",
+] }
+eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
+merkle-generator = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+pallet-chain-extension-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+pallet-eth2-light-client = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
+pallet-eth2-light-client-relayer-gadget = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
+pallet-eth2-light-client-relayer-gadget-cli = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
+pallet-evm-eth-receipt-provider = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "709b2cd2f1053ebfd2f9edd1ae424e7d5f051034", default-features = false }
+webb-consensus-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
+webb-proposals = { git = "https://github.com/ggxchain/webb-rs.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # zk precompile
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }

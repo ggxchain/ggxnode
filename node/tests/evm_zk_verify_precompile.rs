@@ -1,15 +1,6 @@
 #![cfg(unix)]
 
-use assert_cmd::cargo::cargo_bin;
-use std::{io::BufReader, process::Command, sync::Arc};
-use tempfile::tempdir;
-
-use nix::{
-	sys::signal::{kill, Signal::SIGINT},
-	unistd::Pid,
-};
-
-use std::process::{self};
+use std::sync::Arc;
 
 pub mod common;
 
@@ -19,10 +10,7 @@ use ethers::{
 	providers::{Http, Provider},
 };
 
-#[cfg(not(feature = "brooklyn"))]
-const CHAIN_ID: u64 = 8886u64;
-#[cfg(feature = "brooklyn")]
-const CHAIN_ID: u64 = 888866u64;
+use common::CHAIN_ID;
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
@@ -99,33 +87,17 @@ async fn call_zk_groth16_verify(
 #[cfg(unix)]
 #[tokio::test]
 async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
-	let base_path = tempdir().expect("could not create a temp dir");
-
-	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
-		.stdout(process::Stdio::piped())
-		.stderr(process::Stdio::piped())
-		.args(["--dev"])
-		.arg("-d")
-		.arg(base_path.path())
-		.spawn()
-		.unwrap();
-
-	let stderr = cmd.stderr.take().unwrap();
-	let wrapped = BufReader::new(stderr);
-
-	let (ws_url, http_url, _) = common::find_ws_http_url_from_output(wrapped);
-
-	let mut child = common::KillChildOnDrop(cmd);
+	let mut alice = common::start_node_for_local_chain("alice", "dev").await;
 
 	// Let it produce some blocks.
-	let _ = common::wait_n_finalized_blocks(1, 30, &ws_url).await;
+	let _ = common::wait_n_finalized_blocks(1, 30, &alice.ws_url).await;
 
 	assert!(
-		child.try_wait().unwrap().is_none(),
+		alice.child.try_wait().unwrap().is_none(),
 		"the process should still be running"
 	);
 
-	let provider: Provider<Http> = Provider::<Http>::try_from(http_url)?; // Change to correct network
+	let provider: Provider<Http> = Provider::<Http>::try_from(alice.http_url.clone())?; // Change to correct network
 
 	// Do not include the private key in plain text in any produciton code. This is just for demonstration purposes
 	let wallet: LocalWallet = "0x01ab6e801c06e59ca97a14fc0a1978b27fa366fc87450e0b65459dd3515b7391"
@@ -138,8 +110,7 @@ async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 	call_zk_groth16_verify(&client, &contract_addr).await?;
 
 	// Stop the process
-	kill(Pid::from_raw(child.id() as i32), SIGINT).unwrap();
-	child.wait().unwrap();
+	alice.kill();
 
 	Ok(())
 }

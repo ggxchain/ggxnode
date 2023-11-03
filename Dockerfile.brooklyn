@@ -34,5 +34,6 @@ RUN apt-get update --yes && \
     apt-get install curl --yes --no-install-recommends
 
 COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
+COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml /
 
 ENTRYPOINT [ "/usr/src/app/target/release/ggxchain-node" ]

@@ -35,7 +35,7 @@
   nixConfig = {
     # so you do not need to build locally if CI did it (no cache for ARM/MAC because did not added machines to build matrix)
     extra-substituters = [ "https://cache.nixos.org" "https://golden-gate-ggx.cachix.org" ];
-    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "ggx-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
+    extra-trusted-public-keys = [ "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=" "golden-gate-ggx.cachix.org-1:Sh6MjTG5qxsQcFDUMlkkRdAbTwZza9JqaETba9VgjnI=" ];
   };
 
   # inputs and systems are know ahead of time -> we can evalute all nix -> flake make nix """statically typed"""
@@ -76,19 +76,28 @@
               nativeBuildInputs = with pkgs;
                 rust-native-build-inputs ++ [ openssl ] ++ darwin;
               cargoCheckCommand = "true";
+              doCheck = false;
               src = rust-src;
               pname = "...";
               version = "...";
             };
 
-            common-wasm-deps-attrs = common-attrs // {
-              cargoExtraArgs =
-                "--package 'ggxchain-runtime-*' --target wasm32-unknown-unknown --no-default-features";
+            common-wasm-attrs = common-attrs // {
               RUSTFLAGS =
                 "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
             };
 
-            common-wasm-attrs = common-wasm-deps-attrs // {
+            common-wasm-brooklyn-attrs = common-wasm-attrs // {
+              cargoExtraArgs =
+                "--package 'ggxchain-runtime-brooklyn' --target wasm32-unknown-unknown --no-default-features";
+            };
+
+            common-wasm-sydney-attrs = common-wasm-attrs // {
+              cargoExtraArgs =
+                "--package 'ggxchain-runtime-sydney' --target wasm32-unknown-unknown --no-default-features";
+            };
+
+            common-wasm-release-attrs = {
               installPhase = ''
                 runHook preInstall
                 mkdir --parents $out/lib
@@ -96,11 +105,6 @@
                 runHook postInstall
               '';
             };
-
-
-            # calls `cargo vendor` on package deps 
-            common-wasm-deps =
-              craneLib.buildDepsOnly (common-wasm-attrs // { });
 
             fix = pkgs.writeShellApplication rec {
               name = "fix";
@@ -172,15 +176,28 @@
               version = "0.2.0";
             };
 
+            common-native-runtime-common-attrs = common-attrs // rec {
+              version = "0.1.2";
+              pname = "ggxchain-runtime-common";
+              cargoExtraArgs = "--package runtime-common";
+            };
+
             common-native-release-sydney-deps =
               craneLib.buildDepsOnly (common-native-sydney-attrs // { });
             common-native-release-brooklyn-deps =
               craneLib.buildDepsOnly (common-native-brooklyn-attrs // { });
-            common-wasm-release-deps = craneLib.buildDepsOnly common-wasm-deps-attrs;
 
-            ggxchain-runtimes = craneLib.buildPackage (common-wasm-attrs // rec {
-              pname = "ggxchain-runtimes";
-              cargoArtifacts = common-wasm-release-deps;
+            wasm-sydney-release-deps = craneLib.buildDepsOnly common-wasm-sydney-attrs;
+            wasm-brooklyn-release-deps = craneLib.buildDepsOnly common-wasm-brooklyn-attrs;
+            common-native-runtime-common-deps =
+              craneLib.buildDepsOnly common-native-runtime-common-attrs;
+
+            ggxchain-sydney-runtime = craneLib.buildPackage (common-wasm-sydney-attrs // common-wasm-release-attrs // rec {
+              cargoArtifacts = wasm-sydney-release-deps;
+            });
+
+            ggxchain-brooklyn-runtime = craneLib.buildPackage (common-wasm-brooklyn-attrs // common-wasm-release-attrs // rec {
+              cargoArtifacts = wasm-brooklyn-release-deps;
             });
 
             ggxchain-node-sydney = craneLib.buildPackage (common-native-sydney-attrs // {
@@ -189,6 +206,10 @@
 
             ggxchain-node-brooklyn = craneLib.buildPackage (common-native-brooklyn-attrs // {
               cargoArtifacts = common-native-release-brooklyn-deps;
+            });
+
+            ggxchain-runtime-common = craneLib.buildPackage (common-native-runtime-common-attrs // {
+              cargoArtifacts = common-native-runtime-common-deps;
             });
 
             # generates node secrtekey and gets public key of
@@ -228,13 +249,9 @@
             };
 
             cargoClippyExtraArgs = "-- -D warnings";
-
           in
           rec {
             checks = {
-              inherit ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney;
-
-
               fmt = craneLib.cargoFmt (common-attrs // {
                 cargoExtraArgs = "--all";
                 rustFmtExtraArgs = "--color always";
@@ -250,9 +267,19 @@
                 cargoArtifacts = ggxchain-node-sydney.cargoArtifacts;
               });
 
-              clippy-wasm = craneLib.cargoClippy (common-wasm-deps-attrs // {
+              clippy-wasm-sydney = craneLib.cargoClippy (common-wasm-sydney-attrs // {
                 inherit cargoClippyExtraArgs;
-                cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
+                cargoArtifacts = ggxchain-sydney-runtime.cargoArtifacts;
+              });
+
+              clippy-wasm-brooklyn = craneLib.cargoClippy (common-wasm-brooklyn-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-brooklyn-runtime.cargoArtifacts;
+              });
+
+              clippy-runtime-common = craneLib.cargoClippy (common-native-runtime-common-attrs // {
+                inherit cargoClippyExtraArgs;
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
               });
 
               nextest-brooklyn = craneLib.cargoNextest (common-native-brooklyn-attrs // {
@@ -265,8 +292,8 @@
                 doCheck = true;
               });
 
-              nextest-wasm = craneLib.cargoNextest (common-wasm-deps-attrs // {
-                cargoArtifacts = ggxchain-runtimes.cargoArtifacts;
+              nextest-runtime-common = craneLib.cargoNextest (common-native-runtime-common-attrs // {
+                cargoArtifacts = ggxchain-runtime-common.cargoArtifacts;
                 doCheck = true;
               });
 
@@ -280,16 +307,11 @@
 
             packages = flake-utils.lib.flattenTree
               rec  {
-                inherit custom-spec-files fix ggxchain-runtimes ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
+                inherit custom-spec-files fix ggxchain-sydney-runtime ggxchain-brooklyn-runtime ggxchain-runtime-common ggxchain-node-brooklyn ggxchain-node-sydney gen-node-key inspect-node-key;
                 subkey = pkgs.subkey;
-                ggxchain-node = ggxchain-node-brooklyn;
+                ggxchain-node = ggxchain-node-sydney;
                 node = ggxchain-node;
                 
-                release = pkgs.symlinkJoin {
-                  name = "release";
-                  paths = [ node ggxchain-runtimes ];
-                };
-                default = release;
                 # we should prune 3 things:
                 # - running process
                 # - logs/storages of run proccess
@@ -368,9 +390,11 @@
                 ];
 
                 inputsFrom = [
-                  ggxchain-runtimes
+                  ggxchain-sydney-runtime
+                  ggxchain-brooklyn-runtime
                   ggxchain-node-brooklyn
                   ggxchain-node-sydney
+                  ggxchain-runtime-common
                 ];
                    
                 enterShell = ''

@@ -46,8 +46,8 @@ pallet-assets.workspace = true
 pallet-aura.workspace = true
 pallet-authorship.workspace = true
 pallet-balances.workspace = true
-pallet-beefy.workspace = true
 pallet-beefy-mmr.workspace = true
+pallet-beefy.workspace = true
 pallet-bounties.workspace = true
 pallet-conviction-voting.workspace = true
 pallet-election-provider-multi-phase.workspace = true
@@ -72,8 +72,8 @@ pallet-timestamp.workspace = true
 pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 pallet-treasury.workspace = true
-pallet-vesting.workspace = true
 pallet-utility.workspace = true
+pallet-vesting.workspace = true
 pallet-whitelist.workspace = true
 
 # Frontier
@@ -91,7 +91,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["precompiles"] }
+runtime-common = { workspace = true, features = ["precompiles", "eth-precompile", "pos"] }
 
 # Astar
 astar-primitives.workspace = true
@@ -110,6 +110,11 @@ pallet-ibc-utils.workspace = true
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
 prost.workspace = true
+
+# Eth-light client
+pallet-chain-extension-receipt-registry.workspace = true
+pallet-eth2-light-client.workspace = true
+pallet-receipt-registry.workspace = true
 
 # Orml
 orml-asset-registry.workspace = true
@@ -215,6 +220,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-treasury/std",
+	"pallet-utility/std",
 	"pallet-vesting/std",
 	"pallet-utility/std",
 	"pallet-whitelist/std",
@@ -244,6 +250,9 @@ std = [
 	"pallet-ibc/std",
 	"pallet-ics20-transfer/std",
 	"pallet-ibc-utils/std",
+	# Eth light client
+	"pallet-eth2-light-client/std",
+	"pallet-receipt-registry/std",
 	# Orml
 	"orml-tokens/std",
 	"orml-traits/std",

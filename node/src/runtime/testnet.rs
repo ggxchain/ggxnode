@@ -11,6 +11,7 @@ use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
 use sp_runtime::{traits::IdentifyAccount, FixedPointNumber, FixedU128};
+use webb_consensus_types::network_config::{Network, NetworkConfig};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -245,6 +246,19 @@ pub fn testnet_genesis(
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 666)],
 		},
+		eth_2_client: Eth2ClientConfig {
+			networks: vec![
+				(
+					webb_proposals::TypedChainId::Evm(1),
+					NetworkConfig::new(&Network::Mainnet),
+				),
+				(
+					webb_proposals::TypedChainId::Evm(5),
+					NetworkConfig::new(&Network::Goerli),
+				),
+			],
+			phantom: std::marker::PhantomData,
+		},
 		asset_registry: Default::default(),
 		tokens: TokensConfig {
 			balances: endowed_accounts
@@ -344,6 +358,6 @@ pub fn testnet_genesis(
 		loans: LoansConfig {
 			max_exchange_rate: Rate::from_inner(loans::DEFAULT_MAX_EXCHANGE_RATE),
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
-		},
+		},		
 	}
 }

@@ -92,8 +92,15 @@ docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
     --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
 ```
 
-
 #### Brooklyn - development network:
+
+* Add env variable
+
+```bash
+export ETH1_INFURA_API_KEY="your_infura_key"
+```
+
+* Configure next toml files: eth-init.toml eth-relay.toml'
 
 ```bash
 mkdir data-brooklyn
@@ -112,9 +119,10 @@ docker run \
     --base-path=/data-brooklyn \
     --chain brooklyn \
     --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0"
+    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0" \
+    --light-client-relay-config-path eth-relay.toml \
+    --light-client-init-pallet-config-path eth-init.toml
 ```
-
 
 You can use the following optional flags:
 
@@ -145,8 +153,10 @@ cargo run --release -p ggxchain-node --features "sydney"
 
 #Brooklyn:
 cargo build --release  --features="brooklyn"
-cargo run --release -p ggxchain-node --features "brooklyn"
+cargo run --release -p ggxchain-node --features "brooklyn" --light-client-relay-config-path eth-relay.toml
+--light-client-init-pallet-config-path eth-init.toml
 ```
+
 To run in dev mode add `-- --dev` flag to run command
 
 #### nix

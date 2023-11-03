@@ -13,6 +13,7 @@ env:
   NIXPKGS_CHANNEL: nixos-22.11
   CACHIX_NAME: golden-gate-ggx
   OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
+  GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
   build-lint-all:
@@ -44,7 +45,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - run: nix flake check --log-lines 100 
+      - run: nix flake check --log-lines 100 --accept-flake-config
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'
