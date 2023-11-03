@@ -28,7 +28,7 @@
     "mocha": "^10.2.0",
     "solc": "^0.8.19",
     "truffle-hdwallet-provider": "^1.0.17",
-    "web3": "^4.2.1",
+    "web3": "^3.0.0-rc.5",
     "websocket": "^1.0.34"
   },
   "devDependencies": {

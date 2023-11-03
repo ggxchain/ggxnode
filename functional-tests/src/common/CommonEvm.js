@@ -1,10 +1,11 @@
 import HDWalletProvider from "@truffle/hdwallet-provider";
 import Web3 from "web3";
-import solc from "solc";
+import solc from 'solc';
 
 class CommonEvm {
-    nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944?chainId=8886';
+    nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944';
     mnemonic = 'movie avoid rack lesson rival rice you average caution eternal distance wood';
+    compilerVersion = 'v0.8.19+commit.7dd6d404';
 
     constructor() {
         this.provider = new HDWalletProvider({
@@ -37,20 +38,24 @@ class CommonEvm {
     async compile(sourceCode, contractName) {
         return new Promise((resolve, reject) => {
             try {
-                // Create the Solidity Compiler Standard Input and Output JSON
+                // Solidity Compiler Standard Input and Output JSON
                 const input = {
                     language: "Solidity",
                     sources: {main: {content: sourceCode}},
                     settings: {outputSelection: {"*": {"*": ["abi", "evm.bytecode"]}}},
                 };
 
-                // Parse the compiler output to retrieve the ABI and Bytecode
-                const output = solc.compile(JSON.stringify(input));
-                const artifact = JSON.parse(output).contracts.main[contractName];
-
-                resolve({
-                    abi: artifact.abi,
-                    bytecode: artifact.evm.bytecode.object,
+                solc.loadRemoteVersion(this.compilerVersion, async (err, solcSnapshot) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        const output = solcSnapshot.compile(JSON.stringify(input));
+                        const artifact = JSON.parse(output).contracts.main[contractName];
+                        resolve({
+                            abi: artifact.abi,
+                            bytecode: artifact.evm.bytecode.object,
+                        });
+                    }
                 });
             } catch (e) {
                 reject(e);

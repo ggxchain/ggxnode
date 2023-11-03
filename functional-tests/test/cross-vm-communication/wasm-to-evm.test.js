@@ -5,7 +5,7 @@ import * as path from "path";
 import {fileURLToPath} from 'url';
 import * as fs from "fs";
 import CommonWasm from "../../src/common/CommonWasm.js";
-import CommonEvm from "../../src/common/СommonEvm.js";
+import CommonEvm from "../../src/common/CommonEvm.js";
 
 describe('WASM to EVM communication', async function () {
     this.timeout(60000);

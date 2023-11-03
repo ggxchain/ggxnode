@@ -2,7 +2,7 @@ import {ContractPromise} from '@polkadot/api-contract';
 import contract_file from './assets/flipper.contract.json' assert {type: 'json'};
 import xvm_abi from "./assets/xvm_abi.js";
 import CommonWasm from "../../src/common/CommonWasm.js";
-import CommonEvm from "../../src/common/СommonEvm.js";
+import CommonEvm from "../../src/common/CommonEvm.js";
 import {expect} from "chai";
 
 describe('EVM to WASM communication', async function () {
@@ -39,13 +39,7 @@ describe('EVM to WASM communication', async function () {
 
         const transactionParameters = await commonEvm.getTransactionParameters();
 
-        await xvmContract.methods.xvm_call(
-            '0x1F',
-            flipperContractPublicKey,
-            '0xDEADBEEF',
-            0,
-            11
-        )
+        await xvmContract.methods.xvm_call('0x1f0700e87648170284d71700', flipperContractPublicKey, '0xDEADBEEF')
             .send(transactionParameters)
             .on('transactionHash', (hash) => {
                 console.log('Transaction Hash:', hash);
