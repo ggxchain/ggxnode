@@ -143,7 +143,6 @@ vault-registry.workspace = true
 btc-relay-rpc-runtime-api.workspace = true
 oracle-rpc-runtime-api.workspace = true
 vault-registry-rpc-runtime-api.workspace = true
-escrow-rpc-runtime-api.workspace = true
 reward-rpc-runtime-api.workspace = true
 issue-rpc-runtime-api.workspace = true
 redeem-rpc-runtime-api.workspace = true
@@ -276,7 +275,6 @@ std = [
 	"vault-registry/std",
 
   "btc-relay-rpc-runtime-api/std",
-  "escrow-rpc-runtime-api/std",
   "issue-rpc-runtime-api/std",
   "oracle-rpc-runtime-api/std",
   "redeem-rpc-runtime-api/std",

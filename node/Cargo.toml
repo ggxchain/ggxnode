@@ -97,7 +97,6 @@ issue-rpc.workspace = true
 loans.workspace = true
 redeem-rpc.workspace = true
 replace-rpc.workspace = true
-escrow-rpc.workspace = true
 reward-rpc.workspace = true
 
 [dev-dependencies]

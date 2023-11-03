@@ -1088,8 +1088,6 @@ where
 	io.merge(BtcRelay::new(client.clone()).into_rpc())?;
 	io.merge(Oracle::new(client.clone()).into_rpc())?;
 	io.merge(VaultRegistry::new(client.clone()).into_rpc())?;
-	// io.merge(Escrow::new(client.clone()).into_rpc())?;
-	// io.merge(Reward::new(client.clone()).into_rpc())?;
 	io.merge(Issue::new(client.clone()).into_rpc())?;
 	io.merge(Redeem::new(client.clone()).into_rpc())?;
 	io.merge(Replace::new(client.clone()).into_rpc())?;

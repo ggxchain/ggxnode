@@ -3221,30 +3221,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "escrow-rpc"
-version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
-dependencies = [
- "escrow-rpc-runtime-api",
- "jsonrpsee",
- "oracle-rpc-runtime-api",
- "parity-scale-codec",
- "sp-api",
- "sp-blockchain",
- "sp-runtime 7.0.0",
-]
-
-[[package]]
-name = "escrow-rpc-runtime-api"
-version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#90ca258dd43494b6ee0119cb348ac3be89b603e3"
-dependencies = [
- "oracle-rpc-runtime-api",
- "parity-scale-codec",
- "sp-api",
-]
-
-[[package]]
 name = "eth-keystore"
 version = "0.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4908,7 +4884,6 @@ dependencies = [
  "btc-relay-rpc",
  "clap",
  "env_logger 0.10.0",
- "escrow-rpc",
  "eth-types",
  "ethers",
  "fc-cli",
@@ -5011,7 +4986,6 @@ dependencies = [
  "clients-info",
  "currency",
  "escrow",
- "escrow-rpc-runtime-api",
  "fee",
  "fp-evm",
  "fp-rpc",
