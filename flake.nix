@@ -65,6 +65,9 @@
               PROTOC = "${pkgs.protobuf}/bin/protoc";
               ROCKSDB_LIB_DIR = "${pkgs.rocksdb}/lib";
               RUSTUP_TOOLCHAIN = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel; # for dylint
+              # Fix the issue that `target` argument is ignored when using `clang` symlink
+              CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_12.clang-unwrapped}/bin/clang-12";
+              CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_12.libclang.lib}/lib/clang/12.0.1/include/";
             };
 
             darwin = pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk; [
@@ -85,8 +88,6 @@
             common-wasm-attrs = common-attrs // {
               RUSTFLAGS =
                 "-Clink-arg=--export=__heap_base -Clink-arg=--import-memory";
-              CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_12.clang-unwrapped}/bin/clang-12";
-              CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_12.libclang.lib}/lib/clang/12.0.1/include/";
             };
 
             common-wasm-brooklyn-attrs = common-wasm-attrs // {
