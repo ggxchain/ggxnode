@@ -77,13 +77,25 @@ fp-evm = { workspace = true, features = ["std"] }
 fp-rpc = { workspace = true, features = ["std"] }
 fp-storage = { workspace = true, features = ["std"] }
 
+# Eth light client related
+pallet-eth2-light-client-relayer-gadget = { workspace = true, optional = true }
+pallet-eth2-light-client-relayer-gadget-cli = { workspace = true, optional = true }
+webb-consensus-types = { workspace = true, optional = true }
+webb-proposals = { workspace = true, optional = true }
+
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
-ggxchain-runtime-sydney = { workspace = true, features = ["std"] }
+ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
 
 [dev-dependencies]
+alloy-rlp = { workspace = true }
 assert_cmd = { workspace = true }
+env_logger = { workspace = true }
+eth-registry-types = { workspace = true }
+eth-types.workspace = true
 ethers = { workspace = true }
 hex = { workspace = true }
+hex-literal = { workspace = true }
+merkle-generator = { package = "types", workspace = true }
 nix = { workspace = true }
 num-bigint = { version = "0.4", default-features = false, features = ["rand"] }
 pallet-balances = { workspace = true }
@@ -91,7 +103,8 @@ serde_json = { workspace = true }
 sp-keyring = { workspace = true }
 substrate-rpc-client = { workspace = true }
 substrate-test-utils = { workspace = true }
-subxt = { workspace = true, features = ["jsonrpsee-ws"] }
+subxt = { workspace = true }
+subxt-signer.workspace = true
 tempfile = { workspace = true }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
@@ -102,14 +115,20 @@ web3 = { workspace = true }
 substrate-build-script-utils.workspace = true
 
 [features]
-default = ["sydney"]
-sydney = ["fast-runtime"]
-brooklyn = ["ggxchain-runtime-brooklyn"]
+default = ["brooklyn"]
+sydney = ["fast-runtime", "ggxchain-runtime-sydney"]
+brooklyn = [
+	"ggxchain-runtime-brooklyn",
+	"pallet-eth2-light-client-relayer-gadget",
+	"pallet-eth2-light-client-relayer-gadget-cli",
+	"webb-consensus-types",
+	"webb-proposals",
+]
 fast-runtime = [
-	"ggxchain-runtime-sydney/fast-runtime",
+	"ggxchain-runtime-sydney?/fast-runtime",
 ]
 allowlist = [
-	"ggxchain-runtime-sydney/allowlist",
+	"ggxchain-runtime-sydney?/allowlist",
 ]
 manual-seal = [
 	"sc-consensus-manual-seal",
