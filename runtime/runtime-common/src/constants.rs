@@ -17,4 +17,10 @@ pub mod currency {
 	pub const fn deposit(items: u32, bytes: u32) -> Balance {
 		items as Balance * 2_000 * CENTS + (bytes as Balance) * 100 * MILLICENTS
 	}
+
+	/// Constant values used within the runtime.
+	pub const MILLIGGX: Balance = 1_000_000_000_000_000;
+	pub const GGX: Balance = 1000 * MILLIGGX;
+	pub const KGGX: Balance = 1000 * GGX;
+	pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
 }
