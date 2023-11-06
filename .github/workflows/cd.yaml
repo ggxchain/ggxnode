@@ -35,6 +35,7 @@ jobs:
         run: |
           echo "Chain: $CHAIN"
           aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
+          export TAG=$(cat ${CHAIN}_version)
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
           echo "BROOKLYN_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:brooklyn-$TAG" >> "$GITHUB_OUTPUT"
           echo "SYDNEY_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:sydney-$TAG" >> "$GITHUB_OUTPUT"
