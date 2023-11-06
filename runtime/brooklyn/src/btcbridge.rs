@@ -14,19 +14,18 @@ use sp_runtime::{
 };
 
 pub fn get_all_module_accounts() -> Vec<AccountId> {
-	vec![] // todo for product env
+	vec![
+		FeeAccount::get(),
+		TreasuryAccount::get(),
+		VaultRegistryAccount::get(),
+	]
 }
 
 pub struct DustRemovalWhitelist;
 impl Contains<AccountId> for DustRemovalWhitelist {
-	fn contains(_a: &AccountId) -> bool {
-		//get_all_module_accounts().contains(a) // todo for product env
-		true
+	fn contains(a: &AccountId) -> bool {
+		get_all_module_accounts().contains(a)
 	}
-}
-
-parameter_types! {
-	pub const MaxLocks: u32 = 50;
 }
 
 parameter_type_with_key! {
@@ -191,7 +190,9 @@ parameter_types! {
 
 parameter_types! {
   pub FeeAccount: AccountId = FeePalletId::get().into_account_truncating();
+  pub TreasuryAccount: AccountId = TreasuryPalletId::get().into_account_truncating();
   pub VaultRegistryAccount: AccountId = VaultRegistryPalletId::get().into_account_truncating();
+  pub LoansAccount: AccountId = LoansPalletId::get().into_account_truncating();
 }
 
 impl issue::Config for Runtime {

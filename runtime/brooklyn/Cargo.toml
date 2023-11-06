@@ -274,13 +274,13 @@ std = [
 	"staking/std",
 	"vault-registry/std",
 
-  "btc-relay-rpc-runtime-api/std",
-  "issue-rpc-runtime-api/std",
-  "oracle-rpc-runtime-api/std",
-  "redeem-rpc-runtime-api/std",
-  "replace-rpc-runtime-api/std",
-  "reward-rpc-runtime-api/std",
-  "vault-registry-rpc-runtime-api/std",
+	"btc-relay-rpc-runtime-api/std",
+	"issue-rpc-runtime-api/std",
+	"oracle-rpc-runtime-api/std",
+	"redeem-rpc-runtime-api/std",
+	"replace-rpc-runtime-api/std",
+	"reward-rpc-runtime-api/std",
+	"vault-registry-rpc-runtime-api/std",
 ]
 aura = []
 allowlist = []
