@@ -19,9 +19,28 @@ jobs:
   build-lint-all:
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
-    # runs-on: buildjet-32vcpu-ubuntu-2204
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
+      - name: cachix-install-nix-action
+        uses: cachix/install-nix-action@6a9a9e84a173d90b3ffb42c5ddaf9ea033fad011
+        with:
+          install_url: https://releases.nixos.org/nix/${{ env.NIX_VERSION }}/install
+          nix_path: nixpkgs=channel:${{ env.NIXPKGS_CHANNEL }}
+          extra_nix_config: |
+            sandbox = relaxed
+            narinfo-cache-negative-ttl = 0      
+            system-features = kvm
+            http2 = true
+      - name: cachix-cachix-action
+        uses: cachix/cachix-action@6a2e08b5ebf7a9f285ff57b1870a4262b06e0bee
+        with:
+          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
+          name: ${{ env.CACHIX_NAME }}
+      - name: nix-channel-env
+        run: |  
+          nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
+          nix-channel --update
+          nix profile install nixpkgs#git
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
@@ -33,8 +52,7 @@ jobs:
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'
-    # runs-on: buildjet-32vcpu-ubuntu-2204
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
@@ -79,8 +97,7 @@ jobs:
 
   docker-build-brooklyn:
     if: github.ref == 'refs/heads/main'
-    # runs-on: buildjet-32vcpu-ubuntu-2204
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v2
