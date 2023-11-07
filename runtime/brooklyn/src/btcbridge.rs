@@ -18,6 +18,9 @@ pub fn get_all_module_accounts() -> Vec<AccountId> {
 		FeeAccount::get(),
 		TreasuryAccount::get(),
 		VaultRegistryAccount::get(),
+		LoansAccount::get(),
+		Loans::incentive_reward_account_id(),
+		Loans::reward_account_id(),
 	]
 }
 
