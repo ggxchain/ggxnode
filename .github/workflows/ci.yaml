@@ -21,15 +21,13 @@ jobs:
     ## Run only if a PR is made for the main branch
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
-      - name: nix-channel-env
-        run: |  
-          nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
-          nix-channel --update
-          nix profile install nixpkgs#git
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
+      - uses: cachix/install-nix-action@v22
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix flake check --log-lines 100 --accept-flake-config
 
   docker-build-sydney:
