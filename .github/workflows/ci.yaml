@@ -11,7 +11,6 @@ on:
 env:
   NIX_VERSION: nix-2.13.2
   NIXPKGS_CHANNEL: nixos-23.05
-  CACHIX_NAME: golden-gate-ggx
   OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
   GIT_LFS_SKIP_SMUDGE: 1
 
@@ -31,11 +30,6 @@ jobs:
             narinfo-cache-negative-ttl = 0      
             system-features = kvm
             http2 = true
-      - name: cachix-cachix-action
-        uses: cachix/cachix-action@6a2e08b5ebf7a9f285ff57b1870a4262b06e0bee
-        with:
-          authToken: "${{ secrets.CACHIX_AUTH_TOKEN }}"
-          name: ${{ env.CACHIX_NAME }}
       - name: nix-channel-env
         run: |  
           nix-channel --add https://nixos.org/channels/${{ env.NIXPKGS_CHANNEL }} nixpkgs
