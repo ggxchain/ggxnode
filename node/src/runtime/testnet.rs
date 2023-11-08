@@ -6,7 +6,7 @@ use std::{collections::BTreeMap, str::FromStr};
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
-use primitives::{CurrencyId, Rate, TokenSymbol::INTR, VaultCurrencyPair, DOT};
+use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
 use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519, H160, U256};
@@ -263,12 +263,7 @@ pub fn testnet_genesis(
 		tokens: TokensConfig {
 			balances: endowed_accounts
 				.iter()
-				.flat_map(|k| {
-					vec![
-						(k.clone().0, Token(INTR), 1 << 60),
-						(k.clone().0, Token(DOT), 1 << 60),
-					]
-				})
+				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 60)])
 				.collect(),
 		},
 		oracle: OracleConfig {
@@ -298,51 +293,27 @@ pub fn testnet_genesis(
 			replace_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		vault_registry: VaultRegistryConfig {
-			minimum_collateral_vault: vec![
-				(Token(INTR), 55 * INTR.one()),
-				(Token(DOT), 30 * DOT.one()),
-			],
+			minimum_collateral_vault: vec![(Token(GGXT), 55 * GGXT.one())],
 			punishment_delay: days,
-			system_collateral_ceiling: vec![
-				(default_pair_interlay(Token(INTR)), 26_200 * INTR.one()),
-				(default_pair_interlay(Token(DOT)), 2_450_000 * DOT.one()),
-			],
-			secure_collateral_threshold: vec![
-				(
-					default_pair_interlay(Token(INTR)),
-					/* 900% */
-					FixedU128::checked_from_rational(900, 100).unwrap(),
-				),
-				(
-					default_pair_interlay(Token(DOT)),
-					/* 260% */
-					FixedU128::checked_from_rational(260, 100).unwrap(),
-				),
-			],
-			premium_redeem_threshold: vec![
-				(
-					default_pair_interlay(Token(INTR)),
-					/* 650% */
-					FixedU128::checked_from_rational(650, 100).unwrap(),
-				),
-				(
-					default_pair_interlay(Token(DOT)),
-					/* 200% */
-					FixedU128::checked_from_rational(200, 100).unwrap(),
-				),
-			],
-			liquidation_collateral_threshold: vec![
-				(
-					default_pair_interlay(Token(INTR)),
-					/* 500% */
-					FixedU128::checked_from_rational(500, 100).unwrap(),
-				),
-				(
-					default_pair_interlay(Token(DOT)),
-					/* 150% */
-					FixedU128::checked_from_rational(150, 100).unwrap(),
-				),
-			],
+			system_collateral_ceiling: vec![(
+				default_pair_interlay(Token(GGXT)),
+				26_200 * GGXT.one(),
+			)],
+			secure_collateral_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 900% */
+				FixedU128::checked_from_rational(900, 100).unwrap(),
+			)],
+			premium_redeem_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 650% */
+				FixedU128::checked_from_rational(650, 100).unwrap(),
+			)],
+			liquidation_collateral_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 500% */
+				FixedU128::checked_from_rational(500, 100).unwrap(),
+			)],
 		},
 		fee: FeeConfig {
 			issue_fee: FixedU128::checked_from_rational(15, 10000).unwrap(), // 0.15%
