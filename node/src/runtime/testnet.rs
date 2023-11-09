@@ -263,7 +263,7 @@ pub fn testnet_genesis(
 		tokens: TokensConfig {
 			balances: endowed_accounts
 				.iter()
-				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 60)])
+				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
 				.collect(),
 		},
 		oracle: OracleConfig {
