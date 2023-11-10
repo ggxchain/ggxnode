@@ -293,7 +293,7 @@ pub fn testnet_genesis(
 			replace_btc_dust_value: DEFAULT_DUST_VALUE,
 		},
 		vault_registry: VaultRegistryConfig {
-			minimum_collateral_vault: vec![(Token(GGXT), 55 * GGXT.one())],
+			minimum_collateral_vault: vec![(Token(GGXT), 55)],
 			punishment_delay: days,
 			system_collateral_ceiling: vec![(
 				default_pair_interlay(Token(GGXT)),

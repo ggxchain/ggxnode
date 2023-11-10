@@ -221,7 +221,6 @@ std = [
 	"pallet-treasury/std",
 	"pallet-utility/std",
 	"pallet-vesting/std",
-	"pallet-utility/std",
 	"pallet-whitelist/std",
 	# Frontier
 	"fp-evm/std",
