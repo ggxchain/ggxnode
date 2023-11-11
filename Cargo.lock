@@ -168,7 +168,7 @@ version = "0.7.7"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5a824f2aa7e75a0c98c5a504fceb80649e9c35265d44525b5f94de4771a395cd"
 dependencies = [
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "once_cell",
  "version_check 0.9.4",
 ]
@@ -180,7 +180,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "91429305e9f0a25f6205c5b8e0d2db09e0708a7a6df0f42212bb56c32c8ac97a"
 dependencies = [
  "cfg-if 1.0.0",
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "once_cell",
  "version_check 0.9.4",
  "zerocopy",
@@ -1407,9 +1407,9 @@ dependencies = [
 
 [[package]]
 name = "bstr"
-version = "1.7.0"
+version = "1.8.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c79ad7fb2dd38f3dabd76b09c6a5a20c038fc0213ef1e9afd30eb777f120f019"
+checksum = "542f33a8835a0884b006a0c3df3dadd99c0c3f296ed26c2fdc8028e01ad6230c"
 dependencies = [
  "memchr",
  "regex-automata 0.4.3",
@@ -1571,7 +1571,7 @@ dependencies = [
  "ethereum_hashing",
  "ethereum_ssz",
  "ethereum_ssz_derive",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "ssz_types",
  "tree_hash",
 ]
@@ -1658,7 +1658,7 @@ version = "0.15.5"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "03915af431787e6ffdcc74c645077518c6b6e01f80b761e0fbbfa288536311b3"
 dependencies = [
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -1781,9 +1781,9 @@ dependencies = [
 
 [[package]]
 name = "clap"
-version = "4.4.7"
+version = "4.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "ac495e00dcec98c83465d5ad66c5c4fabd652fd6686e7c6269b117e729a6f17b"
+checksum = "2275f18819641850fa26c89acc84d465c1bf91ce57bc2748b28c420473352f64"
 dependencies = [
  "clap_builder",
  "clap_derive",
@@ -1791,9 +1791,9 @@ dependencies = [
 
 [[package]]
 name = "clap_builder"
-version = "4.4.7"
+version = "4.4.8"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c77ed9a32a62e6ca27175d00d29d05ca32e396ea1eb5fb01d8256b669cec7663"
+checksum = "07cdf1b148b25c1e1f7a42225e30a0d99a615cd4637eae7365548dd4529b95bc"
 dependencies = [
  "anstream",
  "anstyle",
@@ -2064,7 +2064,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "log 0.4.20",
  "regalloc2",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "target-lexicon",
 ]
 
@@ -2109,7 +2109,7 @@ checksum = "64a25d9d0a0ae3079c463c34115ec59507b4707175454f0eee0891e83e30e82d"
 dependencies = [
  "cranelift-codegen",
  "log 0.4.20",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "target-lexicon",
 ]
 
@@ -2141,7 +2141,7 @@ dependencies = [
  "cranelift-frontend",
  "itertools 0.10.5",
  "log 0.4.20",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "wasmparser 0.102.0",
  "wasmtime-types 8.0.1",
 ]
@@ -3150,9 +3150,9 @@ dependencies = [
 
 [[package]]
 name = "env_logger"
-version = "0.10.0"
+version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "85cdab6a89accf66733ad5a1693a4dcced6aeff64602b634530dd73c1f3ee9f0"
+checksum = "95b3f3e67048839cb0d0781f445682a35113da7121f7c949db0e2be96a4fbece"
 dependencies = [
  "humantime",
  "is-terminal",
@@ -3292,7 +3292,7 @@ dependencies = [
  "serde_json",
  "sp-core 16.0.0",
  "sp-keyring 18.0.0",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "toml 0.5.11",
  "types 0.2.1",
  "warp",
@@ -3471,7 +3471,7 @@ checksum = "e61ffea29f26e8249d35128a82ec8d3bd4fbc80179ea5f5e5e3daafef6a80fcb"
 dependencies = [
  "ethereum-types 0.14.1",
  "itertools 0.10.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -3640,7 +3640,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "tracing-futures",
  "url 2.4.1",
@@ -3663,7 +3663,7 @@ dependencies = [
  "futures-timer",
  "futures-util",
  "hashers",
- "http 0.2.9",
+ "http 0.2.10",
  "instant",
  "jsonwebtoken",
  "once_cell",
@@ -3672,7 +3672,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-tungstenite 0.20.1",
  "tracing",
  "tracing-futures",
@@ -3728,7 +3728,7 @@ dependencies = [
  "svm-rs",
  "thiserror",
  "tiny-keccak 2.0.2",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "walkdir",
  "yansi",
@@ -3889,7 +3889,7 @@ checksum = "25cbce373ec4653f1a01a31e8a5e5ec0c622dc27ff9c4e6606eefef5cbbed4a5"
 [[package]]
 name = "fc-cli"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "clap",
  "ethereum-types 0.14.1",
@@ -3907,7 +3907,7 @@ dependencies = [
 [[package]]
 name = "fc-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "async-trait",
  "fp-consensus",
@@ -3923,7 +3923,7 @@ dependencies = [
 [[package]]
 name = "fc-db"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "async-trait",
  "fp-storage",
@@ -3933,7 +3933,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "sc-client-db",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-blockchain",
  "sp-core 7.0.0",
  "sp-database",
@@ -3943,7 +3943,7 @@ dependencies = [
 [[package]]
 name = "fc-mapping-sync"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fc-db",
  "fc-storage",
@@ -3964,7 +3964,7 @@ dependencies = [
 [[package]]
 name = "fc-rpc"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -4008,13 +4008,13 @@ dependencies = [
  "sp-state-machine 0.13.0",
  "sp-storage 7.0.0",
  "substrate-prometheus-endpoint",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
 name = "fc-rpc-core"
 version = "1.1.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -4027,7 +4027,7 @@ dependencies = [
 [[package]]
 name = "fc-storage"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -4097,9 +4097,9 @@ dependencies = [
 
 [[package]]
 name = "fiat-crypto"
-version = "0.2.2"
+version = "0.2.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "a481586acf778f1b1455424c343f71124b048ffa5f4fc3f8f6ae9dc432dcb3c7"
+checksum = "f69037fe1b785e84986b4f2cbcf647381876a00671d25ceef715d7812dd7e1dd"
 
 [[package]]
 name = "file-per-thread-logger"
@@ -4107,7 +4107,7 @@ version = "0.1.6"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "84f2e425d9790201ba4af4630191feac6dcc98765b118d4d18e91d23c2353866"
 dependencies = [
- "env_logger 0.10.0",
+ "env_logger 0.10.1",
  "log 0.4.20",
 ]
 
@@ -4250,7 +4250,7 @@ dependencies = [
 [[package]]
 name = "fp-account"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "hex",
  "impl-serde 0.4.0",
@@ -4269,7 +4269,7 @@ dependencies = [
 [[package]]
 name = "fp-consensus"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "parity-scale-codec",
@@ -4281,7 +4281,7 @@ dependencies = [
 [[package]]
 name = "fp-dynamic-fee"
 version = "1.0.0"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "async-trait",
  "sp-core 7.0.0",
@@ -4291,7 +4291,7 @@ dependencies = [
 [[package]]
 name = "fp-ethereum"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -4305,7 +4305,7 @@ dependencies = [
 [[package]]
 name = "fp-evm"
 version = "3.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "evm",
  "frame-support",
@@ -4320,7 +4320,7 @@ dependencies = [
 [[package]]
 name = "fp-rpc"
 version = "3.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -4337,7 +4337,7 @@ dependencies = [
 [[package]]
 name = "fp-self-contained"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -4349,7 +4349,7 @@ dependencies = [
 [[package]]
 name = "fp-storage"
 version = "2.0.0"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "parity-scale-codec",
  "serde",
@@ -4518,7 +4518,7 @@ dependencies = [
  "paste",
  "scale-info",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-api",
  "sp-arithmetic 6.0.0",
  "sp-core 7.0.0",
@@ -4884,9 +4884,9 @@ dependencies = [
 
 [[package]]
 name = "getrandom"
-version = "0.2.10"
+version = "0.2.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "be4136b2a15dd319360be1c07d9933517ccf0be8f16bf62a3bee4f0d618df427"
+checksum = "fe9006bed769170c11f845cf00c7c1e9092aeb3f268e007c3e760ac68008070f"
 dependencies = [
  "cfg-if 1.0.0",
  "js-sys",
@@ -4905,7 +4905,7 @@ dependencies = [
  "bitcoin 1.2.0",
  "btc-relay-rpc",
  "clap",
- "env_logger 0.10.0",
+ "env_logger 0.10.1",
  "eth-types",
  "ethers",
  "fc-cli",
@@ -4987,7 +4987,7 @@ dependencies = [
  "subxt 0.31.0",
  "subxt-signer",
  "tempfile",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-util 0.7.10",
  "types 0.1.0",
  "vault-registry-rpc",
@@ -5325,7 +5325,7 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "indexmap 1.9.3",
  "slab 0.4.9",
  "tokio 0.2.25",
@@ -5345,19 +5345,19 @@ dependencies = [
  "futures-core",
  "futures-sink",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "indexmap 1.9.3",
  "slab 0.4.9",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-util 0.7.10",
  "tracing",
 ]
 
 [[package]]
 name = "handlebars"
-version = "4.4.0"
+version = "4.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c39b3bc2a8f715298032cf5087e58573809374b08160aa7d750582bdb82d2683"
+checksum = "faa67bab9ff362228eb3d00bd024a4965d8231bbb7921167f0cfa66c6626b225"
 dependencies = [
  "log 0.4.20",
  "pest",
@@ -5444,7 +5444,7 @@ dependencies = [
  "base64 0.21.5",
  "bytes 1.5.0",
  "headers-core",
- "http 0.2.9",
+ "http 0.2.10",
  "httpdate 1.0.3",
  "mime 0.3.17",
  "sha1 0.10.6",
@@ -5456,7 +5456,7 @@ version = "0.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7f66481bfee273957b1f20485a4ff3362987f85b2c236580d81b4eb7a326429"
 dependencies = [
- "http 0.2.9",
+ "http 0.2.10",
 ]
 
 [[package]]
@@ -5595,9 +5595,9 @@ dependencies = [
 
 [[package]]
 name = "http"
-version = "0.2.9"
+version = "0.2.10"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "bd6effc99afb63425aff9b05836f029929e345a6148a14b7ecd5ab67af944482"
+checksum = "f95b9abcae896730d42b78e09c155ed4ddf82c07b4de772c64aee5b2d8b7c150"
 dependencies = [
  "bytes 1.5.0",
  "fnv",
@@ -5623,7 +5623,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "13d5ff830006f7646652e057693569bfe0d51760c0085a071769d142a205111b"
 dependencies = [
  "bytes 0.5.6",
- "http 0.2.9",
+ "http 0.2.10",
 ]
 
 [[package]]
@@ -5633,7 +5633,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d5f38f16d184e36f2408a55281cd658ecbd3ca05cce6d6510a176eca393e26d1"
 dependencies = [
  "bytes 1.5.0",
- "http 0.2.9",
+ "http 0.2.10",
  "pin-project-lite 0.2.13",
 ]
 
@@ -5727,7 +5727,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "h2 0.2.7",
- "http 0.2.9",
+ "http 0.2.10",
  "http-body 0.3.1",
  "httparse",
  "httpdate 0.3.2",
@@ -5751,14 +5751,14 @@ dependencies = [
  "futures-core",
  "futures-util",
  "h2 0.3.21",
- "http 0.2.9",
+ "http 0.2.10",
  "http-body 0.4.5",
  "httparse",
  "httpdate 1.0.3",
  "itoa 1.0.9",
  "pin-project-lite 0.2.13",
  "socket2 0.4.10",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tower-service",
  "tracing",
  "want 0.3.1",
@@ -5770,12 +5770,12 @@ version = "0.23.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1788965e61b367cd03a62950836d5cd41560c3577d90e40e0819373194d1661c"
 dependencies = [
- "http 0.2.9",
+ "http 0.2.10",
  "hyper 0.14.27",
  "log 0.4.20",
  "rustls 0.20.9",
  "rustls-native-certs",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-rustls 0.23.4",
 ]
 
@@ -5786,12 +5786,12 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec3efd23720e2049821a693cbc7e65ea87c72f1c58ff2f9522ff332b1491e590"
 dependencies = [
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "hyper 0.14.27",
  "log 0.4.20",
  "rustls 0.21.8",
  "rustls-native-certs",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-rustls 0.24.1",
  "webpki-roots 0.25.2",
 ]
@@ -5818,7 +5818,7 @@ dependencies = [
  "bytes 1.5.0",
  "hyper 0.14.27",
  "native-tls",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-native-tls",
 ]
 
@@ -6023,7 +6023,7 @@ dependencies = [
  "log 0.4.20",
  "rtnetlink",
  "system-configuration",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "windows",
 ]
 
@@ -6180,7 +6180,7 @@ dependencies = [
  "rtcp",
  "rtp",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "waitgroup",
  "webrtc-srtp",
  "webrtc-util",
@@ -6387,14 +6387,14 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c8b3815d9f5d5de348e5f162b316dc9cdf4548305ebb15b4eb9328e66cf27d7a"
 dependencies = [
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "jsonrpsee-core",
  "jsonrpsee-types",
  "pin-project 1.1.3",
  "rustls-native-certs",
  "soketto",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-rustls 0.24.1",
  "tokio-util 0.7.10",
  "tracing",
@@ -6425,7 +6425,7 @@ dependencies = [
  "serde_json",
  "soketto",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
 ]
 
@@ -6444,7 +6444,7 @@ dependencies = [
  "serde",
  "serde_json",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
 ]
 
@@ -6469,14 +6469,14 @@ checksum = "cf4d945a6008c9b03db3354fb3c83ee02d2faa9f2e755ec1dfb69c3551b8f4ba"
 dependencies = [
  "futures-channel",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "hyper 0.14.27",
  "jsonrpsee-core",
  "jsonrpsee-types",
  "serde",
  "serde_json",
  "soketto",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-stream",
  "tokio-util 0.7.10",
  "tower",
@@ -6503,7 +6503,7 @@ version = "0.16.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "4e1b3975ed5d73f456478681a417128597acd6a2487855fdb7b4a3d4d195bf5e"
 dependencies = [
- "http 0.2.9",
+ "http 0.2.10",
  "jsonrpsee-client-transport",
  "jsonrpsee-core",
  "jsonrpsee-types",
@@ -6572,7 +6572,7 @@ version = "0.13.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e7d770dcb02bf6835887c3a979b5107a04ff4bbde97a5f0928d27404a155add9"
 dependencies = [
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -6596,7 +6596,7 @@ dependencies = [
  "parking_lot 0.12.1",
  "regex",
  "rocksdb",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -6699,7 +6699,7 @@ dependencies = [
  "bytes 1.5.0",
  "futures 0.3.29",
  "futures-timer",
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "instant",
  "libp2p-allow-block-list",
  "libp2p-connection-limits",
@@ -6770,7 +6770,7 @@ dependencies = [
  "quick-protobuf",
  "rand 0.8.5",
  "rw-stream-sink",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
  "unsigned-varint",
  "void",
@@ -6786,7 +6786,7 @@ dependencies = [
  "libp2p-core",
  "log 0.4.20",
  "parking_lot 0.12.1",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "trust-dns-resolver",
 ]
 
@@ -6807,7 +6807,7 @@ dependencies = [
  "lru 0.10.1",
  "quick-protobuf",
  "quick-protobuf-codec",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
  "void",
 ]
@@ -6851,7 +6851,7 @@ dependencies = [
  "quick-protobuf",
  "rand 0.8.5",
  "sha2 0.10.8",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
  "uint 0.9.5",
  "unsigned-varint",
@@ -6872,9 +6872,9 @@ dependencies = [
  "libp2p-swarm",
  "log 0.4.20",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "socket2 0.4.10",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "trust-dns-proto",
  "void",
 ]
@@ -6952,7 +6952,7 @@ dependencies = [
  "rand 0.8.5",
  "rustls 0.20.9",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -6968,7 +6968,7 @@ dependencies = [
  "libp2p-identity",
  "libp2p-swarm",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -6987,8 +6987,8 @@ dependencies = [
  "libp2p-swarm-derive",
  "log 0.4.20",
  "rand 0.8.5",
- "smallvec 1.11.1",
- "tokio 1.33.0",
+ "smallvec 1.11.2",
+ "tokio 1.34.0",
  "void",
 ]
 
@@ -7016,7 +7016,7 @@ dependencies = [
  "libp2p-core",
  "log 0.4.20",
  "socket2 0.4.10",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -7078,7 +7078,7 @@ dependencies = [
  "stun",
  "thiserror",
  "tinytemplate",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-util 0.7.10",
  "webrtc",
 ]
@@ -7258,9 +7258,9 @@ checksum = "ef53942eb7bf7ff43a617b3e2c1c4a5ecf5944a7c1bc12d7ee39bbb15e5c1519"
 
 [[package]]
 name = "linux-raw-sys"
-version = "0.4.10"
+version = "0.4.11"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "da2479e8c062e40bf0066ffa0bc823de0a9368974af99c9f6df941d2c231e03f"
+checksum = "969488b55f8ac402214f3f5fd243ebb7206cf82de60d3172994707a4bcc2b829"
 
 [[package]]
 name = "loans"
@@ -7605,7 +7605,7 @@ dependencies = [
  "itertools 0.10.5",
  "proc-macro2",
  "quote",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "syn 1.0.109",
 ]
 
@@ -7895,7 +7895,7 @@ dependencies = [
  "futures 0.3.29",
  "log 0.4.20",
  "pin-project 1.1.3",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "unsigned-varint",
 ]
 
@@ -8014,7 +8014,7 @@ dependencies = [
  "netlink-packet-core",
  "netlink-sys",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -8027,7 +8027,7 @@ dependencies = [
  "futures 0.3.29",
  "libc",
  "log 0.4.20",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -8703,7 +8703,7 @@ dependencies = [
 [[package]]
 name = "pallet-base-fee"
 version = "1.0.0"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -8831,7 +8831,7 @@ dependencies = [
  "rand 0.8.5",
  "scale-info",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-api",
  "sp-core 7.0.0",
  "sp-io 7.0.0",
@@ -8885,7 +8885,7 @@ dependencies = [
 [[package]]
 name = "pallet-dynamic-fee"
 version = "4.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-dynamic-fee",
  "fp-evm",
@@ -8975,7 +8975,7 @@ dependencies = [
  "eth2-to-substrate-relay",
  "ethereum-types 0.14.1",
  "subxt 0.29.0",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "webb-eth2-pallet-init",
  "webb-proposals",
@@ -8992,7 +8992,7 @@ dependencies = [
 [[package]]
 name = "pallet-ethereum"
 version = "4.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ethereum",
  "ethereum-types 0.14.1",
@@ -9034,7 +9034,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm"
 version = "6.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "environmental",
  "evm",
@@ -9058,7 +9058,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-chain-id"
 version = "1.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -9109,7 +9109,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-blake2"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
 ]
@@ -9117,7 +9117,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-bn128"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
  "sp-core 7.0.0",
@@ -9127,7 +9127,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-ed25519"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "ed25519-dalek 1.0.1",
  "fp-evm",
@@ -9136,7 +9136,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-modexp"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
  "num",
@@ -9171,7 +9171,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-sha3fips"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
  "tiny-keccak 2.0.2",
@@ -9180,7 +9180,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-precompile-simple"
 version = "2.0.0-dev"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "fp-evm",
  "ripemd",
@@ -9303,7 +9303,7 @@ dependencies = [
 [[package]]
 name = "pallet-hotfix-sufficients"
 version = "1.0.0"
-source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#46cd85967849be241dac2bb72f561b942a463729"
+source = "git+https://github.com/AstarNetwork/frontier.git?branch=polkadot-v0.9.43#718c42a273280d73b71b83ff9ed1fe498dcee8f4"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -9998,7 +9998,7 @@ dependencies = [
  "instant",
  "libc",
  "redox_syscall 0.2.16",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "winapi 0.3.9",
 ]
 
@@ -10011,7 +10011,7 @@ dependencies = [
  "cfg-if 1.0.0",
  "libc",
  "redox_syscall 0.4.1",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "windows-targets 0.48.5",
 ]
 
@@ -10758,9 +10758,9 @@ dependencies = [
 
 [[package]]
 name = "proptest"
-version = "1.3.1"
+version = "1.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "7c003ac8c77cb07bb74f5f198bce836a689bcd5a42574612bf14d17bfd08c20e"
+checksum = "31b476131c3c86cb68032fdc5cb6d5a1045e3e42d96b69fa599fd77701e1f5bf"
 dependencies = [
  "bit-set",
  "bit-vec",
@@ -10770,7 +10770,7 @@ dependencies = [
  "rand 0.8.5",
  "rand_chacha 0.3.1",
  "rand_xorshift 0.3.0",
- "regex-syntax 0.7.5",
+ "regex-syntax 0.8.2",
  "rusty-fork",
  "tempfile",
  "unarray",
@@ -11046,7 +11046,7 @@ version = "0.6.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ec0be4795e2f6a28069bec0b5ff3e2ac9bafc99e6a9a7dc3547996c5c816922c"
 dependencies = [
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
 ]
 
 [[package]]
@@ -11291,7 +11291,7 @@ version = "0.4.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "a18479200779601e498ada4e8c1e1f50e3ee19deb0259c25825a98b5603b2cb4"
 dependencies = [
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "libredox",
  "thiserror",
 ]
@@ -11325,7 +11325,7 @@ dependencies = [
  "fxhash",
  "log 0.4.20",
  "slice-group-by",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -11444,7 +11444,7 @@ dependencies = [
  "futures-core",
  "futures-util",
  "h2 0.3.21",
- "http 0.2.9",
+ "http 0.2.10",
  "http-body 0.4.5",
  "hyper 0.14.27",
  "hyper-rustls 0.24.2",
@@ -11463,7 +11463,7 @@ dependencies = [
  "serde_json",
  "serde_urlencoded 0.7.1",
  "system-configuration",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-native-tls",
  "tokio-rustls 0.24.1",
  "tower-service",
@@ -11573,7 +11573,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "fb0205304757e5d899b9c2e448b867ffd03ae7f988002e47cd24954391394d0b"
 dependencies = [
  "cc",
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "libc",
  "spin 0.9.8",
  "untrusted 0.9.0",
@@ -11661,7 +11661,7 @@ dependencies = [
  "netlink-proto",
  "nix 0.24.3",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -11695,7 +11695,7 @@ dependencies = [
  "btc-relay",
  "cfg-if 1.0.0",
  "clients-info",
- "env_logger 0.10.0",
+ "env_logger 0.10.1",
  "fee",
  "frame-election-provider-support",
  "frame-support",
@@ -11762,7 +11762,7 @@ dependencies = [
  "fallible-streaming-iterator",
  "hashlink",
  "libsqlite3-sys",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -11853,7 +11853,7 @@ dependencies = [
  "bitflags 2.4.1",
  "errno",
  "libc",
- "linux-raw-sys 0.4.10",
+ "linux-raw-sys 0.4.11",
  "windows-sys 0.48.0",
 ]
 
@@ -11908,9 +11908,9 @@ dependencies = [
 
 [[package]]
 name = "rustls-pemfile"
-version = "1.0.3"
+version = "1.0.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "2d3987094b1d07b653b7dfdc3f70ce9a1da9c51ac18c1b06b662e4f9a0e9f4b2"
+checksum = "1c74cae0a4cf6ccbbf5f359f08efdf8ee7e1dc532573bf0db71968cb56b1448c"
 dependencies = [
  "base64 0.21.5",
 ]
@@ -12181,7 +12181,7 @@ dependencies = [
  "sp-version",
  "thiserror",
  "tiny-bip39",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -12649,7 +12649,7 @@ dependencies = [
  "sc-utils",
  "serde",
  "serde_json",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "snow",
  "sp-arithmetic 6.0.0",
  "sp-blockchain",
@@ -12701,7 +12701,7 @@ dependencies = [
  "sc-peerset",
  "sc-utils",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-blockchain",
  "sp-consensus",
  "sp-consensus-grandpa",
@@ -12777,7 +12777,7 @@ dependencies = [
  "sc-network-common",
  "sc-peerset",
  "sc-utils",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-arithmetic 6.0.0",
  "sp-blockchain",
  "sp-consensus",
@@ -12892,7 +12892,7 @@ dependencies = [
  "sp-session",
  "sp-statement-store",
  "sp-version",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -12919,12 +12919,12 @@ name = "sc-rpc-server"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e49f6e44820affccaf517fd22af564f4b495d40"
 dependencies = [
- "http 0.2.9",
+ "http 0.2.10",
  "jsonrpsee",
  "log 0.4.20",
  "serde_json",
  "substrate-prometheus-endpoint",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tower",
  "tower-http",
 ]
@@ -13016,7 +13016,7 @@ dependencies = [
  "substrate-prometheus-endpoint",
  "tempfile",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "tracing-futures",
 ]
@@ -13045,7 +13045,7 @@ dependencies = [
  "sc-utils",
  "sp-core 7.0.0",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -13236,7 +13236,7 @@ dependencies = [
  "scale-bits 0.3.0",
  "scale-decode-derive 0.7.0",
  "scale-info",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
 ]
 
@@ -13252,7 +13252,7 @@ dependencies = [
  "scale-bits 0.4.0",
  "scale-decode-derive 0.9.0",
  "scale-info",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -13292,7 +13292,7 @@ dependencies = [
  "scale-bits 0.3.0",
  "scale-encode-derive 0.3.0",
  "scale-info",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
 ]
 
@@ -13308,7 +13308,7 @@ dependencies = [
  "scale-bits 0.4.0",
  "scale-encode-derive 0.5.0",
  "scale-info",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -14057,9 +14057,9 @@ dependencies = [
 
 [[package]]
 name = "smallvec"
-version = "1.11.1"
+version = "1.11.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "942b4a808e05215192e39f4ab80813e599068285906cc91aa64f923db842bd5a"
+checksum = "4dccd0940a2dcdf68d092b8cbab7dc0ad8fa938bf95787e1b916b0e3d0e8e970"
 
 [[package]]
 name = "smol"
@@ -14130,7 +14130,7 @@ dependencies = [
  "sha2 0.10.8",
  "siphasher",
  "slab 0.4.9",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "smol",
  "snow",
  "soketto",
@@ -14232,7 +14232,7 @@ dependencies = [
  "bytes 1.5.0",
  "flate2",
  "futures 0.3.29",
- "http 0.2.9",
+ "http 0.2.10",
  "httparse",
  "log 0.4.20",
  "rand 0.8.5",
@@ -15259,7 +15259,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-core 7.0.0",
  "sp-externalities 0.13.0",
  "sp-panic-handler 5.0.0",
@@ -15280,7 +15280,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-core 16.0.0",
  "sp-externalities 0.17.0",
  "sp-panic-handler 6.0.0",
@@ -15301,7 +15301,7 @@ dependencies = [
  "parity-scale-codec",
  "parking_lot 0.12.1",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-core 21.0.0",
  "sp-externalities 0.19.0",
  "sp-panic-handler 8.0.0",
@@ -15615,7 +15615,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-arithmetic 6.0.0",
  "sp-core 7.0.0",
  "sp-debug-derive 5.0.0",
@@ -15631,7 +15631,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-arithmetic 12.0.0",
  "sp-core 16.0.0",
  "sp-debug-derive 6.0.0",
@@ -15647,7 +15647,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "sp-arithmetic 16.0.0",
  "sp-core 21.0.0",
  "sp-debug-derive 8.0.0",
@@ -15694,9 +15694,9 @@ dependencies = [
 
 [[package]]
 name = "ss58-registry"
-version = "1.43.0"
+version = "1.44.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5e6915280e2d0db8911e5032a5c275571af6bdded2916abd691a659be25d3439"
+checksum = "35935738370302d5e33963665b77541e4b990a3e919ec904c837a56cfc891de1"
 dependencies = [
  "Inflector",
  "num-format",
@@ -15720,7 +15720,7 @@ dependencies = [
  "itertools 0.10.5",
  "serde",
  "serde_derive",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "tree_hash",
  "typenum",
 ]
@@ -15896,7 +15896,7 @@ dependencies = [
  "ring 0.16.20",
  "subtle",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "url 2.4.1",
  "webrtc-util",
 ]
@@ -15978,7 +15978,7 @@ dependencies = [
  "log 0.4.20",
  "prometheus 0.13.3",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16020,7 +16020,7 @@ source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e
 dependencies = [
  "futures 0.3.29",
  "substrate-test-utils-derive",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16093,7 +16093,7 @@ dependencies = [
  "either",
  "frame-metadata 15.1.0",
  "futures 0.3.29",
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "hex",
  "impl-serde 0.4.0",
  "jsonrpsee",
@@ -16163,7 +16163,7 @@ dependencies = [
  "subxt-metadata 0.29.0",
  "syn 2.0.39",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16182,7 +16182,7 @@ dependencies = [
  "subxt-metadata 0.31.0",
  "syn 2.0.39",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16196,7 +16196,7 @@ dependencies = [
  "serde_json",
  "smoldot-light",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-stream",
  "tracing",
 ]
@@ -16280,15 +16280,15 @@ dependencies = [
  "itertools 0.10.5",
  "proc-macro2",
  "quote",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "syn 1.0.109",
 ]
 
 [[package]]
 name = "svm-rs"
-version = "0.3.2"
+version = "0.3.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d0cc95be7cc2c384a2f57cac56548d2178650905ebe5725bc8970ccc25529060"
+checksum = "20689c7d03b6461b502d0b95d6c24874c7d24dea2688af80486a130a06af3b07"
 dependencies = [
  "dirs",
  "fs2",
@@ -16717,9 +16717,9 @@ dependencies = [
 
 [[package]]
 name = "tokio"
-version = "1.33.0"
+version = "1.34.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4f38200e3ef7995e5ef13baec2f432a6da0aa9ac495b2c0e8f3b7eec2c92d653"
+checksum = "d0c014766411e834f7af5b8f4cf46257aab4036ca95e9d2c144a10f59ad6f5b9"
 dependencies = [
  "backtrace",
  "bytes 1.5.0",
@@ -16819,9 +16819,9 @@ dependencies = [
 
 [[package]]
 name = "tokio-macros"
-version = "2.1.0"
+version = "2.2.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "630bdcf245f78637c13ec01ffae6187cca34625e8c63150d424b59e55af2675e"
+checksum = "5b8a1e28f2deaa14e508979454cb3a223b10b938b45af148bc0986de36f1923b"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -16835,7 +16835,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bbae76ab933c85776efabc971569dd6119c580d8f5d448769dec1764bf796ef2"
 dependencies = [
  "native-tls",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16864,7 +16864,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c43ee83903113e03984cb9e5cebe6c04a5116269e900e3ddba8f068a62adda59"
 dependencies = [
  "rustls 0.20.9",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webpki 0.22.4",
 ]
 
@@ -16875,7 +16875,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "c28327cf380ac148141087fbfb9de9d7bd4e84ab5d2c28fbc911d753de8a7081"
 dependencies = [
  "rustls 0.21.8",
- "tokio 1.33.0",
+ "tokio 1.34.0",
 ]
 
 [[package]]
@@ -16886,7 +16886,7 @@ checksum = "397c988d37662c7dda6d2208364a706264bf3d6138b11d436cbac0ad38832842"
 dependencies = [
  "futures-core",
  "pin-project-lite 0.2.13",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-util 0.7.10",
 ]
 
@@ -16986,7 +16986,7 @@ dependencies = [
  "futures-util",
  "log 0.4.20",
  "rustls 0.21.8",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tokio-rustls 0.24.1",
  "tungstenite 0.20.1",
  "webpki-roots 0.25.2",
@@ -17067,7 +17067,7 @@ dependencies = [
  "futures-io",
  "futures-sink",
  "pin-project-lite 0.2.13",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
 ]
 
@@ -17146,7 +17146,7 @@ dependencies = [
  "bytes 1.5.0",
  "futures-core",
  "futures-util",
- "http 0.2.9",
+ "http 0.2.10",
  "http-body 0.4.5",
  "http-range-header",
  "pin-project-lite 0.2.13",
@@ -17245,7 +17245,7 @@ dependencies = [
  "serde",
  "serde_json",
  "sharded-slab",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thread_local",
  "tracing",
  "tracing-core",
@@ -17288,7 +17288,7 @@ checksum = "5c998ac5fe2b07c025444bdd522e6258110b63861c6698eedc610c071980238d"
 dependencies = [
  "ethereum-types 0.14.1",
  "ethereum_hashing",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -17312,7 +17312,7 @@ dependencies = [
  "hashbrown 0.12.3",
  "log 0.4.20",
  "rustc-hex 2.1.0",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -17325,7 +17325,7 @@ dependencies = [
  "hashbrown 0.13.2",
  "log 0.4.20",
  "rustc-hex 2.1.0",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -17373,11 +17373,11 @@ dependencies = [
  "ipnet",
  "lazy_static",
  "rand 0.8.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "socket2 0.4.10",
  "thiserror",
  "tinyvec",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "url 2.4.1",
 ]
@@ -17395,9 +17395,9 @@ dependencies = [
  "lru-cache",
  "parking_lot 0.12.1",
  "resolv-conf",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "tracing",
  "trust-dns-proto",
 ]
@@ -17423,7 +17423,7 @@ dependencies = [
  "base64 0.12.3",
  "byteorder",
  "bytes 0.5.6",
- "http 0.2.9",
+ "http 0.2.10",
  "httparse",
  "input_buffer",
  "log 0.4.20",
@@ -17442,7 +17442,7 @@ dependencies = [
  "byteorder",
  "bytes 1.5.0",
  "data-encoding",
- "http 0.2.9",
+ "http 0.2.10",
  "httparse",
  "log 0.4.20",
  "rand 0.8.5",
@@ -17468,7 +17468,7 @@ dependencies = [
  "ring 0.16.20",
  "stun",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webrtc-util",
 ]
 
@@ -17568,7 +17568,7 @@ dependencies = [
  "serde_with",
  "serde_yaml",
  "slog",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "ssz_types",
  "strum 0.24.1",
  "superstruct",
@@ -17757,7 +17757,7 @@ version = "0.8.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "bc5cf98d8186244414c848017f0e2676b3fcb46807f6668a97dfe67359a3c4b7"
 dependencies = [
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
  "serde",
 ]
 
@@ -17767,7 +17767,7 @@ version = "1.5.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "88ad59a7560b41a70d191093a945f0b87bc1deeda46fb237479708a1d6b6cdfc"
 dependencies = [
- "getrandom 0.2.10",
+ "getrandom 0.2.11",
 ]
 
 [[package]]
@@ -17922,7 +17922,7 @@ dependencies = [
  "bytes 0.5.6",
  "futures 0.3.29",
  "headers",
- "http 0.2.9",
+ "http 0.2.10",
  "hyper 0.13.10",
  "log 0.4.20",
  "mime 0.3.17",
@@ -18128,7 +18128,7 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "e51fb5c61993e71158abf5bb863df2674ca3ec39ed6471c64f07aeaf751d67b4"
 dependencies = [
  "intx",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "spin 0.9.8",
  "wasmi_arena",
  "wasmi_core 0.12.0",
@@ -18653,7 +18653,7 @@ dependencies = [
  "reqwest",
  "serde",
  "serde_json",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "toml 0.5.11",
  "tree_hash",
  "types 0.2.1",
@@ -18686,7 +18686,7 @@ dependencies = [
  "serde_json",
  "sp-keyring 24.0.0",
  "subxt 0.29.0",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "toml 0.5.11",
  "types 0.2.1",
  "webb",
@@ -18715,7 +18715,7 @@ source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=po
 dependencies = [
  "ethereum-types 0.14.1",
  "itertools 0.10.5",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
 ]
 
 [[package]]
@@ -18769,7 +18769,7 @@ version = "0.4.1"
 source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#ec3dd06fedf9c162b6db36450c61a3852eb3769b"
 dependencies = [
  "ethereum-types 0.14.1",
- "smallvec 1.11.1",
+ "smallvec 1.11.2",
  "webb-eth2-hashing",
 ]
 
@@ -18845,7 +18845,7 @@ dependencies = [
  "stun",
  "thiserror",
  "time 0.3.17",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "turn",
  "url 2.4.1",
  "waitgroup",
@@ -18869,7 +18869,7 @@ dependencies = [
  "derive_builder",
  "log 0.4.20",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webrtc-sctp",
  "webrtc-util",
 ]
@@ -18907,7 +18907,7 @@ dependencies = [
  "signature 1.6.4",
  "subtle",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webpki 0.21.4",
  "webrtc-util",
  "x25519-dalek 2.0.0",
@@ -18929,7 +18929,7 @@ dependencies = [
  "serde_json",
  "stun",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "turn",
  "url 2.4.1",
  "uuid 1.5.0",
@@ -18947,7 +18947,7 @@ dependencies = [
  "log 0.4.20",
  "socket2 0.4.10",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webrtc-util",
 ]
 
@@ -18977,7 +18977,7 @@ dependencies = [
  "log 0.4.20",
  "rand 0.8.5",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webrtc-util",
 ]
 
@@ -19001,7 +19001,7 @@ dependencies = [
  "sha-1",
  "subtle",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "webrtc-util",
 ]
 
@@ -19022,7 +19022,7 @@ dependencies = [
  "nix 0.24.3",
  "rand 0.8.5",
  "thiserror",
- "tokio 1.33.0",
+ "tokio 1.34.0",
  "winapi 0.3.9",
 ]
 
