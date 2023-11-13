@@ -283,6 +283,8 @@ pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> No
 		.spawn()
 		.unwrap();
 
+	tokio::time::sleep(std::time::Duration::from_secs(210)).await;
+
 	let mut child = KillChildOnDrop(cmd, output_path);
 
 	let (mut ws_url, mut http_url) = Default::default();
