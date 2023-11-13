@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "512"]
+#![recursion_limit = "1024"]
 #![allow(clippy::new_without_default, clippy::or_fun_call)]
 
 // Make the WASM binary available.
@@ -14,6 +14,7 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
+pub mod btcbridge;
 mod chain_extensions;
 pub mod ethereum;
 pub mod governance;
@@ -31,7 +32,8 @@ use core::cmp::Ordering;
 #[cfg(feature = "std")]
 pub use fp_evm::GenesisAccount;
 use frame_support::{
-	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
+	pallet_prelude::{DispatchError, TransactionPriority},
+	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
@@ -67,6 +69,7 @@ use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
 use pos::{currency, session_payout};
+pub use runtime_common::constants::currency::{deposit, EXISTENTIAL_DEPOSIT, GGX, KGGX, MILLIGGX};
 use sp_consensus_beefy as beefy_primitives;
 
 // A few exports that help ease life for downstream crates.
@@ -83,6 +86,13 @@ pub use frame_support::{
 		ConstantMultiplier, IdentityFee, Weight,
 	},
 	ConsensusEngineId, StorageValue,
+};
+
+use btcbridge::GetWrappedCurrencyId;
+use interbtc_currency::Amount;
+use primitives::{
+	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, BalanceWrapper,
+	CurrencyId, H256Le, UnsignedFixedPoint,
 };
 
 pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
@@ -121,6 +131,14 @@ pub type Hash = sp_core::H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
+
+type VaultId = primitives::VaultId<AccountId, CurrencyId>;
+
+/// Target Spacing: 10 minutes (600 seconds)
+// https://github.com/bitcoin/bitcoin/blob/5ba5becbb5d8c794efe579caeea7eea64f895a13/src/chainparams.cpp#L78
+pub const TARGET_SPACING: u32 = 10 * 60;
+
+pub const BITCOIN_SPACING_MS: u32 = TARGET_SPACING * 1000;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -204,17 +222,6 @@ type EventRecord = frame_system::EventRecord<
 	<Runtime as frame_system::Config>::RuntimeEvent,
 	<Runtime as frame_system::Config>::Hash,
 >;
-
-/// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000_000_000;
-pub const GGX: Balance = 1000 * MILLIGGX;
-pub const KGGX: Balance = 1000 * GGX;
-pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
-
-/// Charge fee for stored bytes and items.
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIGGX / EXISTENTIAL_DEPOSIT
-}
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -634,8 +641,33 @@ construct_runtime!(
 
 		// Eth light client
 		Eth2Client: pallet_eth2_light_client,
-		EthReceiptRegistry: pallet_receipt_registry
+		EthReceiptRegistry: pallet_receipt_registry,
 
+		// Orml
+		Currency: interbtc_currency,
+		Tokens: orml_tokens,
+		AssetRegistry: orml_asset_registry,
+
+		// BTC bridge
+		BTCRelay: btc_relay,
+		Security: security,
+		Fee: fee,
+		Issue: issue,
+		Oracle: oracle,
+		Redeem: redeem,
+		Replace: replace,
+		VaultRegistry: vault_registry,
+
+		VaultRewards: reward::<Instance2>,
+		VaultStaking: staking,
+		VaultCapacity: reward::<Instance3>,
+
+		// BTC Refund:
+		Nomination: nomination,
+		ClientsInfo: clients_info,
+
+		// Lending
+		Loans: loans,
 	}
 );
 
@@ -1341,6 +1373,140 @@ impl_runtime_apis! {
 			Contracts::get_storage(address, key)
 		}
   }
+
+
+	impl btc_relay_rpc_runtime_api::BtcRelayApi<
+		Block,
+		H256Le,
+	> for Runtime {
+		fn verify_block_header_inclusion(block_hash: H256Le) -> Result<(), DispatchError> {
+				BTCRelay::verify_block_header_inclusion(block_hash, None).map(|_| ())
+		}
+	}
+
+	impl oracle_rpc_runtime_api::OracleApi<
+		Block,
+		Balance,
+		CurrencyId
+	> for Runtime {
+		fn wrapped_to_collateral( amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::wrapped_to_collateral(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
+
+		fn collateral_to_wrapped(amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::collateral_to_wrapped(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
+	}
+
+	impl vault_registry_rpc_runtime_api::VaultRegistryApi<
+		Block,
+		VaultId,
+		Balance,
+		UnsignedFixedPoint,
+		CurrencyId,
+		AccountId,
+	> for Runtime {
+		fn get_vault_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::compute_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_vaults_by_account_id(account_id: AccountId) -> Result<Vec<VaultId>, DispatchError> {
+				VaultRegistry::get_vaults_by_account_id(account_id)
+		}
+
+		fn get_vault_total_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_backing_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_premium_redeem_vaults() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_premium_redeem_vaults()?;
+				Ok(result.iter().map(|v| (v.0.clone(), BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_issuable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_issuable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_redeemable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_redeemable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_issuable_tokens_from_vault(vault: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_issuable_tokens_from_vault(&vault)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_collateralization_from_vault(vault: VaultId, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				VaultRegistry::get_collateralization_from_vault(vault, only_issued)
+		}
+
+		fn get_collateralization_from_vault_and_collateral(vault: VaultId, collateral: BalanceWrapper<Balance>, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				let amount = Amount::new(collateral.amount, vault.collateral_currency());
+				VaultRegistry::get_collateralization_from_vault_and_collateral(vault, &amount, only_issued)
+		}
+
+		fn get_required_collateral_for_wrapped(amount_btc: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let amount_btc = Amount::new(amount_btc.amount, GetWrappedCurrencyId::get());
+				let result = VaultRegistry::get_required_collateral_for_wrapped(&amount_btc, currency_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_required_collateral_for_vault(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_required_collateral_for_vault(vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+	}
+
+	impl issue_rpc_runtime_api::IssueApi<
+		Block,
+		AccountId,
+		H256,
+		IssueRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_issue_requests(account_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_account(account_id)
+		}
+
+		fn get_vault_issue_requests(vault_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_vault(vault_id)
+		}
+	}
+
+	impl redeem_rpc_runtime_api::RedeemApi<
+		Block,
+		AccountId,
+		H256,
+		RedeemRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_account(account_id)
+		}
+
+		fn get_vault_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_vault(account_id)
+		}
+	}
+
+	impl replace_rpc_runtime_api::ReplaceApi<
+		Block,
+		AccountId,
+		H256,
+		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_old_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_old_vault(vault_id)
+		}
+
+		fn get_new_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_new_vault(vault_id)
+		}
+	}
 }
 
 #[cfg(test)]

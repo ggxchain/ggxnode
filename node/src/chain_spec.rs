@@ -62,10 +62,22 @@ pub fn development_config() -> Result<ChainSpec, String> {
 						.unwrap(),
 						balance,
 					),
+					// interbridge test vault node account
+					// Import known test account with private key
+					// 0xa3f97DJ9yDAdozKoWXcRSGWUNhh2HR917Dfur5yqoR1NVcozi
+					(
+						AccountId::from_ss58check(
+							"5Gzf6q2fCz3NZJCZHTiD5KL3mtGXWasKvQBQXymBCYzwgToc",
+						)
+						.unwrap(),
+						balance,
+					),
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
 				CHAIN_ID,
+				true,
+				0,
 				true,
 			)
 		},
@@ -115,6 +127,8 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Bob"),
 				],
 				CHAIN_ID,
+				true,
+				0,
 				true,
 			)
 		},

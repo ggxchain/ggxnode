@@ -49,6 +49,8 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 	nominate: bool,
+	_bitcoin_confirmations: u32,
+	_disable_difficulty_check: bool,
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;

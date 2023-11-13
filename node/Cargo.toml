@@ -86,6 +86,19 @@ webb-proposals = { workspace = true, optional = true }
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
 
+# BTC bridge
+primitives.workspace = true
+bitcoin.workspace = true
+
+btc-relay-rpc.workspace = true
+oracle-rpc.workspace = true
+vault-registry-rpc.workspace = true
+issue-rpc.workspace = true
+loans.workspace = true
+redeem-rpc.workspace = true
+replace-rpc.workspace = true
+reward-rpc.workspace = true
+
 [dev-dependencies]
 alloy-rlp = { workspace = true }
 assert_cmd = { workspace = true }

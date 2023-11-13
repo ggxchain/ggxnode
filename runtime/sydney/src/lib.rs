@@ -58,6 +58,7 @@ use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
 use pos::{currency, session_payout};
+pub use runtime_common::constants::currency::{deposit, EXISTENTIAL_DEPOSIT, GGX, KGGX, MILLIGGX};
 
 // A few exports that help ease life for downstream crates.
 pub use frame_support::{
@@ -193,17 +194,6 @@ type EventRecord = frame_system::EventRecord<
 	<Runtime as frame_system::Config>::RuntimeEvent,
 	<Runtime as frame_system::Config>::Hash,
 >;
-
-/// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000_000_000;
-pub const GGX: Balance = 1000 * MILLIGGX;
-pub const KGGX: Balance = 1000 * GGX;
-pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
-
-/// Charge fee for stored bytes and Sitems.
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIGGX / EXISTENTIAL_DEPOSIT
-}
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
