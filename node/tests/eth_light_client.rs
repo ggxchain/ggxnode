@@ -217,8 +217,8 @@ mod test {
 
 	#[derive(scale_codec::Decode, Debug)]
 	struct WasmEvent {
-		topics: Vec<eth_registry_types::H256>,
-		data: Vec<u8>,
+		_topics: Vec<eth_registry_types::H256>,
+		_data: Vec<u8>,
 	}
 
 	async fn call_wasm_chain_extension(

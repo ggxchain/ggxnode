@@ -58,13 +58,16 @@
             rust-env = with pkgs; {
               LD_LIBRARY_PATH = pkgs.lib.strings.makeLibraryPath [
                 pkgs.stdenv.cc.cc.lib
-                pkgs.llvmPackages.libclang.lib
+                pkgs.llvmPackages_12.libclang.lib
                 (pkgs.lib.makeLibraryPath [pkgs.openssl])
               ];
-              LIBCLANG_PATH = "${pkgs.llvmPackages.libclang.lib}/lib";
+              LIBCLANG_PATH = "${pkgs.llvmPackages_12.libclang.lib}/lib";
               PROTOC = "${pkgs.protobuf}/bin/protoc";
               ROCKSDB_LIB_DIR = "${pkgs.rocksdb}/lib";
               RUSTUP_TOOLCHAIN = (builtins.fromTOML (builtins.readFile ./rust-toolchain.toml)).toolchain.channel; # for dylint
+              # Fix the issue that `target` argument is ignored when using `clang` symlink
+              CC_wasm32_unknown_unknown = "${pkgs.llvmPackages_12.clang-unwrapped}/bin/clang-12";
+              CFLAGS_wasm32_unknown_unknown = "-I ${pkgs.llvmPackages_12.libclang.lib}/lib/clang/12.0.1/include/";
             };
 
             darwin = pkgs.lib.optionals pkgs.stdenv.isDarwin (with pkgs.darwin.apple_sdk; [

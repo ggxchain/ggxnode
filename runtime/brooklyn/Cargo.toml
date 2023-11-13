@@ -116,6 +116,38 @@ pallet-chain-extension-receipt-registry.workspace = true
 pallet-eth2-light-client.workspace = true
 pallet-receipt-registry.workspace = true
 
+# Orml
+orml-asset-registry.workspace = true
+orml-tokens.workspace = true
+orml-traits.workspace = true
+
+# BTC bridge
+annuity.workspace = true
+btc-relay.workspace = true
+escrow.workspace = true
+interbtc-currency.workspace = true
+clients-info.workspace = true
+fee.workspace = true
+loans.workspace = true
+issue.workspace = true
+nomination.workspace = true
+oracle.workspace = true
+primitives.workspace = true
+redeem.workspace = true
+replace.workspace = true
+reward.workspace = true
+security.workspace = true
+staking.workspace = true
+vault-registry.workspace = true
+
+btc-relay-rpc-runtime-api.workspace = true
+oracle-rpc-runtime-api.workspace = true
+vault-registry-rpc-runtime-api.workspace = true
+reward-rpc-runtime-api.workspace = true
+issue-rpc-runtime-api.workspace = true
+redeem-rpc-runtime-api.workspace = true
+replace-rpc-runtime-api.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -219,6 +251,35 @@ std = [
 	# Eth light client
 	"pallet-eth2-light-client/std",
 	"pallet-receipt-registry/std",
+	# Orml
+	"orml-tokens/std",
+	"orml-traits/std",
+	# BTC bridge
+	"annuity/std",
+	"btc-relay/std",
+	"escrow/std",
+	"interbtc-currency/std",
+	"clients-info/std",
+	"fee/std",
+	"loans/std",
+	"issue/std",
+	"nomination/std",
+	"oracle/std",
+	"primitives/std",
+	"redeem/std",
+	"replace/std",
+	"reward/std",
+	"security/std",
+	"staking/std",
+	"vault-registry/std",
+
+	"btc-relay-rpc-runtime-api/std",
+	"issue-rpc-runtime-api/std",
+	"oracle-rpc-runtime-api/std",
+	"redeem-rpc-runtime-api/std",
+	"replace-rpc-runtime-api/std",
+	"reward-rpc-runtime-api/std",
+	"vault-registry-rpc-runtime-api/std",
 ]
 aura = []
 allowlist = []
