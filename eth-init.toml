@@ -11,4 +11,4 @@ substrate_network_name = "ggxchain"
 substrate_endpoint = "ws://127.0.0.1:9944"
 path_to_signer_secret_key = "./secret-key"
 # We need to rotate it pretty often -> https://beaconstate-goerli.chainsafe.io/
-init_block_root="0x585954c06b64cbb2920b2c236f7803ae0da9d546b2e6665941eb0487eeb20d6b"
+init_block_root="0xe69efe75d47b2e64e96a6136be2b0c8bd93634165e57f1bce485150166ff3245"
