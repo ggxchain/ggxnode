@@ -4,15 +4,16 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 RUN apt-get update --yes && \
     apt-get install --yes --no-install-recommends \
-        libclang-dev \
-        libudev-dev \
-        libssl-dev \
-        pkg-config \
-        gcc \
-        cmake \
-        git \
-        gcc \
-        protobuf-compiler
+    libclang-dev \
+    libudev-dev \
+    libssl-dev \
+    pkg-config \
+    gcc \
+    cmake \
+    git \
+    gcc \
+    protobuf-compiler \
+    clang
 
 RUN rustup target add wasm32-unknown-unknown
 
@@ -31,9 +32,9 @@ ENV HOME /usr/src/app
 WORKDIR $HOME
 
 RUN apt-get update --yes && \
-    apt-get install curl --yes --no-install-recommends
+    apt-get install curl jq openssl --yes --no-install-recommends
 
 COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
-COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml /
+COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml $HOME/run_node.sh ./
 
-ENTRYPOINT [ "/usr/src/app/target/release/ggxchain-node" ]
+ENTRYPOINT [ "/usr/src/app/run_node.sh", "/usr/src/app/eth-init.toml", "/usr/src/app/target/release/ggxchain-node" ]
