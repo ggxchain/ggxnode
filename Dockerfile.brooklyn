@@ -12,7 +12,8 @@ RUN apt-get update --yes && \
     cmake \
     git \
     gcc \
-    protobuf-compiler
+    protobuf-compiler \
+    clang
 
 RUN rustup target add wasm32-unknown-unknown
 
