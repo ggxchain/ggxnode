@@ -12,7 +12,8 @@ RUN apt-get update --yes && \
     cmake \
     git \
     gcc \
-    protobuf-compiler
+    protobuf-compiler \
+    clang
 
 RUN rustup target add wasm32-unknown-unknown
 
@@ -31,7 +32,7 @@ ENV HOME /usr/src/app
 WORKDIR $HOME
 
 RUN apt-get update --yes && \
-    apt-get install curl jq --yes --no-install-recommends
+    apt-get install curl jq openssl --yes --no-install-recommends
 
 COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
 COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml $HOME/run_node.sh ./
