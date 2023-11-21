@@ -2,16 +2,17 @@
   "name": "GGX Chain Brooklyn Testnet",
   "id": "GGX",
   "chainType": "Live",
-  "bootNodes": [
-  ],
-  "telemetryEndpoints": [
-  ],
+  "bootNodes": [],
+  "telemetryEndpoints": [],
   "protocolId": "GGX Brooklyn",
   "properties": {
     "tokenDecimals": 18,
     "tokenSymbol": "GGXT"
   },
   "codeSubstitutes": {},
+  "badBlocks": [
+    "0xef496b89b197ea2182565790319d20ef8d2a34d6b9041641b329665d2dd34f41"
+  ],
   "genesis": {
     "runtime": {
       "system": {
