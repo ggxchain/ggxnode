@@ -296,11 +296,14 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			prometheus_registry,
 		);
 
+	net_config.add_notification_protocol(
+		sc_consensus_beefy::communication::beefy_peers_set_config(beefy_gossip_proto_name.clone()),
+	);
+	net_config.add_request_response_protocol(beefy_req_resp_cfg);
+
 	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
 		grandpa_protocol_name.clone(),
 	));
-
-	net_config.add_request_response_protocol(beefy_req_resp_cfg);
 
 	let (grandpa_block_import, _grandpa_link) =
 		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
