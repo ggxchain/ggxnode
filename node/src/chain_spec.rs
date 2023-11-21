@@ -2,7 +2,7 @@ use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
 
 use crate::runtime::{
-	get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
+	get_account_id_from_seed, testnet_genesis, AccountId, Block, GenesisConfig, ValidatorIdentity,
 	WASM_BINARY,
 };
 
@@ -11,7 +11,20 @@ const CHAIN_ID: u64 = 8886u64;
 #[cfg(feature = "brooklyn")]
 const CHAIN_ID: u64 = 888866u64;
 
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
+/// Node `ChainSpec` extensions.
+///
+/// Additional parameters for some Substrate core modules,
+/// customizable from the chain spec.
+#[derive(
+	Default, Clone, serde::Serialize, serde::Deserialize, sc_chain_spec::ChainSpecExtension,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct Extensions {
+	/// Known bad block hashes.
+	pub bad_blocks: sc_client_api::BadBlocks<Block>,
+}
+
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 fn properties(token_symbol: &str) -> Option<Properties> {
 	let mut properties = Properties::new();
@@ -91,7 +104,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Properties
 		properties("GGX Dev"),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
@@ -142,7 +155,7 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Properties
 		properties("GGX Local"),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 

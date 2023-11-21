@@ -19,12 +19,14 @@ jsonrpsee = { workspace = true, features = ["server", "macros"] }
 log.workspace = true
 rand.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
+serde.workspace = true
 
 # Substrate
 mmr-gadget.workspace = true
 mmr-rpc.workspace = true
 prometheus.workspace = true
 sc-basic-authorship.workspace = true
+sc-chain-spec.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
