@@ -157,11 +157,43 @@ pub mod opaque {
 	pub type BlockId = generic::BlockId<Block>;
 
 	impl_opaque_keys! {
+		pub struct OldSessionKeys {
+			pub aura: Aura,
+			pub grandpa: Grandpa,
+			pub im_online: ImOnline,
+		}
+	}
+
+	impl_opaque_keys! {
 		pub struct SessionKeys {
 			pub aura: Aura,
 			pub grandpa: Grandpa,
 			pub im_online: ImOnline,
 			pub beefy: Beefy,
+		}
+	}
+
+	// remove this when removing `OldSessionKeys`
+	pub fn transform_session_keys(v: AccountId, old: OldSessionKeys) -> SessionKeys {
+		SessionKeys {
+			grandpa: old.grandpa,
+			aura: old.aura,
+			im_online: old.im_online,
+			beefy: {
+				// From Session::upgrade_keys():
+				//
+				// Care should be taken that the raw versions of the
+				// added keys are unique for every `ValidatorId, KeyTypeId` combination.
+				// This is an invariant that the session pallet typically maintains internally.
+				//
+				// So, produce a dummy value that's unique for the `ValidatorId, KeyTypeId` combination.
+				let mut id: BeefyId =
+					sp_application_crypto::ecdsa::Public::from_raw([0u8; 33]).into();
+				let id_raw: &mut [u8] = id.as_mut();
+				id_raw[1..33].copy_from_slice(v.as_ref());
+				id_raw[0..4].copy_from_slice(b"beef");
+				id
+			},
 		}
 	}
 }
@@ -201,6 +233,41 @@ pub type SignedExtra = (
 	OptionalSignedExtension,
 );
 
+/// Upgrade Session keys to include BEEFY key.
+/// When this is removed, should also remove `OldSessionKeys`.
+pub struct UpgradeSessionKeys;
+impl frame_support::traits::OnRuntimeUpgrade for UpgradeSessionKeys {
+	fn on_runtime_upgrade() -> Weight {
+		Session::upgrade_keys::<opaque::OldSessionKeys, _>(opaque::transform_session_keys);
+		Perbill::from_percent(40) * BlockWeights::get().max_block
+	}
+}
+
+// Remove this after runtime upgrade
+pub struct InitPallets;
+impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
+	fn on_runtime_upgrade() -> Weight {
+		use frame_support::StorageHasher;
+
+		// Gorli config
+		frame_support::migration::put_storage_value(
+			b"Eth2Client",
+			b"NetworkConfigForChain",
+			&webb_proposals::TypedChainId::Evm(5)
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			&webb_consensus_types::network_config::NetworkConfig::new(
+				&webb_consensus_types::network_config::Network::Goerli,
+			),
+		);
+
+		pallet_ics20_transfer::pallet::AssetIdByName::<Runtime>::insert(&b"ERT"[..], 666);
+
+		Perbill::from_percent(40) * BlockWeights::get().max_block
+	}
+}
+
+pub type Migrations = (UpgradeSessionKeys, InitPallets);
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
@@ -216,6 +283,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations,
 >;
 
 type EventRecord = frame_system::EventRecord<

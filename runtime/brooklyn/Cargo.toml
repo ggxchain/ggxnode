@@ -19,6 +19,7 @@ serde = { workspace = true, optional = true }
 
 # Substrate
 sp-api.workspace = true
+sp-application-crypto.workspace = true
 sp-arithmetic.workspace = true
 sp-block-builder.workspace = true
 sp-consensus-aura.workspace = true
@@ -115,6 +116,8 @@ prost.workspace = true
 pallet-chain-extension-receipt-registry.workspace = true
 pallet-eth2-light-client.workspace = true
 pallet-receipt-registry.workspace = true
+webb-consensus-types.workspace = true
+webb-proposals.workspace = true
 
 # Orml
 orml-asset-registry.workspace = true
@@ -124,12 +127,12 @@ orml-traits.workspace = true
 # BTC bridge
 annuity.workspace = true
 btc-relay.workspace = true
-escrow.workspace = true
-interbtc-currency.workspace = true
 clients-info.workspace = true
+escrow.workspace = true
 fee.workspace = true
-loans.workspace = true
+interbtc-currency.workspace = true
 issue.workspace = true
+loans.workspace = true
 nomination.workspace = true
 oracle.workspace = true
 primitives.workspace = true
@@ -141,12 +144,12 @@ staking.workspace = true
 vault-registry.workspace = true
 
 btc-relay-rpc-runtime-api.workspace = true
-oracle-rpc-runtime-api.workspace = true
-vault-registry-rpc-runtime-api.workspace = true
-reward-rpc-runtime-api.workspace = true
 issue-rpc-runtime-api.workspace = true
+oracle-rpc-runtime-api.workspace = true
 redeem-rpc-runtime-api.workspace = true
 replace-rpc-runtime-api.workspace = true
+reward-rpc-runtime-api.workspace = true
+vault-registry-rpc-runtime-api.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
