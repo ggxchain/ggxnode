@@ -25,6 +25,10 @@ pub mod pos;
 mod prelude;
 
 mod version;
+use btc_relay::bitcoin::utils::{
+	virtual_transaction_size, InputType, TransactionInputMetadata, TransactionOutputMetadata,
+};
+use sp_arithmetic::FixedU128;
 pub use version::VERSION;
 
 use core::cmp::Ordering;
@@ -91,8 +95,12 @@ pub use frame_support::{
 use btcbridge::GetWrappedCurrencyId;
 use interbtc_currency::Amount;
 use primitives::{
-	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, BalanceWrapper,
-	CurrencyId, H256Le, UnsignedFixedPoint,
+	issue::IssueRequest,
+	redeem::RedeemRequest,
+	replace::ReplaceRequest,
+	BalanceWrapper,
+	CurrencyId::{self, Token},
+	H256Le, UnsignedFixedPoint, VaultCurrencyPair,
 };
 
 pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
@@ -247,7 +255,8 @@ impl frame_support::traits::OnRuntimeUpgrade for UpgradeSessionKeys {
 pub struct InitPallets;
 impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 	fn on_runtime_upgrade() -> Weight {
-		use frame_support::StorageHasher;
+		use frame_support::{traits::fungibles::Mutate, StorageHasher};
+		use sp_runtime::FixedPointNumber;
 
 		// Gorli config
 		frame_support::migration::put_storage_value(
@@ -259,10 +268,191 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 				&webb_consensus_types::network_config::Network::Goerli,
 			),
 		);
+		let main_account = Sudo::key().unwrap();
 
 		pallet_ics20_transfer::pallet::AssetIdByName::<Runtime>::insert(&b"ERT"[..], 666);
+		// Tokens (1 authorized account)
+		Tokens::mint_into(CurrencyId::Token(primitives::GGXT), &main_account, 1 << 70).unwrap();
+
+		// Oracle (1 hour and 1 authorized oracle)
+		oracle::pallet::MaxDelay::<Runtime>::put(3600 * 1000);
+		oracle::pallet::AuthorizedOracles::<Runtime>::insert(
+			&main_account,
+			sp_runtime::BoundedVec::default(), // It's a name, but we keep as in chainspec empty.
+		);
+
+		// btc_relay
+		frame_support::migration::put_storage_value(
+			b"BtcRelay",
+			b"StableBitcoinConfirmations",
+			b"",
+			&10u32,
+		);
+		frame_support::migration::put_storage_value(
+			b"BtcRelay",
+			b"StableParachainConfirmations",
+			b"",
+			&1u32,
+		);
+		frame_support::migration::put_storage_value(
+			b"BtcRelay",
+			b"DisableDifficultyCheck",
+			b"",
+			&true,
+		);
+		frame_support::migration::put_storage_value(
+			b"BtcRelay",
+			b"DisableInclusionCheck",
+			b"",
+			&false,
+		);
+		let dust_value = 1000u32;
+
+		// issue
+		frame_support::migration::put_storage_value(b"Issue", b"IssuePeriod", b"", &Days::get());
+		frame_support::migration::put_storage_value(
+			b"Issue",
+			b"IssueBtcDustValue",
+			b"",
+			&dust_value,
+		);
+
+		// redeem
+		frame_support::migration::put_storage_value(
+			b"Redeem",
+			b"RedeemPeriod",
+			b"",
+			&Days::get() * 2,
+		);
+		frame_support::migration::put_storage_value(
+			b"Redeem",
+			b"RedeemBtcDustValue",
+			b"",
+			&dust_value,
+		);
+		frame_support::migration::put_storage_value(
+			b"Redeem",
+			b"RedeemTransactionSize",
+			b"",
+			&expected_transaction_size(),
+		);
+
+		// replace
+		frame_support::migration::put_storage_value(
+			b"Replace",
+			b"ReplacePeriod",
+			b"",
+			&Days::get() * 2,
+		);
+		frame_support::migration::put_storage_value(
+			b"Replace",
+			b"ReplaceBtcDustValue",
+			b"",
+			&dust_value,
+		);
+
+		// vault registry
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"PunishmentDelay",
+			b"",
+			&Days::get(),
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"MinimumCollateralVault",
+			&Token(primitives::GGXT).using_encoded(frame_support::Blake2_128Concat::hash),
+			&55u32,
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"SystemCollaterlCeiling",
+			&default_pair_interlay(Token(primitives::GGXT))
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			&26_200 * primitives::GGXT.one(),
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"SecureCollateralThreshold",
+			&default_pair_interlay(Token(primitives::GGXT))
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			/* 900% */
+			&FixedU128::checked_from_rational(900, 100).unwrap(),
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"PremiumRedeemThreshold",
+			&default_pair_interlay(Token(primitives::GGXT))
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			/* 650% */
+			&FixedU128::checked_from_rational(650, 100).unwrap(),
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"LiquidationCollateralThreshold",
+			&default_pair_interlay(Token(primitives::GGXT))
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			/* 500% */
+			&FixedU128::checked_from_rational(500, 100).unwrap(),
+		);
+		frame_support::migration::put_storage_value(
+			b"VaultRegistry",
+			b"StorageVersion",
+			b"",
+			&vault_registry::types::Version::V3,
+		);
+
+		// Fee
+		fee::pallet::IssueFee::<Runtime>::put(FixedU128::checked_from_rational(15, 10000).unwrap()); // 0.15%
+		fee::pallet::IssueGriefingCollateral::<Runtime>::put(
+			FixedU128::checked_from_rational(5, 1000).unwrap(),
+		); // 0.5%
+		fee::pallet::RedeemFee::<Runtime>::put(FixedU128::checked_from_rational(5, 1000).unwrap()); // 0.5%
+		fee::pallet::PremiumRedeemFee::<Runtime>::put(
+			FixedU128::checked_from_rational(5, 100).unwrap(), // 5%
+		);
+		fee::pallet::PunishmentFee::<Runtime>::put(
+			FixedU128::checked_from_rational(10, 100).unwrap(), // 10%
+		);
+		fee::pallet::ReplaceGriefingCollateral::<Runtime>::put(
+			FixedU128::checked_from_rational(10, 100).unwrap(), // 10%
+		);
+
+		// nomination
+		nomination::pallet::NominationEnabled::<Runtime>::put(false);
+
+		// loans
+
+		loans::pallet::MaxExchangeRate::<Runtime>::put(&primitives::Rate::from_inner(
+			loans::DEFAULT_MAX_EXCHANGE_RATE,
+		));
+		loans::pallet::MinExchangeRate::<Runtime>::put(&primitives::Rate::from_inner(
+			loans::DEFAULT_MIN_EXCHANGE_RATE,
+		));
 
 		Perbill::from_percent(40) * BlockWeights::get().max_block
+	}
+}
+
+fn expected_transaction_size() -> u32 {
+	virtual_transaction_size(
+		TransactionInputMetadata {
+			count: 4,
+			script_type: InputType::P2WPKHv0,
+		},
+		TransactionOutputMetadata {
+			num_op_return: 1,
+			num_p2pkh: 2,
+			num_p2sh: 0,
+			num_p2wpkh: 0,
+		},
+	)
+}
+
+fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyId> {
+	VaultCurrencyPair {
+		collateral: currency_id,
+		wrapped: btcbridge::GetWrappedCurrencyId::get(),
 	}
 }
 
