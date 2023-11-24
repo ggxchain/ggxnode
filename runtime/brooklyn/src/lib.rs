@@ -264,7 +264,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"NetworkConfigForChain",
 			&webb_proposals::TypedChainId::Evm(5)
 				.using_encoded(frame_support::Blake2_128Concat::hash),
-			&webb_consensus_types::network_config::NetworkConfig::new(
+			webb_consensus_types::network_config::NetworkConfig::new(
 				&webb_consensus_types::network_config::Network::Goerli,
 			),
 		);
@@ -286,35 +286,35 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"BTCRelay",
 			b"StableBitcoinConfirmations",
 			b"",
-			&10u32,
+			10u32,
 		);
 		frame_support::migration::put_storage_value(
 			b"BTCRelay",
 			b"StableParachainConfirmations",
 			b"",
-			&1u32,
+			1u32,
 		);
 		frame_support::migration::put_storage_value(
 			b"BTCRelay",
 			b"DisableDifficultyCheck",
 			b"",
-			&true,
+			true,
 		);
 		frame_support::migration::put_storage_value(
 			b"BTCRelay",
 			b"DisableInclusionCheck",
 			b"",
-			&false,
+			false,
 		);
 		let dust_value = 1000u128;
 
 		// issue
-		frame_support::migration::put_storage_value(b"Issue", b"IssuePeriod", b"", &Days::get());
+		frame_support::migration::put_storage_value(b"Issue", b"IssuePeriod", b"", Days::get());
 		frame_support::migration::put_storage_value(
 			b"Issue",
 			b"IssueBtcDustValue",
 			b"",
-			&dust_value,
+			dust_value,
 		);
 
 		// redeem
@@ -328,13 +328,13 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"Redeem",
 			b"RedeemBtcDustValue",
 			b"",
-			&dust_value,
+			dust_value,
 		);
 		frame_support::migration::put_storage_value(
 			b"Redeem",
 			b"RedeemTransactionSize",
 			b"",
-			&expected_transaction_size(),
+			expected_transaction_size(),
 		);
 
 		// replace
@@ -348,7 +348,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"Replace",
 			b"ReplaceBtcDustValue",
 			b"",
-			&dust_value,
+			dust_value,
 		);
 
 		// vault registry
@@ -356,20 +356,20 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"VaultRegistry",
 			b"PunishmentDelay",
 			b"",
-			&Days::get(),
+			Days::get(),
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
 			b"MinimumCollateralVault",
 			&Token(primitives::GGXT).using_encoded(frame_support::Blake2_128Concat::hash),
-			&55u128,
+			55u128,
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
 			b"SystemCollateralCeiling",
 			&default_pair_interlay(Token(primitives::GGXT))
 				.using_encoded(frame_support::Blake2_128Concat::hash),
-			&26_200 * primitives::GGXT.one(),
+			26_200 * primitives::GGXT.one(),
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
@@ -377,7 +377,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			&default_pair_interlay(Token(primitives::GGXT))
 				.using_encoded(frame_support::Blake2_128Concat::hash),
 			/* 900% */
-			&FixedU128::checked_from_rational(900, 100).unwrap(),
+			FixedU128::checked_from_rational(900, 100).unwrap(),
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
@@ -385,7 +385,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			&default_pair_interlay(Token(primitives::GGXT))
 				.using_encoded(frame_support::Blake2_128Concat::hash),
 			/* 650% */
-			&FixedU128::checked_from_rational(650, 100).unwrap(),
+			FixedU128::checked_from_rational(650, 100).unwrap(),
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
@@ -393,7 +393,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			&default_pair_interlay(Token(primitives::GGXT))
 				.using_encoded(frame_support::Blake2_128Concat::hash),
 			/* 500% */
-			&FixedU128::checked_from_rational(500, 100).unwrap(),
+			FixedU128::checked_from_rational(500, 100).unwrap(),
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
@@ -423,10 +423,10 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 
 		// loans
 
-		loans::pallet::MaxExchangeRate::<Runtime>::put(&primitives::Rate::from_inner(
+		loans::pallet::MaxExchangeRate::<Runtime>::put(primitives::Rate::from_inner(
 			loans::DEFAULT_MAX_EXCHANGE_RATE,
 		));
-		loans::pallet::MinExchangeRate::<Runtime>::put(&primitives::Rate::from_inner(
+		loans::pallet::MinExchangeRate::<Runtime>::put(primitives::Rate::from_inner(
 			loans::DEFAULT_MIN_EXCHANGE_RATE,
 		));
 
