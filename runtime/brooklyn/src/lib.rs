@@ -283,30 +283,30 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 
 		// btc_relay
 		frame_support::migration::put_storage_value(
-			b"BtcRelay",
+			b"BTCRelay",
 			b"StableBitcoinConfirmations",
 			b"",
 			&10u32,
 		);
 		frame_support::migration::put_storage_value(
-			b"BtcRelay",
+			b"BTCRelay",
 			b"StableParachainConfirmations",
 			b"",
 			&1u32,
 		);
 		frame_support::migration::put_storage_value(
-			b"BtcRelay",
+			b"BTCRelay",
 			b"DisableDifficultyCheck",
 			b"",
 			&true,
 		);
 		frame_support::migration::put_storage_value(
-			b"BtcRelay",
+			b"BTCRelay",
 			b"DisableInclusionCheck",
 			b"",
 			&false,
 		);
-		let dust_value = 1000u32;
+		let dust_value = 1000u128;
 
 		// issue
 		frame_support::migration::put_storage_value(b"Issue", b"IssuePeriod", b"", &Days::get());
@@ -362,11 +362,11 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			b"VaultRegistry",
 			b"MinimumCollateralVault",
 			&Token(primitives::GGXT).using_encoded(frame_support::Blake2_128Concat::hash),
-			&55u32,
+			&55u128,
 		);
 		frame_support::migration::put_storage_value(
 			b"VaultRegistry",
-			b"SystemCollaterlCeiling",
+			b"SystemCollateralCeiling",
 			&default_pair_interlay(Token(primitives::GGXT))
 				.using_encoded(frame_support::Blake2_128Concat::hash),
 			&26_200 * primitives::GGXT.one(),
