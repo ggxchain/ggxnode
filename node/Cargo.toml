@@ -1,9 +1,8 @@
 [package]
 name = "ggxchain-node"
-version = "0.1.2"
+version.workspace = true
 license = "Unlicense"
 build = "build.rs"
-description = "A fresh FRAME-based Substrate node, ready for hacking."
 publish = false
 authors.workspace = true
 edition.workspace = true
@@ -20,12 +19,14 @@ jsonrpsee = { workspace = true, features = ["server", "macros"] }
 log.workspace = true
 rand.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
+serde.workspace = true
 
 # Substrate
 mmr-gadget.workspace = true
 mmr-rpc.workspace = true
 prometheus.workspace = true
 sc-basic-authorship.workspace = true
+sc-chain-spec.workspace = true
 sc-cli.workspace = true
 sc-client-api.workspace = true
 sc-consensus-aura = { workspace = true }
@@ -85,6 +86,19 @@ webb-proposals = { workspace = true, optional = true }
 
 ggxchain-runtime-brooklyn = { workspace = true, features = ["std"], optional = true }
 ggxchain-runtime-sydney = { workspace = true, features = ["std"], optional = true }
+
+# BTC bridge
+bitcoin.workspace = true
+primitives.workspace = true
+
+btc-relay-rpc.workspace = true
+issue-rpc.workspace = true
+loans.workspace = true
+oracle-rpc.workspace = true
+redeem-rpc.workspace = true
+replace-rpc.workspace = true
+reward-rpc.workspace = true
+vault-registry-rpc.workspace = true
 
 [dev-dependencies]
 alloy-rlp = { workspace = true }

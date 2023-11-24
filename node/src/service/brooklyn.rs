@@ -27,8 +27,8 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
-use sp_core::{crypto::Ss58AddressFormat, U256};
-use sp_runtime::traits::BlakeTwo256;
+use sp_core::{crypto::Ss58AddressFormat, H256, U256};
+use sp_runtime::{traits::BlakeTwo256, FixedU128};
 // Frontier
 use fc_consensus::FrontierBlockImport;
 use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
@@ -41,6 +41,11 @@ use crate::{
 	cli::Cli,
 	rpc::FullDeps,
 	runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, RuntimeApi},
+};
+
+use primitives::{
+	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, CurrencyId, H256Le,
+	VaultId,
 };
 
 #[cfg(not(feature = "manual-seal"))]
@@ -291,11 +296,14 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			prometheus_registry,
 		);
 
+	net_config.add_notification_protocol(
+		sc_consensus_beefy::communication::beefy_peers_set_config(beefy_gossip_proto_name.clone()),
+	);
+	net_config.add_request_response_protocol(beefy_req_resp_cfg);
+
 	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
 		grandpa_protocol_name.clone(),
 	));
-
-	net_config.add_request_response_protocol(beefy_req_resp_cfg);
 
 	let (grandpa_block_import, _grandpa_link) =
 		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
@@ -924,10 +932,45 @@ where
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
 	P: TransactionPool<Block = Block> + 'static,
 	A: ChainApi<Block = Block> + 'static,
+	C::Api: btc_relay_rpc::BtcRelayRuntimeApi<Block, H256Le>,
+	C::Api: oracle_rpc::OracleRuntimeApi<Block, Balance, CurrencyId>,
+	C::Api: vault_registry_rpc::VaultRegistryRuntimeApi<
+		Block,
+		VaultId<AccountId, CurrencyId>,
+		Balance,
+		FixedU128,
+		CurrencyId,
+		AccountId,
+	>,
+	C::Api: issue_rpc::IssueRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		IssueRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
+	C::Api: redeem_rpc::RedeemRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		RedeemRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
+	C::Api: replace_rpc::ReplaceRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
 	use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
+
+	use btc_relay_rpc::{BtcRelay, BtcRelayApiServer};
+	use issue_rpc::{Issue, IssueApiServer};
+	use oracle_rpc::{Oracle, OracleApiServer};
+	use redeem_rpc::{Redeem, RedeemApiServer};
+	use replace_rpc::{Replace, ReplaceApiServer};
+	use vault_registry_rpc::{VaultRegistry, VaultRegistryApiServer};
 
 	let mut io = RpcModule::new(());
 	let FullDeps {
@@ -1035,7 +1078,7 @@ where
 		)?;
 	}
 
-	io.merge(Mmr::new(client).into_rpc())?;
+	io.merge(Mmr::new(client.clone()).into_rpc())?;
 	io.merge(
 		Beefy::<Block>::new(
 			beefy.beefy_finality_proof_stream,
@@ -1044,6 +1087,13 @@ where
 		)?
 		.into_rpc(),
 	)?;
+
+	io.merge(BtcRelay::new(client.clone()).into_rpc())?;
+	io.merge(Oracle::new(client.clone()).into_rpc())?;
+	io.merge(VaultRegistry::new(client.clone()).into_rpc())?;
+	io.merge(Issue::new(client.clone()).into_rpc())?;
+	io.merge(Redeem::new(client.clone()).into_rpc())?;
+	io.merge(Replace::new(client.clone()).into_rpc())?;
 
 	Ok(io)
 }
