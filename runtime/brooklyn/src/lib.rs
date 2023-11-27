@@ -430,7 +430,7 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 			loans::DEFAULT_MIN_EXCHANGE_RATE,
 		));
 
-		Perbill::from_percent(40) * BlockWeights::get().max_block
+		Perbill::from_percent(20) * BlockWeights::get().max_block
 	}
 }
 
