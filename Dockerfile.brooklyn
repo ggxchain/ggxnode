@@ -32,7 +32,7 @@ ENV HOME /usr/src/app
 WORKDIR $HOME
 
 RUN apt-get update --yes && \
-    apt-get install curl jq openssl --yes --no-install-recommends
+    apt-get install curl jq openssl ca-certificates --yes --no-install-recommends
 
 COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
 COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml $HOME/run_node.sh ./
