@@ -25,7 +25,7 @@ else
 fi
 
 # Create a secret key file from the keystore
-sed 's/\"//g' $(ls -d /chain-data/chains/GGX/keystore/* | shuf -n 1) > /usr/src/app/secret.key
+sed 's/\"//g' $(ls -d /chain-data/chains/GGX/keystore/* | shuf -n 1) > /usr/src/app/secret-key
 
 # Execute the provided executable with remaining arguments
 "$EXECUTABLE" "$@"
