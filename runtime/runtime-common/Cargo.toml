@@ -101,6 +101,7 @@ eth-precompile = [
 	"pallet-evm-eth-receipt-provider",
 	"pallet-receipt-registry",
 ]
+brooklyn = []
 
 pos = ["pallet-evm"]
 std = [
