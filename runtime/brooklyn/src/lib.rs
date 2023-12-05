@@ -201,6 +201,22 @@ pub type SignedExtra = (
 	OptionalSignedExtension,
 );
 
+// Remove this after runtime upgrade
+pub struct InitPrecompiles;
+impl frame_support::traits::OnRuntimeUpgrade for InitPrecompiles {
+	fn on_runtime_upgrade() -> Weight {
+		const DUMMY_CODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xfd];
+
+		pallet_evm::Pallet::<Runtime>::create_account(
+			runtime_common::precompiles::consts::ETH_RECEIPT_PROVIDER,
+			DUMMY_CODE.to_vec(),
+		);
+		Perbill::from_percent(5) * BlockWeights::get().max_block
+	}
+}
+
+pub type Migrations = (InitPrecompiles,);
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
@@ -216,6 +232,7 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations,
 >;
 
 type EventRecord = frame_system::EventRecord<

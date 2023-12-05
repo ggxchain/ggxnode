@@ -74,7 +74,6 @@ docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
     --wasm-execution Compiled \
     --database rocksdb \
     --rpc-cors all \
-    --sync warp \
     --no-private-ip \
     --no-mdns \
     --state-pruning 256 \
