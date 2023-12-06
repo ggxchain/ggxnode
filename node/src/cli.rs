@@ -52,7 +52,6 @@ pub struct Cli {
 	#[command(flatten)]
 	pub run: CmdRunner,
 
-	#[cfg(feature = "brooklyn")]
 	#[clap(flatten)]
 	pub relayer_cmd: pallet_eth2_light_client_relayer_gadget_cli::LightClientRelayerCmd,
 }
@@ -94,7 +93,6 @@ pub enum Subcommand {
 	Benchmark,
 
 	/// Db meta columns information.
-	#[cfg(feature = "brooklyn")]
 	FrontierDb(fc_cli::FrontierDbCmd),
 
 	/// Node version information.

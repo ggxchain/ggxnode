@@ -62,7 +62,7 @@ impl pallet_evm::Config for Runtime {
 	type Timestamp = Timestamp;
 	type OnCreate = ();
 	type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
-	type WeightInfo = ();
+	type WeightInfo = pallet_evm::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {

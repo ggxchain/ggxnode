@@ -92,7 +92,7 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["precompiles", "eth-precompile", "pos", "brooklyn"] }
+runtime-common = { workspace = true, features = ["precompiles", "pos"] }
 
 # Astar
 astar-primitives.workspace = true
@@ -160,7 +160,6 @@ sp-io.workspace = true
 
 [features]
 default = ["std", "aura", "with-rocksdb-weights"]
-brooklyn = []
 fast-runtime = []
 
 std = [

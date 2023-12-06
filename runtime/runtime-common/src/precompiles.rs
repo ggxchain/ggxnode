@@ -4,7 +4,6 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
-#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
 use pallet_evm_eth_receipt_provider::EthReceiptPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
@@ -52,16 +51,9 @@ pub mod consts {
 
 	pub const ZK_GROTH16_VERIFY: H160 = hash(0x8888);
 
-	#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
 	pub const ETH_RECEIPT_PROVIDER: H160 = hash(0x9999);
 
-	cfg_if::cfg_if! {
-		if #[cfg(all(feature = "eth-precompile", feature = "brooklyn"))] {
-			const ARRAY_SIZE: usize = 19;
-		} else {
-			const ARRAY_SIZE: usize = 18;
-		}
-	}
+	const ARRAY_SIZE: usize = 19;
 
 	pub const SUPPORTED_PRECOMPILES: [H160; ARRAY_SIZE] = [
 		EC_RECOVER,
@@ -82,7 +74,6 @@ pub mod consts {
 		XVM,
 		SESSION_WRAPPER,
 		ZK_GROTH16_VERIFY,
-		#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
 		ETH_RECEIPT_PROVIDER,
 	];
 
@@ -146,22 +137,11 @@ impl<R, XS> GoldenGatePrecompiles<R, XS> {
 	}
 }
 
-// Hack to make it work with and without eth-precompile feature.
-cfg_if::cfg_if! {
-  if #[cfg(all(feature = "eth-precompile", feature = "brooklyn"))] {
-	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config { }
-	impl<T: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config> RuntimeTrait for T { }
-  } else {
-	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config { }
-	impl<T: pallet_evm::Config + pallet_xvm::Config> RuntimeTrait for T { }
-  }
-}
-
 impl<R, XS> PrecompileSet for GoldenGatePrecompiles<R, XS>
 where
 	XvmPrecompile<R, XS>: Precompile,
 	SessionWrapper<R>: Precompile,
-	R: RuntimeTrait,
+	R: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -192,8 +172,9 @@ where
 			a if a == consts::ZK_GROTH16_VERIFY => Some(ZKGroth16Verify::execute(handle)),
 
 			// 0x9999 - is eth-receipt-registry get
-			#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
-			a if a == consts::ETH_RECEIPT_PROVIDER => Some(EthReceiptPrecompile::<R>::execute(handle)),
+			a if a == consts::ETH_RECEIPT_PROVIDER => {
+				Some(EthReceiptPrecompile::<R>::execute(handle))
+			}
 			_ => None,
 		}
 	}

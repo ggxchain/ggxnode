@@ -7,10 +7,14 @@ use jsonrpsee::RpcModule;
 use sp_api::{CallApiAt, ProvideRuntimeApi};
 use std::{
 	collections::BTreeMap,
+	path::PathBuf,
 	sync::{Arc, Mutex},
 	time::Duration,
 };
+use webb_proposals::TypedChainId;
 // Substrate
+use mmr_gadget::MmrGadget;
+use mmr_rpc::{Mmr, MmrApiServer};
 use sc_client_api::{
 	backend::{Backend, StateBackend},
 	AuxStore, BlockchainEvents, StorageProvider,
@@ -23,12 +27,12 @@ use sc_telemetry::{Telemetry, TelemetryWorker};
 use sc_transaction_pool::{ChainApi, Pool};
 use sp_block_builder::BlockBuilder;
 use sp_blockchain::{HeaderBackend, HeaderMetadata};
-use sp_core::{crypto::Ss58AddressFormat, U256};
-use sp_runtime::traits::BlakeTwo256;
+use sp_core::{crypto::Ss58AddressFormat, H256, U256};
+use sp_runtime::{traits::BlakeTwo256, FixedU128};
 // Frontier
 use fc_consensus::FrontierBlockImport;
-use fc_mapping_sync::SyncStrategy;
-use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle, TxPool};
+use fc_mapping_sync::{kv::MappingSyncWorker, SyncStrategy};
+use fc_rpc::{EthBlockDataCacheTask, EthTask, OverrideHandle};
 use fc_rpc_core::types::{FeeHistoryCache, FeeHistoryCacheLimit, FilterPool};
 // Runtime
 #[cfg(feature = "manual-seal")]
@@ -36,7 +40,12 @@ use crate::cli::Sealing;
 use crate::{
 	cli::Cli,
 	rpc::FullDeps,
-	runtime::{opaque::Block, AccountId, Balance, Hash, Index, RuntimeApi},
+	runtime::{opaque::Block, AccountId, Balance, BlockNumber, Hash, Index, RuntimeApi},
+};
+
+use primitives::{
+	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, CurrencyId, H256Le,
+	VaultId,
 };
 
 #[cfg(not(feature = "manual-seal"))]
@@ -54,6 +63,10 @@ pub type ConsensusResult = (
 	FrontierBlockImport<Block, Arc<FullClient>, FullClient>,
 	Sealing,
 );
+
+pub fn db_config_dir(config: &Configuration) -> PathBuf {
+	config.base_path.config_dir(config.chain_spec.id())
+}
 
 pub fn new_partial(
 	config: &Configuration,
@@ -128,6 +141,7 @@ pub fn new_partial(
 			},
 		},
 	)?);
+
 	let filter_pool: Option<FilterPool> = Some(Arc::new(Mutex::new(BTreeMap::new())));
 	let fee_history_cache: FeeHistoryCache = Arc::new(Mutex::new(BTreeMap::new()));
 	let fee_history_cache_limit: FeeHistoryCacheLimit = cli.run.fee_history_limit;
@@ -223,7 +237,6 @@ pub fn new_partial(
 }
 
 /// Builds a new service for a full client.
-#[cfg(not(feature = "manual-seal"))]
 pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, ServiceError> {
 	use sc_client_api::BlockBackend;
 	use sc_service::WarpSyncParams;
@@ -231,6 +244,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 
 	// Use ethereum style for subscription ids
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
+	let is_offchain_indexing_enabled = config.offchain_worker.indexing_enabled;
 
 	let sc_service::PartialComponents {
 		client,
@@ -250,6 +264,8 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			),
 	} = new_partial(&config, cli)?;
 
+	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
+
 	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
 		&client
 			.block_hash(0)
@@ -258,6 +274,54 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 			.expect("Genesis block exists; qed"),
 		&config.chain_spec,
 	);
+	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
+		grandpa_protocol_name.clone(),
+	));
+
+	let genesis_hash = client
+		.block_hash(0)
+		.ok()
+		.flatten()
+		.expect("Genesis block exists; qed");
+	let prometheus_registry = config.prometheus_registry().cloned();
+	let beefy_gossip_proto_name =
+		sc_consensus_beefy::gossip_protocol_name(genesis_hash, config.chain_spec.fork_id());
+	// `beefy_on_demand_justifications_handler` is given to `beefy-gadget` task to be run,
+	// while `beefy_req_resp_cfg` is added to `config.network.request_response_protocols`.
+	let (beefy_on_demand_justifications_handler, beefy_req_resp_cfg) =
+		sc_consensus_beefy::communication::request_response::BeefyJustifsRequestHandler::new(
+			genesis_hash,
+			config.chain_spec.fork_id(),
+			client.clone(),
+			prometheus_registry,
+		);
+
+	net_config.add_notification_protocol(
+		sc_consensus_beefy::communication::beefy_peers_set_config(beefy_gossip_proto_name.clone()),
+	);
+	net_config.add_request_response_protocol(beefy_req_resp_cfg);
+
+	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
+		grandpa_protocol_name.clone(),
+	));
+
+	let (grandpa_block_import, _grandpa_link) =
+		sc_consensus_grandpa::block_import_with_authority_set_hard_forks(
+			client.clone(),
+			&Arc::clone(&client),
+			select_chain.clone(),
+			Vec::new(),
+			telemetry.as_ref().map(|x| x.handle()),
+		)?;
+	let _justification_import = grandpa_block_import.clone();
+
+	let (_beefy_block_import, beefy_voter_links, beefy_rpc_links) =
+		sc_consensus_beefy::beefy_block_import_and_links(
+			grandpa_block_import,
+			backend.clone(),
+			client.clone(),
+			config.prometheus_registry().cloned(),
+		);
 
 	let warp_sync = Arc::new(sc_consensus_grandpa::warp_proof::NetworkProvider::new(
 		backend.clone(),
@@ -265,13 +329,11 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		Vec::default(),
 	));
 
-	let net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
-
 	let (network, system_rpc_tx, tx_handler_controller, network_starter, sync_service) =
 		sc_service::build_network(sc_service::BuildNetworkParams {
 			config: &config,
-			net_config,
 			client: client.clone(),
+			net_config,
 			transaction_pool: transaction_pool.clone(),
 			spawn_handle: task_manager.spawn_handle(),
 			import_queue,
@@ -325,34 +387,46 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let max_past_logs = cli.run.max_past_logs;
 		let pubsub_notification_sinks = pubsub_notification_sinks.clone();
 
-		Box::new(move |deny_unsafe, subscription_task_executor| {
-			let deps = crate::rpc::FullDeps {
-				client: client.clone(),
-				pool: pool.clone(),
-				deny_unsafe,
-				mainnet: MainNetParams {
-					graph: pool.pool().clone(),
-					is_authority,
-					enable_dev_signer,
-					network: network.clone(),
-					sync: sync.clone(),
-					filter_pool: filter_pool.clone(),
-					backend: frontier_backend.clone(),
-					max_past_logs,
-					fee_history_cache: fee_history_cache.clone(),
-					fee_history_cache_limit,
-					overrides: overrides.clone(),
-					block_data_cache: block_data_cache.clone(),
-				},
-			};
+		Box::new(
+			move |deny_unsafe,
+			      subscription_task_executor: polkadot_rpc::SubscriptionTaskExecutor| {
+				let deps = crate::rpc::FullDeps {
+					client: client.clone(),
+					pool: pool.clone(),
+					deny_unsafe,
+					mainnet: MainNetParams {
+						graph: pool.pool().clone(),
+						is_authority,
+						enable_dev_signer,
+						network: network.clone(),
+						sync: sync.clone(),
+						filter_pool: filter_pool.clone(),
+						backend: frontier_backend.clone(),
+						max_past_logs,
+						fee_history_cache: fee_history_cache.clone(),
+						fee_history_cache_limit,
+						overrides: overrides.clone(),
+						block_data_cache: block_data_cache.clone(),
+						beefy: polkadot_rpc::BeefyDeps {
+							beefy_finality_proof_stream: beefy_rpc_links
+								.from_voter_justif_stream
+								.clone(),
+							beefy_best_block_stream: beefy_rpc_links
+								.from_voter_best_beefy_stream
+								.clone(),
+							subscription_executor: subscription_task_executor.clone(),
+						},
+					},
+				};
 
-			crate::rpc::create_full(
-				deps,
-				subscription_task_executor,
-				pubsub_notification_sinks.clone(),
-			)
-			.map_err(Into::into)
-		})
+				crate::rpc::create_full(
+					deps,
+					subscription_task_executor,
+					pubsub_notification_sinks.clone(),
+				)
+				.map_err(Into::into)
+			},
+		)
 	};
 
 	let _rpc_handlers = sc_service::spawn_tasks(sc_service::SpawnTasksParams {
@@ -373,7 +447,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	spawn_frontier_tasks(
 		&task_manager,
 		client.clone(),
-		backend,
+		backend.clone(),
 		frontier_backend,
 		filter_pool,
 		overrides,
@@ -409,7 +483,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		let aura = sc_consensus_aura::start_aura::<AuraPair, _, _, _, _, _, _, _, _, _, _>(
 			sc_consensus_aura::StartAuraParams {
 				slot_duration,
-				client,
+				client: client.clone(),
 				select_chain,
 				block_import,
 				proposer_factory,
@@ -430,6 +504,69 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		task_manager
 			.spawn_essential_handle()
 			.spawn_blocking("aura", Some("block-authoring"), aura);
+	}
+
+	let relayer_cmd: &pallet_eth2_light_client_relayer_gadget_cli::LightClientRelayerCmd =
+		&cli.relayer_cmd;
+	if relayer_cmd.light_client_relay_config_path.is_some()
+		&& relayer_cmd.light_client_init_pallet_config_path.is_some()
+	{
+		// Start Eth2 Light client Relayer Gadget - (GOERLI RELAYER)
+		task_manager.spawn_handle().spawn(
+			"goerli-relayer-gadget",
+			None,
+			pallet_eth2_light_client_relayer_gadget::start_gadget(
+				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
+					lc_relay_config_path: relayer_cmd.light_client_relay_config_path.clone(),
+					lc_init_config_path: relayer_cmd.light_client_init_pallet_config_path.clone(),
+					eth2_chain_id: TypedChainId::Evm(5),
+				},
+			),
+		);
+	}
+
+	// if the node isn't actively participating in consensus then it doesn't
+	// need a keystore, regardless of which protocol we use below.
+	let keystore_opt = if role.is_authority() {
+		Some(keystore_container.keystore())
+	} else {
+		None
+	};
+
+	let justifications_protocol_name = beefy_on_demand_justifications_handler.protocol_name();
+	let network_params = sc_consensus_beefy::BeefyNetworkParams {
+		network: network.clone(),
+		sync: sync_service.clone(),
+		gossip_protocol_name: beefy_gossip_proto_name,
+		justifications_protocol_name,
+		_phantom: core::marker::PhantomData::<Block>,
+	};
+	let payload_provider = sp_consensus_beefy::mmr::MmrRootProvider::new(client.clone());
+	let beefy_params = sc_consensus_beefy::BeefyParams {
+		client: client.clone(),
+		backend: backend.clone(),
+		payload_provider,
+		runtime: client.clone(),
+		key_store: keystore_opt.clone(),
+		network_params,
+		min_block_delta: 8,
+		prometheus_registry: prometheus_registry.clone(),
+		links: beefy_voter_links,
+		on_demand_justifications_handler: beefy_on_demand_justifications_handler,
+	};
+
+	let gadget = sc_consensus_beefy::start_beefy_gadget::<_, _, _, _, _, _, _>(beefy_params);
+
+	task_manager
+		.spawn_handle()
+		.spawn_blocking("beefy-gadget", None, gadget);
+
+	if is_offchain_indexing_enabled {
+		task_manager.spawn_handle().spawn_blocking(
+			"mmr-gadget",
+			None,
+			MmrGadget::start(client, backend, sp_mmr_primitives::INDEXING_PREFIX.to_vec()),
+		);
 	}
 
 	if enable_grandpa {
@@ -605,7 +742,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		client: client.clone(),
 		backend: backend.clone(),
 		task_manager: &mut task_manager,
-		keystore: keystore_container.sync_keystore(),
+		keystore: keystore_container.keystore(),
 		transaction_pool: transaction_pool.clone(),
 		rpc_builder,
 		network,
@@ -730,7 +867,7 @@ fn spawn_frontier_tasks(
 	task_manager.spawn_essential_handle().spawn(
 		"ggx-mapping-sync-worker",
 		Some("GGX"),
-		fc_mapping_sync::kv::MappingSyncWorker::new(
+		MappingSyncWorker::new(
 			client.import_notification_stream(),
 			Duration::new(6, 0),
 			client.clone(),
@@ -788,15 +925,52 @@ where
 	C: HeaderBackend<Block> + HeaderMetadata<Block, Error = sp_blockchain::Error>,
 	C: Send + Sync + 'static,
 	C::Api: substrate_frame_rpc_system::AccountNonceApi<Block, AccountId, Index>,
+	C::Api: mmr_rpc::MmrRuntimeApi<Block, <Block as sp_runtime::traits::Block>::Hash, BlockNumber>,
 	C::Api: BlockBuilder<Block>,
 	C::Api: pallet_transaction_payment_rpc::TransactionPaymentRuntimeApi<Block, Balance>,
 	C::Api: fp_rpc::ConvertTransactionRuntimeApi<Block>,
 	C::Api: fp_rpc::EthereumRuntimeRPCApi<Block>,
 	P: TransactionPool<Block = Block> + 'static,
 	A: ChainApi<Block = Block> + 'static,
+	C::Api: btc_relay_rpc::BtcRelayRuntimeApi<Block, H256Le>,
+	C::Api: oracle_rpc::OracleRuntimeApi<Block, Balance, CurrencyId>,
+	C::Api: vault_registry_rpc::VaultRegistryRuntimeApi<
+		Block,
+		VaultId<AccountId, CurrencyId>,
+		Balance,
+		FixedU128,
+		CurrencyId,
+		AccountId,
+	>,
+	C::Api: issue_rpc::IssueRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		IssueRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
+	C::Api: redeem_rpc::RedeemRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		RedeemRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
+	C::Api: replace_rpc::ReplaceRuntimeApi<
+		Block,
+		AccountId,
+		H256,
+		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>,
+	>,
 {
 	use pallet_transaction_payment_rpc::{TransactionPayment, TransactionPaymentApiServer};
+	use sc_consensus_beefy_rpc::{Beefy, BeefyApiServer};
 	use substrate_frame_rpc_system::{System, SystemApiServer};
+
+	use btc_relay_rpc::{BtcRelay, BtcRelayApiServer};
+	use issue_rpc::{Issue, IssueApiServer};
+	use oracle_rpc::{Oracle, OracleApiServer};
+	use redeem_rpc::{Redeem, RedeemApiServer};
+	use replace_rpc::{Replace, ReplaceApiServer};
+	use vault_registry_rpc::{VaultRegistry, VaultRegistryApiServer};
 
 	let mut io = RpcModule::new(());
 	let FullDeps {
@@ -817,6 +991,7 @@ where
 				fee_history_cache_limit,
 				overrides,
 				block_data_cache,
+				beefy,
 			},
 		#[cfg(feature = "manual-seal")]
 		command_sink,
@@ -832,7 +1007,7 @@ where
 	}
 	use fc_rpc::{
 		Eth, EthApiServer, EthDevSigner, EthFilter, EthFilterApiServer, EthPubSub,
-		EthPubSubApiServer, EthSigner, Net, NetApiServer, Web3, Web3ApiServer,
+		EthPubSubApiServer, EthSigner, Net, NetApiServer, TxPool, Web3, Web3ApiServer,
 	};
 	io.merge(
 		Eth::new(
@@ -855,16 +1030,15 @@ where
 		.into_rpc(),
 	)?;
 
+	let tx_pool = TxPool::new(client.clone(), graph);
 	if let Some(filter_pool) = filter_pool {
-		let max_stored_filters: usize = 500;
-		let tx_pool = TxPool::new(client.clone(), graph);
 		io.merge(
 			EthFilter::new(
 				client.clone(),
 				backend,
-				tx_pool,
+				tx_pool.clone(),
 				filter_pool,
-				max_stored_filters,
+				500_usize, // max stored filters
 				max_past_logs,
 				block_data_cache,
 			)
@@ -893,7 +1067,7 @@ where
 		)
 		.into_rpc(),
 	)?;
-	io.merge(Web3::new(client).into_rpc())?;
+	io.merge(Web3::new(client.clone()).into_rpc())?;
 
 	#[cfg(feature = "manual-seal")]
 	if let Some(command_sink) = command_sink {
@@ -903,6 +1077,23 @@ where
 			ManualSeal::new(command_sink).into_rpc(),
 		)?;
 	}
+
+	io.merge(Mmr::new(client.clone()).into_rpc())?;
+	io.merge(
+		Beefy::<Block>::new(
+			beefy.beefy_finality_proof_stream,
+			beefy.beefy_best_block_stream,
+			beefy.subscription_executor,
+		)?
+		.into_rpc(),
+	)?;
+
+	io.merge(BtcRelay::new(client.clone()).into_rpc())?;
+	io.merge(Oracle::new(client.clone()).into_rpc())?;
+	io.merge(VaultRegistry::new(client.clone()).into_rpc())?;
+	io.merge(Issue::new(client.clone()).into_rpc())?;
+	io.merge(Redeem::new(client.clone()).into_rpc())?;
+	io.merge(Replace::new(client.clone()).into_rpc())?;
 
 	Ok(io)
 }
@@ -933,4 +1124,6 @@ pub struct MainNetParams<A: sc_transaction_pool::ChainApi> {
 	pub overrides: Arc<OverrideHandle<Block>>,
 	/// Cache for Ethereum block data.
 	pub block_data_cache: Arc<EthBlockDataCacheTask<Block>>,
+	/// BEEFY specific dependencies.
+	pub beefy: polkadot_rpc::BeefyDeps,
 }
