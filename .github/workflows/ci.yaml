@@ -28,7 +28,14 @@ jobs:
       - uses: cachix/install-nix-action@v23
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix flake check --log-lines 100 --accept-flake-config
+      - name: Common
+        run: nix build --log-lines 100 .\#checks.x86_64-linux.fmt .\#checks.x86_64-linux.doclint 
+      - name: Runtime common
+        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-runtime-common .\#checks.x86_64-linux.nextest-runtime-common
+      - name: Brooklyn 
+        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
+      - name: Sydney 
+        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'
