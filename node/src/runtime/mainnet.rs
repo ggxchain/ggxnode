@@ -1,8 +1,14 @@
-pub use ggxchain_runtime_sydney::{opaque::SessionKeys, *};
+use bitcoin::utils::{
+	virtual_transaction_size, InputType, TransactionInputMetadata, TransactionOutputMetadata,
+};
 
+pub use ggxchain_runtime_sydney::{btcbridge::CurrencyId::Token, opaque::SessionKeys, *};
+use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
-use sp_core::{crypto::Ss58Codec, ed25519, sr25519};
-use sp_runtime::traits::IdentifyAccount;
+use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
+use sp_core::{crypto::Ss58Codec, ecdsa, ed25519, sr25519};
+use sp_runtime::{traits::IdentifyAccount, FixedPointNumber, FixedU128};
+use webb_consensus_types::network_config::{Network, NetworkConfig};
 
 use super::{get_from_seed, AccountPublic};
 
@@ -20,26 +26,52 @@ impl ValidatorIdentity {
 				aura: get_from_seed::<AuraId>(s),
 				grandpa: get_from_seed::<GrandpaId>(s),
 				im_online: get_from_seed::<ImOnlineId>(s),
+				beefy: get_from_seed::<BeefyId>(s),
 			},
 		}
 	}
 
 	#[allow(dead_code)]
-	pub fn from_pub(ed: &str, sr: &str, _ecdsa: &str) -> ValidatorIdentity {
+	pub fn from_pub(ed: &str, sr: &str, ecdsa: &str) -> ValidatorIdentity {
 		let ed = ed25519::Public::from_ss58check(ed)
 			.unwrap()
 			.into_account()
 			.into();
 		let sr = sr25519::Public::from_ss58check(sr).unwrap().into_account();
+		let ecdsa = ecdsa::Public::from_ss58check(ecdsa).unwrap().into_account();
+
 		ValidatorIdentity {
 			id: sr.into(),
 			session_keys: SessionKeys {
 				aura: sr.into(),
 				grandpa: ed,
 				im_online: sr.into(),
+				beefy: ecdsa.into(),
 			},
 		}
 	}
+}
+
+fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyId> {
+	VaultCurrencyPair {
+		collateral: currency_id,
+		wrapped: ggxchain_runtime_sydney::btcbridge::GetWrappedCurrencyId::get(),
+	}
+}
+
+fn expected_transaction_size() -> u32 {
+	virtual_transaction_size(
+		TransactionInputMetadata {
+			count: 4,
+			script_type: InputType::P2WPKHv0,
+		},
+		TransactionOutputMetadata {
+			num_op_return: 1,
+			num_p2pkh: 2,
+			num_p2sh: 0,
+			num_p2wpkh: 0,
+		},
+	)
 }
 
 pub fn testnet_genesis(
@@ -49,11 +81,18 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 	nominate: bool,
-	_bitcoin_confirmations: u32,
-	_disable_difficulty_check: bool,
+	bitcoin_confirmations: u32,
+	disable_difficulty_check: bool,
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;
+	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
+	const DEFAULT_DUST_VALUE: Balance = 1000;
+
+	let block_time_in_millis = 2000;
+	let minutes = (60_000 / block_time_in_millis) as u32;
+	let hours = minutes * 60;
+	let days = hours * 24;
 
 	// This is supposed the be the simplest bytecode to revert without returning any data.
 	// We will pre-deploy it under all of our precompiles to ensure they can be called from
@@ -132,6 +171,7 @@ pub fn testnet_genesis(
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
+		beefy: BeefyConfig::default(),
 
 		// EVM compatibility
 		evm_chain_id: EVMChainIdConfig { chain_id },
@@ -161,6 +201,7 @@ pub fn testnet_genesis(
 				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
+		assets: Default::default(),
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
@@ -171,6 +212,93 @@ pub fn testnet_genesis(
 				.iter()
 				.map(|x| (x.id.clone(), ()))
 				.collect(),
+		},
+		ics_20_transfer: Ics20TransferConfig {
+			asset_id_by_name: vec![("ERT".to_string(), 666)],
+		},
+		eth_2_client: Eth2ClientConfig {
+			networks: vec![
+				(
+					webb_proposals::TypedChainId::Evm(1),
+					NetworkConfig::new(&Network::Mainnet),
+				),
+				(
+					webb_proposals::TypedChainId::Evm(5),
+					NetworkConfig::new(&Network::Goerli),
+				),
+			],
+			phantom: std::marker::PhantomData,
+		},
+		asset_registry: Default::default(),
+		tokens: TokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
+				.collect(),
+		},
+		oracle: OracleConfig {
+			authorized_oracles: endowed_accounts
+				.iter()
+				.flat_map(|k| vec![(k.clone().0, Default::default())])
+				.collect(),
+			max_delay: DEFAULT_MAX_DELAY_MS,
+		},
+		btc_relay: BTCRelayConfig {
+			bitcoin_confirmations,
+			parachain_confirmations: 1,
+			disable_difficulty_check,
+			disable_inclusion_check: false,
+		},
+		issue: IssueConfig {
+			issue_period: days,
+			issue_btc_dust_value: DEFAULT_DUST_VALUE,
+		},
+		redeem: RedeemConfig {
+			redeem_transaction_size: expected_transaction_size(),
+			redeem_period: days * 2,
+			redeem_btc_dust_value: DEFAULT_DUST_VALUE,
+		},
+		replace: ReplaceConfig {
+			replace_period: days * 2,
+			replace_btc_dust_value: DEFAULT_DUST_VALUE,
+		},
+		vault_registry: VaultRegistryConfig {
+			minimum_collateral_vault: vec![(Token(GGXT), 55)],
+			punishment_delay: days,
+			system_collateral_ceiling: vec![(
+				default_pair_interlay(Token(GGXT)),
+				26_200 * GGXT.one(),
+			)],
+			secure_collateral_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 900% */
+				FixedU128::checked_from_rational(900, 100).unwrap(),
+			)],
+			premium_redeem_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 650% */
+				FixedU128::checked_from_rational(650, 100).unwrap(),
+			)],
+			liquidation_collateral_threshold: vec![(
+				default_pair_interlay(Token(GGXT)),
+				/* 500% */
+				FixedU128::checked_from_rational(500, 100).unwrap(),
+			)],
+		},
+		fee: FeeConfig {
+			issue_fee: FixedU128::checked_from_rational(15, 10000).unwrap(), // 0.15%
+			issue_griefing_collateral: FixedU128::checked_from_rational(5, 1000).unwrap(), // 0.5%
+			redeem_fee: FixedU128::checked_from_rational(5, 1000).unwrap(),  // 0.5%
+			premium_redeem_fee: FixedU128::checked_from_rational(5, 100).unwrap(), // 5%
+			punishment_fee: FixedU128::checked_from_rational(1, 10).unwrap(), // 10%
+			replace_griefing_collateral: FixedU128::checked_from_rational(1, 10).unwrap(), // 10%
+		},
+		nomination: NominationConfig {
+			is_nomination_enabled: false,
+		},
+		loans: LoansConfig {
+			max_exchange_rate: Rate::from_inner(loans::DEFAULT_MAX_EXCHANGE_RATE),
+			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 	}
 }

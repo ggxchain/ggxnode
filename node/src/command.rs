@@ -17,7 +17,6 @@
 
 use clap::Parser;
 // Substrate
-#[cfg(feature = "brooklyn")]
 use fc_db::kv::frontier_database_dir;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
@@ -133,28 +132,26 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::PurgeChain(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
+				use fc_db::DatabaseSource;
 				#[cfg(feature = "brooklyn")]
-				{
-					use fc_db::DatabaseSource;
-					use service::brooklyn::db_config_dir;
-					// Remove Frontier offchain db
-					let db_config_dir = db_config_dir(&config);
-					let frontier_database_config = match config.database {
-						DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
-							path: frontier_database_dir(&db_config_dir, "db"),
-							cache_size: 0,
-						},
-						DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
-							path: frontier_database_dir(&db_config_dir, "paritydb"),
-						},
-						_ => {
-							return Err(
-								format!("Cannot purge `{:?}` database", config.database).into()
-							)
-						}
-					};
-					cmd.run(frontier_database_config)?;
-				}
+				use service::brooklyn::db_config_dir;
+				#[cfg(not(feature = "brooklyn"))]
+				use service::sydney::db_config_dir;
+				// Remove Frontier offchain db
+				let db_config_dir = db_config_dir(&config);
+				let frontier_database_config = match config.database {
+					DatabaseSource::RocksDb { .. } => DatabaseSource::RocksDb {
+						path: frontier_database_dir(&db_config_dir, "db"),
+						cache_size: 0,
+					},
+					DatabaseSource::ParityDb { .. } => DatabaseSource::ParityDb {
+						path: frontier_database_dir(&db_config_dir, "paritydb"),
+					},
+					_ => {
+						return Err(format!("Cannot purge `{:?}` database", config.database).into())
+					}
+				};
+				cmd.run(frontier_database_config)?;
 				cmd.run(config.database)
 			})
 		}
@@ -237,7 +234,6 @@ pub fn run() -> sc_cli::Result<()> {
 		Some(Subcommand::Benchmark) => Err("Benchmarking wasn't enabled when building the node. \
 			You can enable it with `--features runtime-benchmarks`."
 			.into()),
-		#[cfg(feature = "brooklyn")]
 		Some(Subcommand::FrontierDb(cmd)) => {
 			let runner = cli.create_runner(cmd)?;
 			runner.sync_run(|config| {
