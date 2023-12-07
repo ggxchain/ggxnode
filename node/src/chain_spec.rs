@@ -2,11 +2,29 @@ use sc_service::{ChainType, Properties};
 use sp_core::{crypto::Ss58Codec, sr25519};
 
 use crate::runtime::{
-	get_account_id_from_seed, testnet_genesis, AccountId, GenesisConfig, ValidatorIdentity,
+	get_account_id_from_seed, testnet_genesis, AccountId, Block, GenesisConfig, ValidatorIdentity,
 	WASM_BINARY,
 };
 
-pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig>;
+#[cfg(not(feature = "brooklyn"))]
+const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
+const CHAIN_ID: u64 = 888866u64;
+
+/// Node `ChainSpec` extensions.
+///
+/// Additional parameters for some Substrate core modules,
+/// customizable from the chain spec.
+#[derive(
+	Default, Clone, serde::Serialize, serde::Deserialize, sc_chain_spec::ChainSpecExtension,
+)]
+#[serde(rename_all = "camelCase")]
+pub struct Extensions {
+	/// Known bad block hashes.
+	pub bad_blocks: sc_client_api::BadBlocks<Block>,
+}
+
+pub type ChainSpec = sc_service::GenericChainSpec<GenesisConfig, Extensions>;
 
 fn properties(token_symbol: &str) -> Option<Properties> {
 	let mut properties = Properties::new();
@@ -57,10 +75,22 @@ pub fn development_config() -> Result<ChainSpec, String> {
 						.unwrap(),
 						balance,
 					),
+					// interbridge test vault node account
+					// Import known test account with private key
+					// 0xa3f97DJ9yDAdozKoWXcRSGWUNhh2HR917Dfur5yqoR1NVcozi
+					(
+						AccountId::from_ss58check(
+							"5Gzf6q2fCz3NZJCZHTiD5KL3mtGXWasKvQBQXymBCYzwgToc",
+						)
+						.unwrap(),
+						balance,
+					),
 				],
 				// Initial PoA authorities
 				vec![ValidatorIdentity::from_seed("Alice")],
-				888888,
+				CHAIN_ID,
+				true,
+				0,
 				true,
 			)
 		},
@@ -74,7 +104,7 @@ pub fn development_config() -> Result<ChainSpec, String> {
 		// Properties
 		properties("GGX Dev"),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
@@ -109,7 +139,9 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 					ValidatorIdentity::from_seed("Alice"),
 					ValidatorIdentity::from_seed("Bob"),
 				],
-				888888,
+				CHAIN_ID,
+				true,
+				0,
 				true,
 			)
 		},
@@ -123,13 +155,15 @@ pub fn local_testnet_config() -> Result<ChainSpec, String> {
 		// Properties
 		properties("GGX Local"),
 		// Extensions
-		None,
+		Default::default(),
 	))
 }
 
 #[cfg(feature = "brooklyn")]
 pub fn brooklyn_testnet_config() -> Result<ChainSpec, String> {
-	ChainSpec::from_json_bytes(&include_bytes!("../../custom-spec-files/brooklyn-testnet.json")[..])
+	ChainSpec::from_json_bytes(
+		&include_bytes!("../../custom-spec-files/brooklyn-testnet.raw.json")[..],
+	)
 }
 
 #[cfg(not(feature = "brooklyn"))]

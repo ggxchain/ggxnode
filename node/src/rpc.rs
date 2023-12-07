@@ -14,9 +14,9 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	pub deny_unsafe: DenyUnsafe,
 
 	#[cfg(not(feature = "brooklyn"))]
-	pub mainnet: crate::service::mainnet::MainNetParams<A>,
+	pub mainnet: crate::service::sydney::MainNetParams<A>,
 	#[cfg(feature = "brooklyn")]
-	pub testnet: crate::service::testnet::TestNetParams<A>,
+	pub testnet: crate::service::brooklyn::TestNetParams<A>,
 	/// Manual seal command sink
 	#[cfg(feature = "manual-seal")]
 	pub command_sink:

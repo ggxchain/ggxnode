@@ -24,6 +24,7 @@ pallet-authorship.workspace = true
 pallet-balances.workspace = true
 pallet-contracts = { workspace = true, optional = true }
 pallet-evm = { workspace = true, features = ["forbid-evm-reentrancy"], optional = true }
+pallet-evm-eth-receipt-provider = { workspace = true, optional = true }
 pallet-evm-precompile-blake2 = { workspace = true, optional = true }
 pallet-evm-precompile-bn128 = { workspace = true, optional = true }
 pallet-evm-precompile-ed25519 = { workspace = true, optional = true }
@@ -39,15 +40,46 @@ pallet-scheduler.workspace = true
 pallet-staking.workspace = true
 pallet-xvm = { workspace = true, optional = true }
 
+pallet-receipt-registry = { workspace = true, optional = true }
+
 # eth abi
+cfg-if.workspace = true
 log.workspace = true
 
+# Orml
+orml-asset-registry.workspace = true
+orml-tokens.workspace = true
+orml-traits.workspace = true
+
+# BTC bridge
+btc-relay.workspace = true
+clients-info.workspace = true
+fee.workspace = true
+issue.workspace = true
+loans.workspace = true
+nomination.workspace = true
+oracle.workspace = true
+primitives.workspace = true
+redeem.workspace = true
+replace.workspace = true
+security.workspace = true
+vault-registry.workspace = true
+
 [dev-dependencies]
+env_logger.workspace = true
+frame-election-provider-support = { workspace = true, features = ["std"] }
+pallet-aura = { workspace = true, features = ["std"] }
+pallet-evm = { workspace = true, features = ["std", "forbid-evm-reentrancy"] }
+pallet-timestamp = { workspace = true, features = ["std"] }
+pallet-treasury = { workspace = true, features = ["std"] }
+paste.workspace = true
 proptest.workspace = true
+sp-consensus-aura.workspace = true
+sp-io.workspace = true
 test-strategy.workspace = true
 
 [features]
-default = ["std"]
+default = ["std", "pos"]
 precompiles = [
 	"pallet-contracts",
 	"pallet-evm",
@@ -64,6 +96,14 @@ precompiles = [
 	"pallet-evm-precompile-zk-groth16-verify",
 	"pallet-xvm",
 ]
+eth-precompile = [
+	"precompiles",
+	"pallet-evm-eth-receipt-provider",
+	"pallet-receipt-registry",
+]
+brooklyn = []
+
+pos = ["pallet-evm"]
 std = [
 	"serde/std",
 	"scale-codec/std",
@@ -75,8 +115,14 @@ std = [
 	"sp-staking/std",
 	"sp-std/std",
 
+	"pallet-authorship/std",
+	"pallet-balances/std",
+	"pallet-staking/std",
+	"pallet-scheduler/std",
+
 	"pallet-contracts?/std",
 	"pallet-evm?/std",
+	"pallet-evm-eth-receipt-provider?/std",
 	"pallet-evm-precompile-blake2?/std",
 	"pallet-evm-precompile-bn128?/std",
 	"pallet-evm-precompile-ed25519?/std",
@@ -89,4 +135,22 @@ std = [
 	"pallet-evm-precompile-session?/std",
 	"pallet-evm-precompile-zk-groth16-verify?/std",
 	"pallet-xvm?/std",
+
+	# Orml
+	"orml-asset-registry/std",
+	"orml-tokens/std",
+	"orml-traits/std",
+	# BTC bridge
+	"btc-relay/std",
+	"clients-info/std",
+	"fee/std",
+	"issue/std",
+	"loans/std",
+	"nomination/std",
+	"oracle/std",
+	"primitives/std",
+	"redeem/std",
+	"replace/std",
+	"security/std",
+	"vault-registry/std",
 ]

@@ -4,6 +4,8 @@ use pallet_evm::{
 use sp_core::H160;
 use sp_std::marker::PhantomData;
 
+#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
+use pallet_evm_eth_receipt_provider::EthReceiptPrecompile;
 use pallet_evm_precompile_blake2::Blake2F;
 use pallet_evm_precompile_bn128::{Bn128Add, Bn128Mul, Bn128Pairing};
 use pallet_evm_precompile_ed25519::Ed25519Verify;
@@ -17,7 +19,7 @@ use pallet_evm_precompile_xvm::XvmPrecompile;
 use pallet_evm_precompile_zk_groth16_verify::ZKGroth16Verify;
 
 #[derive(Default)]
-pub struct GoldenGatePrecompiles<R>(PhantomData<R>);
+pub struct GoldenGatePrecompiles<R, XS>(PhantomData<(R, XS)>);
 
 pub mod consts {
 	use sp_core::H160;
@@ -50,7 +52,18 @@ pub mod consts {
 
 	pub const ZK_GROTH16_VERIFY: H160 = hash(0x8888);
 
-	pub const SUPPORTED_PRECOMPILES: [H160; 18] = [
+	#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
+	pub const ETH_RECEIPT_PROVIDER: H160 = hash(0x9999);
+
+	cfg_if::cfg_if! {
+		if #[cfg(all(feature = "eth-precompile", feature = "brooklyn"))] {
+			const ARRAY_SIZE: usize = 19;
+		} else {
+			const ARRAY_SIZE: usize = 18;
+		}
+	}
+
+	pub const SUPPORTED_PRECOMPILES: [H160; ARRAY_SIZE] = [
 		EC_RECOVER,
 		SHA256,
 		RIPEMD160,
@@ -69,6 +82,8 @@ pub mod consts {
 		XVM,
 		SESSION_WRAPPER,
 		ZK_GROTH16_VERIFY,
+		#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
+		ETH_RECEIPT_PROVIDER,
 	];
 
 	const fn hash(a: u64) -> H160 {
@@ -98,7 +113,7 @@ pub mod consts {
 	}
 }
 
-impl<R> GoldenGatePrecompiles<R> {
+impl<R, XS> GoldenGatePrecompiles<R, XS> {
 	pub fn new() -> Self {
 		Self(Default::default())
 	}
@@ -131,11 +146,22 @@ impl<R> GoldenGatePrecompiles<R> {
 	}
 }
 
-impl<R> PrecompileSet for GoldenGatePrecompiles<R>
+// Hack to make it work with and without eth-precompile feature.
+cfg_if::cfg_if! {
+  if #[cfg(all(feature = "eth-precompile", feature = "brooklyn"))] {
+	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config { }
+	impl<T: pallet_evm::Config + pallet_xvm::Config + pallet_receipt_registry::Config> RuntimeTrait for T { }
+  } else {
+	trait RuntimeTrait: pallet_evm::Config + pallet_xvm::Config { }
+	impl<T: pallet_evm::Config + pallet_xvm::Config> RuntimeTrait for T { }
+  }
+}
+
+impl<R, XS> PrecompileSet for GoldenGatePrecompiles<R, XS>
 where
-	XvmPrecompile<R>: Precompile,
+	XvmPrecompile<R, XS>: Precompile,
 	SessionWrapper<R>: Precompile,
-	R: pallet_evm::Config + pallet_xvm::Config,
+	R: RuntimeTrait,
 {
 	fn execute(&self, handle: &mut impl PrecompileHandle) -> Option<PrecompileResult> {
 		match handle.code_address() {
@@ -159,11 +185,15 @@ where
 			a if a == consts::SR25519_VERIFY => Some(Sr25519Precompile::<R>::execute(handle)),
 			a if a == consts::ECDSA_VERIFY => Some(SubstrateEcdsaPrecompile::<R>::execute(handle)),
 			// 0x5005 - is cross virtual machine (XVM)
-			a if a == consts::XVM => Some(XvmPrecompile::<R>::execute(handle)),
+			a if a == consts::XVM => Some(XvmPrecompile::<R, XS>::execute(handle)),
 			a if a == consts::SESSION_WRAPPER => Some(SessionWrapper::<R>::execute(handle)),
 
 			// 0x8888 - is zk-groth16 verify
 			a if a == consts::ZK_GROTH16_VERIFY => Some(ZKGroth16Verify::execute(handle)),
+
+			// 0x9999 - is eth-receipt-registry get
+			#[cfg(all(feature = "eth-precompile", feature = "brooklyn"))]
+			a if a == consts::ETH_RECEIPT_PROVIDER => Some(EthReceiptPrecompile::<R>::execute(handle)),
 			_ => None,
 		}
 	}

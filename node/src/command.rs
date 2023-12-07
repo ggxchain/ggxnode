@@ -18,7 +18,7 @@
 use clap::Parser;
 // Substrate
 #[cfg(feature = "brooklyn")]
-use fc_db::frontier_database_dir;
+use fc_db::kv::frontier_database_dir;
 use sc_cli::{ChainSpec, RuntimeVersion, SubstrateCli};
 use sc_service::PartialComponents;
 
@@ -136,7 +136,7 @@ pub fn run() -> sc_cli::Result<()> {
 				#[cfg(feature = "brooklyn")]
 				{
 					use fc_db::DatabaseSource;
-					use service::testnet::db_config_dir;
+					use service::brooklyn::db_config_dir;
 					// Remove Frontier offchain db
 					let db_config_dir = db_config_dir(&config);
 					let frontier_database_config = match config.database {
