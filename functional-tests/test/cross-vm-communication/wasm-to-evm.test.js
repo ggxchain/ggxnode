@@ -5,7 +5,7 @@ import * as path from "path";
 import {fileURLToPath} from 'url';
 import * as fs from "fs";
 import CommonWasm from "../../src/common/CommonWasm.js";
-import CommonEvm from "../../src/common/СommonEvm.js";
+import CommonEvm from "../../src/common/CommonEvm.js";
 
 describe('WASM to EVM communication', async function () {
     this.timeout(60000);
@@ -23,10 +23,9 @@ describe('WASM to EVM communication', async function () {
         await commonWasm.disconnect();
     });
 
-    it('should call WASM contract from EVM contract', async () => {
-        const __filename = fileURLToPath(import.meta.url);
-        const __dirname = path.dirname(__filename);
-        const contractPath = path.join(__dirname, '../../../examples/cross-vm-communication/wasm-to-evm/flipper.sol');
+    it('should call EVM contract from WASM contract', async () => {
+        const dirName = path.dirname(fileURLToPath(import.meta.url));
+        const contractPath = path.join(dirName, '../../../examples/cross-vm-communication/wasm-to-evm/flipper.sol');
         const sourceCode = fs.readFileSync(contractPath, "utf8");
 
         const {abi, bytecode} = await commonEvm.compile(sourceCode, "Flipper");
