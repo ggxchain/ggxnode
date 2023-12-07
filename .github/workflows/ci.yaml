@@ -16,7 +16,7 @@ env:
   GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
-  build-lint-all:
+  build-lint-common:
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
     runs-on: buildjet-32vcpu-ubuntu-2204
@@ -28,14 +28,36 @@ jobs:
       - uses: cachix/install-nix-action@v23
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Common
+      - name: Fmt + Doclint
         run: nix build --log-lines 100 .\#checks.x86_64-linux.fmt .\#checks.x86_64-linux.doclint 
       - name: Runtime common
         run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-runtime-common .\#checks.x86_64-linux.nextest-runtime-common
-      - name: Brooklyn 
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
-      - name: Sydney 
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
+  build-lint-sydney:
+    if: github.event_name == 'pull_request'
+    ## Run only if a PR is made for the main branch
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v23
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
+  build-lint-brooklyn:
+    if: github.event_name == 'pull_request'
+    ## Run only if a PR is made for the main branch
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          persist-credentials: false
+      - uses: cachix/install-nix-action@v23
+        with:
+          github_access_token: ${{ secrets.GITHUB_TOKEN }}
+      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'
