@@ -37,6 +37,7 @@ pub trait CurrencyInfo {
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
+	pub use crate::weights::currency::WeightInfo;
 	use frame_support::{
 		dispatch::DispatchResult,
 		ensure,
@@ -74,6 +75,9 @@ pub mod pallet {
 				>>::NegativeImbalance,
 			>;
 		type DecayPeriod: Get<Self::BlockNumber>;
+
+		/// The weight information of this pallet.
+		type WeightInfo: WeightInfo;
 	}
 
 	#[pallet::event]
@@ -134,7 +138,7 @@ pub mod pallet {
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
 		#[pallet::call_index(0)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_inflation_percent())]
 		pub fn change_inflation_percent(
 			origin: OriginFor<T>,
 			new_inflation: Perbill,
@@ -147,7 +151,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(1)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_inflation_decay())]
 		pub fn change_inflation_decay(origin: OriginFor<T>, new_decay: Perbill) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			InflationDecay::<T>::put(new_decay);
@@ -157,7 +161,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(2)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::yearly_inflation_decay())]
 		pub fn yearly_inflation_decay(origin: OriginFor<T>) -> DispatchResult {
 			T::PrivilegedOrigin::ensure_origin(origin.clone())?;
 			let now = frame_system::Pallet::<T>::block_number();
@@ -178,7 +182,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(3)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission())]
 		pub fn change_treasury_commission(
 			origin: OriginFor<T>,
 			new_commission: Perbill,
@@ -190,7 +194,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(4)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission_from_fee())]
 		pub fn change_treasury_commission_from_fee(
 			origin: OriginFor<T>,
 			new_commission: Perbill,
@@ -202,7 +206,7 @@ pub mod pallet {
 		}
 
 		#[pallet::call_index(5)]
-		#[pallet::weight(100_000)]
+		#[pallet::weight(<T as Config>::WeightInfo::change_treasury_commission_from_tips())]
 		pub fn change_treasury_commission_from_tips(
 			origin: OriginFor<T>,
 			new_commission: Perbill,
@@ -731,18 +735,12 @@ mod tests {
 			pallet_prelude::Weight,
 			parameter_types,
 			traits::{EqualPrivilegeOnly, FindAuthor, OnFinalize, OnInitialize},
-			weights::constants::RocksDbWeight,
 			ConsensusEngineId, PalletId,
 		};
 		use frame_system::{EnsureRoot, EnsureWithSuccess};
 		use pallet_evm::{AddressMapping, FeeCalculator};
-		use sp_core::{ConstU32, ConstU64, H160, H256, U256};
-		use sp_runtime::{
-			impl_opaque_keys,
-			testing::{Header, UintAuthorityId},
-			traits::IdentityLookup,
-			Perbill, Permill,
-		};
+		use sp_core::{ConstU32, H160, U256};
+		use sp_runtime::{impl_opaque_keys, testing::UintAuthorityId, Perbill, Permill};
 		use sp_std::convert::{TryFrom, TryInto};
 		use std::str::FromStr;
 
@@ -801,6 +799,10 @@ mod tests {
 			type MaxLocks = ConstU32<50>;
 			type MaxReserves = ();
 			type ReserveIdentifier = [u8; 8];
+			type HoldIdentifier = ();
+			type FreezeIdentifier = ();
+			type MaxHolds = ConstU32<0>;
+			type MaxFreezes = ConstU32<0>;
 		}
 
 		impl pallet_treasury::Config for Test {
@@ -823,30 +825,30 @@ mod tests {
 		}
 
 		impl frame_system::Config for Test {
-			type BaseCallFilter = frame_support::traits::Everything;
-			type BlockWeights = BlockWeights;
-			type BlockLength = ();
-			type DbWeight = RocksDbWeight;
-			type RuntimeOrigin = RuntimeOrigin;
-			type Index = u64;
-			type BlockNumber = u64;
-			type RuntimeCall = RuntimeCall;
-			type Hash = H256;
-			type Version = ();
-			type Hashing = sp_runtime::traits::BlakeTwo256;
-			type AccountId = u32;
-			type Lookup = IdentityLookup<Self::AccountId>;
-			type Header = Header;
-			type RuntimeEvent = RuntimeEvent;
-			type BlockHashCount = ConstU64<250>;
-			type PalletInfo = PalletInfo;
 			type AccountData = pallet_balances::AccountData<u32>;
-			type OnNewAccount = ();
-			type OnKilledAccount = ();
-			type SystemWeightInfo = ();
-			type SS58Prefix = ();
-			type OnSetCode = ();
+			type AccountId = u32;
+			type BaseCallFilter = frame_support::traits::Everything;
+			type BlockHashCount = ();
+			type BlockLength = ();
+			type BlockNumber = u64;
+			type BlockWeights = ();
+			type DbWeight = ();
+			type Hash = sp_core::H256;
+			type Hashing = sp_runtime::traits::BlakeTwo256;
+			type Header = sp_runtime::testing::Header;
+			type Index = u64;
+			type Lookup = sp_runtime::traits::IdentityLookup<Self::AccountId>;
 			type MaxConsumers = frame_support::traits::ConstU32<16>;
+			type OnKilledAccount = ();
+			type OnNewAccount = ();
+			type OnSetCode = ();
+			type PalletInfo = PalletInfo;
+			type RuntimeCall = RuntimeCall;
+			type RuntimeEvent = RuntimeEvent;
+			type RuntimeOrigin = RuntimeOrigin;
+			type SS58Prefix = ();
+			type SystemWeightInfo = ();
+			type Version = ();
 		}
 
 		parameter_types! {
@@ -886,6 +888,7 @@ mod tests {
 			type PrivilegedOrigin = EnsureRoot<u32>;
 			type FeeComissionRecipient = Treasury;
 			type DecayPeriod = DecayPeriod;
+			type WeightInfo = crate::weights::currency::SubstrateWeight<Test>;
 		}
 
 		pub struct FixedGasPrice;
@@ -916,7 +919,12 @@ mod tests {
 
 		parameter_types! {
 			pub BlockGasLimit: U256 = U256::max_value();
-			pub WeightPerGas: Weight = Weight::from_ref_time(20_000);
+			pub WeightPerGas: Weight = Weight::from_parts(20_000, 0);
+			/// The amount of gas per PoV size. Value is calculated as:
+			///
+			/// max_gas_limit = max_tx_ref_time / WEIGHT_PER_GAS = max_pov_size * gas_limit_pov_size_ratio
+			/// gas_limit_pov_size_ratio = ceil((max_tx_ref_time / WEIGHT_PER_GAS) / max_pov_size)
+			pub const GasLimitPovSizeRatio: u64 = 4; // !!!!! TODO: ADJUST IT
 		}
 
 		impl pallet_evm::Config for Test {
@@ -942,6 +950,7 @@ mod tests {
 			type FindAuthor = FindAuthorTruncated;
 			type WeightInfo = ();
 			type Timestamp = Timestamp;
+			type GasLimitPovSizeRatio = GasLimitPovSizeRatio;
 		}
 
 		pub fn test_runtime() -> sp_io::TestExternalities {

@@ -19,12 +19,14 @@ serde = { workspace = true, optional = true }
 
 # Substrate
 sp-api.workspace = true
+sp-application-crypto.workspace = true
 sp-arithmetic.workspace = true
 sp-block-builder.workspace = true
 sp-consensus-aura.workspace = true
 sp-consensus-beefy.workspace = true
 sp-core.workspace = true
 sp-inherents.workspace = true
+sp-io.workspace = true
 sp-mmr-primitives.workspace = true
 sp-offchain.workspace = true
 sp-runtime.workspace = true
@@ -45,8 +47,8 @@ pallet-assets.workspace = true
 pallet-aura.workspace = true
 pallet-authorship.workspace = true
 pallet-balances.workspace = true
-pallet-beefy.workspace = true
 pallet-beefy-mmr.workspace = true
+pallet-beefy.workspace = true
 pallet-bounties.workspace = true
 pallet-conviction-voting.workspace = true
 pallet-election-provider-multi-phase.workspace = true
@@ -71,6 +73,7 @@ pallet-timestamp.workspace = true
 pallet-transaction-payment-rpc-runtime-api.workspace = true
 pallet-transaction-payment.workspace = true
 pallet-treasury.workspace = true
+pallet-utility.workspace = true
 pallet-vesting.workspace = true
 pallet-whitelist.workspace = true
 
@@ -89,23 +92,64 @@ pallet-hotfix-sufficients.workspace = true
 
 # GGX
 account-filter.workspace = true
-runtime-common = { workspace = true, features = ["precompiles"] }
+runtime-common = { workspace = true, features = ["precompiles", "eth-precompile", "pos", "brooklyn"] }
 
 # Astar
+astar-primitives.workspace = true
 pallet-chain-extension-xvm.workspace = true
-pallet-xvm = { workspace = true, default-features = false, features = ["evm", "wasm"] }
+pallet-ethereum-checked.workspace = true
+pallet-xvm = { workspace = true, default-features = false }
 
 # Wasm contracts
 pallet-contracts-primitives.workspace = true
 pallet-contracts.workspace = true
 
 # Ibc
+ibc-proto.workspace = true
+ibc.workspace = true
+pallet-ibc-utils.workspace = true
 pallet-ibc.workspace = true
 pallet-ics20-transfer.workspace = true
-pallet-ibc-utils.workspace = true
-ibc.workspace = true
-ibc-proto.workspace = true
 prost.workspace = true
+
+# Eth-light client
+pallet-chain-extension-receipt-registry.workspace = true
+pallet-eth2-light-client.workspace = true
+pallet-receipt-registry.workspace = true
+webb-consensus-types.workspace = true
+webb-proposals.workspace = true
+
+# Orml
+orml-asset-registry.workspace = true
+orml-tokens.workspace = true
+orml-traits.workspace = true
+
+# BTC bridge
+annuity.workspace = true
+btc-relay.workspace = true
+clients-info.workspace = true
+escrow.workspace = true
+fee.workspace = true
+interbtc-currency.workspace = true
+issue.workspace = true
+loans.workspace = true
+nomination.workspace = true
+oracle.workspace = true
+primitives.workspace = true
+redeem.workspace = true
+replace.workspace = true
+reward.workspace = true
+security.workspace = true
+staking.workspace = true
+vault-registry.workspace = true
+
+btc-relay-rpc-runtime-api.workspace = true
+issue-rpc-runtime-api.workspace = true
+oracle-rpc-runtime-api.workspace = true
+redeem-rpc-runtime-api.workspace = true
+replace-rpc-runtime-api.workspace = true
+reward-rpc-runtime-api.workspace = true
+vault-registry-rpc-runtime-api.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
@@ -131,6 +175,7 @@ std = [
 	"sp-consensus-beefy/std",
 	"sp-core/std",
 	"sp-inherents/std",
+	"sp-io/std",
 	"sp-mmr-primitives/std",
 	"sp-offchain/std",
 	"sp-runtime/std",
@@ -140,12 +185,12 @@ std = [
 	"sp-transaction-pool/std",
 	"sp-version/std",
 	# Substrate FRAME
-	"frame-benchmarking/std",
+	"frame-benchmarking?/std",
 	"frame-election-provider-support/std",
 	"frame-executive/std",
 	"frame-support/std",
 	"frame-system/std",
-	"frame-system-benchmarking/std",
+	"frame-system-benchmarking?/std",
 	"frame-system-rpc-runtime-api/std",
 	"pallet-assets/std",
 	"pallet-aura/std",
@@ -177,6 +222,7 @@ std = [
 	"pallet-transaction-payment/std",
 	"pallet-transaction-payment-rpc-runtime-api/std",
 	"pallet-treasury/std",
+	"pallet-utility/std",
 	"pallet-vesting/std",
 	"pallet-whitelist/std",
 	# Frontier
@@ -194,7 +240,9 @@ std = [
 	"account-filter/std",
 	"runtime-common/std",
 	# Astar
+	"astar-primitives/std",
 	"pallet-chain-extension-xvm/std",
+	"pallet-ethereum-checked/std",
 	"pallet-xvm/std",
 	# Wasm contracts
 	"pallet-contracts/std",
@@ -203,6 +251,38 @@ std = [
 	"pallet-ibc/std",
 	"pallet-ics20-transfer/std",
 	"pallet-ibc-utils/std",
+	# Eth light client
+	"pallet-eth2-light-client/std",
+	"pallet-receipt-registry/std",
+	# Orml
+	"orml-tokens/std",
+	"orml-traits/std",
+	# BTC bridge
+	"annuity/std",
+	"btc-relay/std",
+	"escrow/std",
+	"interbtc-currency/std",
+	"clients-info/std",
+	"fee/std",
+	"loans/std",
+	"issue/std",
+	"nomination/std",
+	"oracle/std",
+	"primitives/std",
+	"redeem/std",
+	"replace/std",
+	"reward/std",
+	"security/std",
+	"staking/std",
+	"vault-registry/std",
+
+	"btc-relay-rpc-runtime-api/std",
+	"issue-rpc-runtime-api/std",
+	"oracle-rpc-runtime-api/std",
+	"redeem-rpc-runtime-api/std",
+	"replace-rpc-runtime-api/std",
+	"reward-rpc-runtime-api/std",
+	"vault-registry-rpc-runtime-api/std",
 ]
 aura = []
 allowlist = []

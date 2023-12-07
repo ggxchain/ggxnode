@@ -1,49 +1,41 @@
 pub mod common;
-#[subxt::subxt(runtime_metadata_path = "./tests/allowlist_metadata.scale")]
+#[subxt::subxt(runtime_metadata_path = "./tests/data/scale/allowlist_metadata.scale")]
 pub mod ggx {}
-
-use nix::{
-	sys::signal::{kill, Signal::SIGINT},
-	unistd::Pid,
-};
-
-use subxt::OnlineClient;
 
 #[cfg(all(unix, feature = "allowlist"))]
 #[tokio::test]
 async fn allowlist_forbids_become_validator() -> Result<(), Box<dyn std::error::Error>> {
+	use subxt::OnlineClient;
+	use subxt_signer::sr25519::dev;
+
 	let mut alice = common::start_node_for_local_chain("alice", "dev").await;
 
 	common::wait_n_finalized_blocks_from(1, &alice.ws_url).await;
 
-	let api = OnlineClient::<common::GGConfig>::from_url(alice.ws_url.clone()).await?;
-	let dave_addr = sp_keyring::AccountKeyring::Dave.to_account_id();
-	let dave_addr = subxt::utils::AccountId32(*AsRef::<[u8; 32]>::as_ref(&dave_addr));
-	let dave_addr = subxt::utils::MultiAddress::<subxt::utils::AccountId32, u32>::Id(dave_addr);
-	let alice_pair = sp_keyring::AccountKeyring::Alice.pair();
+	let api = OnlineClient::<subxt::PolkadotConfig>::from_url(alice.ws_url.clone()).await?;
 
+	let alice_pair = dev::alice();
+	let dave_pair = dev::dave();
+
+	let dave_addr = subxt::utils::MultiAddress::Id(dave_pair.public_key().to_account_id());
 	let tx = ggx::tx()
 		.balances()
-		.transfer_keep_alive(dave_addr.clone(), 10000 * common::GGX);
-	let alice_signer = common::pair_signer::PairSigner::new(alice_pair.clone());
+		.transfer_keep_alive(dave_addr, 10000 * common::GGX);
 	let wait = api
 		.tx()
-		.sign_and_submit_then_watch_default(&tx, &alice_signer)
+		.sign_and_submit_then_watch_default(&tx, &alice_pair)
 		.await
 		.unwrap();
 
 	wait.wait_for_finalized_success().await.unwrap();
 
-	let dave_pair = sp_keyring::AccountKeyring::Dave.pair();
-	let dave_signer = common::pair_signer::PairSigner::new(dave_pair.clone());
 	let tx = ggx::tx().staking().bond(
-		dave_addr,
 		1000 * common::GGX,
 		ggx::runtime_types::pallet_staking::RewardDestination::Staked,
 	);
 	let wait = api
 		.tx()
-		.sign_and_submit_then_watch_default(&tx, &dave_signer) // should be fine to bond funds
+		.sign_and_submit_then_watch_default(&tx, &dave_pair) // should be fine to bond funds
 		.await
 		.unwrap();
 	wait.wait_for_finalized_success().await.unwrap();
@@ -56,23 +48,20 @@ async fn allowlist_forbids_become_validator() -> Result<(), Box<dyn std::error::
 		});
 
 	api.tx()
-		.sign_and_submit_then_watch_default(&tx, &dave_signer) // should be an error cause dave is not in a allowlist
+		.sign_and_submit_then_watch_default(&tx, &dave_pair) // should be an error cause dave is not in a allowlist
 		.await
 		.expect_err("Dave should not be able to validate");
 
 	let wait = api
 		.tx()
-		.sign_and_submit_then_watch_default(&tx, &alice_signer) // should be fine to validate
+		.sign_and_submit_then_watch_default(&tx, &alice_pair) // should be fine to validate
 		.await
 		.unwrap();
 
 	wait.wait_for_finalized_success().await.unwrap();
 
 	// Stop the process
-	kill(Pid::from_raw(alice.child.id().try_into().unwrap()), SIGINT).unwrap();
-	assert!(common::wait_for(&mut alice.child, 40)
-		.map(|x| x.success())
-		.unwrap());
+	alice.kill();
 
 	Ok(())
 }

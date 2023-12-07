@@ -2,7 +2,7 @@
 
 #![cfg_attr(not(feature = "std"), no_std)]
 // `construct_runtime!` does a lot of recursion and requires us to increase the limit to 256.
-#![recursion_limit = "256"]
+#![recursion_limit = "1024"]
 #![allow(clippy::new_without_default, clippy::or_fun_call)]
 
 // Make the WASM binary available.
@@ -14,11 +14,13 @@ include!(concat!(env!("OUT_DIR"), "/wasm_binary.rs"));
 #[cfg(test)]
 pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
+pub mod btcbridge;
 mod chain_extensions;
 pub mod ethereum;
 pub mod governance;
 mod ibc;
 mod ink;
+pub mod light_client;
 pub mod pos;
 mod prelude;
 
@@ -30,7 +32,8 @@ use core::cmp::Ordering;
 #[cfg(feature = "std")]
 pub use fp_evm::GenesisAccount;
 use frame_support::{
-	pallet_prelude::TransactionPriority, weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
+	pallet_prelude::{DispatchError, TransactionPriority},
+	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
 };
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
@@ -41,7 +44,7 @@ use sp_consensus_beefy::{
 };
 use sp_core::{
 	crypto::{ByteArray, KeyTypeId},
-	ConstU64, OpaqueMetadata, H160, H256, U256,
+	ConstU64, Get, OpaqueMetadata, H160, H256, U256,
 };
 use sp_mmr_primitives as mmr;
 use sp_runtime::{
@@ -66,6 +69,7 @@ use pallet_grandpa::{fg_primitives, AuthorityList as GrandpaAuthorityList};
 use pallet_session::historical::{self as pallet_session_historical};
 use pallet_transaction_payment::CurrencyAdapter;
 use pos::{currency, session_payout};
+pub use runtime_common::constants::currency::{deposit, EXISTENTIAL_DEPOSIT, GGX, KGGX, MILLIGGX};
 use sp_consensus_beefy as beefy_primitives;
 
 // A few exports that help ease life for downstream crates.
@@ -75,13 +79,20 @@ pub use frame_support::{
 	parameter_types,
 	traits::{
 		AsEnsureOriginWithArg, ConstBool, ConstU128, ConstU32, ConstU8, FindAuthor, Imbalance,
-		KeyOwnerProofSystem, Randomness,
+		KeyOwnerProofSystem, OnFinalize, Randomness,
 	},
 	weights::{
 		constants::{BlockExecutionWeight, ExtrinsicBaseWeight, WEIGHT_REF_TIME_PER_SECOND},
 		ConstantMultiplier, IdentityFee, Weight,
 	},
 	ConsensusEngineId, StorageValue,
+};
+
+use btcbridge::GetWrappedCurrencyId;
+use interbtc_currency::Amount;
+use primitives::{
+	issue::IssueRequest, redeem::RedeemRequest, replace::ReplaceRequest, BalanceWrapper,
+	CurrencyId, H256Le, UnsignedFixedPoint,
 };
 
 pub use frame_system::{Call as SystemCall, EnsureRoot, EnsureSigned};
@@ -93,7 +104,7 @@ pub use pallet_staking::StakerStatus;
 pub use runtime_common::chain_spec::{self, RuntimeConfig};
 
 pub use runtime_common::precompiles::GoldenGatePrecompiles;
-pub type Precompiles = GoldenGatePrecompiles<Runtime>;
+pub type Precompiles = GoldenGatePrecompiles<Runtime, Xvm>;
 
 /// Type of block number.
 pub type BlockNumber = u32;
@@ -120,6 +131,14 @@ pub type Hash = sp_core::H256;
 
 /// Digest item type.
 pub type DigestItem = generic::DigestItem;
+
+type VaultId = primitives::VaultId<AccountId, CurrencyId>;
+
+/// Target Spacing: 10 minutes (600 seconds)
+// https://github.com/bitcoin/bitcoin/blob/5ba5becbb5d8c794efe579caeea7eea64f895a13/src/chainparams.cpp#L78
+pub const TARGET_SPACING: u32 = 10 * 60;
+
+pub const BITCOIN_SPACING_MS: u32 = TARGET_SPACING * 1000;
 
 /// Opaque types. These are used by the CLI to instantiate machinery that don't need to know
 /// the specifics of the runtime. They can then be made to be agnostic over specific formats
@@ -182,6 +201,22 @@ pub type SignedExtra = (
 	OptionalSignedExtension,
 );
 
+// Remove this after runtime upgrade
+pub struct InitPrecompiles;
+impl frame_support::traits::OnRuntimeUpgrade for InitPrecompiles {
+	fn on_runtime_upgrade() -> Weight {
+		const DUMMY_CODE: [u8; 5] = [0x60, 0x00, 0x60, 0x00, 0xfd];
+
+		pallet_evm::Pallet::<Runtime>::create_account(
+			runtime_common::precompiles::consts::ETH_RECEIPT_PROVIDER,
+			DUMMY_CODE.to_vec(),
+		);
+		Perbill::from_percent(5) * BlockWeights::get().max_block
+	}
+}
+
+pub type Migrations = (InitPrecompiles,);
+
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
 	fp_self_contained::UncheckedExtrinsic<Address, RuntimeCall, Signature, SignedExtra>;
@@ -197,18 +232,13 @@ pub type Executive = frame_executive::Executive<
 	frame_system::ChainContext<Runtime>,
 	Runtime,
 	AllPalletsWithSystem,
+	Migrations,
 >;
 
-/// Constant values used within the runtime.
-pub const MILLIGGX: Balance = 1_000_000_000_000_000;
-pub const GGX: Balance = 1000 * MILLIGGX;
-pub const KGGX: Balance = 1000 * GGX;
-pub const EXISTENTIAL_DEPOSIT: Balance = GGX;
-
-/// Charge fee for stored bytes and items.
-pub const fn deposit(items: u32, bytes: u32) -> Balance {
-	(items as Balance + bytes as Balance) * MILLIGGX / EXISTENTIAL_DEPOSIT
-}
+type EventRecord = frame_system::EventRecord<
+	<Runtime as frame_system::Config>::RuntimeEvent,
+	<Runtime as frame_system::Config>::Hash,
+>;
 
 /// The version information used to identify this runtime when compiled natively.
 #[cfg(feature = "std")]
@@ -457,6 +487,10 @@ impl pallet_balances::Config for Runtime {
 	type MaxLocks = MaxLocks;
 	type MaxReserves = ();
 	type ReserveIdentifier = [u8; 8];
+	type HoldIdentifier = ();
+	type FreezeIdentifier = ();
+	type MaxHolds = ConstU32<0>;
+	type MaxFreezes = ConstU32<0>;
 }
 
 impl pallet_transaction_payment::Config for Runtime {
@@ -529,6 +563,7 @@ impl pallet_im_online::Config for Runtime {
 impl pallet_sudo::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type RuntimeCall = RuntimeCall;
+	type WeightInfo = pallet_sudo::weights::SubstrateWeight<Runtime>;
 }
 
 parameter_types! {
@@ -543,6 +578,13 @@ impl pallet_preimage::Config for Runtime {
 	type ManagerOrigin = frame_system::EnsureRoot<AccountId>;
 	type BaseDeposit = PreimageBaseDeposit;
 	type ByteDeposit = PreimageByteDeposit;
+}
+
+impl pallet_utility::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type PalletsOrigin = OriginCaller;
+	type WeightInfo = pallet_utility::weights::SubstrateWeight<Runtime>;
 }
 
 // Create the runtime by composing the FRAME pallets that were previously configured.
@@ -575,6 +617,7 @@ construct_runtime!(
 		Multisig: pallet_multisig,
 		Identity: pallet_identity,
 		Sudo: pallet_sudo,
+		Utility: pallet_utility,
 		Historical: pallet_session_historical,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		ElectionProviderMultiPhase: pallet_election_provider_multi_phase,
@@ -591,6 +634,7 @@ construct_runtime!(
 		Ethereum: pallet_ethereum,
 		EVM: pallet_evm,
 		EVMChainId: pallet_evm_chain_id,
+		EthereumChecked: pallet_ethereum_checked,
 		DynamicFee: pallet_dynamic_fee,
 		BaseFee: pallet_base_fee,
 		HotfixSufficients: pallet_hotfix_sufficients,
@@ -612,6 +656,35 @@ construct_runtime!(
 		Beefy: pallet_beefy,
 		MmrLeaf: pallet_beefy_mmr,
 
+		// Eth light client
+		Eth2Client: pallet_eth2_light_client,
+		EthReceiptRegistry: pallet_receipt_registry,
+
+		// Orml
+		Currency: interbtc_currency,
+		Tokens: orml_tokens,
+		AssetRegistry: orml_asset_registry,
+
+		// BTC bridge
+		BTCRelay: btc_relay,
+		Security: security,
+		Fee: fee,
+		Issue: issue,
+		Oracle: oracle,
+		Redeem: redeem,
+		Replace: replace,
+		VaultRegistry: vault_registry,
+
+		VaultRewards: reward::<Instance2>,
+		VaultStaking: staking,
+		VaultCapacity: reward::<Instance3>,
+
+		// BTC Refund:
+		Nomination: nomination,
+		ClientsInfo: clients_info,
+
+		// Lending
+		Loans: loans,
 	}
 );
 
@@ -694,7 +767,7 @@ mod benches {
 
 use fp_rpc::TransactionStatus;
 use pallet_ethereum::{Call::transact, Transaction as EthereumTransaction};
-use pallet_evm::{Account as EVMAccount, FeeCalculator, Runner};
+use pallet_evm::{Account as EVMAccount, FeeCalculator, GasWeightMapping, Runner};
 
 impl_runtime_apis! {
 	impl sp_api::Core<Block> for Runtime {
@@ -714,6 +787,14 @@ impl_runtime_apis! {
 	impl sp_api::Metadata<Block> for Runtime {
 		fn metadata() -> OpaqueMetadata {
 			OpaqueMetadata::new(Runtime::metadata().into())
+		}
+
+		fn metadata_at_version(version: u32) -> Option<OpaqueMetadata> {
+			Runtime::metadata_at_version(version)
+		}
+
+		fn metadata_versions() -> sp_std::vec::Vec<u32> {
+			Runtime::metadata_versions()
 		}
 	}
 
@@ -867,7 +948,7 @@ impl_runtime_apis! {
 
 	impl fp_rpc::EthereumRuntimeRPCApi<Block> for Runtime {
 		fn chain_id() -> u64 {
-			<Runtime as pallet_evm::Config>::ChainId::get()
+			EVMChainId::get()
 		}
 
 		fn account_basic(address: H160) -> EVMAccount {
@@ -916,6 +997,41 @@ impl_runtime_apis! {
 
 			let is_transactional = false;
 			let validate = true;
+			// Reused approach from Moonbeam since Frontier implementation doesn't support this
+			let mut estimated_transaction_len = data.len() +
+				// to: 20
+				// from: 20
+				// value: 32
+				// gas_limit: 32
+				// nonce: 32
+				// 1 byte transaction action variant
+				// chain id 8 bytes
+				// 65 bytes signature
+				210;
+			if max_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if max_priority_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if access_list.is_some() {
+				estimated_transaction_len += access_list.encoded_size();
+			}
+
+			let gas_limit = gas_limit.min(u64::MAX.into()).low_u64();
+			let without_base_extrinsic_weight = true;
+
+			let (weight_limit, proof_size_base_cost) =
+				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					gas_limit,
+					without_base_extrinsic_weight
+				) {
+					weight_limit if weight_limit.proof_size() > 0 => {
+						(Some(weight_limit), Some(estimated_transaction_len as u64))
+					}
+					_ => (None, None),
+				};
+
 			<Runtime as pallet_evm::Config>::Runner::call(
 				from,
 				to,
@@ -928,6 +1044,8 @@ impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				weight_limit,
+				proof_size_base_cost,
 				config
 					.as_ref()
 					.unwrap_or_else(|| <Runtime as pallet_evm::Config>::config()),
@@ -956,6 +1074,42 @@ impl_runtime_apis! {
 
 			let is_transactional = false;
 			let validate = true;
+
+			// Reused approach from Moonbeam since Frontier implementation doesn't support this
+			let mut estimated_transaction_len = data.len() +
+				// to: 20
+				// from: 20
+				// value: 32
+				// gas_limit: 32
+				// nonce: 32
+				// 1 byte transaction action variant
+				// chain id 8 bytes
+				// 65 bytes signature
+				210;
+			if max_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if max_priority_fee_per_gas.is_some() {
+				estimated_transaction_len += 32;
+			}
+			if access_list.is_some() {
+				estimated_transaction_len += access_list.encoded_size();
+			}
+
+			let gas_limit = gas_limit.min(u64::MAX.into()).low_u64();
+			let without_base_extrinsic_weight = true;
+
+			let (weight_limit, proof_size_base_cost) =
+				match <Runtime as pallet_evm::Config>::GasWeightMapping::gas_to_weight(
+					gas_limit,
+					without_base_extrinsic_weight
+				) {
+					weight_limit if weight_limit.proof_size() > 0 => {
+						(Some(weight_limit), Some(estimated_transaction_len as u64))
+					}
+					_ => (None, None),
+				};
+
 			#[allow(clippy::or_fun_call)] // suggestion not helpful here
 			<Runtime as pallet_evm::Config>::Runner::create(
 				from,
@@ -968,6 +1122,8 @@ impl_runtime_apis! {
 				access_list.unwrap_or_default(),
 				is_transactional,
 				validate,
+				weight_limit,
+				proof_size_base_cost,
 				config
 					.as_ref()
 					.unwrap_or(<Runtime as pallet_evm::Config>::config()),
@@ -1013,6 +1169,21 @@ impl_runtime_apis! {
 		}
 
 		fn gas_limit_multiplier_support() {}
+
+		fn pending_block(
+			xts: Vec<<Block as BlockT>::Extrinsic>,
+		) -> (Option<pallet_ethereum::Block>, Option<Vec<fp_rpc::TransactionStatus>>) {
+			for ext in xts.into_iter() {
+				let _ = Executive::apply_extrinsic(ext);
+			}
+
+			Ethereum::on_finalize(System::block_number() + 1);
+
+			(
+				pallet_ethereum::CurrentBlock::<Runtime>::get(),
+				pallet_ethereum::CurrentTransactionStatuses::<Runtime>::get()
+			)
+		}
 	}
 
 	impl fp_rpc::ConvertTransactionRuntimeApi<Block> for Runtime {
@@ -1156,63 +1327,203 @@ impl_runtime_apis! {
 		}
 	}
 
-	impl pallet_contracts::ContractsApi<
-	Block, AccountId, Balance, BlockNumber, Hash,
->
-	for Runtime
-{
-	fn call(
-		origin: AccountId,
-		dest: AccountId,
-		value: Balance,
-		gas_limit: Option<Weight>,
-		storage_deposit_limit: Option<Balance>,
-		input_data: Vec<u8>,
-	) -> pallet_contracts_primitives::ContractExecResult<Balance> {
-		let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
-		Contracts::bare_call(
-			origin,
-			dest,
-			value,
-			gas_limit,
-			storage_deposit_limit,
-			input_data,
-			true,
-			pallet_contracts::Determinism::Deterministic,
-		)
+	impl pallet_contracts::ContractsApi<Block, AccountId, Balance, BlockNumber, Hash, EventRecord> for Runtime {
+		fn call(
+			origin: AccountId,
+			dest: AccountId,
+			value: Balance,
+			gas_limit: Option<Weight>,
+			storage_deposit_limit: Option<Balance>,
+			input_data: Vec<u8>,
+		) -> pallet_contracts_primitives::ContractExecResult<Balance, EventRecord> {
+			let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
+			Contracts::bare_call(
+				origin,
+				dest,
+				value,
+				gas_limit,
+				storage_deposit_limit,
+				input_data,
+				pallet_contracts::DebugInfo::UnsafeDebug,
+				pallet_contracts::CollectEvents::UnsafeCollect,
+				pallet_contracts::Determinism::Enforced,
+			)
+		}
+
+		fn instantiate(
+			origin: AccountId,
+			value: Balance,
+			gas_limit: Option<Weight>,
+			storage_deposit_limit: Option<Balance>,
+			code: pallet_contracts_primitives::Code<Hash>,
+			data: Vec<u8>,
+			salt: Vec<u8>,
+		) -> pallet_contracts_primitives::ContractInstantiateResult<AccountId, Balance, EventRecord> {
+			let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
+			Contracts::bare_instantiate(
+				origin,
+				value,
+				gas_limit,
+				storage_deposit_limit,
+				code,
+				data,
+				salt,
+				pallet_contracts::DebugInfo::UnsafeDebug,
+				pallet_contracts::CollectEvents::UnsafeCollect,
+			)
+		}
+
+		fn upload_code(
+			origin: AccountId,
+			code: Vec<u8>,
+			storage_deposit_limit: Option<Balance>,
+			determinism: pallet_contracts::Determinism,
+		) -> pallet_contracts_primitives::CodeUploadResult<Hash, Balance>
+		{
+			Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
+		}
+
+		fn get_storage(
+			address: AccountId,
+			key: Vec<u8>,
+		) -> pallet_contracts_primitives::GetStorageResult {
+			Contracts::get_storage(address, key)
+		}
+  }
+
+
+	impl btc_relay_rpc_runtime_api::BtcRelayApi<
+		Block,
+		H256Le,
+	> for Runtime {
+		fn verify_block_header_inclusion(block_hash: H256Le) -> Result<(), DispatchError> {
+				BTCRelay::verify_block_header_inclusion(block_hash, None).map(|_| ())
+		}
 	}
 
-	fn instantiate(
-		origin: AccountId,
-		value: Balance,
-		gas_limit: Option<Weight>,
-		storage_deposit_limit: Option<Balance>,
-		code: pallet_contracts_primitives::Code<Hash>,
-		data: Vec<u8>,
-		salt: Vec<u8>,
-	) -> pallet_contracts_primitives::ContractInstantiateResult<AccountId, Balance>
-	{
-		let gas_limit = gas_limit.unwrap_or(BlockWeights::get().max_block);
-		Contracts::bare_instantiate(origin, value, gas_limit, storage_deposit_limit, code, data, salt, true)
+	impl oracle_rpc_runtime_api::OracleApi<
+		Block,
+		Balance,
+		CurrencyId
+	> for Runtime {
+		fn wrapped_to_collateral( amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::wrapped_to_collateral(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
+
+		fn collateral_to_wrapped(amount: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = Oracle::collateral_to_wrapped(amount.amount, currency_id)?;
+				Ok(BalanceWrapper{amount:result})
+		}
 	}
 
-	fn upload_code(
-		origin: AccountId,
-		code: Vec<u8>,
-		storage_deposit_limit: Option<Balance>,
-		determinism: pallet_contracts::Determinism,
-	) -> pallet_contracts_primitives::CodeUploadResult<Hash, Balance>
-	{
-		Contracts::bare_upload_code(origin, code, storage_deposit_limit, determinism)
+	impl vault_registry_rpc_runtime_api::VaultRegistryApi<
+		Block,
+		VaultId,
+		Balance,
+		UnsignedFixedPoint,
+		CurrencyId,
+		AccountId,
+	> for Runtime {
+		fn get_vault_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::compute_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_vaults_by_account_id(account_id: AccountId) -> Result<Vec<VaultId>, DispatchError> {
+				VaultRegistry::get_vaults_by_account_id(account_id)
+		}
+
+		fn get_vault_total_collateral(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_backing_collateral(&vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_premium_redeem_vaults() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_premium_redeem_vaults()?;
+				Ok(result.iter().map(|v| (v.0.clone(), BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_issuable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_issuable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_vaults_with_redeemable_tokens() -> Result<Vec<(VaultId, BalanceWrapper<Balance>)>, DispatchError> {
+				let result = VaultRegistry::get_vaults_with_redeemable_tokens()?;
+				Ok(result.into_iter().map(|v| (v.0, BalanceWrapper{amount:v.1.amount()})).collect())
+		}
+
+		fn get_issuable_tokens_from_vault(vault: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_issuable_tokens_from_vault(&vault)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_collateralization_from_vault(vault: VaultId, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				VaultRegistry::get_collateralization_from_vault(vault, only_issued)
+		}
+
+		fn get_collateralization_from_vault_and_collateral(vault: VaultId, collateral: BalanceWrapper<Balance>, only_issued: bool) -> Result<UnsignedFixedPoint, DispatchError> {
+				let amount = Amount::new(collateral.amount, vault.collateral_currency());
+				VaultRegistry::get_collateralization_from_vault_and_collateral(vault, &amount, only_issued)
+		}
+
+		fn get_required_collateral_for_wrapped(amount_btc: BalanceWrapper<Balance>, currency_id: CurrencyId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let amount_btc = Amount::new(amount_btc.amount, GetWrappedCurrencyId::get());
+				let result = VaultRegistry::get_required_collateral_for_wrapped(&amount_btc, currency_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
+
+		fn get_required_collateral_for_vault(vault_id: VaultId) -> Result<BalanceWrapper<Balance>, DispatchError> {
+				let result = VaultRegistry::get_required_collateral_for_vault(vault_id)?;
+				Ok(BalanceWrapper{amount:result.amount()})
+		}
 	}
 
-	fn get_storage(
-		address: AccountId,
-		key: Vec<u8>,
-	) -> pallet_contracts_primitives::GetStorageResult {
-		Contracts::get_storage(address, key)
+	impl issue_rpc_runtime_api::IssueApi<
+		Block,
+		AccountId,
+		H256,
+		IssueRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_issue_requests(account_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_account(account_id)
+		}
+
+		fn get_vault_issue_requests(vault_id: AccountId) -> Vec<H256> {
+				Issue::get_issue_requests_for_vault(vault_id)
+		}
 	}
-}
+
+	impl redeem_rpc_runtime_api::RedeemApi<
+		Block,
+		AccountId,
+		H256,
+		RedeemRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_account(account_id)
+		}
+
+		fn get_vault_redeem_requests(account_id: AccountId) -> Vec<H256> {
+				Redeem::get_redeem_requests_for_vault(account_id)
+		}
+	}
+
+	impl replace_rpc_runtime_api::ReplaceApi<
+		Block,
+		AccountId,
+		H256,
+		ReplaceRequest<AccountId, BlockNumber, Balance, CurrencyId>
+	> for Runtime {
+		fn get_old_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_old_vault(vault_id)
+		}
+
+		fn get_new_vault_replace_requests(vault_id: AccountId) -> Vec<H256> {
+				Replace::get_replace_requests_for_new_vault(vault_id)
+		}
+	}
 }
 
 #[cfg(test)]

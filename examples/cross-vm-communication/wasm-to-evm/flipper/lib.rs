@@ -36,6 +36,7 @@ mod flipper_wrapper {
 					0x0F,
 					Vec::from(flipper_address.as_ref()),
 					FLIP_SELECTOR.to_vec(),
+					0
 				)
 				.is_ok()
 		}

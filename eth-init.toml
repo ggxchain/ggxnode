@@ -1,0 +1,14 @@
+ethereum_network = "Goerli"
+beacon_endpoint = "https://lodestar-goerli.chainsafe.io"
+eth1_endpoint = "https://lodestar-goerlirpc.chainsafe.io"
+eth_requests_timeout_seconds = 60
+validate_updates = true
+verify_bls_signature = true
+hashes_gc_threshold = 51000
+beacon_rpc_version = "V1_5"
+
+substrate_network_name = "ggxchain"
+substrate_endpoint = "ws://127.0.0.1:9944"
+path_to_signer_secret_key = "./secret-key"
+# We need to rotate it pretty often -> https://beaconstate-goerli.chainsafe.io/
+init_block_root="0xe69efe75d47b2e64e96a6136be2b0c8bd93634165e57f1bce485150166ff3245"

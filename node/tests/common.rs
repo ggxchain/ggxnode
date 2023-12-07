@@ -31,10 +31,6 @@ use std::{
 	process::{self, Child, Command, ExitStatus},
 	time::Duration,
 };
-use subxt::{
-	config::{polkadot::PolkadotExtrinsicParams, substrate::SubstrateHeader},
-	Config, SubstrateConfig,
-};
 
 use tempfile::tempdir;
 use tokio::time::timeout;
@@ -52,6 +48,11 @@ use sc_client_api::StorageData;
 use scale_codec::DecodeAll;
 
 type AccountData = pallet_balances::AccountData<Balance>;
+
+#[cfg(not(feature = "brooklyn"))]
+pub const CHAIN_ID: u64 = 8886u64;
+#[cfg(feature = "brooklyn")]
+pub const CHAIN_ID: u64 = 888866u64;
 
 /// Wait for the given `child` the given number of `secs`.
 ///
@@ -98,8 +99,9 @@ pub async fn wait_n_finalized_blocks_from(n: usize, url: &str) {
 	let mut interval = tokio::time::interval(Duration::from_secs(2));
 	let rpc = ws_client(url)
 		.await
-		.unwrap_or_else(|_| panic!("failed to connect to node with {url}"));
+		.expect(&format!("failed to connect to node with {url}"));
 
+	// Might be good to have a timeout here.
 	loop {
 		if let Ok(block) = ChainApi::<(), Hash, Header, ()>::finalized_head(&rpc).await {
 			built_blocks.insert(block);
@@ -158,20 +160,24 @@ pub async fn get_next_session_keys(url: &str) -> Result<Vec<u8>, Box<dyn std::er
 
 /// Run the node for a while (3 blocks)
 pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
-	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
+	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
+
+	let cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
-		.stderr(process::Stdio::piped())
+		.stderr(process::Stdio::from(stderr_file.try_clone().unwrap()))
 		.args(args)
 		.arg("-d")
 		.arg(base_path)
+		.arg("--rpc-cors=all")
 		.spawn()
 		.unwrap();
 
-	let stderr = cmd.stderr.take().unwrap();
+	tokio::time::sleep(std::time::Duration::from_secs(5)).await;
 
-	let mut child = KillChildOnDrop(cmd);
+	let mut child = KillChildOnDrop(cmd, output_path);
 
-	let (ws_url, _) = find_ws_url_from_output(stderr);
+	stderr_file.sync_all().unwrap();
+	let (ws_url, _, _) = find_ws_http_url_from_output(stderr_file).unwrap();
 
 	// Let it produce some blocks.
 	let _ = wait_n_finalized_blocks(3, 30, &ws_url).await;
@@ -190,7 +196,10 @@ pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
 pub fn run_node_assert_fail(base_path: &Path, args: &[&str]) {
 	let mut cmd = Command::new(cargo_bin("ggxchain-node"));
 
-	let mut child = KillChildOnDrop(cmd.args(args).arg("-d").arg(base_path).spawn().unwrap());
+	let mut child = KillChildOnDrop(
+		cmd.args(args).arg("-d").arg(base_path).spawn().unwrap(),
+		Default::default(),
+	);
 
 	// Let it produce some blocks, but it should die within 10 seconds.
 	assert_ne!(
@@ -200,11 +209,12 @@ pub fn run_node_assert_fail(base_path: &Path, args: &[&str]) {
 	);
 }
 
-pub struct KillChildOnDrop(pub Child);
+pub struct KillChildOnDrop(pub Child, pub std::path::PathBuf);
 
 impl Drop for KillChildOnDrop {
 	fn drop(&mut self) {
 		let _ = self.0.kill();
+		println!("### kill child process, node log is here: {:?}", self.1)
 	}
 }
 
@@ -222,79 +232,28 @@ impl DerefMut for KillChildOnDrop {
 	}
 }
 
-/// Read the WS address from the output.
-///
-/// This is hack to get the actual binded sockaddr because
-/// substrate assigns a random port if the specified port was already binded.
-pub fn find_ws_url_from_output(read: impl Read + Send) -> (String, String) {
-	let mut data = String::new();
-
-	let ws_url = BufReader::new(read)
-		.lines()
-		.find_map(|line| {
-			let line =
-				line.expect("failed to obtain next line from stdout for WS address discovery");
-			data.push_str(&line);
-			data.push('\n');
-
-			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
-
-			Some(format!("ws://{sock_addr}"))
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a WebSocket address")
-		});
-
-	(ws_url, data)
-}
-
 /// Read the WS HTTP address from the output.
-pub fn find_ws_http_url_from_output(read: impl Read + Send) -> (String, String, String) {
+pub fn find_ws_http_url_from_output(read: impl Read + Send) -> Option<(String, String, String)> {
 	let mut data = String::new();
 
-	let ws_url = BufReader::new(read)
-		.lines()
-		.find_map(|line| {
-			let line =
-				line.expect("failed to obtain next line from stdout for WS address discovery");
-			data.push_str(&line);
-			data.push('\n');
+	let base_url = BufReader::new(read).lines().find_map(|line| {
+		let line = line.expect("failed to obtain next line from stdout for WS address discovery");
+		data.push_str(&line);
+		data.push('\n');
 
-			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC WS server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
+		// does the line contain our port (we expect this specific output from substrate).
+		let base_url = match line.split_once("Running JSON-RPC server: addr=") {
+			None => return None,
+			Some((_, after)) => after.split_once(',').unwrap().0,
+		};
 
-			Some(format!("ws://{sock_addr}"))
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a WebSocket address")
-		});
+		Some(base_url.to_string())
+	})?;
 
-	let http_url = data
-		.lines()
-		.find_map(|line| {
-			// does the line contain our port (we expect this specific output from substrate).
-			let sock_addr = match line.split_once("Running JSON-RPC HTTP server: addr=") {
-				None => return None,
-				Some((_, after)) => after.split_once(',').unwrap().0,
-			};
+	let ws_url = format!("ws://{base_url}");
+	let http_url = format!("http://{base_url}");
 
-			Some(format!("http://{sock_addr}"))
-		})
-		.unwrap_or_else(|| {
-			eprintln!("Observed node output:\n{data}");
-			panic!("We should get a Http address")
-		});
-
-	(ws_url, http_url, data)
+	Some((ws_url, http_url, data))
 }
 
 pub struct Node {
@@ -303,23 +262,46 @@ pub struct Node {
 	pub http_url: String,
 }
 
+impl Node {
+	pub fn kill(&mut self) {
+		kill(Pid::from_raw(self.child.id().try_into().unwrap()), SIGINT).unwrap();
+		assert!(wait_for(&mut self.child, 40).map(|x| x.success()).unwrap());
+	}
+}
+
 pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> Node {
 	let base_path = tempdir().expect("could not create a temp dir");
+	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
 
-	let mut cmd = Command::new(cargo_bin("ggxchain-node"))
+	let cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
-		.stderr(process::Stdio::piped())
+		.stderr(process::Stdio::from(stderr_file))
 		.args([&format!("--{validator_name}"), &format!("--chain={chain}")])
+		.arg("--rpc-cors=all")
 		.arg("-d")
 		.arg(base_path.path())
 		.spawn()
 		.unwrap();
 
-	let stderr = cmd.stderr.take().unwrap();
+	let mut child = KillChildOnDrop(cmd, output_path);
 
-	let (ws_url, http_url, _) = find_ws_http_url_from_output(stderr);
+	let (mut ws_url, mut http_url) = Default::default();
+	for i in 0..5 {
+		if let Some((ws, http, _)) =
+			find_ws_http_url_from_output(std::fs::File::open(&child.1).unwrap())
+		{
+			ws_url = ws;
+			http_url = http;
+			break;
+		} else {
+			println!("### wait for node start, try {} times", i);
+			tokio::time::sleep(std::time::Duration::from_secs(5)).await;
+		}
+	}
 
-	let mut child = KillChildOnDrop(cmd);
+	if ws_url.is_empty() || http_url.is_empty() {
+		panic!("### failed to start node");
+	}
 
 	assert!(
 		child.try_wait().unwrap().is_none(),
@@ -331,83 +313,4 @@ pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> No
 		ws_url,
 		http_url,
 	}
-}
-
-pub mod pair_signer {
-	use sp_core::Pair as PairT;
-	use sp_runtime::{
-		traits::{IdentifyAccount, Verify},
-		AccountId32 as SpAccountId32, MultiSignature as SpMultiSignature,
-	};
-	use subxt::{tx::Signer, Config};
-
-	/// A [`Signer`] implementation that can be constructed from an [`sp_core::Pair`].
-	#[derive(Clone, Debug)]
-	pub struct PairSigner<T: Config, Pair> {
-		account_id: T::AccountId,
-		signer: Pair,
-	}
-
-	impl<T, Pair> PairSigner<T, Pair>
-	where
-		T: Config,
-		Pair: PairT,
-		// We go via an sp_runtime::MultiSignature. We can probably generalise this
-		// by implementing some of these traits on our built-in MultiSignature and then
-		// requiring them on all T::Signatures, to avoid any go-between.
-		<SpMultiSignature as Verify>::Signer: From<Pair::Public>,
-		T::AccountId: From<SpAccountId32>,
-	{
-		/// Creates a new [`Signer`] from an [`sp_core::Pair`].
-		pub fn new(signer: Pair) -> Self {
-			let account_id = <SpMultiSignature as Verify>::Signer::from(signer.public())
-				.into_account()
-				.into();
-			Self { account_id, signer }
-		}
-
-		/// Returns the [`sp_core::Pair`] implementation used to construct this.
-		pub fn signer(&self) -> &Pair {
-			&self.signer
-		}
-
-		/// Return the account ID.
-		pub fn account_id(&self) -> &T::AccountId {
-			&self.account_id
-		}
-	}
-
-	impl<T, Pair> Signer<T> for PairSigner<T, Pair>
-	where
-		T: Config,
-		Pair: PairT,
-		Pair::Signature: Into<T::Signature>,
-	{
-		fn account_id(&self) -> &T::AccountId {
-			&self.account_id
-		}
-
-		fn address(&self) -> T::Address {
-			self.account_id.clone().into()
-		}
-
-		fn sign(&self, signer_payload: &[u8]) -> T::Signature {
-			self.signer.sign(signer_payload).into()
-		}
-	}
-}
-
-pub enum GGConfig {}
-impl Config for GGConfig {
-	// This is different from the default `u32`:
-	type Index = Index;
-	// We can point to the default types if we don't need to change things:
-	type Hash = Hash;
-	type Hasher = <SubstrateConfig as Config>::Hasher;
-	type Header = SubstrateHeader<BlockNumber, Self::Hasher>;
-	type AccountId = AccountId;
-	type Address = Address;
-	type Signature = Signature;
-	// polkadot because of that: https://github.com/paritytech/subxt/issues/505
-	type ExtrinsicParams = PolkadotExtrinsicParams<Self>;
 }

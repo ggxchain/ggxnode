@@ -49,6 +49,8 @@ pub fn testnet_genesis(
 	initial_authorities: Vec<ValidatorIdentity>,
 	chain_id: u64,
 	nominate: bool,
+	_bitcoin_confirmations: u32,
+	_disable_difficulty_check: bool,
 ) -> GenesisConfig {
 	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
 	let stash = 1000 * GGX;
@@ -109,7 +111,6 @@ pub fn testnet_genesis(
 						let nominations = initial_authorities
 							.as_slice()
 							.choose_multiple(&mut rng, count)
-							.into_iter()
 							.map(|choice| choice.id.clone())
 							.collect::<Vec<_>>();
 						StakerStatus::Nominator(nominations)
@@ -149,7 +150,6 @@ pub fn testnet_genesis(
 						},
 					)
 				})
-				.into_iter()
 				.collect(),
 		},
 		ethereum: Default::default(),
