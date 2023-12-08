@@ -1,10 +1,9 @@
-beacon_endpoint = "https://lodestar-goerli.chainsafe.io"
-eth1_endpoint = "https://lodestar-goerlirpc.chainsafe.io"
-network_name = "Goerli"
+beacon_endpoint = "https://lodestar-sepolia.chainsafe.io"
+eth1_endpoint = "https://lodestar-sepoliarpc.chainsafe.io"
 headers_batch_size = 33
 substrate_endpoint = "ws://127.0.0.1:9944"
 path_to_signer_secret_key = "./secret_key"
-ethereum_network = "Goerli"
+ethereum_network = "Sepolia"
 interval_between_light_client_updates_submission_in_epochs = 1
 max_blocks_for_finalization = 5000
 include_next_sync_committee_to_light_client = false

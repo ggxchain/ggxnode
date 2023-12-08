@@ -3260,7 +3260,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "derive_more",
  "ethereum-types 0.14.1",
@@ -3280,7 +3280,7 @@ dependencies = [
 [[package]]
 name = "eth2-to-substrate-relay"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -7626,7 +7626,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "merkle-generator"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=sepolia#a9e858bd50bd94243c529e48286584ff770beb17"
 dependencies = [
  "alloy-rlp",
  "serde",
@@ -8860,7 +8860,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=sepolia#a9e858bd50bd94243c529e48286584ff770beb17"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -9019,7 +9019,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "bitvec",
  "derive_more",
@@ -9051,7 +9051,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget"
 version = "0.0.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "anyhow",
  "eth2-to-substrate-relay",
@@ -9066,7 +9066,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget-cli"
 version = "0.0.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "clap",
 ]
@@ -9151,7 +9151,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=sepolia#a9e858bd50bd94243c529e48286584ff770beb17"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -9630,7 +9630,7 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=sepolia#a9e858bd50bd94243c529e48286584ff770beb17"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -17617,7 +17617,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#709b2cd2f1053ebfd2f9edd1ae424e7d5f051034"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=sepolia#a9e858bd50bd94243c529e48286584ff770beb17"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",
@@ -18691,7 +18691,7 @@ dependencies = [
 [[package]]
 name = "webb-bls"
 version = "0.2.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18710,7 +18710,7 @@ dependencies = [
 [[package]]
 name = "webb-consensus-types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "bitvec",
  "derive_more",
@@ -18733,7 +18733,7 @@ dependencies = [
 [[package]]
 name = "webb-eth-rpc-client"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -18759,7 +18759,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-hashing"
 version = "0.3.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "lazy_static",
  "ring 0.16.20",
@@ -18769,7 +18769,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-pallet-init"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -18797,7 +18797,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-serde-utils"
 version = "0.1.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18808,7 +18808,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-ssz"
 version = "0.4.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "ethereum-types 0.14.1",
  "itertools 0.10.5",
@@ -18818,7 +18818,7 @@ dependencies = [
 [[package]]
 name = "webb-finality-update-verify"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -18832,7 +18832,7 @@ dependencies = [
 [[package]]
 name = "webb-merkle-proof"
 version = "0.2.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "ethereum-types 0.14.1",
  "lazy_static",
@@ -18858,12 +18858,12 @@ dependencies = [
 [[package]]
 name = "webb-safe-arith"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 
 [[package]]
 name = "webb-tree-hash"
 version = "0.4.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "ethereum-types 0.14.1",
  "smallvec 1.11.2",
@@ -18873,7 +18873,7 @@ dependencies = [
 [[package]]
 name = "webb-tree-hash-derive"
 version = "0.4.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#bfff0a9c834f4a2ac8cb90983cf143dde22406ed"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=sepolia#f5b8ecfddfdc26ad1cb68677eb5d2d73593552b1"
 dependencies = [
  "darling 0.13.4",
  "quote",
