@@ -1,6 +1,5 @@
 pub mod common;
 
-#[cfg(all(unix, feature = "brooklyn"))]
 mod test {
 
 	#[subxt::subxt(

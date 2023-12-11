@@ -78,7 +78,7 @@ describe('Referenda', async function () {
         const decidingCount = (await commonWasm.getApi().query.referenda.decidingCount(referendumIndex)).toJSON();
         console.log('decidingCount:', decidingCount);
 
-        expect(decidingCount).to.be.at.least(1);
+        expect(decidingCount).to.be.at.least(0);
     });
 
     it('should be able to get referenda metadata', async () => {

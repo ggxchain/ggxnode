@@ -1,10 +1,11 @@
 import HDWalletProvider from "@truffle/hdwallet-provider";
 import Web3 from "web3";
-import solc from "solc";
+import solc from 'solc';
 
 class CommonEvm {
     nodeUrl = 'https://sydney-archive.dev.ggxchain.io:9944';
     mnemonic = 'movie avoid rack lesson rival rice you average caution eternal distance wood';
+    compilerVersion = 'v0.8.19+commit.7dd6d404';
 
     constructor() {
         this.provider = new HDWalletProvider({
@@ -37,20 +38,24 @@ class CommonEvm {
     async compile(sourceCode, contractName) {
         return new Promise((resolve, reject) => {
             try {
-                // Create the Solidity Compiler Standard Input and Output JSON
+                // Solidity Compiler Standard Input and Output JSON
                 const input = {
                     language: "Solidity",
                     sources: {main: {content: sourceCode}},
                     settings: {outputSelection: {"*": {"*": ["abi", "evm.bytecode"]}}},
                 };
 
-                // Parse the compiler output to retrieve the ABI and Bytecode
-                const output = solc.compile(JSON.stringify(input));
-                const artifact = JSON.parse(output).contracts.main[contractName];
-
-                resolve({
-                    abi: artifact.abi,
-                    bytecode: artifact.evm.bytecode.object,
+                solc.loadRemoteVersion(this.compilerVersion, async (err, solcSnapshot) => {
+                    if (err) {
+                        console.error(err);
+                    } else {
+                        const output = solcSnapshot.compile(JSON.stringify(input));
+                        const artifact = JSON.parse(output).contracts.main[contractName];
+                        resolve({
+                            abi: artifact.abi,
+                            bytecode: artifact.evm.bytecode.object,
+                        });
+                    }
                 });
             } catch (e) {
                 reject(e);
@@ -63,18 +68,15 @@ class CommonEvm {
 
         return new Promise(async (resolve, reject) => {
             try {
-                const accounts = await this.getWeb3().eth.getAccounts();
+                const account = await this.getAccount();
 
-                console.log('Attempting to deploy from account', accounts[0]);
-                const transactionParameters = {
-                    from: accounts[0],
-                    gas: '3000000',
-                    gasLimit: '3000000'
-                };
+                console.log('Attempting to deploy contract from account', account);
+
+                const transactionParameters = await this.getTransactionParameters();
 
                 const contract = this.getContract(abi);
 
-                await contract.deploy({
+                contract.deploy({
                     data: '0x' + bytecode,
                     arguments: [true]
                 }).send(transactionParameters).on('receipt', function (receipt) {
@@ -87,7 +89,15 @@ class CommonEvm {
                 reject(e);
             }
         })
-    };
+    }
+
+    async getTransactionParameters() {
+        return {
+            from: await this.getAccount(),
+            gasPrice: 3500000000,
+            gas: 900000,
+        };
+    }
 
     disconnect() {
         this.provider.engine.stop();
