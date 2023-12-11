@@ -226,6 +226,10 @@ pub fn testnet_genesis(
 					webb_proposals::TypedChainId::Evm(5),
 					NetworkConfig::new(&Network::Goerli),
 				),
+				(
+					webb_proposals::TypedChainId::Evm(11155111),
+					NetworkConfig::new(&Network::Sepolia),
+				),
 			],
 			phantom: std::marker::PhantomData,
 		},

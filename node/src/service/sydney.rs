@@ -511,15 +511,15 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	if relayer_cmd.light_client_relay_config_path.is_some()
 		&& relayer_cmd.light_client_init_pallet_config_path.is_some()
 	{
-		// Start Eth2 Light client Relayer Gadget - (GOERLI RELAYER)
+		// Start Eth2 Light client Relayer Gadget - (SEPOLIA RELAYER)
 		task_manager.spawn_handle().spawn(
-			"goerli-relayer-gadget",
+			"sepolia-relayer-gadget",
 			None,
 			pallet_eth2_light_client_relayer_gadget::start_gadget(
 				pallet_eth2_light_client_relayer_gadget::Eth2LightClientParams {
 					lc_relay_config_path: relayer_cmd.light_client_relay_config_path.clone(),
 					lc_init_config_path: relayer_cmd.light_client_init_pallet_config_path.clone(),
-					eth2_chain_id: TypedChainId::Evm(5),
+					eth2_chain_id: TypedChainId::Evm(11155111),
 				},
 			),
 		);
