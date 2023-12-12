@@ -18,6 +18,7 @@ polkadot.*
 .DS_Store
 .idea/
 .cargo-remote.toml
+.direnv
 
 # Added by cargo
 /target
