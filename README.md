@@ -147,12 +147,12 @@ All required parameters (--name, -u, -p etc.) for `run` command you can take fro
 
 ```bash
 #Sydney:
-cargo build --release  --features="sydney"
-cargo run --release -p ggxchain-node --features "sydney"
+cargo build --release --no-default-features --features="sydney"
+cargo run --release -p ggxchain-node --no-default-features --features "sydney"
 
 #Brooklyn:
-cargo build --release  --features="brooklyn"
-cargo run --release -p ggxchain-node --features "brooklyn" --light-client-relay-config-path eth-relay.toml
+cargo build --release --no-default-features --features="brooklyn"
+cargo run --release -p ggxchain-node --no-default-features --features "brooklyn" --light-client-relay-config-path eth-relay.toml
 --light-client-init-pallet-config-path eth-init.toml
 ```
 
