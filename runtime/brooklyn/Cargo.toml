@@ -151,6 +151,11 @@ replace-rpc-runtime-api.workspace = true
 reward-rpc-runtime-api.workspace = true
 vault-registry-rpc-runtime-api.workspace = true
 
+dkg-runtime-primitives.workspace = true
+pallet-dkg-metadata.workspace = true
+pallet-dkg-proposal-handler.workspace = true
+pallet-dkg-proposals.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -282,6 +287,12 @@ std = [
 	"replace-rpc-runtime-api/std",
 	"reward-rpc-runtime-api/std",
 	"vault-registry-rpc-runtime-api/std",
+
+	# DKG
+	"pallet-dkg-metadata/std",
+	"pallet-dkg-proposal-handler/std",
+	"pallet-dkg-proposals/std",
+	"dkg-runtime-primitives/std",
 ]
 aura = []
 allowlist = []
