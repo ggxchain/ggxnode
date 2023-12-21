@@ -129,7 +129,6 @@ You can use the following optional flags:
 |-----------------------------------|---|
 | `--validator`                     | Starts the node with the authority role and enables it to actively <br>participate in any consensus task that it can (for example, depending on<br> availability of local keys). |
 | `--rpc-external`                  | Listens to all RPC interfaces. By default, the node only listens to <br>local RPC calls. If you set this command-line option, keep in mind that <br>that not all RPC methods are safe to be exposed publicly. Use an RPC <br>proxy server to filter out dangerous methods. For more information about<br> RPC methods that shouldn't be publicly exposed, see <br>Remote procedure calls. <br>Use `--unsafe-rpc-external` to suppress the warning if you understand the risks. |
-| `--ws-external`                   | Listens to all Websocket interfaces. By default, the node only listens <br>locally. Keep in mind that not all RPC methods are safe to be exposed <br>publicly. You can use an RPC proxy server to filter out dangerous <br>methods. You can use `--unsafe-ws-external` to suppress the warning if you understand the risks. |
 | `--unsafe-rpc-external`           | Listens to all RPC interfaces. This option is the same as <br>`--rpc-external`. |
 | `--unsafe-ws-external`            | Listens to all Websocket interfaces. This option is the same as <br>`--ws-external` but doesn't warn you about it. |
 | `--base-path <path>`              | Specifies a custom base path. |
