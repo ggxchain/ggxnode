@@ -19,7 +19,7 @@ use sc_client_api::{
 	backend::{Backend, StateBackend},
 	AuxStore, BlockchainEvents, StorageProvider,
 };
-use sc_network::NetworkService;
+use sc_network::{NetworkService, NetworkStateInfo};
 use sc_network_sync::SyncingService;
 use sc_rpc::SubscriptionTaskExecutor;
 use sc_service::{error::Error as ServiceError, Configuration, TaskManager, TransactionPool};
@@ -245,6 +245,7 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	// Use ethereum style for subscription ids
 	config.rpc_id_provider = Some(Box::new(fc_rpc::EthereumSubIdProvider));
 	let is_offchain_indexing_enabled = config.offchain_worker.indexing_enabled;
+	let debug_output = cli.output_path.clone();
 
 	let sc_service::PartialComponents {
 		client,
@@ -263,6 +264,17 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 				(fee_history_cache, fee_history_cache_limit),
 			),
 	} = new_partial(&config, cli)?;
+
+	// TODO: it only works for dev seeds. Fix it later.
+	dkg_primitives::utils::insert_controller_account_keys_into_keystore(
+		&config,
+		Some(keystore_container.keystore()),
+	);
+
+	dkg_primitives::utils::insert_dkg_account_keys_into_keystore(
+		&config,
+		Some(keystore_container.keystore()),
+	);
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
 
@@ -300,6 +312,17 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 		sc_consensus_beefy::communication::beefy_peers_set_config(beefy_gossip_proto_name.clone()),
 	);
 	net_config.add_request_response_protocol(beefy_req_resp_cfg);
+
+	let keygen_network_protocol_name = dkg_gadget::DKG_KEYGEN_PROTOCOL_NAME;
+	let signing_network_protocol_name = dkg_gadget::DKG_SIGNING_PROTOCOL_NAME;
+
+	net_config.add_notification_protocol(dkg_gadget::dkg_peers_set_config(
+		keygen_network_protocol_name.into(),
+	));
+
+	net_config.add_notification_protocol(dkg_gadget::dkg_peers_set_config(
+		signing_network_protocol_name.into(),
+	));
 
 	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
 		grandpa_protocol_name.clone(),
@@ -522,6 +545,31 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 					eth2_chain_id: TypedChainId::Evm(11155111),
 				},
 			),
+		);
+	}
+
+	if role.is_authority() {
+		// setup debug logging
+		let local_peer_id = network.local_peer_id();
+		let debug_logger = dkg_gadget::debug_logger::DebugLogger::new(local_peer_id, debug_output)?;
+
+		let dkg_params = dkg_gadget::DKGParams {
+			client: client.clone(),
+			backend: backend.clone(),
+			key_store: Some(keystore_container.keystore()),
+			network: network.clone(),
+			sync_service: sync_service.clone(),
+			prometheus_registry: prometheus_registry.clone(),
+			local_keystore: Some(keystore_container.local_keystore()),
+			_block: std::marker::PhantomData::<Block>,
+			debug_logger,
+		};
+
+		// Start the DKG gadget.
+		task_manager.spawn_essential_handle().spawn_blocking(
+			"dkg-gadget",
+			None,
+			dkg_gadget::start_dkg_gadget::<_, _, _>(dkg_params),
 		);
 	}
 
