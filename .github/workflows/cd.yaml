@@ -106,6 +106,26 @@ jobs:
           commitChange: false
           workDir: eksdeploy
 
+      - name: Update Image Version of Sydney Validator-02
+        if:  ${{ inputs.chain == 'sydney' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/sydney/validator-02/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.SYDNEY_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
+          
+      - name: Update Image Version of Sydney Validator-03
+        if:  ${{ inputs.chain == 'sydney' }}
+        uses: fjogeleit/yaml-update-action@main
+        with:
+          valueFile: 'kustomization/overlays/sydney/validator-03/sts.yaml'
+          propertyPath: 'spec.template.spec.containers[0].image'
+          value: ${{ steps.image_full_ref.outputs.SYDNEY_IMAGE }}
+          commitChange: false
+          workDir: eksdeploy
+
       - name: Create Pull Request
         id: cpr
         uses: peter-evans/create-pull-request@v5

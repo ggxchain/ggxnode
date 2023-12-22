@@ -262,6 +262,16 @@ impl frame_support::traits::OnRuntimeUpgrade for InitPallets {
 				&webb_consensus_types::network_config::Network::Goerli,
 			),
 		);
+		// Sepolia config
+		frame_support::migration::put_storage_value(
+			b"Eth2Client",
+			b"NetworkConfigForChain",
+			&webb_proposals::TypedChainId::Evm(11155111)
+				.using_encoded(frame_support::Blake2_128Concat::hash),
+			webb_consensus_types::network_config::NetworkConfig::new(
+				&webb_consensus_types::network_config::Network::Sepolia,
+			),
+		);
 		let main_account = Sudo::key().unwrap();
 
 		pallet_ics20_transfer::pallet::AssetIdByName::<Runtime>::insert(&b"ERT"[..], 666);
