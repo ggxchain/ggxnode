@@ -9,7 +9,7 @@
   ],
   "telemetryEndpoints": [
     [
-      "/dns/testnet.telemetry.sydney.ggxchain.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
+      "/dns/telemetry.sydney.ggxchain.io/tcp/443/x-parity-wss/%2Fsubmit%2F",
       0
     ]
   ],
