@@ -16,7 +16,7 @@ resolver = "2"
 [workspace.package]
 authors = ["GGXChain <admin@ggxchain.io>"]
 edition = "2021"
-version = "0.1.3"
+version = "0.1.4"
 repository = "https://github.com/ggxchain/ggxnode/"
 
 [workspace.dependencies]
