@@ -265,24 +265,18 @@ pub fn new_full(mut config: Configuration, cli: &Cli) -> Result<TaskManager, Ser
 	} = new_partial(&config, cli)?;
 
 	let mut net_config = sc_network::config::FullNetworkConfiguration::new(&config.network);
-
-	let grandpa_protocol_name = sc_consensus_grandpa::protocol_standard_name(
-		&client
-			.block_hash(0)
-			.ok()
-			.flatten()
-			.expect("Genesis block exists; qed"),
-		&config.chain_spec,
-	);
-	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
-		grandpa_protocol_name.clone(),
-	));
-
 	let genesis_hash = client
 		.block_hash(0)
 		.ok()
 		.flatten()
 		.expect("Genesis block exists; qed");
+
+	let grandpa_protocol_name =
+		sc_consensus_grandpa::protocol_standard_name(&genesis_hash, &config.chain_spec);
+	net_config.add_notification_protocol(sc_consensus_grandpa::grandpa_peers_set_config(
+		grandpa_protocol_name.clone(),
+	));
+
 	let prometheus_registry = config.prometheus_registry().cloned();
 	let beefy_gossip_proto_name =
 		sc_consensus_beefy::gossip_protocol_name(genesis_hash, config.chain_spec.fork_id());
