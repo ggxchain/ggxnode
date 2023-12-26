@@ -294,6 +294,13 @@ replace-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", br
 reward-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 
+# Supress warnings from the peerset in logs during syncing
+# The polkadot did the same in the next release. See:
+# * https://github.com/paritytech/substrate/pull/14274
+# * https://github.com/paritytech/substrate/pull/14406
+[patch."https://github.com/paritytech/substrate.git"]
+sc-peerset = { git = "https://github.com/ggxchain/substrate.git", branch = "polkadot-v0.9.43" }
+
 # [patch."https://github.com/ggxchain/pallet-eth2-light-client.git"]
 # webb-consensus-types = { path = "../pallet-eth2-light-client/crates/consensus-types/" }
 # pallet-eth2-light-client = { path = "../pallet-eth2-light-client/pallets/eth2-light-client/" }
