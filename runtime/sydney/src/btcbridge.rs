@@ -8,6 +8,7 @@ use orml_asset_registry::SequentialId;
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
 pub use primitives::{CurrencyId, SignedFixedPoint, SignedInner, UnsignedFixedPoint};
 pub use runtime_common;
+use scale_codec::alloc::vec;
 use sp_runtime::{
 	traits::{AccountIdConversion, Convert, Zero},
 	FixedPointNumber,

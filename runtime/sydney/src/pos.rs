@@ -10,6 +10,7 @@ use frame_support::{
 use frame_system::{EnsureRoot, EnsureWithSuccess};
 use pallet_election_provider_multi_phase::SolutionAccuracyOf;
 pub use runtime_common::pos::{currency, session_payout, YEAR_IN_MILLIS};
+use scale_codec::alloc::vec;
 use sp_runtime::traits::ConvertInto;
 use sp_staking::SessionIndex;
 

@@ -189,4 +189,23 @@ impl<T: frame_system::Config> btc_relay::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().writes(46_u64))
 			.saturating_add(Weight::from_parts(0, 1340).saturating_mul(f.into()))
 	}
+
+	fn store_utxo() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `874`
+		//  Estimated: `6340`
+		// Minimum execution time: 88_808_000 picoseconds.
+		Weight::from_parts(90_482_000, 6340)
+			.saturating_add(T::DbWeight::get().reads(7_u64))
+			.saturating_add(T::DbWeight::get().writes(5_u64))
+	}
+	fn store_monitor_utxo() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `874`
+		//  Estimated: `6340`
+		// Minimum execution time: 88_808_000 picoseconds.
+		Weight::from_parts(90_482_000, 6340)
+			.saturating_add(T::DbWeight::get().reads(7_u64))
+			.saturating_add(T::DbWeight::get().writes(5_u64))
+	}
 }
