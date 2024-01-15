@@ -16,6 +16,7 @@ pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
 pub mod btcbridge;
 mod chain_extensions;
+pub mod dex;
 pub mod ethereum;
 pub mod governance;
 mod ibc;
@@ -689,6 +690,9 @@ construct_runtime!(
 
 		// Lending
 		Loans: loans,
+
+		// Dex
+		Dex: pallet_dex,
 	}
 );
 
