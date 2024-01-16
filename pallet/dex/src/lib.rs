@@ -2,6 +2,7 @@
 #![feature(slice_pattern)]
 
 use frame_support::{
+	ensure,
 	sp_std::{convert::TryInto, prelude::*},
 	traits::Get,
 	PalletId, RuntimeDebug,
@@ -9,20 +10,21 @@ use frame_support::{
 pub use pallet::*;
 use scale_codec::{Decode, Encode};
 use scale_info::TypeInfo;
-use sp_runtime::traits::One;
+use sp_runtime::{traits::One, DispatchError};
 
-use frame_support::{sp_runtime::traits::AccountIdConversion, traits::Currency};
-
-type BalanceOf<T> =
-	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-type CurrencyOf<T> = <T as Config>::Currency;
+use frame_support::{
+	sp_runtime::traits::AccountIdConversion,
+	traits::{
+		fungibles::{Balanced, Mutate},
+		tokens::Preservation,
+	},
+};
 
 type OrderOf<T> = Order<<T as frame_system::Config>::AccountId>;
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct TokenInfo {
-	asset_id: u128,
+	asset_id: u32,
 	amount: u128,
 }
 
@@ -41,7 +43,7 @@ impl Default for OrderType {
 pub struct Order<AccountId> {
 	counter: u64,       //order index
 	address: AccountId, //
-	pair: (u128, u128), //AssetId_1 is base,  AssetId_2 is quote token
+	pair: (u32, u32),   //AssetId_1 is base,  AssetId_2 is quote token
 	timestamp: u64,
 	order_type: OrderType,
 	amount_offered: u128,
@@ -71,7 +73,9 @@ pub mod pallet {
 		#[pallet::constant]
 		type PalletId: Get<PalletId>;
 
-		type Currency: Currency<<Self as frame_system::Config>::AccountId>;
+		/// Expose customizable associated type of asset transfer, lock and unlock
+		type Fungibles: Balanced<Self::AccountId>
+			+ Mutate<Self::AccountId, AssetId = u32, Balance = u128>;
 
 		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 	}
@@ -99,7 +103,7 @@ pub mod pallet {
 	pub type TokenIndex<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
-		u128,
+		u32,
 		u32, //token index
 		ValueQuery,
 	>;
@@ -127,7 +131,7 @@ pub mod pallet {
 	pub type PairOrders<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
-		(u128, u128),
+		(u32, u32),
 		BoundedVec<u64, ConstU32<{ u32::MAX }>>,
 		ValueQuery,
 	>;
@@ -162,6 +166,15 @@ pub mod pallet {
 		OrderCanceled {
 			order_index: u64,
 		},
+		Deposited {
+			asset_id: u32,
+			amount: u128,
+		},
+
+		Withdrawed {
+			asset_id: u32,
+			amount: u128,
+		},
 	}
 
 	#[pallet::error]
@@ -170,6 +183,11 @@ pub mod pallet {
 		InvalidOrderIndex,
 		InsufficientBalance,
 		NotOwner,
+		AssetIdNotInTokenIndex,
+		AssetIdNotInTokenInfoes,
+		TokenBalanceOverflow,
+		WithdrawBalanceMustKeepOrderSellAmount,
+		UserAssetNotExist,
 	}
 
 	#[pallet::hooks]
@@ -177,32 +195,110 @@ pub mod pallet {
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
-		// #[pallet::weight({0})]
-		// #[pallet::call_index(0)]
-		// pub fn deposit(
-		// 	origin: OriginFor<T>,
-		// 	asset_id: u128,
-		// 	amount: u128,
-		// ) -> DispatchResultWithPostInfo {
-		// 	Ok(().into())
-		// }
+		#[pallet::weight({0})]
+		#[pallet::call_index(0)]
+		pub fn deposit(
+			origin: OriginFor<T>,
+			asset_id: u32,
+			amount: u128,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
 
-		// #[pallet::weight({1})]
-		// #[pallet::call_index(1)]
-		// pub fn withdraw(
-		// 	origin: OriginFor<T>,
-		// 	asset_id: u128,
-		// 	amount: u128,
-		// ) -> DispatchResultWithPostInfo {
-		// 	Ok(().into())
-		// }
+			ensure!(
+				TokenIndex::<T>::contains_key(asset_id),
+				Error::<T>::AssetIdNotInTokenIndex
+			);
+			let token_index = TokenIndex::<T>::get(asset_id);
+
+			<T::Fungibles as Mutate<T::AccountId>>::transfer(
+				asset_id,
+				&who,
+				&Self::account_id(),
+				amount,
+				Preservation::Preserve,
+			)?;
+
+			let mut info = TokenInfo::default();
+			if UserTokenInfoes::<T>::contains_key(who.clone(), token_index) {
+				info = UserTokenInfoes::<T>::get(who.clone(), token_index);
+				info.amount = info
+					.amount
+					.checked_add(amount)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			} else {
+				info.amount = amount;
+			}
+
+			UserTokenInfoes::<T>::insert(who, token_index, info);
+
+			Self::deposit_event(Event::Deposited { asset_id, amount });
+
+			Ok(().into())
+		}
+
+		#[pallet::weight({1})]
+		#[pallet::call_index(1)]
+		pub fn withdraw(
+			origin: OriginFor<T>,
+			asset_id: u32,
+			amount: u128,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			ensure!(
+				TokenIndex::<T>::contains_key(asset_id),
+				Error::<T>::AssetIdNotInTokenIndex
+			);
+			let token_index = TokenIndex::<T>::get(asset_id);
+
+			ensure!(
+				UserTokenInfoes::<T>::contains_key(who.clone(), token_index),
+				Error::<T>::AssetIdNotInTokenInfoes
+			);
+
+			let mut info = UserTokenInfoes::<T>::get(who.clone(), token_index);
+			info.amount = info
+				.amount
+				.checked_sub(amount)
+				.ok_or(Error::<T>::TokenBalanceOverflow)?;
+
+			let mut sell_amout = 0;
+			for (who, order_index, _) in UserOrders::<T>::iter() {
+				let order = Orders::<T>::get(order_index).unwrap();
+
+				if order.address == who
+					&& order.pair.0 == asset_id
+					&& order.order_type == OrderType::SELL
+				{
+					sell_amout += order.amount_offered;
+				}
+			}
+
+			ensure!(
+				info.amount >= sell_amout,
+				Error::<T>::WithdrawBalanceMustKeepOrderSellAmount
+			);
+
+			<T::Fungibles as Mutate<T::AccountId>>::transfer(
+				asset_id,
+				&Self::account_id(),
+				&who,
+				amount,
+				Preservation::Preserve,
+			)?;
+
+			UserTokenInfoes::<T>::insert(who, token_index, info);
+
+			Self::deposit_event(Event::Withdrawed { asset_id, amount });
+			Ok(().into())
+		}
 
 		#[pallet::weight({2})]
 		#[pallet::call_index(2)]
 		pub fn make_order(
 			origin: OriginFor<T>,
-			asset_id_1: u128,
-			asset_id_2: u128,
+			asset_id_1: u32,
+			asset_id_2: u32,
 			offered_amount: u128,
 			requested_amount: u128,
 			order_type: OrderType,
@@ -225,8 +321,6 @@ pub mod pallet {
 				*index = index
 					.checked_add(One::one())
 					.ok_or(Error::<T>::OrderIndexOverflow)?;
-
-				//T::Currency::reserve(base_currency_id, &who, base_amount)?;
 
 				Orders::<T>::insert(order_index, &order);
 				UserOrders::<T>::insert(who.clone(), order_index, ());
@@ -277,29 +371,33 @@ pub mod pallet {
 			Orders::<T>::try_mutate_exists(order_index, |order| -> DispatchResult {
 				let order = order.take().ok_or(Error::<T>::InvalidOrderIndex)?;
 
-				// T::Currency::transfer(
-				// 	order.target_currency_id,
-				// 	&who,
-				// 	&order.owner,
-				// 	order.target_amount,
-				// )?;
-
-				// let val = T::Currency::repatriate_reserved(
-				// 	order.base_currency_id,
-				// 	&order.owner,
-				// 	&who,
-				// 	order.base_amount,
-				// 	BalanceStatus::Free,
-				// )?;
-
-				// ensure!(val.is_zero(), Error::<T>::InsufficientBalance);
-
 				UserOrders::<T>::remove(&order.address, order_index);
 
 				// todo remove in PairOrders
 				let mut bounded_pair_orders = PairOrders::<T>::get(order.pair);
 				//bounded_pair_orders try remove order_index
 				PairOrders::<T>::insert(order.pair, bounded_pair_orders);
+				let token_index_0 = TokenIndex::<T>::get(order.pair.0);
+				let token_index_1 = TokenIndex::<T>::get(order.pair.1);
+
+				match order.order_type {
+					OrderType::SELL => {
+						// for maker
+						Self::add_assert(&order.address, token_index_1, order.amout_requested)?;
+						Self::sub_assert(&order.address, token_index_0, order.amount_offered)?;
+						// for taker
+						Self::add_assert(&who, token_index_0, order.amout_requested)?;
+						Self::sub_assert(&who, token_index_1, order.amount_offered)?;
+					}
+					OrderType::BUY => {
+						// for maker
+						Self::add_assert(&order.address, token_index_0, order.amount_offered)?;
+						Self::sub_assert(&order.address, token_index_1, order.amout_requested)?;
+						// for taker
+						Self::add_assert(&who, token_index_1, order.amount_offered)?;
+						Self::sub_assert(&who, token_index_0, order.amout_requested)?;
+					}
+				}
 
 				Self::deposit_event(Event::OrderTaken {
 					account: who,
@@ -318,5 +416,46 @@ pub mod pallet {
 impl<T: Config> Pallet<T> {
 	pub fn account_id() -> <T as frame_system::Config>::AccountId {
 		<T as Config>::PalletId::get().into_account_truncating()
+	}
+
+	pub fn add_assert(
+		account: &T::AccountId,
+		token_index: u32,
+		amount: u128,
+	) -> Result<(), DispatchError> {
+		let mut info = TokenInfo::default();
+		if UserTokenInfoes::<T>::contains_key(account.clone(), token_index) {
+			info = UserTokenInfoes::<T>::get(account.clone(), token_index);
+			info.amount = info
+				.amount
+				.checked_add(amount)
+				.ok_or(Error::<T>::TokenBalanceOverflow)?;
+		} else {
+			info.amount = amount;
+		}
+		UserTokenInfoes::<T>::insert(account, token_index, info);
+
+		Ok(())
+	}
+
+	pub fn sub_assert(
+		account: &T::AccountId,
+		token_index: u32,
+		amount: u128,
+	) -> Result<(), DispatchError> {
+		ensure!(
+			UserTokenInfoes::<T>::contains_key(account.clone(), token_index),
+			Error::<T>::UserAssetNotExist
+		);
+
+		let mut info = UserTokenInfoes::<T>::get(account.clone(), token_index);
+		info.amount = info
+			.amount
+			.checked_sub(amount)
+			.ok_or(Error::<T>::TokenBalanceOverflow)?;
+
+		UserTokenInfoes::<T>::insert(account, token_index, info);
+
+		Ok(())
 	}
 }
