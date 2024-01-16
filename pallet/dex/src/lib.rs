@@ -188,6 +188,7 @@ pub mod pallet {
 		TokenBalanceOverflow,
 		WithdrawBalanceMustKeepOrderSellAmount,
 		UserAssetNotExist,
+		PairOrderNotFound,
 	}
 
 	#[pallet::hooks]
@@ -350,10 +351,21 @@ pub mod pallet {
 
 				UserOrders::<T>::remove(who, order_index);
 
-				// todo remove in PairOrders
-				let mut bounded_pair_orders = PairOrders::<T>::get(order.pair);
-				//bounded_pair_orders try remove order_index
-				PairOrders::<T>::insert(order.pair, bounded_pair_orders);
+				PairOrders::<T>::try_mutate_exists(
+					order.pair,
+					|bounded_pair_orders| -> DispatchResult {
+						let pair_orders = bounded_pair_orders
+							.as_mut()
+							.ok_or(Error::<T>::PairOrderNotFound)?;
+						let rt = pair_orders.binary_search(&order_index);
+						if rt.is_ok() {
+							pair_orders.remove(rt.unwrap());
+						}
+
+						PairOrders::<T>::insert(order.pair, pair_orders);
+						Ok(())
+					},
+				)?;
 
 				Self::deposit_event(Event::OrderCanceled { order_index });
 
@@ -373,10 +385,22 @@ pub mod pallet {
 
 				UserOrders::<T>::remove(&order.address, order_index);
 
-				// todo remove in PairOrders
-				let mut bounded_pair_orders = PairOrders::<T>::get(order.pair);
-				//bounded_pair_orders try remove order_index
-				PairOrders::<T>::insert(order.pair, bounded_pair_orders);
+				PairOrders::<T>::try_mutate_exists(
+					order.pair,
+					|bounded_pair_orders| -> DispatchResult {
+						let pair_orders = bounded_pair_orders
+							.as_mut()
+							.ok_or(Error::<T>::PairOrderNotFound)?;
+						let rt = pair_orders.binary_search(&order_index);
+						if rt.is_ok() {
+							pair_orders.remove(rt.unwrap());
+						}
+
+						PairOrders::<T>::insert(order.pair, pair_orders);
+						Ok(())
+					},
+				)?;
+
 				let token_index_0 = TokenIndex::<T>::get(order.pair.0);
 				let token_index_1 = TokenIndex::<T>::get(order.pair.1);
 
