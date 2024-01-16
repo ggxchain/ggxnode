@@ -415,8 +415,8 @@ pub mod pallet {
 					}
 					OrderType::BUY => {
 						// for maker
-						Self::add_assert(&order.address, token_index_0, order.amount_offered)?;
-						Self::sub_assert(&order.address, token_index_1, order.amout_requested)?;
+						Self::add_assert(&order.address, token_index_0, order.amout_requested)?;
+						Self::sub_assert(&order.address, token_index_1, order.amount_offered)?;
 						// for taker
 						Self::add_assert(&who, token_index_1, order.amount_offered)?;
 						Self::sub_assert(&who, token_index_0, order.amout_requested)?;
