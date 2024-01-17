@@ -138,7 +138,7 @@ fn test_cancel_order() {
 }
 
 #[test]
-fn test_take_order() {
+fn test_take_order_sell() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
 		assert_ok!(Dex::make_order(
@@ -158,10 +158,44 @@ fn test_take_order() {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 100));
 		assert_noop!(
 			Dex::take_order(RuntimeOrigin::signed(2), 0),
-			Error::<Test>::UserAssetNotExist
+			Error::<Test>::TokenBalanceOverflow
 		);
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 200));
-		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 2));
+		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
+	})
+}
+
+#[test]
+fn test_take_order_buy() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Error::<Test>::InvalidOrderIndex
+		);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			777,
+			888,
+			200,
+			2,
+			OrderType::BUY
+		));
+
+		assert_noop!(
+			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Error::<Test>::UserAssetNotExist
+		);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1));
+		assert_noop!(
+			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Error::<Test>::TokenBalanceOverflow
+		);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 2));
+		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
 	})
 }

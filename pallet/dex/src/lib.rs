@@ -443,8 +443,8 @@ pub mod pallet {
 						Self::add_assert(&order.address, order.pair.1, order.amout_requested)?;
 						Self::sub_assert(&order.address, order.pair.0, order.amount_offered)?;
 						// for taker
-						Self::add_assert(&who, order.pair.0, order.amout_requested)?;
-						Self::sub_assert(&who, order.pair.1, order.amount_offered)?;
+						Self::add_assert(&who, order.pair.0, order.amount_offered)?;
+						Self::sub_assert(&who, order.pair.1, order.amout_requested)?;
 					}
 					OrderType::BUY => {
 						// for maker
