@@ -334,5 +334,8 @@ pub fn testnet_genesis(
 			max_exchange_rate: Rate::from_inner(loans::DEFAULT_MAX_EXCHANGE_RATE),
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
+		dex: DexConfig {
+			asset_ids: Default::default(),
+		},
 	}
 }

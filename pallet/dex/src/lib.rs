@@ -20,6 +20,11 @@ use frame_support::{
 	},
 };
 
+#[cfg(test)]
+mod mock;
+#[cfg(test)]
+mod tests;
+
 type OrderOf<T> = Order<<T as frame_system::Config>::AccountId>;
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -60,6 +65,38 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 
+	#[pallet::genesis_config]
+	pub struct GenesisConfig {
+		pub asset_ids: Vec<u32>,
+	}
+
+	impl Default for GenesisConfig {
+		fn default() -> Self {
+			GenesisConfig {
+				asset_ids: Default::default(),
+			}
+		}
+	}
+
+	#[pallet::genesis_build]
+	impl<T: Config> GenesisBuild<T> for GenesisConfig {
+		fn build(&self) {
+			let bounded_token_infoes: BoundedVec<u32, ConstU32<{ u32::MAX }>> = self
+				.asset_ids
+				.clone()
+				.try_into()
+				.expect("genesis asset_ids are more than u32::MAX");
+
+			let mut index = 0;
+			self.asset_ids.iter().for_each(|asset_id| {
+				TokenIndex::<T>::insert(asset_id, index);
+				index += 1;
+			});
+
+			TokenInfoes::<T>::put(bounded_token_infoes);
+		}
+	}
+
 	#[pallet::pallet]
 	#[pallet::without_storage_info]
 	pub struct Pallet<T>(_);
@@ -88,7 +125,7 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId, //address
 		Blake2_128Concat,
-		u32, //token index
+		u32, //token id
 		TokenInfo,
 		ValueQuery,
 	>;
@@ -209,7 +246,6 @@ pub mod pallet {
 				TokenIndex::<T>::contains_key(asset_id),
 				Error::<T>::AssetIdNotInTokenIndex
 			);
-			let token_index = TokenIndex::<T>::get(asset_id);
 
 			<T::Fungibles as Mutate<T::AccountId>>::transfer(
 				asset_id,
@@ -220,17 +256,18 @@ pub mod pallet {
 			)?;
 
 			let mut info = TokenInfo::default();
-			if UserTokenInfoes::<T>::contains_key(who.clone(), token_index) {
-				info = UserTokenInfoes::<T>::get(who.clone(), token_index);
+			if UserTokenInfoes::<T>::contains_key(who.clone(), asset_id) {
+				info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
 				info.amount = info
 					.amount
 					.checked_add(amount)
 					.ok_or(Error::<T>::TokenBalanceOverflow)?;
 			} else {
+				info.asset_id = asset_id;
 				info.amount = amount;
 			}
 
-			UserTokenInfoes::<T>::insert(who, token_index, info);
+			UserTokenInfoes::<T>::insert(who, asset_id, info);
 
 			Self::deposit_event(Event::Deposited { asset_id, amount });
 
@@ -250,14 +287,13 @@ pub mod pallet {
 				TokenIndex::<T>::contains_key(asset_id),
 				Error::<T>::AssetIdNotInTokenIndex
 			);
-			let token_index = TokenIndex::<T>::get(asset_id);
 
 			ensure!(
-				UserTokenInfoes::<T>::contains_key(who.clone(), token_index),
+				UserTokenInfoes::<T>::contains_key(who.clone(), asset_id),
 				Error::<T>::AssetIdNotInTokenInfoes
 			);
 
-			let mut info = UserTokenInfoes::<T>::get(who.clone(), token_index);
+			let mut info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
 			info.amount = info
 				.amount
 				.checked_sub(amount)
@@ -285,10 +321,10 @@ pub mod pallet {
 				&Self::account_id(),
 				&who,
 				amount,
-				Preservation::Preserve,
+				Preservation::Expendable,
 			)?;
 
-			UserTokenInfoes::<T>::insert(who, token_index, info);
+			UserTokenInfoes::<T>::insert(who, asset_id, info);
 
 			Self::deposit_event(Event::Withdrawed { asset_id, amount });
 			Ok(().into())
@@ -401,25 +437,22 @@ pub mod pallet {
 					},
 				)?;
 
-				let token_index_0 = TokenIndex::<T>::get(order.pair.0);
-				let token_index_1 = TokenIndex::<T>::get(order.pair.1);
-
 				match order.order_type {
 					OrderType::SELL => {
 						// for maker
-						Self::add_assert(&order.address, token_index_1, order.amout_requested)?;
-						Self::sub_assert(&order.address, token_index_0, order.amount_offered)?;
+						Self::add_assert(&order.address, order.pair.1, order.amout_requested)?;
+						Self::sub_assert(&order.address, order.pair.0, order.amount_offered)?;
 						// for taker
-						Self::add_assert(&who, token_index_0, order.amout_requested)?;
-						Self::sub_assert(&who, token_index_1, order.amount_offered)?;
+						Self::add_assert(&who, order.pair.0, order.amout_requested)?;
+						Self::sub_assert(&who, order.pair.1, order.amount_offered)?;
 					}
 					OrderType::BUY => {
 						// for maker
-						Self::add_assert(&order.address, token_index_0, order.amout_requested)?;
-						Self::sub_assert(&order.address, token_index_1, order.amount_offered)?;
+						Self::add_assert(&order.address, order.pair.0, order.amout_requested)?;
+						Self::sub_assert(&order.address, order.pair.1, order.amount_offered)?;
 						// for taker
-						Self::add_assert(&who, token_index_1, order.amount_offered)?;
-						Self::sub_assert(&who, token_index_0, order.amout_requested)?;
+						Self::add_assert(&who, order.pair.1, order.amount_offered)?;
+						Self::sub_assert(&who, order.pair.0, order.amout_requested)?;
 					}
 				}
 
@@ -444,12 +477,12 @@ impl<T: Config> Pallet<T> {
 
 	pub fn add_assert(
 		account: &T::AccountId,
-		token_index: u32,
+		asset_id: u32,
 		amount: u128,
 	) -> Result<(), DispatchError> {
 		let mut info = TokenInfo::default();
-		if UserTokenInfoes::<T>::contains_key(account.clone(), token_index) {
-			info = UserTokenInfoes::<T>::get(account.clone(), token_index);
+		if UserTokenInfoes::<T>::contains_key(account.clone(), asset_id) {
+			info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 			info.amount = info
 				.amount
 				.checked_add(amount)
@@ -457,28 +490,28 @@ impl<T: Config> Pallet<T> {
 		} else {
 			info.amount = amount;
 		}
-		UserTokenInfoes::<T>::insert(account, token_index, info);
+		UserTokenInfoes::<T>::insert(account, asset_id, info);
 
 		Ok(())
 	}
 
 	pub fn sub_assert(
 		account: &T::AccountId,
-		token_index: u32,
+		asset_id: u32,
 		amount: u128,
 	) -> Result<(), DispatchError> {
 		ensure!(
-			UserTokenInfoes::<T>::contains_key(account.clone(), token_index),
+			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
 			Error::<T>::UserAssetNotExist
 		);
 
-		let mut info = UserTokenInfoes::<T>::get(account.clone(), token_index);
+		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 		info.amount = info
 			.amount
 			.checked_sub(amount)
 			.ok_or(Error::<T>::TokenBalanceOverflow)?;
 
-		UserTokenInfoes::<T>::insert(account, token_index, info);
+		UserTokenInfoes::<T>::insert(account, asset_id, info);
 
 		Ok(())
 	}
