@@ -8,7 +8,7 @@ use frame_support::{
 	PalletId, RuntimeDebug,
 };
 pub use pallet::*;
-use scale_codec::{Decode, Encode};
+use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
 use sp_runtime::{traits::One, DispatchError};
 
@@ -33,11 +33,12 @@ pub struct TokenInfo {
 	pub amount: u128,
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderType {
 	BUY,
 	SELL,
 }
+
 impl Default for OrderType {
 	fn default() -> Self {
 		OrderType::BUY

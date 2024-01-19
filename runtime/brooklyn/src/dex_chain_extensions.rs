@@ -14,12 +14,6 @@ use sp_core::crypto::UncheckedFrom;
 use sp_std::{vec, vec::Vec};
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-enum OrderType {
-	BUY,
-	SELL,
-}
-
-#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexDepositInput<AssetId, Balance> {
 	asset_id: AssetId,
 	amount: Balance,
@@ -61,7 +55,7 @@ struct DexUserOrdersInput<AccountId> {
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexMakeOrderInput<AssetId, Balance, OrderType> {
 	asset_id_1: AssetId,
-	asset_id_12: AssetId,
+	asset_id_2: AssetId,
 	offered_amount: Balance,
 	requested_amount: Balance,
 	order_type: OrderType,
@@ -266,7 +260,26 @@ where
 				}
 				env.write(&order_array.encode(), false, None)?;
 			}
-			DexFunc::MakeOrder => {}
+			DexFunc::MakeOrder => {
+				let input: DexMakeOrderInput<u32, u128, pallet_dex::OrderType> = env.read_as()?;
+
+				let call_result = pallet_dex::Pallet::<T>::make_order(
+					RawOrigin::Signed(env.ext().address().clone()).into(),
+					input.asset_id_1,
+					input.asset_id_2,
+					input.offered_amount,
+					input.requested_amount,
+					input.order_type,
+				);
+
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e.error);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
 			DexFunc::CancelOrder => {
 				let input: DexCancelOrderInput = env.read_as()?;
 
