@@ -29,8 +29,8 @@ type OrderOf<T> = Order<<T as frame_system::Config>::AccountId>;
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct TokenInfo {
-	asset_id: u32,
-	amount: u128,
+	pub asset_id: u32,
+	pub amount: u128,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -125,7 +125,7 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId, //address
 		Blake2_128Concat,
-		u32, //token id
+		u32, //asset id
 		TokenInfo,
 		ValueQuery,
 	>;
@@ -141,7 +141,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		u32,
-		u32, //token index
+		u64, //token index
 		ValueQuery,
 	>;
 
