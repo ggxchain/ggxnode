@@ -116,7 +116,7 @@ pub fn testnet_genesis(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(sudo_key),
+			key: Some(sudo_key.clone()),
 		},
 
 		// Monetary
@@ -231,7 +231,32 @@ pub fn testnet_genesis(
 				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
-		assets: Default::default(),
+		assets: AssetsConfig {
+			assets: vec![
+				// id, owner, is_sufficient, min_balance
+				(999, sudo_key.clone(), true, 1),
+				(888, sudo_key.clone(), true, 1),
+				(777, sudo_key.clone(), true, 1),
+			],
+			metadata: vec![
+				// id, name, symbol, decimals
+				(999, "Bitcoin".into(), "BTC".into(), 10),
+				(888, "Golden gate".into(), "GGX".into(), 10),
+				(777, "USDT".into(), "USDT".into(), 10),
+			],
+			accounts: initial_authorities
+				.iter()
+				.map(|x| -> [(u32, AccountId, Balance); 3] {
+					// id, account_id, balance
+					[
+						(999u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(888u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(777u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+					]
+				})
+				.flatten()
+				.collect::<Vec<_>>(),
+		},
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
@@ -335,7 +360,7 @@ pub fn testnet_genesis(
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: Default::default(),
+			asset_ids: vec![999, 888, 777],
 		},
 	}
 }
