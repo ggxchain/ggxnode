@@ -1,10 +1,6 @@
 use super::{pallet::Error, Event, *};
-use frame_support::{assert_noop, assert_ok, traits::OnTimestampSet};
+use frame_support::{assert_noop, assert_ok};
 use mock::*;
-use sp_runtime::{
-	traits::{AccountIdConversion, BadOrigin, Zero},
-	Perbill,
-};
 
 #[test]
 fn test_deposit() {
@@ -62,6 +58,11 @@ fn test_withdraw() {
 fn test_make_order() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
+
+		assert_noop!(
+			Dex::make_order(RuntimeOrigin::signed(1), 777, 777, 1, 200, OrderType::SELL),
+			Error::<Test>::PairAssetIdMustNotEqual
+		);
 
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),

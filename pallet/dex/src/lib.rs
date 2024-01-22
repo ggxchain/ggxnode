@@ -227,6 +227,7 @@ pub mod pallet {
 		WithdrawBalanceMustKeepOrderSellAmount,
 		UserAssetNotExist,
 		PairOrderNotFound,
+		PairAssetIdMustNotEqual,
 	}
 
 	#[pallet::hooks]
@@ -342,6 +343,11 @@ pub mod pallet {
 			order_type: OrderType,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+
+			ensure!(
+				asset_id_1 != asset_id_2,
+				Error::<T>::PairAssetIdMustNotEqual
+			);
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
