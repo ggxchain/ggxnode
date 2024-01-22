@@ -254,7 +254,7 @@ pub mod pallet {
 				&who,
 				&Self::account_id(),
 				amount,
-				Preservation::Preserve,
+				Preservation::Expendable,
 			)?;
 
 			let mut info = TokenInfo::default();

@@ -1,8 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use sp_runtime::{DispatchError, ModuleError};
 
-use frame_support::log::{error, trace};
-
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
@@ -10,6 +8,8 @@ use pallet_contracts::chain_extension::{
 
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use sp_core::crypto::UncheckedFrom;
+
+use crate::chain_extensions::get_address_from_caller;
 
 use sp_std::{vec, vec::Vec};
 
@@ -180,8 +180,9 @@ where
 			DexFunc::Deposit => {
 				let input: DexDepositInput<u32, u128> = env.read_as()?;
 
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit(
-					RawOrigin::Signed(env.ext().address().clone()).into(),
+					RawOrigin::Signed(sender).into(),
 					input.asset_id.into(),
 					input.amount.into(),
 				);
@@ -204,8 +205,9 @@ where
 			DexFunc::Withdraw => {
 				let input: DexDepositInput<u32, u128> = env.read_as()?;
 
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
-					RawOrigin::Signed(env.ext().address().clone()).into(),
+					RawOrigin::Signed(sender).into(),
 					input.asset_id.into(),
 					input.amount.into(),
 				);
@@ -263,8 +265,9 @@ where
 			DexFunc::MakeOrder => {
 				let input: DexMakeOrderInput<u32, u128, pallet_dex::OrderType> = env.read_as()?;
 
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::make_order(
-					RawOrigin::Signed(env.ext().address().clone()).into(),
+					RawOrigin::Signed(sender).into(),
 					input.asset_id_1,
 					input.asset_id_2,
 					input.offered_amount,
@@ -283,8 +286,9 @@ where
 			DexFunc::CancelOrder => {
 				let input: DexCancelOrderInput = env.read_as()?;
 
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::cancel_order(
-					RawOrigin::Signed(env.ext().address().clone()).into(),
+					RawOrigin::Signed(sender).into(),
 					input.index,
 				);
 
@@ -299,8 +303,9 @@ where
 			DexFunc::TakeOrder => {
 				let input: DexTakeOrderInput = env.read_as()?;
 
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::take_order(
-					RawOrigin::Signed(env.ext().address().clone()).into(),
+					RawOrigin::Signed(sender).into(),
 					input.index,
 				);
 
