@@ -157,18 +157,22 @@ impl ExtBuilder {
 		pallet_assets::GenesisConfig::<Test> {
 			assets: vec![
 				// id, owner, is_sufficient, min_balance
+				(999, 0, true, 1),
 				(888, 0, true, 1),
 				(777, 0, true, 1),
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
+				(999, "Bitcoin".into(), "BTC".into(), 10),
 				(888, "Golden gate".into(), "GGX".into(), 10),
 				(777, "USDT".into(), "USDT".into(), 10),
 			],
 			accounts: vec![
 				// id, account_id, balance
+				(999, 1, 1000),
 				(888, 1, 1000),
 				(777, 1, 1000),
+				(999, 2, 1000),
 				(888, 2, 1000),
 				(777, 2, 1000),
 			],
@@ -178,7 +182,7 @@ impl ExtBuilder {
 
 		<pallet_dex::GenesisConfig as frame_support::traits::GenesisBuild<Test>>::assimilate_storage(
       &pallet_dex::GenesisConfig {
-        asset_ids: vec![888, 777],
+        asset_ids: vec![999, 888, 777],
       },
       &mut storage,
   )
