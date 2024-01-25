@@ -228,6 +228,7 @@ pub mod pallet {
 		UserAssetNotExist,
 		PairOrderNotFound,
 		PairAssetIdMustNotEqual,
+		NotEnoughBalance,
 	}
 
 	#[pallet::hooks]
@@ -299,7 +300,7 @@ pub mod pallet {
 			info.amount = info
 				.amount
 				.checked_sub(amount)
-				.ok_or(Error::<T>::TokenBalanceOverflow)?;
+				.ok_or(Error::<T>::NotEnoughBalance)?;
 
 			let mut sell_amout = 0;
 			for (who, order_index, _) in UserOrders::<T>::iter() {
