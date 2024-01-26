@@ -241,7 +241,7 @@ pub fn testnet_genesis(
 			metadata: vec![
 				// id, name, symbol, decimals
 				(999, "Bitcoin".into(), "BTC".into(), 10),
-				(888, "Golden gate".into(), "GGX".into(), 10),
+				(888, "GGxchain".into(), "GGXT".into(), 10),
 				(777, "USDT".into(), "USDT".into(), 10),
 			],
 			accounts: initial_authorities
