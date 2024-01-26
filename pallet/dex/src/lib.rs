@@ -29,8 +29,8 @@ type OrderOf<T> = Order<<T as frame_system::Config>::AccountId>;
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct TokenInfo {
-	pub asset_id: u32,
 	pub amount: u128,
+	pub reserved: u128,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
@@ -266,7 +266,6 @@ pub mod pallet {
 					.checked_add(amount)
 					.ok_or(Error::<T>::TokenBalanceOverflow)?;
 			} else {
-				info.asset_id = asset_id;
 				info.amount = amount;
 			}
 
@@ -301,23 +300,6 @@ pub mod pallet {
 				.amount
 				.checked_sub(amount)
 				.ok_or(Error::<T>::NotEnoughBalance)?;
-
-			let mut sell_amout = 0;
-			for (who, order_index, _) in UserOrders::<T>::iter() {
-				let order = Orders::<T>::get(order_index).unwrap();
-
-				if order.address == who
-					&& order.pair.0 == asset_id
-					&& order.order_type == OrderType::SELL
-				{
-					sell_amout += order.amount_offered;
-				}
-			}
-
-			ensure!(
-				info.amount >= sell_amout,
-				Error::<T>::WithdrawBalanceMustKeepOrderSellAmount
-			);
 
 			<T::Fungibles as Mutate<T::AccountId>>::transfer(
 				asset_id,
@@ -363,6 +345,21 @@ pub mod pallet {
 					amout_requested: requested_amount,
 				};
 
+				let update_asset_id = match order.order_type {
+					OrderType::SELL => asset_id_1,
+					OrderType::BUY => asset_id_2,
+				};
+				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
+				info.amount = info
+					.amount
+					.checked_sub(order.amount_offered)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+				info.reserved = info
+					.reserved
+					.checked_add(order.amount_offered)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
+
 				*index = index
 					.checked_add(One::one())
 					.ok_or(Error::<T>::OrderIndexOverflow)?;
@@ -392,6 +389,22 @@ pub mod pallet {
 				let order = order.take().ok_or(Error::<T>::InvalidOrderIndex)?;
 
 				ensure!(order.address == who, Error::<T>::NotOwner);
+
+				let update_asset_id = match order.order_type {
+					OrderType::SELL => order.pair.0,
+					OrderType::BUY => order.pair.1,
+				};
+
+				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
+				info.amount = info
+					.amount
+					.checked_add(order.amount_offered)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+				info.reserved = info
+					.reserved
+					.checked_sub(order.amount_offered)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
 
 				UserOrders::<T>::remove(who, order_index);
 
@@ -449,7 +462,11 @@ pub mod pallet {
 					OrderType::SELL => {
 						// for maker
 						Self::add_assert(&order.address, order.pair.1, order.amout_requested)?;
-						Self::sub_assert(&order.address, order.pair.0, order.amount_offered)?;
+						Self::sub_reserved_assert(
+							&order.address,
+							order.pair.0,
+							order.amount_offered,
+						)?;
 						// for taker
 						Self::add_assert(&who, order.pair.0, order.amount_offered)?;
 						Self::sub_assert(&who, order.pair.1, order.amout_requested)?;
@@ -457,7 +474,11 @@ pub mod pallet {
 					OrderType::BUY => {
 						// for maker
 						Self::add_assert(&order.address, order.pair.0, order.amout_requested)?;
-						Self::sub_assert(&order.address, order.pair.1, order.amount_offered)?;
+						Self::sub_reserved_assert(
+							&order.address,
+							order.pair.1,
+							order.amount_offered,
+						)?;
 						// for taker
 						Self::add_assert(&who, order.pair.1, order.amount_offered)?;
 						Self::sub_assert(&who, order.pair.0, order.amout_requested)?;
@@ -517,7 +538,28 @@ impl<T: Config> Pallet<T> {
 		info.amount = info
 			.amount
 			.checked_sub(amount)
-			.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			.ok_or(Error::<T>::NotEnoughBalance)?;
+
+		UserTokenInfoes::<T>::insert(account, asset_id, info);
+
+		Ok(())
+	}
+
+	pub fn sub_reserved_assert(
+		account: &T::AccountId,
+		asset_id: u32,
+		amount: u128,
+	) -> Result<(), DispatchError> {
+		ensure!(
+			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
+			Error::<T>::UserAssetNotExist
+		);
+
+		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
+		info.reserved = info
+			.reserved
+			.checked_sub(amount)
+			.ok_or(Error::<T>::NotEnoughBalance)?;
 
 		UserTokenInfoes::<T>::insert(account, asset_id, info);
 

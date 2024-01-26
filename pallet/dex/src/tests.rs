@@ -14,8 +14,8 @@ fn test_deposit() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 777),
 			TokenInfo {
-				asset_id: 777,
 				amount: 10,
+				reserved: 0
 			}
 		);
 	})
@@ -33,22 +33,22 @@ fn test_withdraw() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 777),
 			TokenInfo {
-				asset_id: 777,
 				amount: 10,
+				reserved: 0
 			}
 		);
 
 		assert_noop!(
 			Dex::withdraw(RuntimeOrigin::signed(1), 777, 11),
-			Error::<Test>::TokenBalanceOverflow
+			Error::<Test>::NotEnoughBalance
 		);
 
 		assert_ok!(Dex::withdraw(RuntimeOrigin::signed(1), 777, 10));
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 777),
 			TokenInfo {
-				asset_id: 777,
 				amount: 0,
+				reserved: 0
 			}
 		);
 	})
@@ -62,6 +62,14 @@ fn test_make_order() {
 		assert_noop!(
 			Dex::make_order(RuntimeOrigin::signed(1), 777, 777, 1, 200, OrderType::SELL),
 			Error::<Test>::PairAssetIdMustNotEqual
+		);
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 100,
+				reserved: 0,
+			}
 		);
 
 		assert_ok!(Dex::make_order(
@@ -89,6 +97,14 @@ fn test_make_order() {
 		assert_eq!(UserOrders::<Test>::get(1, 0), ());
 
 		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 99,
+				reserved: 1,
+			}
+		);
 	})
 }
 
@@ -159,22 +175,70 @@ fn test_take_order_sell() {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 100));
 		assert_noop!(
 			Dex::take_order(RuntimeOrigin::signed(2), 0),
-			Error::<Test>::TokenBalanceOverflow
+			Error::<Test>::NotEnoughBalance
 		);
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 200));
 
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 777).amount, 100);
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 888).amount, 0);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 777).amount, 0);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 888).amount, 300);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 99,
+				reserved: 1,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 0,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 777),
+			TokenInfo {
+				amount: 0,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 888),
+			TokenInfo {
+				amount: 300,
+				reserved: 0,
+			}
+		);
 
 		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
 
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 777).amount, 99);
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 888).amount, 200);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 777).amount, 1);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 888).amount, 100);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 99,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 200,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 777),
+			TokenInfo {
+				amount: 1,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 888),
+			TokenInfo {
+				amount: 100,
+				reserved: 0,
+			}
+		);
 	})
 }
 
@@ -204,22 +268,70 @@ fn test_take_order_buy() {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1));
 		assert_noop!(
 			Dex::take_order(RuntimeOrigin::signed(2), 0),
-			Error::<Test>::TokenBalanceOverflow
+			Error::<Test>::NotEnoughBalance
 		);
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 2));
 
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 777).amount, 0);
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 888).amount, 200);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 777).amount, 3);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 888).amount, 0);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 0,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 0,
+				reserved: 200,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 777),
+			TokenInfo {
+				amount: 3,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 888),
+			TokenInfo {
+				amount: 0,
+				reserved: 0,
+			}
+		);
 
 		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
 
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 777).amount, 2);
-		assert_eq!(UserTokenInfoes::<Test>::get(1, 888).amount, 0);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 777).amount, 1);
-		assert_eq!(UserTokenInfoes::<Test>::get(2, 888).amount, 200);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 2,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 0,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 777),
+			TokenInfo {
+				amount: 1,
+				reserved: 0,
+			}
+		);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(2, 888),
+			TokenInfo {
+				amount: 200,
+				reserved: 0,
+			}
+		);
 	})
 }
 
@@ -232,7 +344,7 @@ fn test_make_cancel_take_order_buy() {
 		);
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 200));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 500));
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 200));
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
@@ -242,6 +354,7 @@ fn test_make_cancel_take_order_buy() {
 			1,
 			OrderType::BUY
 		));
+
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
 			777,
