@@ -39,6 +39,16 @@ pub enum OrderType {
 	SELL,
 }
 
+impl OrderType {
+	/// Resolves an opposite side of the current order type.
+	pub fn get_opposite(&self) -> Self {
+		match self {
+			OrderType::BUY => OrderType::SELL,
+			OrderType::SELL => OrderType::BUY,
+		}
+	}
+}
+
 impl Default for OrderType {
 	fn default() -> Self {
 		OrderType::BUY
@@ -326,6 +336,25 @@ pub mod pallet {
 			order_type: OrderType,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+
+			let (asset_id_1, asset_id_2, offered_amount, requested_amount, order_type) =
+				if asset_id_1 > asset_id_2 {
+					(
+						asset_id_2,
+						asset_id_1,
+						requested_amount,
+						offered_amount,
+						order_type.get_opposite(),
+					)
+				} else {
+					(
+						asset_id_1,
+						asset_id_2,
+						offered_amount,
+						requested_amount,
+						order_type,
+					)
+				};
 
 			ensure!(
 				asset_id_1 != asset_id_2,

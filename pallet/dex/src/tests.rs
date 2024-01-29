@@ -109,6 +109,64 @@ fn test_make_order() {
 }
 
 #[test]
+fn test_make_order_asset_id_1_gt_asset_id_2() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 100,
+				reserved: 0,
+			}
+		);
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 200,
+				reserved: 0,
+			}
+		);
+
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			888,
+			777,
+			1,
+			200,
+			OrderType::SELL
+		));
+
+		assert_eq!(
+			Orders::<Test>::get(0),
+			Some(Order {
+				counter: 0,
+				address: 1,
+				pair: (777, 888),
+				timestamp: 0,
+				amount_offered: 200,
+				amout_requested: 1,
+				order_type: OrderType::BUY
+			})
+		);
+
+		assert_eq!(UserOrders::<Test>::get(1, 0), ());
+
+		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 888),
+			TokenInfo {
+				amount: 0,
+				reserved: 200,
+			}
+		);
+	})
+}
+
+#[test]
 fn test_cancel_order() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
