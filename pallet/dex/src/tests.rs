@@ -146,8 +146,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 				address: 1,
 				pair: (777, 888),
 				timestamp: 0,
-				amount_offered: 200,
-				amout_requested: 1,
+				amount_offered: 1,
+				amout_requested: 200,
 				order_type: OrderType::BUY
 			})
 		);
@@ -159,8 +159,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 888),
 			TokenInfo {
-				amount: 0,
-				reserved: 200,
+				amount: 199,
+				reserved: 1,
 			}
 		);
 	})
