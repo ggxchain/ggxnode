@@ -131,6 +131,7 @@ impl pallet_dex::Config for Test {
 	type PalletId = DexPalletId;
 	type Fungibles = Assets;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type Currency = Balances;
 }
 
 pub struct ExtBuilder;
@@ -183,6 +184,7 @@ impl ExtBuilder {
 		<pallet_dex::GenesisConfig as frame_support::traits::GenesisBuild<Test>>::assimilate_storage(
       &pallet_dex::GenesisConfig {
         asset_ids: vec![999, 888, 777],
+        native_asset_id: 888,
       },
       &mut storage,
   )

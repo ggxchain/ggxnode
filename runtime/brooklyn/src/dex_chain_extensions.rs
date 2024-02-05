@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use sp_runtime::{DispatchError, ModuleError};
 
+use frame_support::traits::Currency;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
@@ -12,6 +13,10 @@ use sp_core::crypto::UncheckedFrom;
 use crate::chain_extensions::get_address_from_caller;
 
 use sp_std::{vec, vec::Vec};
+
+type BalanceOf<Runtime> = <<Runtime as pallet_dex::Config>::Currency as Currency<
+	<Runtime as frame_system::Config>::AccountId,
+>>::Balance;
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexDepositInput<AssetId, Balance> {
@@ -178,7 +183,7 @@ where
 
 		match func_id {
 			DexFunc::Deposit => {
-				let input: DexDepositInput<u32, u128> = env.read_as()?;
+				let input: DexDepositInput<u32, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit(
@@ -203,7 +208,7 @@ where
 				env.write(&token_info.amount.encode(), false, None)?;
 			}
 			DexFunc::Withdraw => {
-				let input: DexDepositInput<u32, u128> = env.read_as()?;
+				let input: DexWithdrawInput<u32, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
@@ -263,7 +268,8 @@ where
 				env.write(&order_array.encode(), false, None)?;
 			}
 			DexFunc::MakeOrder => {
-				let input: DexMakeOrderInput<u32, u128, pallet_dex::OrderType> = env.read_as()?;
+				let input: DexMakeOrderInput<u32, BalanceOf<T>, pallet_dex::OrderType> =
+					env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::make_order(

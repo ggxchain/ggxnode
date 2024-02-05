@@ -361,6 +361,7 @@ pub fn testnet_genesis(
 		},
 		dex: DexConfig {
 			asset_ids: vec![999, 888, 777],
+			native_asset_id: 888,
 		},
 	}
 }

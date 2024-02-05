@@ -1,4 +1,4 @@
-use super::{pallet::Error, Event, *};
+use super::{pallet::Error, *};
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
 
@@ -46,6 +46,70 @@ fn test_withdraw() {
 		assert_ok!(Dex::withdraw(RuntimeOrigin::signed(1), 777, 10));
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_deposit_native() {
+	new_test_ext().execute_with(|| {
+		assert_eq!(Balances::free_balance(1), 9000);
+
+		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(1), 10));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_eq!(Balances::free_balance(1), 8990);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_native() {
+	new_test_ext().execute_with(|| {
+		assert_eq!(Balances::free_balance(1), 9000);
+
+		assert_noop!(
+			Dex::withdraw_native(RuntimeOrigin::signed(1), 10),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(1), 10));
+
+		assert_eq!(Balances::free_balance(1), 8990);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw_native(RuntimeOrigin::signed(1), 11),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw_native(RuntimeOrigin::signed(1), 10));
+
+		assert_eq!(Balances::free_balance(1), 9000);
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
 			TokenInfo {
 				amount: 0,
 				reserved: 0
