@@ -37,6 +37,16 @@ struct DexWithdrawInput<AssetId, Balance> {
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
+struct DexDepositNativeInput<Balance> {
+	amount: Balance,
+}
+
+#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
+struct DexWithdrawNativeInput<Balance> {
+	amount: Balance,
+}
+
+#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexOwnersTokensInput<AccountId> {
 	owner: AccountId,
 }
@@ -136,6 +146,8 @@ enum DexFunc {
 	OwnerTokenByIndex,
 	PairOrderByIndex,
 	UserOrderByIndex,
+	DepositNative,
+	WithdrawNative,
 }
 
 impl TryFrom<u16> for DexFunc {
@@ -157,6 +169,8 @@ impl TryFrom<u16> for DexFunc {
 			12 => Ok(DexFunc::OwnerTokenByIndex),
 			13 => Ok(DexFunc::PairOrderByIndex),
 			14 => Ok(DexFunc::UserOrderByIndex),
+			15 => Ok(DexFunc::DepositNative),
+			16 => Ok(DexFunc::WithdrawNative),
 			_ => Err(DispatchError::Other("DexExtension: Unimplemented func_id")),
 		}
 	}
@@ -214,6 +228,40 @@ where
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
 					RawOrigin::Signed(sender).into(),
 					input.asset_id.into(),
+					input.amount.into(),
+				);
+
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e.error);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			DexFunc::DepositNative => {
+				let input: DexDepositNativeInput<BalanceOf<T>> = env.read_as()?;
+
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
+				let call_result = pallet_dex::Pallet::<T>::deposit_native(
+					RawOrigin::Signed(sender).into(),
+					input.amount.into(),
+				);
+
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e.error);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			DexFunc::WithdrawNative => {
+				let input: DexWithdrawNativeInput<BalanceOf<T>> = env.read_as()?;
+
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
+				let call_result = pallet_dex::Pallet::<T>::withdraw_native(
+					RawOrigin::Signed(sender).into(),
 					input.amount.into(),
 				);
 
