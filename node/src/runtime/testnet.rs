@@ -241,7 +241,7 @@ pub fn testnet_genesis(
 			metadata: vec![
 				// id, name, symbol, decimals
 				(999, "Bitcoin".into(), "BTC".into(), 10),
-				(888, "GGxchain".into(), "GGXT".into(), 10),
+				(888, "GGxchain".into(), "GGXT".into(), 18),
 				(777, "USDT".into(), "USDT".into(), 10),
 			],
 			accounts: initial_authorities
@@ -361,7 +361,7 @@ pub fn testnet_genesis(
 		},
 		dex: DexConfig {
 			asset_ids: vec![999, 888, 777],
-			native_asset_id: 888,
+			native_asset_id: 8888,
 		},
 	}
 }
