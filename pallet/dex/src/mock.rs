@@ -3,7 +3,7 @@ use crate as pallet_dex;
 use frame_support::{
 	pallet_prelude::Weight,
 	parameter_types, sp_io,
-	traits::{AsEnsureOriginWithArg, GenesisBuild},
+	traits::{AsEnsureOriginWithArg, GenesisBuild, Hooks},
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
@@ -198,4 +198,17 @@ impl ExtBuilder {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	ExtBuilder::default().build()
+}
+
+pub fn run_to_block(n: u64) {
+	while System::block_number() < n {
+		if System::block_number() > 0 {
+			Dex::on_finalize(System::block_number());
+			System::on_finalize(System::block_number());
+		}
+		System::reset_events();
+		System::set_block_number(System::block_number() + 1);
+		System::on_initialize(System::block_number());
+		Dex::on_initialize(System::block_number());
+	}
 }
