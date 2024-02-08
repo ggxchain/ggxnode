@@ -4,9 +4,12 @@
 use frame_support::{
 	ensure,
 	sp_std::{convert::TryInto, prelude::*},
-	traits::Get,
+	traits::{Currency, ExistenceRequirement::AllowDeath, Get, ReservableCurrency},
 	PalletId, RuntimeDebug,
 };
+
+use sp_runtime::traits::{CheckedAdd, CheckedSub};
+
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -25,12 +28,10 @@ mod mock;
 #[cfg(test)]
 mod tests;
 
-type OrderOf<T> = Order<<T as frame_system::Config>::AccountId>;
-
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct TokenInfo {
-	pub amount: u128,
-	pub reserved: u128,
+pub struct TokenInfo<Balance> {
+	pub amount: Balance,
+	pub reserved: Balance,
 }
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
@@ -56,14 +57,14 @@ impl Default for OrderType {
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct Order<AccountId> {
+pub struct Order<AccountId, Balance> {
 	counter: u64,       //order index
 	address: AccountId, //
 	pair: (u32, u32),   //AssetId_1 is base,  AssetId_2 is quote token
 	timestamp: u64,
 	order_type: OrderType,
-	amount_offered: u128,
-	amout_requested: u128,
+	amount_offered: Balance,
+	amout_requested: Balance,
 }
 
 #[frame_support::pallet]
@@ -76,15 +77,22 @@ pub mod pallet {
 	};
 	use frame_system::pallet_prelude::*;
 
+	pub type BalanceOf<T> =
+		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+
+	type OrderOf<T> = Order<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
+
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
 		pub asset_ids: Vec<u32>,
+		pub native_asset_id: u32,
 	}
 
 	impl Default for GenesisConfig {
 		fn default() -> Self {
 			GenesisConfig {
 				asset_ids: Default::default(),
+				native_asset_id: Default::default(),
 			}
 		}
 	}
@@ -105,6 +113,8 @@ pub mod pallet {
 			});
 
 			TokenInfoes::<T>::put(bounded_token_infoes);
+
+			NativeAssetId::<T>::put(self.native_asset_id);
 		}
 	}
 
@@ -123,9 +133,12 @@ pub mod pallet {
 
 		/// Expose customizable associated type of asset transfer, lock and unlock
 		type Fungibles: Balanced<Self::AccountId>
-			+ Mutate<Self::AccountId, AssetId = u32, Balance = u128>;
+			+ Mutate<Self::AccountId, AssetId = u32, Balance = BalanceOf<Self>>;
 
 		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
+
+		/// The currency mechanism.
+		type Currency: ReservableCurrency<Self::AccountId>;
 	}
 
 	/************* STORAGE ************ */
@@ -137,7 +150,7 @@ pub mod pallet {
 		T::AccountId, //address
 		Blake2_128Concat,
 		u32, //asset id
-		TokenInfo,
+		TokenInfo<BalanceOf<T>>,
 		ValueQuery,
 	>;
 
@@ -196,6 +209,10 @@ pub mod pallet {
 		ValueQuery,
 	>;
 
+	#[pallet::storage]
+	#[pallet::getter(fn native_asset_id)]
+	pub type NativeAssetId<T: Config> = StorageValue<_, u32, ValueQuery>;
+
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config> {
@@ -216,12 +233,17 @@ pub mod pallet {
 		},
 		Deposited {
 			asset_id: u32,
-			amount: u128,
+			amount: BalanceOf<T>,
 		},
-
 		Withdrawed {
 			asset_id: u32,
-			amount: u128,
+			amount: BalanceOf<T>,
+		},
+		NativeDeposited {
+			amount: BalanceOf<T>,
+		},
+		NativeWithdrawed {
+			amount: BalanceOf<T>,
 		},
 	}
 
@@ -251,7 +273,7 @@ pub mod pallet {
 		pub fn deposit(
 			origin: OriginFor<T>,
 			asset_id: u32,
-			amount: u128,
+			amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
@@ -273,7 +295,7 @@ pub mod pallet {
 				info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
 				info.amount = info
 					.amount
-					.checked_add(amount)
+					.checked_add(&amount)
 					.ok_or(Error::<T>::TokenBalanceOverflow)?;
 			} else {
 				info.amount = amount;
@@ -291,7 +313,7 @@ pub mod pallet {
 		pub fn withdraw(
 			origin: OriginFor<T>,
 			asset_id: u32,
-			amount: u128,
+			amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
@@ -308,7 +330,7 @@ pub mod pallet {
 			let mut info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
 			info.amount = info
 				.amount
-				.checked_sub(amount)
+				.checked_sub(&amount)
 				.ok_or(Error::<T>::NotEnoughBalance)?;
 
 			<T::Fungibles as Mutate<T::AccountId>>::transfer(
@@ -331,8 +353,8 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			asset_id_1: u32,
 			asset_id_2: u32,
-			offered_amount: u128,
-			requested_amount: u128,
+			offered_amount: BalanceOf<T>,
+			requested_amount: BalanceOf<T>,
 			order_type: OrderType,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
@@ -368,11 +390,11 @@ pub mod pallet {
 				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
 				info.amount = info
 					.amount
-					.checked_sub(order.amount_offered)
+					.checked_sub(&order.amount_offered)
 					.ok_or(Error::<T>::NotEnoughBalance)?;
 				info.reserved = info
 					.reserved
-					.checked_add(order.amount_offered)
+					.checked_add(&order.amount_offered)
 					.ok_or(Error::<T>::TokenBalanceOverflow)?;
 				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
 
@@ -414,11 +436,11 @@ pub mod pallet {
 				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
 				info.amount = info
 					.amount
-					.checked_add(order.amount_offered)
+					.checked_add(&order.amount_offered)
 					.ok_or(Error::<T>::TokenBalanceOverflow)?;
 				info.reserved = info
 					.reserved
-					.checked_sub(order.amount_offered)
+					.checked_sub(&order.amount_offered)
 					.ok_or(Error::<T>::NotEnoughBalance)?;
 				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
 
@@ -512,6 +534,75 @@ pub mod pallet {
 
 			Ok(().into())
 		}
+
+		#[pallet::weight({5})]
+		#[pallet::call_index(5)]
+		pub fn deposit_native(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			let asset_id = NativeAssetId::<T>::get();
+
+			ensure!(
+				TokenIndex::<T>::contains_key(asset_id),
+				Error::<T>::AssetIdNotInTokenIndex
+			);
+
+			T::Currency::transfer(&who, &Self::account_id(), amount, AllowDeath)?;
+
+			let mut info = TokenInfo::default();
+			if UserTokenInfoes::<T>::contains_key(who.clone(), asset_id) {
+				info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
+				info.amount = info
+					.amount
+					.checked_add(&amount)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			} else {
+				info.amount = amount;
+			}
+
+			UserTokenInfoes::<T>::insert(who, asset_id, info);
+
+			Self::deposit_event(Event::NativeDeposited { amount });
+
+			Ok(().into())
+		}
+
+		#[pallet::weight({6})]
+		#[pallet::call_index(6)]
+		pub fn withdraw_native(
+			origin: OriginFor<T>,
+			amount: BalanceOf<T>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			let asset_id = NativeAssetId::<T>::get();
+
+			ensure!(
+				TokenIndex::<T>::contains_key(asset_id),
+				Error::<T>::AssetIdNotInTokenIndex
+			);
+
+			ensure!(
+				UserTokenInfoes::<T>::contains_key(who.clone(), asset_id),
+				Error::<T>::AssetIdNotInTokenInfoes
+			);
+
+			let mut info = UserTokenInfoes::<T>::get(who.clone(), asset_id);
+			info.amount = info
+				.amount
+				.checked_sub(&amount)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+
+			T::Currency::transfer(&Self::account_id(), &who, amount, AllowDeath)?;
+
+			UserTokenInfoes::<T>::insert(who, asset_id, info);
+
+			Self::deposit_event(Event::NativeWithdrawed { amount });
+			Ok(().into())
+		}
 	}
 }
 
@@ -523,14 +614,14 @@ impl<T: Config> Pallet<T> {
 	pub fn add_assert(
 		account: &T::AccountId,
 		asset_id: u32,
-		amount: u128,
+		amount: BalanceOf<T>,
 	) -> Result<(), DispatchError> {
 		let mut info = TokenInfo::default();
 		if UserTokenInfoes::<T>::contains_key(account.clone(), asset_id) {
 			info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 			info.amount = info
 				.amount
-				.checked_add(amount)
+				.checked_add(&amount)
 				.ok_or(Error::<T>::TokenBalanceOverflow)?;
 		} else {
 			info.amount = amount;
@@ -543,7 +634,7 @@ impl<T: Config> Pallet<T> {
 	pub fn sub_assert(
 		account: &T::AccountId,
 		asset_id: u32,
-		amount: u128,
+		amount: BalanceOf<T>,
 	) -> Result<(), DispatchError> {
 		ensure!(
 			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
@@ -553,7 +644,7 @@ impl<T: Config> Pallet<T> {
 		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 		info.amount = info
 			.amount
-			.checked_sub(amount)
+			.checked_sub(&amount)
 			.ok_or(Error::<T>::NotEnoughBalance)?;
 
 		UserTokenInfoes::<T>::insert(account, asset_id, info);
@@ -564,7 +655,7 @@ impl<T: Config> Pallet<T> {
 	pub fn sub_reserved_assert(
 		account: &T::AccountId,
 		asset_id: u32,
-		amount: u128,
+		amount: BalanceOf<T>,
 	) -> Result<(), DispatchError> {
 		ensure!(
 			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
@@ -574,7 +665,7 @@ impl<T: Config> Pallet<T> {
 		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 		info.reserved = info
 			.reserved
-			.checked_sub(amount)
+			.checked_sub(&amount)
 			.ok_or(Error::<T>::NotEnoughBalance)?;
 
 		UserTokenInfoes::<T>::insert(account, asset_id, info);

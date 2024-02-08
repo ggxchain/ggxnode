@@ -11,4 +11,5 @@ impl pallet_dex::Config for Runtime {
 	type PalletId = DexPalletId;
 	type Fungibles = Assets;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type Currency = Balances;
 }

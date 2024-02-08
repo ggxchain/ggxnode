@@ -1,6 +1,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use sp_runtime::{DispatchError, ModuleError};
 
+use frame_support::traits::Currency;
 use frame_system::RawOrigin;
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
@@ -12,6 +13,10 @@ use sp_core::crypto::UncheckedFrom;
 use crate::chain_extensions::get_address_from_caller;
 
 use sp_std::{vec, vec::Vec};
+
+type BalanceOf<Runtime> = <<Runtime as pallet_dex::Config>::Currency as Currency<
+	<Runtime as frame_system::Config>::AccountId,
+>>::Balance;
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexDepositInput<AssetId, Balance> {
@@ -28,6 +33,16 @@ struct DexBalanceOfInput<AssetId, AccountId> {
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
 struct DexWithdrawInput<AssetId, Balance> {
 	asset_id: AssetId,
+	amount: Balance,
+}
+
+#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
+struct DexDepositNativeInput<Balance> {
+	amount: Balance,
+}
+
+#[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
+struct DexWithdrawNativeInput<Balance> {
 	amount: Balance,
 }
 
@@ -131,6 +146,8 @@ enum DexFunc {
 	OwnerTokenByIndex,
 	PairOrderByIndex,
 	UserOrderByIndex,
+	DepositNative,
+	WithdrawNative,
 }
 
 impl TryFrom<u16> for DexFunc {
@@ -152,6 +169,8 @@ impl TryFrom<u16> for DexFunc {
 			12 => Ok(DexFunc::OwnerTokenByIndex),
 			13 => Ok(DexFunc::PairOrderByIndex),
 			14 => Ok(DexFunc::UserOrderByIndex),
+			15 => Ok(DexFunc::DepositNative),
+			16 => Ok(DexFunc::WithdrawNative),
 			_ => Err(DispatchError::Other("DexExtension: Unimplemented func_id")),
 		}
 	}
@@ -178,7 +197,7 @@ where
 
 		match func_id {
 			DexFunc::Deposit => {
-				let input: DexDepositInput<u32, u128> = env.read_as()?;
+				let input: DexDepositInput<u32, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit(
@@ -203,12 +222,46 @@ where
 				env.write(&token_info.amount.encode(), false, None)?;
 			}
 			DexFunc::Withdraw => {
-				let input: DexDepositInput<u32, u128> = env.read_as()?;
+				let input: DexWithdrawInput<u32, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
 					RawOrigin::Signed(sender).into(),
 					input.asset_id.into(),
+					input.amount.into(),
+				);
+
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e.error);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			DexFunc::DepositNative => {
+				let input: DexDepositNativeInput<BalanceOf<T>> = env.read_as()?;
+
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
+				let call_result = pallet_dex::Pallet::<T>::deposit_native(
+					RawOrigin::Signed(sender).into(),
+					input.amount.into(),
+				);
+
+				return match call_result {
+					Err(e) => {
+						let mapped_error = Outcome::from(e.error);
+						Ok(RetVal::Converging(mapped_error as u32))
+					}
+					Ok(_) => Ok(RetVal::Converging(Outcome::Success as u32)),
+				};
+			}
+			DexFunc::WithdrawNative => {
+				let input: DexWithdrawNativeInput<BalanceOf<T>> = env.read_as()?;
+
+				let sender = get_address_from_caller(env.ext().caller().clone())?;
+				let call_result = pallet_dex::Pallet::<T>::withdraw_native(
+					RawOrigin::Signed(sender).into(),
 					input.amount.into(),
 				);
 
@@ -263,7 +316,8 @@ where
 				env.write(&order_array.encode(), false, None)?;
 			}
 			DexFunc::MakeOrder => {
-				let input: DexMakeOrderInput<u32, u128, pallet_dex::OrderType> = env.read_as()?;
+				let input: DexMakeOrderInput<u32, BalanceOf<T>, pallet_dex::OrderType> =
+					env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::make_order(
