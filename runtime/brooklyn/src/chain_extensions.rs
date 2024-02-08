@@ -329,7 +329,9 @@ impl TryFrom<u16> for FuncId {
 	}
 }
 
-fn get_address_from_caller<T>(call: Origin<T>) -> Result<<T as Config>::AccountId, DispatchError>
+pub fn get_address_from_caller<T>(
+	call: Origin<T>,
+) -> Result<<T as Config>::AccountId, DispatchError>
 where
 	T: pallet_contracts::Config,
 {
