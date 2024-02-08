@@ -124,7 +124,15 @@ fn test_make_order() {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
 
 		assert_noop!(
-			Dex::make_order(RuntimeOrigin::signed(1), 777, 777, 1, 200, OrderType::SELL),
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				777,
+				1,
+				200,
+				OrderType::SELL,
+				1000
+			),
 			Error::<Test>::PairAssetIdMustNotEqual
 		);
 
@@ -142,7 +150,8 @@ fn test_make_order() {
 			888,
 			1,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -151,7 +160,7 @@ fn test_make_order() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
 				order_type: OrderType::SELL
@@ -200,7 +209,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			777,
 			1,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -209,7 +219,7 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
 				order_type: OrderType::BUY
@@ -245,7 +255,8 @@ fn test_cancel_order() {
 			888,
 			1,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -254,7 +265,7 @@ fn test_cancel_order() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
 				order_type: OrderType::SELL
@@ -286,7 +297,8 @@ fn test_take_order_sell() {
 			888,
 			1,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_noop!(
@@ -379,7 +391,8 @@ fn test_take_order_buy() {
 			888,
 			200,
 			2,
-			OrderType::BUY
+			OrderType::BUY,
+			1000
 		));
 
 		assert_noop!(
@@ -474,7 +487,8 @@ fn test_make_cancel_take_order_buy() {
 			888,
 			100,
 			1,
-			OrderType::BUY
+			OrderType::BUY,
+			1000
 		));
 
 		assert_ok!(Dex::make_order(
@@ -483,7 +497,8 @@ fn test_make_cancel_take_order_buy() {
 			888,
 			200,
 			2,
-			OrderType::BUY
+			OrderType::BUY,
+			1000
 		));
 
 		assert_ok!(Dex::make_order(
@@ -492,7 +507,8 @@ fn test_make_cancel_take_order_buy() {
 			999,
 			200,
 			2,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 300));
@@ -520,4 +536,88 @@ fn test_make_cancel_take_order_buy() {
 		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
 		assert_eq!(PairOrders::<Test>::get((888, 999)), vec![2]);
 	})
+}
+
+#[test]
+fn test_expiration_works_as_expected() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			777,
+			888,
+			100,
+			1,
+			OrderType::BUY,
+			10
+		));
+
+		assert_eq!(Orders::<Test>::contains_key(0), true);
+		assert_eq!(UserOrders::<Test>::contains_key(1, 0), true);
+		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(
+			Orders::<Test>::get(0),
+			Some(Order {
+				counter: 0,
+				address: 1,
+				pair: (777, 888),
+				expiration_block: 10,
+				amount_offered: 100,
+				amout_requested: 1,
+				order_type: OrderType::BUY,
+			}),
+		);
+		assert_eq!(OrderExpiration::<Test>::get(10), vec![0]);
+
+		run_to_block(11);
+
+		assert!(!Orders::<Test>::contains_key(0));
+		assert!(!UserOrders::<Test>::contains_key(1, 0));
+		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
+		assert_eq!(OrderExpiration::<Test>::get(10), vec![]);
+	});
+}
+
+#[test]
+fn fail_on_invalid_expiry() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		run_to_block(5);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				100,
+				1,
+				OrderType::BUY,
+				3
+			),
+			Error::<Test>::ExpirationMustBeInFuture
+		);
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				100,
+				1,
+				OrderType::BUY,
+				5
+			),
+			Error::<Test>::ExpirationMustBeInFuture
+		);
+
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			777,
+			888,
+			100,
+			1,
+			OrderType::BUY,
+			6
+		));
+	});
 }

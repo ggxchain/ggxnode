@@ -3,6 +3,7 @@
 
 use frame_support::{
 	ensure,
+	pallet_prelude::DispatchResult,
 	sp_std::{convert::TryInto, prelude::*},
 	traits::{Currency, ExistenceRequirement::AllowDeath, Get, ReservableCurrency},
 	PalletId, RuntimeDebug,
@@ -10,6 +11,7 @@ use frame_support::{
 
 use sp_runtime::traits::{CheckedAdd, CheckedSub};
 
+use frame_system::pallet_prelude::*;
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
@@ -57,11 +59,11 @@ impl Default for OrderType {
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct Order<AccountId, Balance> {
+pub struct Order<AccountId, Balance, BlockNumber> {
 	counter: u64,       //order index
 	address: AccountId, //
 	pair: (u32, u32),   //AssetId_1 is base,  AssetId_2 is quote token
-	timestamp: u64,
+	expiration_block: BlockNumber,
 	order_type: OrderType,
 	amount_offered: Balance,
 	amout_requested: Balance,
@@ -75,12 +77,12 @@ pub mod pallet {
 		pallet_prelude::{ValueQuery, *},
 		Blake2_128Concat,
 	};
-	use frame_system::pallet_prelude::*;
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
-	type OrderOf<T> = Order<<T as frame_system::Config>::AccountId, BalanceOf<T>>;
+	type OrderOf<T> =
+		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
 
 	#[pallet::genesis_config]
 	pub struct GenesisConfig {
@@ -198,6 +200,16 @@ pub mod pallet {
 	>;
 
 	#[pallet::storage]
+	#[pallet::getter(fn order_expirations)]
+	pub type OrderExpiration<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		BlockNumberFor<T>,
+		BoundedVec<u64, ConstU32<{ u32::MAX }>>,
+		ValueQuery,
+	>;
+
+	#[pallet::storage]
 	#[pallet::getter(fn user_orders)]
 	pub type UserOrders<T: Config> = StorageDoubleMap<
 		_,
@@ -261,10 +273,24 @@ pub mod pallet {
 		PairOrderNotFound,
 		PairAssetIdMustNotEqual,
 		NotEnoughBalance,
+		ExpirationMustBeInFuture,
 	}
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn on_initialize(n: BlockNumberFor<T>) -> Weight {
+			// Check if there are any orders that have expired
+			// 1. If the order has expired, the order will be canceled
+
+			let expired_orders = OrderExpiration::<T>::take(n);
+			for order_id in expired_orders {
+				let _ = Self::cancel_order_impl(order_id);
+			}
+			// We would need to return the weight consumed by this function later.
+			// But for now, we can keep it as it is cause we don't estimate gas usage anyways...
+			Weight::zero()
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -356,6 +382,7 @@ pub mod pallet {
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
 			order_type: OrderType,
+			expiration_block: BlockNumberFor<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
@@ -370,13 +397,18 @@ pub mod pallet {
 				Error::<T>::PairAssetIdMustNotEqual
 			);
 
+			ensure!(
+				expiration_block > frame_system::Pallet::<T>::block_number(),
+				Error::<T>::ExpirationMustBeInFuture
+			);
+
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
 
 				let order = Order {
 					counter: order_index,
 					pair: (asset_id_1, asset_id_2),
-					timestamp: 0,
+					expiration_block,
 					order_type,
 					address: who.clone(),
 					amount_offered: offered_amount,
@@ -405,6 +437,12 @@ pub mod pallet {
 				Orders::<T>::insert(order_index, &order);
 				UserOrders::<T>::insert(who.clone(), order_index, ());
 
+				let mut expiration_orders = OrderExpiration::<T>::get(expiration_block);
+				expiration_orders
+					.try_push(order_index)
+					.expect("Max expiration_orders");
+				OrderExpiration::<T>::insert(expiration_block, expiration_orders);
+
 				let mut bounded_pair_orders = PairOrders::<T>::get((asset_id_1, asset_id_2));
 				bounded_pair_orders
 					.try_push(order_index)
@@ -422,50 +460,11 @@ pub mod pallet {
 		#[pallet::call_index(3)]
 		pub fn cancel_order(origin: OriginFor<T>, order_index: u64) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+			// We read twice that probably is not necessary.
+			let order = Orders::<T>::get(order_index).ok_or(Error::<T>::InvalidOrderIndex)?;
+			ensure!(order.address == who, Error::<T>::NotOwner);
 
-			Orders::<T>::try_mutate_exists(order_index, |order| -> DispatchResult {
-				let order = order.take().ok_or(Error::<T>::InvalidOrderIndex)?;
-
-				ensure!(order.address == who, Error::<T>::NotOwner);
-
-				let update_asset_id = match order.order_type {
-					OrderType::SELL => order.pair.0,
-					OrderType::BUY => order.pair.1,
-				};
-
-				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
-				info.amount = info
-					.amount
-					.checked_add(&order.amount_offered)
-					.ok_or(Error::<T>::TokenBalanceOverflow)?;
-				info.reserved = info
-					.reserved
-					.checked_sub(&order.amount_offered)
-					.ok_or(Error::<T>::NotEnoughBalance)?;
-				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
-
-				UserOrders::<T>::remove(who, order_index);
-
-				PairOrders::<T>::try_mutate_exists(
-					order.pair,
-					|bounded_pair_orders| -> DispatchResult {
-						let pair_orders = bounded_pair_orders
-							.as_mut()
-							.ok_or(Error::<T>::PairOrderNotFound)?;
-						let rt = pair_orders.binary_search(&order_index);
-						if rt.is_ok() {
-							pair_orders.remove(rt.unwrap());
-						}
-
-						PairOrders::<T>::insert(order.pair, pair_orders);
-						Ok(())
-					},
-				)?;
-
-				Self::deposit_event(Event::OrderCanceled { order_index });
-
-				Ok(())
-			})?;
+			Self::cancel_order_impl(order_index)?;
 
 			Ok(().into())
 		}
@@ -487,8 +486,8 @@ pub mod pallet {
 							.as_mut()
 							.ok_or(Error::<T>::PairOrderNotFound)?;
 						let rt = pair_orders.binary_search(&order_index);
-						if rt.is_ok() {
-							pair_orders.remove(rt.unwrap());
+						if let Ok(rt) = rt {
+							pair_orders.remove(rt);
 						}
 
 						PairOrders::<T>::insert(order.pair, pair_orders);
@@ -671,5 +670,49 @@ impl<T: Config> Pallet<T> {
 		UserTokenInfoes::<T>::insert(account, asset_id, info);
 
 		Ok(())
+	}
+
+	fn cancel_order_impl(order_index: u64) -> DispatchResult {
+		Orders::<T>::try_mutate_exists(order_index, |order| -> DispatchResult {
+			let order = order.take().ok_or(Error::<T>::InvalidOrderIndex)?;
+
+			let update_asset_id = match order.order_type {
+				OrderType::SELL => order.pair.0,
+				OrderType::BUY => order.pair.1,
+			};
+
+			let mut info = UserTokenInfoes::<T>::get(order.address.clone(), update_asset_id);
+			info.amount = info
+				.amount
+				.checked_add(&order.amount_offered)
+				.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			info.reserved = info
+				.reserved
+				.checked_sub(&order.amount_offered)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+			UserTokenInfoes::<T>::insert(order.address.clone(), update_asset_id, info);
+
+			UserOrders::<T>::remove(order.address, order_index);
+
+			PairOrders::<T>::try_mutate_exists(
+				order.pair,
+				|bounded_pair_orders| -> DispatchResult {
+					let pair_orders = bounded_pair_orders
+						.as_mut()
+						.ok_or(Error::<T>::PairOrderNotFound)?;
+					let rt = pair_orders.binary_search(&order_index);
+					if let Ok(rt_index) = rt {
+						pair_orders.remove(rt_index);
+					}
+
+					PairOrders::<T>::insert(order.pair, pair_orders);
+					Ok(())
+				},
+			)?;
+
+			Self::deposit_event(Event::OrderCanceled { order_index });
+
+			Ok(())
+		})
 	}
 }
