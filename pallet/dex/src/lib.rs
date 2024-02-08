@@ -3,16 +3,25 @@
 
 use frame_support::{
 	ensure,
+	pallet_prelude::ConstU32,
 	sp_std::{convert::TryInto, prelude::*},
 	traits::{Currency, ExistenceRequirement::AllowDeath, Get, ReservableCurrency},
-	PalletId, RuntimeDebug,
+	BoundedBTreeMap, PalletId, RuntimeDebug,
 };
 
-use sp_runtime::traits::{CheckedAdd, CheckedSub};
+use sp_runtime::{
+	offchain::{
+		storage::StorageValueRef,
+		storage_lock::{BlockAndTime, StorageLock},
+		Duration,
+	},
+	traits::{BlockNumberProvider, CheckedAdd, CheckedSub},
+};
 
+use bigdecimal::BigDecimal;
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::TypeInfo;
+use scale_info::{prelude::collections::BTreeMap, TypeInfo};
 use sp_runtime::{traits::One, DispatchError};
 
 use frame_support::{
@@ -27,6 +36,9 @@ use frame_support::{
 mod mock;
 #[cfg(test)]
 mod tests;
+
+const LOCK_TIMEOUT_EXPIRATION: u64 = 4000; // in milli-seconds
+const LOCK_BLOCK_EXPIRATION: u32 = 3; // in block number
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct TokenInfo<Balance> {
@@ -65,6 +77,42 @@ pub struct Order<AccountId, Balance> {
 	order_type: OrderType,
 	amount_offered: Balance,
 	amout_requested: Balance,
+}
+
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+pub struct MatchEngine<Order> {
+	buy_book: OrderBook<Order>,
+	sell_book: OrderBook<Order>,
+	market_price: Vec<u8>,
+	last_process_order_id: u64,
+}
+
+#[derive(
+	Encode, Decode, Default, Eq, PartialEq, Clone, Ord, PartialOrd, RuntimeDebug, TypeInfo,
+)]
+pub struct OrderKey {
+	order_id: u64,
+	price: Vec<u8>,
+}
+
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+pub struct OrderBook<Order> {
+	direction: OrderType,
+	book: BoundedBTreeMap<OrderKey, Order, ConstU32<{ u32::MAX }>>,
+}
+
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+pub struct MatchResult<Balance, Order> {
+	taker_order: Order,
+	match_details: Vec<Trade<Balance, Order>>,
+}
+
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+pub struct Trade<Balance, Order> {
+	price: Vec<u8>,
+	quantity: Balance,
+	taker_order: Order,
+	maker_order: Order,
 }
 
 #[frame_support::pallet]
@@ -264,7 +312,52 @@ pub mod pallet {
 	}
 
 	#[pallet::hooks]
-	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {}
+	impl<T: Config> Hooks<BlockNumberFor<T>> for Pallet<T> {
+		fn offchain_worker(_block_number: T::BlockNumber) {
+			let timestamp_now = sp_io::offchain::timestamp();
+			log::info!("###### Current time: {:?} ", timestamp_now.unix_millis());
+
+			let store_hashmap_match_engines =
+				StorageValueRef::persistent(b"dex_ocw::match_engines");
+
+			let store_last_process_order_id =
+				StorageValueRef::persistent(b"dex_ocw::last_process_order_id");
+
+			let mut map_match_engines: BoundedBTreeMap<
+				(u32, u32),
+				MatchEngine<OrderOf<T>>,
+				ConstU32<{ u32::MAX }>,
+			>;
+			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
+				(u32, u32),
+				MatchEngine<OrderOf<T>>,
+				ConstU32<{ u32::MAX }>,
+			>>() {
+				map_match_engines = engines;
+			} else {
+				map_match_engines = BoundedBTreeMap::new();
+			}
+
+			let mut last_process_order_id: u64;
+			if let Ok(Some(order_id)) = store_last_process_order_id.get::<u64>() {
+				last_process_order_id = order_id;
+			} else {
+				last_process_order_id = u64::default();
+			}
+
+			let mut lock = StorageLock::<BlockAndTime<Self>>::with_block_and_time_deadline(
+				b"offchain-dex::lock",
+				LOCK_BLOCK_EXPIRATION,
+				Duration::from_millis(LOCK_TIMEOUT_EXPIRATION),
+			);
+
+			if let Ok(_guard) = lock.try_lock() {
+				last_process_order_id += 1;
+				store_last_process_order_id.set(&last_process_order_id);
+				store_hashmap_match_engines.set(&map_match_engines);
+			};
+		}
+	}
 
 	#[pallet::call]
 	impl<T: Config> Pallet<T> {
@@ -604,72 +697,115 @@ pub mod pallet {
 			Ok(().into())
 		}
 	}
-}
 
-impl<T: Config> Pallet<T> {
-	pub fn account_id() -> <T as frame_system::Config>::AccountId {
-		<T as Config>::PalletId::get().into_account_truncating()
-	}
+	impl<T: Config> Pallet<T> {
+		pub fn account_id() -> <T as frame_system::Config>::AccountId {
+			<T as Config>::PalletId::get().into_account_truncating()
+		}
 
-	pub fn add_assert(
-		account: &T::AccountId,
-		asset_id: u32,
-		amount: BalanceOf<T>,
-	) -> Result<(), DispatchError> {
-		let mut info = TokenInfo::default();
-		if UserTokenInfoes::<T>::contains_key(account.clone(), asset_id) {
-			info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
+		pub fn add_assert(
+			account: &T::AccountId,
+			asset_id: u32,
+			amount: BalanceOf<T>,
+		) -> Result<(), DispatchError> {
+			let mut info = TokenInfo::default();
+			if UserTokenInfoes::<T>::contains_key(account.clone(), asset_id) {
+				info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
+				info.amount = info
+					.amount
+					.checked_add(&amount)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			} else {
+				info.amount = amount;
+			}
+			UserTokenInfoes::<T>::insert(account, asset_id, info);
+
+			Ok(())
+		}
+
+		pub fn sub_assert(
+			account: &T::AccountId,
+			asset_id: u32,
+			amount: BalanceOf<T>,
+		) -> Result<(), DispatchError> {
+			ensure!(
+				UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
+				Error::<T>::UserAssetNotExist
+			);
+
+			let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
 			info.amount = info
 				.amount
-				.checked_add(&amount)
-				.ok_or(Error::<T>::TokenBalanceOverflow)?;
-		} else {
-			info.amount = amount;
+				.checked_sub(&amount)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+
+			UserTokenInfoes::<T>::insert(account, asset_id, info);
+
+			Ok(())
 		}
-		UserTokenInfoes::<T>::insert(account, asset_id, info);
 
-		Ok(())
+		pub fn sub_reserved_assert(
+			account: &T::AccountId,
+			asset_id: u32,
+			amount: BalanceOf<T>,
+		) -> Result<(), DispatchError> {
+			ensure!(
+				UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
+				Error::<T>::UserAssetNotExist
+			);
+
+			let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
+			info.reserved = info
+				.reserved
+				.checked_sub(&amount)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+
+			UserTokenInfoes::<T>::insert(account, asset_id, info);
+
+			Ok(())
+		}
+
+		fn process_order(
+			order_id: u64,
+			order: OrderOf<T>,
+			engine: MatchEngine<OrderOf<T>>,
+		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
+			match order.order_type {
+				OrderType::BUY => {
+					Self::match_in_orderbook(order_id, order, engine.sell_book, engine.buy_book)
+				}
+				OrderType::SELL => {
+					Self::match_in_orderbook(order_id, order, engine.buy_book, engine.sell_book)
+				}
+			}
+		}
+
+		fn match_in_orderbook(
+			order_id: u64,
+			taker_order: OrderOf<T>,
+			maker_book: OrderBook<OrderOf<T>>,
+			another_book: OrderBook<OrderOf<T>>,
+		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
+			return Ok(MatchResult {
+				taker_order: Order {
+					counter: 0,
+					address: Self::account_id(),
+					pair: (0, 0),
+					timestamp: 0,
+					order_type: OrderType::BUY,
+					amount_offered: BalanceOf::<T>::default(),
+					amout_requested: BalanceOf::<T>::default(),
+				},
+				match_details: vec![],
+			});
+		}
 	}
+}
 
-	pub fn sub_assert(
-		account: &T::AccountId,
-		asset_id: u32,
-		amount: BalanceOf<T>,
-	) -> Result<(), DispatchError> {
-		ensure!(
-			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
-			Error::<T>::UserAssetNotExist
-		);
+impl<T: Config> BlockNumberProvider for Pallet<T> {
+	type BlockNumber = T::BlockNumber;
 
-		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
-		info.amount = info
-			.amount
-			.checked_sub(&amount)
-			.ok_or(Error::<T>::NotEnoughBalance)?;
-
-		UserTokenInfoes::<T>::insert(account, asset_id, info);
-
-		Ok(())
-	}
-
-	pub fn sub_reserved_assert(
-		account: &T::AccountId,
-		asset_id: u32,
-		amount: BalanceOf<T>,
-	) -> Result<(), DispatchError> {
-		ensure!(
-			UserTokenInfoes::<T>::contains_key(account.clone(), asset_id),
-			Error::<T>::UserAssetNotExist
-		);
-
-		let mut info = UserTokenInfoes::<T>::get(account.clone(), asset_id);
-		info.reserved = info
-			.reserved
-			.checked_sub(&amount)
-			.ok_or(Error::<T>::NotEnoughBalance)?;
-
-		UserTokenInfoes::<T>::insert(account, asset_id, info);
-
-		Ok(())
+	fn current_block_number() -> Self::BlockNumber {
+		<frame_system::Pallet<T>>::block_number()
 	}
 }
