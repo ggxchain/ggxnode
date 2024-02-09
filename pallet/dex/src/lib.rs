@@ -9,6 +9,7 @@ use frame_support::{
 	BoundedBTreeMap, PalletId, RuntimeDebug,
 };
 
+use frame_system::offchain::{SendTransactionTypes, SubmitTransaction};
 use sp_runtime::{
 	offchain::{
 		storage::StorageValueRef,
@@ -19,6 +20,7 @@ use sp_runtime::{
 };
 
 use bigdecimal::BigDecimal;
+use core::{borrow::BorrowMut, cmp::Ordering, ops::Div};
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::{prelude::collections::BTreeMap, TypeInfo};
@@ -68,6 +70,21 @@ impl Default for OrderType {
 	}
 }
 
+#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+pub enum OrderStatus {
+	PENDING,           //unfilledQuantity == quantity
+	FULLY_FILLED,      //unfilledQuantity = 0
+	PARTIAL_FILLED,    // (quantity > unfilledQuantity > 0)
+	PARTIAL_CANCELLED, // (quantity > unfilledQuantity > 0)
+	FULLY_CANCELLED,   // (unfilledQuantity == quantity)
+}
+
+impl Default for OrderStatus {
+	fn default() -> Self {
+		OrderStatus::PENDING
+	}
+}
+
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct Order<AccountId, Balance> {
 	counter: u64,       //order index
@@ -77,28 +94,31 @@ pub struct Order<AccountId, Balance> {
 	order_type: OrderType,
 	amount_offered: Balance,
 	amout_requested: Balance,
+	unfilled_offered: Balance,
+	unfilled_requested: Balance,
+	order_status: OrderStatus,
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct MatchEngine<Order> {
 	buy_book: OrderBook<Order>,
 	sell_book: OrderBook<Order>,
-	market_price: Vec<u8>,
+	market_price: Vec<u8>, //price: (Balance, Balance),
 	last_process_order_id: u64,
 }
 
 #[derive(
-	Encode, Decode, Default, Eq, PartialEq, Clone, Ord, PartialOrd, RuntimeDebug, TypeInfo,
+	Encode, Decode, Default, Eq, Ord, PartialEq, PartialOrd, Clone, RuntimeDebug, TypeInfo,
 )]
-pub struct OrderKey {
+pub struct OrderBookKey {
 	order_id: u64,
-	price: Vec<u8>,
+	price: Vec<u8>, //price: (Balance, Balance),
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct OrderBook<Order> {
-	direction: OrderType,
-	book: BoundedBTreeMap<OrderKey, Order, ConstU32<{ u32::MAX }>>,
+	order_type: OrderType,
+	book: BoundedBTreeMap<OrderBookKey, Order, ConstU32<{ u32::MAX }>>,
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -110,7 +130,8 @@ pub struct MatchResult<Balance, Order> {
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct Trade<Balance, Order> {
 	price: Vec<u8>,
-	quantity: Balance,
+	quantity_base: Balance,
+	quantity_quote: Balance,
 	taker_order: Order,
 	maker_order: Order,
 }
@@ -123,7 +144,7 @@ pub mod pallet {
 		pallet_prelude::{ValueQuery, *},
 		Blake2_128Concat,
 	};
-	use frame_system::pallet_prelude::*;
+	use frame_system::{offchain::SubmitTransaction, pallet_prelude::*};
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -172,7 +193,7 @@ pub mod pallet {
 
 	#[pallet::config]
 	/// The module configuration trait.
-	pub trait Config: frame_system::Config {
+	pub trait Config: frame_system::Config + SendTransactionTypes<Call<Self>> {
 		/// The overarching event type.
 		type RuntimeEvent: From<Event<Self>> + IsType<<Self as frame_system::Config>::RuntimeEvent>;
 
@@ -309,6 +330,7 @@ pub mod pallet {
 		PairOrderNotFound,
 		PairAssetIdMustNotEqual,
 		NotEnoughBalance,
+		OffchainUnsignedTxError,
 	}
 
 	#[pallet::hooks]
@@ -328,6 +350,7 @@ pub mod pallet {
 				MatchEngine<OrderOf<T>>,
 				ConstU32<{ u32::MAX }>,
 			>;
+
 			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
 				(u32, u32),
 				MatchEngine<OrderOf<T>>,
@@ -352,9 +375,43 @@ pub mod pallet {
 			);
 
 			if let Ok(_guard) = lock.try_lock() {
-				last_process_order_id += 1;
-				store_last_process_order_id.set(&last_process_order_id);
-				store_hashmap_match_engines.set(&map_match_engines);
+				if !Orders::<T>::contains_key(last_process_order_id) {
+					return;
+				}
+				let order = Orders::<T>::get(last_process_order_id).unwrap();
+
+				let mut engine: MatchEngine<OrderOf<T>>;
+				if let Some(en) = map_match_engines.get_mut(&order.pair) {
+					engine = en.clone();
+				} else {
+					engine = MatchEngine {
+						buy_book: OrderBook {
+							order_type: OrderType::BUY,
+							book: BoundedBTreeMap::new(),
+						},
+						sell_book: OrderBook {
+							order_type: OrderType::SELL,
+							book: BoundedBTreeMap::new(),
+						},
+						market_price: vec![],
+						last_process_order_id,
+					};
+				}
+
+				match Self::process_order(last_process_order_id, order.clone(), &mut engine) {
+					Ok(match_result) => match Self::offchain_unsigned_tx(match_result) {
+						Ok(_) => {
+							last_process_order_id += 1;
+							store_last_process_order_id.set(&last_process_order_id);
+
+							//map_match_engines.insert(order.pair, engine.clone()); //todo update
+
+							store_hashmap_match_engines.set(&map_match_engines);
+						}
+						Err(_e) => {}
+					},
+					Err(_e) => {}
+				}
 			};
 		}
 	}
@@ -474,6 +531,9 @@ pub mod pallet {
 					address: who.clone(),
 					amount_offered: offered_amount,
 					amout_requested: requested_amount,
+					unfilled_offered: offered_amount,
+					unfilled_requested: requested_amount,
+					order_status: OrderStatus::PENDING,
 				};
 
 				let update_asset_id = match order.order_type {
@@ -696,6 +756,85 @@ pub mod pallet {
 			Self::deposit_event(Event::NativeWithdrawed { amount });
 			Ok(().into())
 		}
+
+		#[pallet::weight({8})]
+		#[pallet::call_index(8)]
+		pub fn update_match_order_unsigned(
+			origin: OriginFor<T>,
+			match_result: MatchResult<BalanceOf<T>, OrderOf<T>>,
+		) -> DispatchResult {
+			for trade in match_result.match_details {
+				let taker_order = trade.taker_order;
+				let maker_order = trade.maker_order;
+
+				if taker_order.order_type == OrderType::BUY
+					&& maker_order.order_type == OrderType::SELL
+				{
+					// exchange asset
+					// for maker
+					// for maker
+					Self::add_assert(
+						&taker_order.address,
+						taker_order.pair.0,
+						trade.quantity_base,
+					)?;
+					Self::sub_reserved_assert(
+						&taker_order.address,
+						taker_order.pair.1,
+						trade.quantity_quote,
+					)?;
+					// for taker
+					Self::add_assert(
+						&maker_order.address,
+						taker_order.pair.1,
+						trade.quantity_quote,
+					)?;
+					Self::sub_assert(
+						&maker_order.address,
+						taker_order.pair.0,
+						trade.quantity_base,
+					)?;
+
+				//todo update order status
+				//todo remove UserOrders
+				//todo remove PairOrders
+				//todo send OrderTaken event
+				} else if taker_order.order_type == OrderType::SELL
+					&& maker_order.order_type == OrderType::BUY
+				{
+					// exchange asset
+					// for maker
+					Self::add_assert(
+						&taker_order.address,
+						taker_order.pair.1,
+						trade.quantity_quote,
+					)?;
+					Self::sub_reserved_assert(
+						&taker_order.address,
+						taker_order.pair.0,
+						trade.quantity_base,
+					)?;
+					// for taker
+					Self::add_assert(
+						&maker_order.address,
+						taker_order.pair.0,
+						trade.quantity_base,
+					)?;
+					Self::sub_assert(
+						&maker_order.address,
+						taker_order.pair.1,
+						trade.quantity_quote,
+					)?;
+
+					//todo update order status
+					//todo remove UserOrders
+					//todo remove PairOrders
+					//todo send OrderTaken event
+				}
+			}
+
+			Ok(())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -765,39 +904,153 @@ pub mod pallet {
 			Ok(())
 		}
 
+		fn compare_order_price(order_1: &OrderOf<T>, order_2: &OrderOf<T>) -> i8 {
+			let order_1_dividend_divisor = Self::get_order_price_dividend_divisor(order_1);
+			let order_2_dividend_divisor = Self::get_order_price_dividend_divisor(order_2);
+
+			if order_1_dividend_divisor.0 * order_2_dividend_divisor.1
+				> order_2_dividend_divisor.0 * order_1_dividend_divisor.1
+			{
+				1
+			} else if order_1_dividend_divisor.0 * order_2_dividend_divisor.1
+				< order_2_dividend_divisor.0 * order_1_dividend_divisor.1
+			{
+				-1
+			} else {
+				0
+			}
+		}
+
+		fn get_order_price_dividend_divisor(order: &OrderOf<T>) -> (BalanceOf<T>, BalanceOf<T>) {
+			match order.order_type {
+				OrderType::SELL => (order.amout_requested, order.amount_offered),
+				OrderType::BUY => (order.amount_offered, order.amout_requested),
+			}
+		}
+
 		fn process_order(
 			order_id: u64,
 			order: OrderOf<T>,
-			engine: MatchEngine<OrderOf<T>>,
+			engine: &mut MatchEngine<OrderOf<T>>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
 			match order.order_type {
-				OrderType::BUY => {
-					Self::match_in_orderbook(order_id, order, engine.sell_book, engine.buy_book)
-				}
-				OrderType::SELL => {
-					Self::match_in_orderbook(order_id, order, engine.buy_book, engine.sell_book)
-				}
+				OrderType::BUY => Self::match_in_orderbook(
+					order_id,
+					order,
+					&mut engine.sell_book.book,
+					&mut engine.buy_book.book,
+				),
+				OrderType::SELL => Self::match_in_orderbook(
+					order_id,
+					order,
+					&mut engine.buy_book.book,
+					&mut engine.sell_book.book,
+				),
 			}
 		}
 
 		fn match_in_orderbook(
 			order_id: u64,
-			taker_order: OrderOf<T>,
-			maker_book: OrderBook<OrderOf<T>>,
-			another_book: OrderBook<OrderOf<T>>,
+			mut taker_order: OrderOf<T>,
+			maker_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
+			another_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
-			return Ok(MatchResult {
-				taker_order: Order {
-					counter: 0,
-					address: Self::account_id(),
-					pair: (0, 0),
-					timestamp: 0,
-					order_type: OrderType::BUY,
-					amount_offered: BalanceOf::<T>::default(),
-					amout_requested: BalanceOf::<T>::default(),
-				},
+			let mut match_result = MatchResult {
+				taker_order: taker_order.clone(),
 				match_details: vec![],
-			});
+			};
+			let mut taker_unfilled_quantity = taker_order.amout_requested;
+			loop {
+				if maker_book.is_empty() {
+					break;
+				}
+
+				let maker_order_key = match maker_book.first_key_value() {
+					Some((k, _)) => k.clone(),
+					None => {
+						break;
+					}
+				};
+
+				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
+
+				if taker_order.order_type == OrderType::BUY
+					&& Self::compare_order_price(&taker_order, &maker_order) < 0
+				{
+					break;
+				}
+
+				if taker_order.order_type == OrderType::SELL
+					&& Self::compare_order_price(&taker_order, &maker_order) > 0
+				{
+					break;
+				}
+
+				//this.marketPrice = makerOrder.price;
+
+				let matched_quantity = taker_unfilled_quantity.min(maker_order.unfilled_offered);
+
+				match_result.match_details.push(Trade {
+					price: vec![],
+					quantity: matched_quantity,
+					taker_order: taker_order.clone(),
+					maker_order: maker_order.clone(),
+				});
+
+				taker_unfilled_quantity = taker_unfilled_quantity
+					.checked_sub(&matched_quantity)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+
+				let maker_unfilled_quantity = maker_order
+					.unfilled_offered
+					.checked_sub(&matched_quantity)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+
+				// update maker order
+				maker_order.unfilled_offered = maker_unfilled_quantity;
+
+				if maker_unfilled_quantity == BalanceOf::<T>::default() {
+					// remove order from maker order book
+					maker_book.remove(&maker_order_key);
+				}
+
+				if taker_unfilled_quantity == BalanceOf::<T>::default() {
+					//todo update taker order
+					taker_order.unfilled_requested = taker_unfilled_quantity;
+					break;
+				}
+			}
+
+			if taker_unfilled_quantity != BalanceOf::<T>::default() {
+				//todo update taker order
+				taker_order.unfilled_requested = taker_unfilled_quantity;
+
+				// todo add to order book
+				another_book.try_insert(
+					OrderBookKey {
+						order_id,
+						price: Default::default(),
+					},
+					taker_order,
+				);
+			}
+
+			return Ok(match_result);
+		}
+
+		fn offchain_unsigned_tx(
+			match_result: MatchResult<BalanceOf<T>, OrderOf<T>>,
+		) -> Result<(), Error<T>> {
+			let call = Call::update_match_order_unsigned { match_result };
+
+			// `submit_unsigned_transaction` returns a type of `Result<(), ()>`
+			//   ref: https://substrate.dev/rustdocs/v2.0.0/frame_system/offchain/struct.SubmitTransaction.html#method.submit_unsigned_transaction
+			SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).map_err(
+				|_| {
+					log::error!("Failed in offchain_unsigned_tx");
+					<Error<T>>::OffchainUnsignedTxError
+				},
+			)
 		}
 	}
 }
