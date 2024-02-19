@@ -300,6 +300,12 @@ pub mod pallet {
 		OrderCanceled {
 			order_index: u64,
 		},
+		OrderMatched {
+			quantity_base: BalanceOf<T>,
+			quantity_quote: BalanceOf<T>,
+			taker_order: OrderOf<T>,
+			maker_order: OrderOf<T>,
+		},
 		Deposited {
 			asset_id: u32,
 			amount: BalanceOf<T>,
@@ -374,6 +380,12 @@ pub mod pallet {
 				Duration::from_millis(LOCK_TIMEOUT_EXPIRATION),
 			);
 
+			let on_chain_order_index = NextOrderIndex::<T>::get();
+
+			if last_process_order_id > on_chain_order_index {
+				return;
+			}
+
 			if let Ok(_guard) = lock.try_lock() {
 				if !Orders::<T>::contains_key(last_process_order_id) {
 					return;
@@ -404,7 +416,7 @@ pub mod pallet {
 							last_process_order_id += 1;
 							store_last_process_order_id.set(&last_process_order_id);
 
-							//map_match_engines.insert(order.pair, engine.clone()); //todo update
+							//map_match_engines.insert(order.pair, engine.clone()); //todo update match_engines
 
 							store_hashmap_match_engines.set(&map_match_engines);
 						}
@@ -763,15 +775,25 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			match_result: MatchResult<BalanceOf<T>, OrderOf<T>>,
 		) -> DispatchResult {
+			// This ensures that the function can only be called via unsigned transaction.
+			ensure_none(origin)?;
+
 			for trade in match_result.match_details {
 				let taker_order = trade.taker_order;
 				let maker_order = trade.maker_order;
+
+				// update order status
+				Self::update_order_from_trade_order(taker_order);
+				Self::update_order_from_trade_order(maker_order);
+
+				// remove fully filled UserOrders/PairOrders
+				Self::remove_order_if_fully_filled(taker_order);
+				Self::remove_order_if_fully_filled(maker_order);
 
 				if taker_order.order_type == OrderType::BUY
 					&& maker_order.order_type == OrderType::SELL
 				{
 					// exchange asset
-					// for maker
 					// for maker
 					Self::add_assert(
 						&taker_order.address,
@@ -783,22 +805,18 @@ pub mod pallet {
 						taker_order.pair.1,
 						trade.quantity_quote,
 					)?;
+
 					// for taker
 					Self::add_assert(
 						&maker_order.address,
 						taker_order.pair.1,
 						trade.quantity_quote,
 					)?;
-					Self::sub_assert(
+					Self::sub_reserved_assert(
 						&maker_order.address,
 						taker_order.pair.0,
 						trade.quantity_base,
 					)?;
-
-				//todo update order status
-				//todo remove UserOrders
-				//todo remove PairOrders
-				//todo send OrderTaken event
 				} else if taker_order.order_type == OrderType::SELL
 					&& maker_order.order_type == OrderType::BUY
 				{
@@ -820,17 +838,19 @@ pub mod pallet {
 						taker_order.pair.0,
 						trade.quantity_base,
 					)?;
-					Self::sub_assert(
+					Self::sub_reserved_assert(
 						&maker_order.address,
 						taker_order.pair.1,
 						trade.quantity_quote,
 					)?;
-
-					//todo update order status
-					//todo remove UserOrders
-					//todo remove PairOrders
-					//todo send OrderTaken event
 				}
+
+				Self::deposit_event(Event::OrderMatched {
+					quantity_base: trade.quantity_base,
+					quantity_quote: trade.quantity_quote,
+					taker_order,
+					maker_order,
+				});
 			}
 
 			Ok(())
@@ -900,6 +920,47 @@ pub mod pallet {
 				.ok_or(Error::<T>::NotEnoughBalance)?;
 
 			UserTokenInfoes::<T>::insert(account, asset_id, info);
+
+			Ok(())
+		}
+
+		pub fn update_order_from_trade_order(order: Order) -> Result<(), DispatchError> {
+			Orders::<T>::insert(order.counter, &order);
+			Ok(())
+		}
+
+		pub fn remove_order_if_fully_filled(order: Order) -> Result<(), DispatchError> {
+			UserOrders::<T>::remove(&order.address, order.counter);
+
+			PairOrders::<T>::try_mutate_exists(
+				order.pair,
+				|bounded_pair_orders| -> DispatchResult {
+					let pair_orders = bounded_pair_orders
+						.as_mut()
+						.ok_or(Error::<T>::PairOrderNotFound)?;
+					let rt = pair_orders.binary_search(&order.counter);
+					if rt.is_ok() {
+						pair_orders.remove(rt.unwrap());
+					}
+
+					PairOrders::<T>::insert(order.pair, pair_orders);
+					Ok(())
+				},
+			)?;
+			Ok(())
+		}
+
+		pub fn sub_trade_reserved_balance(
+			user: &T::AccountId,
+			asset_id: u32,
+			amount_trade: BalanceOf<T>,
+		) {
+			let mut info = UserTokenInfoes::<T>::get(user, asset_id);
+			info.reserved = info
+				.reserved
+				.checked_sub(amount_trade)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+			UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
 
 			Ok(())
 		}
@@ -1015,17 +1076,17 @@ pub mod pallet {
 				}
 
 				if taker_unfilled_quantity == BalanceOf::<T>::default() {
-					//todo update taker order
+					//update taker order
 					taker_order.unfilled_requested = taker_unfilled_quantity;
 					break;
 				}
 			}
 
 			if taker_unfilled_quantity != BalanceOf::<T>::default() {
-				//todo update taker order
+				//update taker order
 				taker_order.unfilled_requested = taker_unfilled_quantity;
 
-				// todo add to order book
+				// add to order book
 				another_book.try_insert(
 					OrderBookKey {
 						order_id,
