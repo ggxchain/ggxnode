@@ -72,16 +72,16 @@ impl Default for OrderType {
 
 #[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderStatus {
-	PENDING,           //unfilledQuantity == quantity
-	FULLY_FILLED,      //unfilledQuantity = 0
-	PARTIAL_FILLED,    // (quantity > unfilledQuantity > 0)
-	PARTIAL_CANCELLED, // (quantity > unfilledQuantity > 0)
-	FULLY_CANCELLED,   // (unfilledQuantity == quantity)
+	Pending,          //unfilledQuantity == quantity
+	FullyFilled,      //unfilledQuantity = 0
+	PartialFilled,    // (quantity > unfilledQuantity > 0)
+	PartialCancelled, // (quantity > unfilledQuantity > 0)
+	FullyCancelled,   // (unfilledQuantity == quantity)
 }
 
 impl Default for OrderStatus {
 	fn default() -> Self {
-		OrderStatus::PENDING
+		OrderStatus::Pending
 	}
 }
 
@@ -545,7 +545,7 @@ pub mod pallet {
 					amout_requested: requested_amount,
 					unfilled_offered: offered_amount,
 					unfilled_requested: requested_amount,
-					order_status: OrderStatus::PENDING,
+					order_status: OrderStatus::Pending,
 				};
 
 				let update_asset_id = match order.order_type {
@@ -783,12 +783,12 @@ pub mod pallet {
 				let maker_order = trade.maker_order;
 
 				// update order status
-				Self::update_order_from_trade_order(taker_order);
-				Self::update_order_from_trade_order(maker_order);
+				Self::update_order_from_trade_order(&taker_order)?;
+				Self::update_order_from_trade_order(&maker_order)?;
 
 				// remove fully filled UserOrders/PairOrders
-				Self::remove_order_if_fully_filled(taker_order);
-				Self::remove_order_if_fully_filled(maker_order);
+				Self::remove_order_if_fully_filled(&taker_order)?;
+				Self::remove_order_if_fully_filled(&maker_order)?;
 
 				if taker_order.order_type == OrderType::BUY
 					&& maker_order.order_type == OrderType::SELL
@@ -924,12 +924,12 @@ pub mod pallet {
 			Ok(())
 		}
 
-		pub fn update_order_from_trade_order(order: Order) -> Result<(), DispatchError> {
+		pub fn update_order_from_trade_order(order: &OrderOf<T>) -> Result<(), DispatchError> {
 			Orders::<T>::insert(order.counter, &order);
 			Ok(())
 		}
 
-		pub fn remove_order_if_fully_filled(order: Order) -> Result<(), DispatchError> {
+		pub fn remove_order_if_fully_filled(order: &OrderOf<T>) -> Result<(), DispatchError> {
 			UserOrders::<T>::remove(&order.address, order.counter);
 
 			PairOrders::<T>::try_mutate_exists(
@@ -947,21 +947,6 @@ pub mod pallet {
 					Ok(())
 				},
 			)?;
-			Ok(())
-		}
-
-		pub fn sub_trade_reserved_balance(
-			user: &T::AccountId,
-			asset_id: u32,
-			amount_trade: BalanceOf<T>,
-		) {
-			let mut info = UserTokenInfoes::<T>::get(user, asset_id);
-			info.reserved = info
-				.reserved
-				.checked_sub(amount_trade)
-				.ok_or(Error::<T>::NotEnoughBalance)?;
-			UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
-
 			Ok(())
 		}
 
@@ -1020,7 +1005,8 @@ pub mod pallet {
 				taker_order: taker_order.clone(),
 				match_details: vec![],
 			};
-			let mut taker_unfilled_quantity = taker_order.amout_requested;
+			let mut taker_unfilled_quantity_requested = taker_order.amout_requested;
+			let mut taker_unfilled_quantity_offered = taker_order.amount_offered;
 			loop {
 				if maker_book.is_empty() {
 					break;
@@ -1049,42 +1035,81 @@ pub mod pallet {
 
 				//this.marketPrice = makerOrder.price;
 
-				let matched_quantity = taker_unfilled_quantity.min(maker_order.unfilled_offered);
+				let (matched_quantity_requested, matched_quantity_offered) =
+					if taker_unfilled_quantity_requested > maker_order.unfilled_offered {
+						(maker_order.unfilled_offered, maker_order.unfilled_requested)
+					} else {
+						(
+							taker_unfilled_quantity_requested,
+							taker_order.amount_offered,
+						)
+					};
+
+				taker_unfilled_quantity_requested = taker_unfilled_quantity_requested
+					.checked_sub(&matched_quantity_requested)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+				taker_unfilled_quantity_offered = taker_unfilled_quantity_offered
+					.checked_sub(&matched_quantity_offered)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+
+				let maker_unfilled_quantity_offered = maker_order
+					.unfilled_offered
+					.checked_sub(&matched_quantity_requested)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+
+				let maker_unfilled_quantity_requested = maker_order
+					.unfilled_requested
+					.checked_sub(&matched_quantity_offered)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+
+				let (matched_quantity_base, matched_quantity_quote) =
+					if taker_order.order_type == OrderType::BUY {
+						(matched_quantity_requested, matched_quantity_offered)
+					} else {
+						(matched_quantity_offered, matched_quantity_requested)
+					};
+
+				// update maker order
+				maker_order.unfilled_offered = maker_unfilled_quantity_offered;
+				maker_order.unfilled_requested = maker_unfilled_quantity_requested;
+
+				// update taker order
+				taker_order.unfilled_requested = taker_unfilled_quantity_requested;
+				taker_order.unfilled_offered = taker_unfilled_quantity_offered;
 
 				match_result.match_details.push(Trade {
 					price: vec![],
-					quantity: matched_quantity,
+					quantity_base: matched_quantity_base,
+					quantity_quote: matched_quantity_quote,
 					taker_order: taker_order.clone(),
 					maker_order: maker_order.clone(),
 				});
 
-				taker_unfilled_quantity = taker_unfilled_quantity
-					.checked_sub(&matched_quantity)
-					.ok_or(Error::<T>::NotEnoughBalance)?;
-
-				let maker_unfilled_quantity = maker_order
-					.unfilled_offered
-					.checked_sub(&matched_quantity)
-					.ok_or(Error::<T>::NotEnoughBalance)?;
-
-				// update maker order
-				maker_order.unfilled_offered = maker_unfilled_quantity;
-
-				if maker_unfilled_quantity == BalanceOf::<T>::default() {
+				if maker_unfilled_quantity_offered == BalanceOf::<T>::default() {
+					maker_order.order_status = OrderStatus::FullyFilled;
 					// remove order from maker order book
 					maker_book.remove(&maker_order_key);
+				} else {
+					maker_order.order_status = OrderStatus::PartialFilled;
 				}
 
-				if taker_unfilled_quantity == BalanceOf::<T>::default() {
+				if taker_unfilled_quantity_requested == BalanceOf::<T>::default() {
 					//update taker order
-					taker_order.unfilled_requested = taker_unfilled_quantity;
+					taker_order.unfilled_requested = taker_unfilled_quantity_requested;
+					taker_order.unfilled_offered = taker_unfilled_quantity_offered;
+					taker_order.order_status = OrderStatus::FullyFilled;
 					break;
 				}
 			}
 
-			if taker_unfilled_quantity != BalanceOf::<T>::default() {
+			if taker_unfilled_quantity_requested != BalanceOf::<T>::default() {
 				//update taker order
-				taker_order.unfilled_requested = taker_unfilled_quantity;
+				taker_order.unfilled_requested = taker_unfilled_quantity_requested;
+				taker_order.unfilled_offered = taker_unfilled_quantity_offered;
+
+				if taker_unfilled_quantity_requested != taker_order.amout_requested {
+					taker_order.order_status = OrderStatus::PartialFilled;
+				}
 
 				// add to order book
 				another_book.try_insert(
