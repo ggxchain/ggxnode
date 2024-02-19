@@ -416,7 +416,7 @@ pub mod pallet {
 							last_process_order_id += 1;
 							store_last_process_order_id.set(&last_process_order_id);
 
-							//map_match_engines.insert(order.pair, engine.clone()); //todo update match_engines
+							map_match_engines.try_insert(order.pair, engine.clone());
 
 							store_hashmap_match_engines.set(&map_match_engines);
 						}
