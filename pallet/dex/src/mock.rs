@@ -7,7 +7,11 @@ use frame_support::{
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
-use sp_core::{ConstU128, ConstU32, ConstU64, H256};
+use sp_core::{
+	offchain::{testing::TestOffchainExt, OffchainDbExt, OffchainWorkerExt},
+	ConstU128, ConstU32, ConstU64, H256,
+};
+
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 
 pub type AccountId = u128;
@@ -115,6 +119,15 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Test
+where
+	RuntimeCall: From<LocalCall>,
+{
+	type OverarchingCall = RuntimeCall;
+	type Extrinsic = Extrinsic;
+}
+pub type Extrinsic = sp_runtime::testing::TestXt<RuntimeCall, ()>;
+
 impl pallet_timestamp::Config for Test {
 	type Moment = u64;
 	type OnTimestampSet = ();
@@ -170,12 +183,12 @@ impl ExtBuilder {
 			],
 			accounts: vec![
 				// id, account_id, balance
-				(999, 1, 1000),
-				(888, 1, 1000),
-				(777, 1, 1000),
-				(999, 2, 1000),
-				(888, 2, 1000),
-				(777, 2, 1000),
+				(999, 1, 1_000_000_000),
+				(888, 1, 1_000_000_000),
+				(777, 1, 1_000_000_000),
+				(999, 2, 1_000_000_000),
+				(888, 2, 1_000_000_000),
+				(777, 2, 1_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage)
@@ -198,4 +211,26 @@ impl ExtBuilder {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	ExtBuilder::default().build()
+}
+
+pub fn register_offchain_ext(ext: &mut sp_io::TestExternalities) {
+	let (offchain, _offchain_state) = TestOffchainExt::with_offchain_db(ext.offchain_db());
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+}
+
+fn new_block() -> Weight {
+	let number = frame_system::Pallet::<Test>::block_number() + 1;
+	let hash = H256::repeat_byte(number as u8);
+
+	frame_system::Pallet::<Test>::reset_events();
+	frame_system::Pallet::<Test>::initialize(&number, &hash, &Default::default());
+
+	Weight::default()
+}
+
+pub fn add_blocks(blocks: usize) {
+	for _ in 0..blocks {
+		new_block();
+	}
 }

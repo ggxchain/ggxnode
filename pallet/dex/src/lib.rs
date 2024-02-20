@@ -416,13 +416,24 @@ pub mod pallet {
 							last_process_order_id += 1;
 							store_last_process_order_id.set(&last_process_order_id);
 
-							map_match_engines.try_insert(order.pair, engine.clone());
+							let rt = map_match_engines.try_insert(order.pair, engine.clone());
+
+							match rt {
+								Err(e) => {
+									log::error!("Failed in  map_match_engines.try_insert {:?}", e);
+								}
+								_ => {}
+							}
 
 							store_hashmap_match_engines.set(&map_match_engines);
 						}
-						Err(_e) => {}
+						Err(e) => {
+							log::error!("Failed in  Self::offchain_unsigned_tx {:?}", e);
+						}
 					},
-					Err(_e) => {}
+					Err(e) => {
+						log::error!("Failed in  Self::process_order {:?}", e);
+					}
 				}
 			};
 		}
@@ -1112,13 +1123,20 @@ pub mod pallet {
 				}
 
 				// add to order book
-				another_book.try_insert(
+				let rt = another_book.try_insert(
 					OrderBookKey {
 						order_id,
 						price: Default::default(),
 					},
 					taker_order,
 				);
+
+				match rt {
+					Err(e) => {
+						log::error!("Failed in  another_book.try_insert( {:?}", e);
+					}
+					_ => {}
+				}
 			}
 
 			return Ok(match_result);
