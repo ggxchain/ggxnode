@@ -20,6 +20,7 @@ use sp_runtime::{testing::Header, traits::IdentityLookup};
 pub type AccountId = u128;
 pub type Balance = u128;
 pub type AssetId = u32;
+pub type BlockNumber = u64;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -140,6 +141,7 @@ impl pallet_timestamp::Config for Test {
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
+	pub const UnsignedPriority: BlockNumber = 1;
 }
 
 impl pallet_dex::Config for Test {
@@ -148,6 +150,7 @@ impl pallet_dex::Config for Test {
 	type Fungibles = Assets;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type Currency = Balances;
+	type UnsignedPriority = UnsignedPriority;
 }
 
 pub struct ExtBuilder;
