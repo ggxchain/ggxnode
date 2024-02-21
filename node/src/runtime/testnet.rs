@@ -237,12 +237,16 @@ pub fn testnet_genesis(
 				(999, sudo_key.clone(), true, 1),
 				(888, sudo_key.clone(), true, 1),
 				(777, sudo_key.clone(), true, 1),
+				(666, sudo_key.clone(), true, 1),
+				(667, sudo_key.clone(), true, 1),
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
 				(999, "Bitcoin".into(), "BTC".into(), 10),
 				(888, "GGxchain".into(), "GGXT".into(), 18),
 				(777, "USDT".into(), "USDT".into(), 10),
+				(666, "Ethereum".into(), "ETH".into(), 18),
+				(667, "Stake".into(), "STAKE".into(), 18),
 			],
 			accounts: initial_authorities
 				.iter()
@@ -268,8 +272,9 @@ pub fn testnet_genesis(
 				.map(|x| (x.id.clone(), ()))
 				.collect(),
 		},
+		// TODO: MIGRATIONS ON IT
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 666)],
+			asset_id_by_name: vec![("ERT".to_string(), 666)("stake".to_string(), 667)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
