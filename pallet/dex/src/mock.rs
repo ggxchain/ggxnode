@@ -8,7 +8,10 @@ use frame_support::{
 	PalletId,
 };
 use sp_core::{
-	offchain::{testing::TestOffchainExt, OffchainDbExt, OffchainWorkerExt},
+	offchain::{
+		testing::{TestOffchainExt, TestTransactionPoolExt},
+		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
+	},
 	ConstU128, ConstU32, ConstU64, H256,
 };
 
@@ -215,8 +218,10 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 
 pub fn register_offchain_ext(ext: &mut sp_io::TestExternalities) {
 	let (offchain, _offchain_state) = TestOffchainExt::with_offchain_db(ext.offchain_db());
+	let (pool, pool_state) = TestTransactionPoolExt::new();
 	ext.register_extension(OffchainDbExt::new(offchain.clone()));
 	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
 }
 
 fn new_block() -> Weight {

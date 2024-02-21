@@ -533,6 +533,7 @@ fn test_make_cancel_take_order_buy() {
 
 #[test]
 fn test_offchain_worker_order_matching() {
+	use frame_support::traits::OffchainWorker;
 	/*
 	@@ input orders
 	//order_index  order_type price amount - offered_amount requested_amount
@@ -570,6 +571,9 @@ fn test_offchain_worker_order_matching() {
 	ext.execute_with(|| {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1_000_000_000));
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1_000_000_000));
+
+		let block = 1;
+		System::set_block_number(block);
 
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
@@ -679,7 +683,7 @@ fn test_offchain_worker_order_matching() {
 			OrderType::BUY
 		));
 
-		add_blocks(6);
+		Dex::offchain_worker(block);
 
 		//order_book  price=> (total_offered_amount, total_requested_amount)
 		let mut sell_order_book = BTreeMap::new();

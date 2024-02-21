@@ -387,32 +387,33 @@ pub mod pallet {
 			}
 
 			if let Ok(_guard) = lock.try_lock() {
-				if !Orders::<T>::contains_key(last_process_order_id) {
-					return;
-				}
-				let order = Orders::<T>::get(last_process_order_id).unwrap();
+				let mut max_time = 50;
+				while last_process_order_id <= on_chain_order_index && max_time > 0 {
+					if !Orders::<T>::contains_key(last_process_order_id) {
+						return;
+					}
+					let order = Orders::<T>::get(last_process_order_id).unwrap();
 
-				let mut engine: MatchEngine<OrderOf<T>>;
-				if let Some(en) = map_match_engines.get_mut(&order.pair) {
-					engine = en.clone();
-				} else {
-					engine = MatchEngine {
-						buy_book: OrderBook {
-							order_type: OrderType::BUY,
-							book: BoundedBTreeMap::new(),
-						},
-						sell_book: OrderBook {
-							order_type: OrderType::SELL,
-							book: BoundedBTreeMap::new(),
-						},
-						market_price: vec![],
-						last_process_order_id,
-					};
-				}
+					let mut engine: MatchEngine<OrderOf<T>>;
+					if let Some(en) = map_match_engines.get_mut(&order.pair) {
+						engine = en.clone();
+					} else {
+						engine = MatchEngine {
+							buy_book: OrderBook {
+								order_type: OrderType::BUY,
+								book: BoundedBTreeMap::new(),
+							},
+							sell_book: OrderBook {
+								order_type: OrderType::SELL,
+								book: BoundedBTreeMap::new(),
+							},
+							market_price: vec![],
+							last_process_order_id,
+						};
+					}
 
-				match Self::process_order(last_process_order_id, order.clone(), &mut engine) {
-					Ok(match_result) => match Self::offchain_unsigned_tx(match_result) {
-						Ok(_) => {
+					match Self::process_order(last_process_order_id, order.clone(), &mut engine) {
+						Ok(match_result) => {
 							last_process_order_id += 1;
 							store_last_process_order_id.set(&last_process_order_id);
 
@@ -426,14 +427,27 @@ pub mod pallet {
 							}
 
 							store_hashmap_match_engines.set(&map_match_engines);
+
+							if !match_result.match_details.is_empty() {
+								match Self::offchain_unsigned_tx(match_result.clone()) {
+									Ok(_) => {
+									}
+									Err(e) => {
+										log::error!(
+											"Failed in  Self::offchain_unsigned_tx {:?} {:?}",
+											e,
+											match_result
+										);
+									}
+								}
+							}
 						}
 						Err(e) => {
-							log::error!("Failed in  Self::offchain_unsigned_tx {:?}", e);
+							log::error!("Failed in  Self::process_order {:?}", e);
 						}
-					},
-					Err(e) => {
-						log::error!("Failed in  Self::process_order {:?}", e);
 					}
+
+					max_time -= 1;
 				}
 			};
 		}
@@ -1049,6 +1063,15 @@ pub mod pallet {
 				let (matched_quantity_requested, matched_quantity_offered) =
 					if taker_unfilled_quantity_requested > maker_order.unfilled_offered {
 						(maker_order.unfilled_offered, maker_order.unfilled_requested)
+					} else if taker_unfilled_quantity_requested == maker_order.unfilled_offered {
+						if taker_order.amount_offered > maker_order.unfilled_requested {
+							(maker_order.unfilled_offered, maker_order.unfilled_requested)
+						} else {
+							(
+								taker_unfilled_quantity_requested,
+								taker_order.amount_offered,
+							)
+						}
 					} else {
 						(
 							taker_unfilled_quantity_requested,
@@ -1067,7 +1090,6 @@ pub mod pallet {
 					.unfilled_offered
 					.checked_sub(&matched_quantity_requested)
 					.ok_or(Error::<T>::NotEnoughBalance)?;
-
 				let maker_unfilled_quantity_requested = maker_order
 					.unfilled_requested
 					.checked_sub(&matched_quantity_offered)
@@ -1149,12 +1171,10 @@ pub mod pallet {
 
 			// `submit_unsigned_transaction` returns a type of `Result<(), ()>`
 			//   ref: https://substrate.dev/rustdocs/v2.0.0/frame_system/offchain/struct.SubmitTransaction.html#method.submit_unsigned_transaction
-			SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).map_err(
-				|_| {
-					log::error!("Failed in offchain_unsigned_tx");
-					<Error<T>>::OffchainUnsignedTxError
-				},
-			)
+			SubmitTransaction::<T, Call<T>>::submit_unsigned_transaction(call.into()).map_err(|e| {
+				log::error!("Failed in offchain_unsigned_tx  {:?}", e);
+				<Error<T>>::OffchainUnsignedTxError
+			})
 		}
 	}
 }
