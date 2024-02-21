@@ -1,6 +1,6 @@
 use frame_support::PalletId;
 
-use crate::{prelude::*, Assets};
+use crate::{prelude::*, Assets, BlockNumber};
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
