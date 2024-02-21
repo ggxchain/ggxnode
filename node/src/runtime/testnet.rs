@@ -274,7 +274,7 @@ pub fn testnet_genesis(
 		},
 		// TODO: MIGRATIONS ON IT
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 666)("stake".to_string(), 667)],
+			asset_id_by_name: vec![("ERT".to_string(), 666), ("stake".to_string(), 667)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
