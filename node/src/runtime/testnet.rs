@@ -245,7 +245,7 @@ pub fn testnet_genesis(
 				(999, "Bitcoin".into(), "BTC".into(), 10),
 				(888, "GGxchain".into(), "GGXT".into(), 18),
 				(777, "USDT".into(), "USDT".into(), 10),
-				(666, "Ethereum".into(), "ETH".into(), 18),
+				(666, "ERT".into(), "ERT".into(), 18),
 				(667, "Stake".into(), "STAKE".into(), 18),
 			],
 			accounts: initial_authorities
