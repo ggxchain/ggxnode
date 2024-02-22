@@ -1141,40 +1141,43 @@ pub mod pallet {
 				taker_order.unfilled_requested = taker_unfilled_quantity_requested;
 				taker_order.unfilled_offered = taker_unfilled_quantity_offered;
 
-				match_result.match_details.push(Trade {
-					price: vec![],
-					quantity_base: matched_quantity_base,
-					quantity_quote: matched_quantity_quote,
-					taker_order: taker_order.clone(),
-					maker_order: maker_order.clone(),
-				});
+				if taker_unfilled_quantity_requested == BalanceOf::<T>::default() {
+					taker_order.order_status = OrderStatus::FullyFilled;
+				} else if taker_unfilled_quantity_requested != taker_order.amout_requested {
+					taker_order.order_status = OrderStatus::PartialFilled;
+				}
 
 				if maker_unfilled_quantity_offered == BalanceOf::<T>::default() {
 					maker_order.order_status = OrderStatus::FullyFilled;
+
+					match_result.match_details.push(Trade {
+						price: vec![],
+						quantity_base: matched_quantity_base,
+						quantity_quote: matched_quantity_quote,
+						taker_order: taker_order.clone(),
+						maker_order: maker_order.clone(),
+					});
+
 					// remove order from maker order book
 					maker_book.remove(&maker_order_key);
 				} else {
 					maker_order.order_status = OrderStatus::PartialFilled;
+
+					match_result.match_details.push(Trade {
+						price: vec![],
+						quantity_base: matched_quantity_base,
+						quantity_quote: matched_quantity_quote,
+						taker_order: taker_order.clone(),
+						maker_order: maker_order.clone(),
+					});
 				}
 
 				if taker_unfilled_quantity_requested == BalanceOf::<T>::default() {
-					//update taker order
-					taker_order.unfilled_requested = taker_unfilled_quantity_requested;
-					taker_order.unfilled_offered = taker_unfilled_quantity_offered;
-					taker_order.order_status = OrderStatus::FullyFilled;
 					break;
 				}
 			}
 
 			if taker_unfilled_quantity_requested != BalanceOf::<T>::default() {
-				//update taker order
-				taker_order.unfilled_requested = taker_unfilled_quantity_requested;
-				taker_order.unfilled_offered = taker_unfilled_quantity_offered;
-
-				if taker_unfilled_quantity_requested != taker_order.amout_requested {
-					taker_order.order_status = OrderStatus::PartialFilled;
-				}
-
 				// add to order book
 				let rt = another_book.try_insert(
 					OrderBookKey {
