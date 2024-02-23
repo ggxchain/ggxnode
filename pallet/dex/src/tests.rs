@@ -211,7 +211,7 @@ fn test_make_order() {
 	})
 }
 
-// #[test]
+#[test]
 fn test_make_order_asset_id_1_gt_asset_id_2() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
@@ -237,8 +237,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			RuntimeOrigin::signed(1),
 			888,
 			777,
-			1,
 			200,
+			1,
 			200,
 			OrderType::SELL
 		));
@@ -250,12 +250,12 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 				address: 1,
 				pair: (777, 888),
 				timestamp: 0,
-				amount_offered: 1,
-				amout_requested: 200,
+				amount_offered: 200,
+				amout_requested: 1,
 				price: 200,
 				order_type: OrderType::BUY,
-				unfilled_offered: 1,
-				unfilled_requested: 200,
+				unfilled_offered: 200,
+				unfilled_requested: 1,
 				order_status: OrderStatus::Pending,
 			})
 		);
@@ -267,8 +267,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 888),
 			TokenInfo {
-				amount: 199,
-				reserved: 1,
+				amount: 0,
+				reserved: 200,
 			}
 		);
 	})
@@ -611,14 +611,13 @@ fn test_offchain_worker_order_matching() {
 
 	ext.execute_with(|| add_blocks(1));
 	ext.persist_offchain_overlay();
-	// register_offchain_ext(&mut ext);
 
 	use sp_core::offchain::{
 		testing::{TestOffchainExt, TestTransactionPoolExt},
 		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
 	};
-	let (offchain, _state) = TestOffchainExt::new();
-	let (pool, state) = TestTransactionPoolExt::new();
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
 	ext.register_extension(OffchainDbExt::new(offchain.clone()));
 	ext.register_extension(OffchainWorkerExt::new(offchain));
 	ext.register_extension(TransactionPoolExt::new(pool));
@@ -751,6 +750,20 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		Dex::offchain_worker(block);
+
+		while !pool_state.read().transactions.is_empty() {
+			let tx = pool_state.write().transactions.pop().unwrap();
+			let tx = Extrinsic::decode(&mut &*tx).unwrap();
+
+			print!(
+				"##### tx {:?}   signature: {:?}  call: {:?}\n",
+				tx, tx.signature, tx.call,
+			);
+
+			//Dex::update_match_order_unsigned(RuntimeOrigin::none(), tx.call.match_result);
+		}
+		assert_eq!(1, 2);
+
 		//Dex::update_match_order_unsigned();
 
 		//order_book  price=> (total_offered_amount, total_requested_amount)

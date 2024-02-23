@@ -219,14 +219,6 @@ pub fn new_test_ext() -> sp_io::TestExternalities {
 	ExtBuilder::default().build()
 }
 
-pub fn register_offchain_ext(ext: &mut sp_io::TestExternalities) {
-	let (offchain, _offchain_state) = TestOffchainExt::with_offchain_db(ext.offchain_db());
-	let (pool, pool_state) = TestTransactionPoolExt::new();
-	ext.register_extension(OffchainDbExt::new(offchain.clone()));
-	ext.register_extension(OffchainWorkerExt::new(offchain));
-	ext.register_extension(TransactionPoolExt::new(pool));
-}
-
 fn new_block() -> Weight {
 	let number = frame_system::Pallet::<Test>::block_number() + 1;
 	let hash = H256::repeat_byte(number as u8);
