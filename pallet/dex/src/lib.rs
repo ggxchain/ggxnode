@@ -23,7 +23,10 @@ use bigdecimal::BigDecimal;
 use core::{borrow::BorrowMut, cmp::Ordering, ops::Div};
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::{prelude::collections::BTreeMap, TypeInfo};
+use scale_info::{
+	prelude::{cmp, collections::BTreeMap},
+	TypeInfo,
+};
 use sp_runtime::{traits::One, DispatchError};
 
 use frame_support::{
@@ -94,31 +97,71 @@ pub struct Order<AccountId, Balance> {
 	order_type: OrderType,
 	amount_offered: Balance,
 	amout_requested: Balance,
+	price: Balance,
 	unfilled_offered: Balance,
 	unfilled_requested: Balance,
 	order_status: OrderStatus,
 }
 
+impl<AccountId, Balance> Order<AccountId, Balance> {
+	pub fn get_base_amount(&self) -> &Balance {
+		match self.order_type {
+			OrderType::SELL => &self.amount_offered,
+			OrderType::BUY => &self.amout_requested,
+		}
+	}
+	pub fn get_quote_amout(&self) -> &Balance {
+		match self.order_type {
+			OrderType::SELL => &self.amout_requested,
+			OrderType::BUY => &self.amount_offered,
+		}
+	}
+
+	pub fn get_unfilled_base_amout(&self) -> &Balance {
+		match self.order_type {
+			OrderType::SELL => &self.unfilled_offered,
+			OrderType::BUY => &self.unfilled_requested,
+		}
+	}
+
+	pub fn get_unfilled_quote_amout(&self) -> &Balance {
+		match self.order_type {
+			OrderType::SELL => &self.unfilled_requested,
+			OrderType::BUY => &self.unfilled_offered,
+		}
+	}
+}
+
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct MatchEngine<Order> {
-	buy_book: OrderBook<Order>,
-	sell_book: OrderBook<Order>,
-	market_price: Vec<u8>, //price: (Balance, Balance),
+pub struct MatchEngine<Order, Balance: cmp::Ord> {
+	buy_book: OrderBook<Order, Balance>,
+	sell_book: OrderBook<Order, Balance>,
+	market_price: Balance,
 	last_process_order_id: u64,
 }
 
-#[derive(
-	Encode, Decode, Default, Eq, Ord, PartialEq, PartialOrd, Clone, RuntimeDebug, TypeInfo,
-)]
-pub struct OrderBookKey {
+#[derive(Encode, Decode, Default, Eq, PartialEq, PartialOrd, Clone, RuntimeDebug, TypeInfo)]
+pub struct OrderBookKey<Balance> {
 	order_id: u64,
-	price: Vec<u8>, //price: (Balance, Balance),
+	price: Balance,
+}
+
+impl<Balance: cmp::Eq + cmp::Ord> Ord for OrderBookKey<Balance> {
+	fn cmp(&self, other: &OrderBookKey<Balance>) -> Ordering {
+		let cmp = self.price.cmp(&other.price);
+		// little order_id in front
+		if cmp == cmp::Ordering::Equal {
+			self.order_id.cmp(&other.order_id)
+		} else {
+			cmp
+		}
+	}
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct OrderBook<Order> {
+pub struct OrderBook<Order, Balance: cmp::Ord> {
 	order_type: OrderType,
-	book: BoundedBTreeMap<OrderBookKey, Order, ConstU32<{ u32::MAX }>>,
+	book: BoundedBTreeMap<OrderBookKey<Balance>, Order, ConstU32<{ u32::MAX }>>,
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -129,7 +172,7 @@ pub struct MatchResult<Balance, Order> {
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct Trade<Balance, Order> {
-	price: Vec<u8>,
+	price: Balance,
 	quantity_base: Balance,
 	quantity_quote: Balance,
 	taker_order: Order,
@@ -340,6 +383,7 @@ pub mod pallet {
 		PairAssetIdMustNotEqual,
 		NotEnoughBalance,
 		OffchainUnsignedTxError,
+		PriceDoNotMatchOfferedRequestedAmount,
 	}
 
 	#[pallet::hooks]
@@ -356,13 +400,13 @@ pub mod pallet {
 
 			let mut map_match_engines: BoundedBTreeMap<
 				(u32, u32),
-				MatchEngine<OrderOf<T>>,
+				MatchEngine<OrderOf<T>, BalanceOf<T>>,
 				ConstU32<{ u32::MAX }>,
 			>;
 
 			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
 				(u32, u32),
-				MatchEngine<OrderOf<T>>,
+				MatchEngine<OrderOf<T>, BalanceOf<T>>,
 				ConstU32<{ u32::MAX }>,
 			>>() {
 				map_match_engines = engines;
@@ -397,7 +441,7 @@ pub mod pallet {
 					}
 					let order = Orders::<T>::get(last_process_order_id).unwrap();
 
-					let mut engine: MatchEngine<OrderOf<T>>;
+					let mut engine: MatchEngine<OrderOf<T>, BalanceOf<T>>;
 					if let Some(en) = map_match_engines.get_mut(&order.pair) {
 						engine = en.clone();
 					} else {
@@ -410,7 +454,7 @@ pub mod pallet {
 								order_type: OrderType::SELL,
 								book: BoundedBTreeMap::new(),
 							},
-							market_price: vec![],
+							market_price: Default::default(),
 							last_process_order_id,
 						};
 					}
@@ -573,6 +617,7 @@ pub mod pallet {
 			asset_id_2: u32,
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
+			price: BalanceOf<T>,
 			order_type: OrderType,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
@@ -588,6 +633,21 @@ pub mod pallet {
 				Error::<T>::PairAssetIdMustNotEqual
 			);
 
+			match order_type {
+				OrderType::SELL => {
+					ensure!(
+						offered_amount * price == requested_amount,
+						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
+					);
+				}
+				OrderType::BUY => {
+					ensure!(
+						offered_amount == requested_amount * price,
+						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
+					);
+				}
+			}
+
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
 
@@ -599,6 +659,7 @@ pub mod pallet {
 					address: who.clone(),
 					amount_offered: offered_amount,
 					amout_requested: requested_amount,
+					price,
 					unfilled_offered: offered_amount,
 					unfilled_requested: requested_amount,
 					order_status: OrderStatus::Pending,
@@ -1006,34 +1067,10 @@ pub mod pallet {
 			Ok(())
 		}
 
-		fn compare_order_price(order_1: &OrderOf<T>, order_2: &OrderOf<T>) -> i8 {
-			let order_1_dividend_divisor = Self::get_order_price_dividend_divisor(order_1);
-			let order_2_dividend_divisor = Self::get_order_price_dividend_divisor(order_2);
-
-			if order_1_dividend_divisor.0 * order_2_dividend_divisor.1
-				> order_2_dividend_divisor.0 * order_1_dividend_divisor.1
-			{
-				1
-			} else if order_1_dividend_divisor.0 * order_2_dividend_divisor.1
-				< order_2_dividend_divisor.0 * order_1_dividend_divisor.1
-			{
-				-1
-			} else {
-				0
-			}
-		}
-
-		fn get_order_price_dividend_divisor(order: &OrderOf<T>) -> (BalanceOf<T>, BalanceOf<T>) {
-			match order.order_type {
-				OrderType::SELL => (order.amout_requested, order.amount_offered),
-				OrderType::BUY => (order.amount_offered, order.amout_requested),
-			}
-		}
-
 		fn process_order(
 			order_id: u64,
 			order: OrderOf<T>,
-			engine: &mut MatchEngine<OrderOf<T>>,
+			engine: &mut MatchEngine<OrderOf<T>, BalanceOf<T>>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
 			match order.order_type {
 				OrderType::BUY => Self::match_in_orderbook(
@@ -1054,8 +1091,16 @@ pub mod pallet {
 		fn match_in_orderbook(
 			order_id: u64,
 			mut taker_order: OrderOf<T>,
-			maker_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
-			another_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
+			maker_book: &mut BoundedBTreeMap<
+				OrderBookKey<BalanceOf<T>>,
+				OrderOf<T>,
+				ConstU32<{ u32::MAX }>,
+			>,
+			another_book: &mut BoundedBTreeMap<
+				OrderBookKey<BalanceOf<T>>,
+				OrderOf<T>,
+				ConstU32<{ u32::MAX }>,
+			>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
 			let mut match_result = MatchResult {
 				taker_order: taker_order.clone(),
@@ -1078,19 +1123,18 @@ pub mod pallet {
 				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
 
 				if taker_order.order_type == OrderType::BUY
-					&& Self::compare_order_price(&taker_order, &maker_order) < 0
+					&& &taker_order.price < &maker_order.price
 				{
 					break;
 				}
 
 				if taker_order.order_type == OrderType::SELL
-					&& Self::compare_order_price(&taker_order, &maker_order) > 0
+					&& &taker_order.price > &maker_order.price
 				{
 					break;
 				}
 
-				//this.marketPrice = makerOrder.price;
-
+				// todo match use maker price
 				let (matched_quantity_requested, matched_quantity_offered) =
 					if taker_unfilled_quantity_requested > maker_order.unfilled_offered {
 						(maker_order.unfilled_offered, maker_order.unfilled_requested)
@@ -1151,7 +1195,7 @@ pub mod pallet {
 					maker_order.order_status = OrderStatus::FullyFilled;
 
 					match_result.match_details.push(Trade {
-						price: vec![],
+						price: maker_order.price,
 						quantity_base: matched_quantity_base,
 						quantity_quote: matched_quantity_quote,
 						taker_order: taker_order.clone(),
@@ -1164,7 +1208,7 @@ pub mod pallet {
 					maker_order.order_status = OrderStatus::PartialFilled;
 
 					match_result.match_details.push(Trade {
-						price: vec![],
+						price: maker_order.price,
 						quantity_base: matched_quantity_base,
 						quantity_quote: matched_quantity_quote,
 						taker_order: taker_order.clone(),
