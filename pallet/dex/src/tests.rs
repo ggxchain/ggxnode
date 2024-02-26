@@ -612,6 +612,7 @@ fn test_offchain_worker_order_matching() {
 	ext.execute_with(|| add_blocks(1));
 	ext.persist_offchain_overlay();
 
+	use crate::Call;
 	use sp_core::offchain::{
 		testing::{TestOffchainExt, TestTransactionPoolExt},
 		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
@@ -755,16 +756,15 @@ fn test_offchain_worker_order_matching() {
 			let tx = pool_state.write().transactions.pop().unwrap();
 			let tx = Extrinsic::decode(&mut &*tx).unwrap();
 
-			print!(
-				"##### tx {:?}   signature: {:?}  call: {:?}\n",
-				tx, tx.signature, tx.call,
-			);
-
-			//Dex::update_match_order_unsigned(RuntimeOrigin::none(), tx.call.match_result);
+			match tx.call {
+				RuntimeCall::Dex(crate::Call::update_match_order_unsigned { match_result: m }) => {
+					Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
+				}
+				_ => {
+					assert_eq!(2, 3);
+				}
+			};
 		}
-		assert_eq!(1, 2);
-
-		//Dex::update_match_order_unsigned();
 
 		//order_book  price=> (total_offered_amount, total_requested_amount)
 		let mut sell_order_book = BTreeMap::new();
@@ -773,27 +773,25 @@ fn test_offchain_worker_order_matching() {
 		for (_, order) in Orders::<Test>::iter() {
 			if order.order_status != OrderStatus::FullyFilled {
 				if order.order_type == OrderType::SELL {
-					let price = order.amout_requested / order.amount_offered;
-					if !buy_order_book.contains_key(&price) {
-						buy_order_book.insert(price, (order.amount_offered, order.amout_requested));
+					if !buy_order_book.contains_key(&order.price) {
+						buy_order_book
+							.insert(order.price, (order.amount_offered, order.amout_requested));
 					} else {
-						let v = buy_order_book.get(&price).unwrap();
+						let v = buy_order_book.get(&order.price).unwrap();
 
 						buy_order_book.insert(
-							price,
+							order.price,
 							(v.0 + order.amount_offered, v.1 + order.amout_requested),
 						);
 					}
 				} else {
-					let price = order.amount_offered / order.amout_requested;
-
-					if !sell_order_book.contains_key(&price) {
+					if !sell_order_book.contains_key(&order.price) {
 						sell_order_book
-							.insert(price, (order.amount_offered, order.amout_requested));
+							.insert(order.price, (order.amount_offered, order.amout_requested));
 					} else {
-						let v = sell_order_book.get(&price).unwrap();
+						let v = sell_order_book.get(&order.price).unwrap();
 						sell_order_book.insert(
-							price,
+							order.price,
 							(v.0 + order.amount_offered, v.1 + order.amout_requested),
 						);
 					}
@@ -801,15 +799,15 @@ fn test_offchain_worker_order_matching() {
 			}
 		}
 
-		// assert_eq!(sell_order_book.len(), 3);
-		// assert_eq!(sell_order_book.get(&208802).unwrap(), &(3, 626406));
-		// assert_eq!(sell_order_book.get(&208760).unwrap(), &(6, 1252560));
-		// assert_eq!(sell_order_book.get(&208655).unwrap(), &(4, 834620));
-		//
-		// assert_eq!(buy_order_book.len(), 4);
-		// assert_eq!(buy_order_book.get(&208600).unwrap(), &(625800, 3));
-		// assert_eq!(buy_order_book.get(&208501).unwrap(), &(1042505, 5));
-		// assert_eq!(buy_order_book.get(&208234).unwrap(), &(208234, 1));
-		// assert_eq!(buy_order_book.get(&208111).unwrap(), &(1456777, 7));
+		assert_eq!(sell_order_book.len(), 3);
+		assert_eq!(sell_order_book.get(&208802).unwrap(), &(3, 626406));
+		assert_eq!(sell_order_book.get(&208760).unwrap(), &(6, 1252560));
+		assert_eq!(sell_order_book.get(&208655).unwrap(), &(4, 834620));
+
+		assert_eq!(buy_order_book.len(), 4);
+		assert_eq!(buy_order_book.get(&208600).unwrap(), &(625800, 3));
+		assert_eq!(buy_order_book.get(&208501).unwrap(), &(1042505, 5));
+		assert_eq!(buy_order_book.get(&208234).unwrap(), &(208234, 1));
+		assert_eq!(buy_order_book.get(&208111).unwrap(), &(1456777, 7));
 	})
 }

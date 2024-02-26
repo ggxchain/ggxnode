@@ -148,7 +148,9 @@ pub struct OrderBookKey<Balance> {
 
 impl<Balance: cmp::Eq + cmp::Ord> Ord for OrderBookKey<Balance> {
 	fn cmp(&self, other: &OrderBookKey<Balance>) -> Ordering {
+		// low price in front
 		let cmp = self.price.cmp(&other.price);
+
 		// little order_id in front
 		if cmp == cmp::Ordering::Equal {
 			self.order_id.cmp(&other.order_id)
@@ -1076,12 +1078,14 @@ pub mod pallet {
 				OrderType::BUY => Self::match_in_orderbook(
 					order_id,
 					order,
+					engine.sell_book.order_type.clone(),
 					&mut engine.sell_book.book,
 					&mut engine.buy_book.book,
 				),
 				OrderType::SELL => Self::match_in_orderbook(
 					order_id,
 					order,
+					engine.buy_book.order_type.clone(),
 					&mut engine.buy_book.book,
 					&mut engine.sell_book.book,
 				),
@@ -1091,6 +1095,7 @@ pub mod pallet {
 		fn match_in_orderbook(
 			order_id: u64,
 			mut taker_order: OrderOf<T>,
+			maker_book_type: OrderType,
 			maker_book: &mut BoundedBTreeMap<
 				OrderBookKey<BalanceOf<T>>,
 				OrderOf<T>,
@@ -1113,11 +1118,19 @@ pub mod pallet {
 					break;
 				}
 
-				let maker_order_key = match maker_book.first_key_value() {
-					Some((k, _)) => k.clone(),
-					None => {
-						break;
-					}
+				let maker_order_key = match maker_book_type {
+					OrderType::BUY => match maker_book.last_key_value() {
+						Some((k, _)) => k.clone(),
+						None => {
+							break;
+						}
+					},
+					OrderType::SELL => match maker_book.first_key_value() {
+						Some((k, _)) => k.clone(),
+						None => {
+							break;
+						}
+					},
 				};
 
 				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
@@ -1134,24 +1147,41 @@ pub mod pallet {
 					break;
 				}
 
-				// todo match use maker price
+				// todo match use maker quantity
 				let (matched_quantity_requested, matched_quantity_offered) =
 					if taker_unfilled_quantity_requested > maker_order.unfilled_offered {
+						//taker request amout > maker offer amout
 						(maker_order.unfilled_offered, maker_order.unfilled_requested)
 					} else if taker_unfilled_quantity_requested == maker_order.unfilled_offered {
-						if taker_order.amount_offered > maker_order.unfilled_requested {
+						//taker request amout == maker offer amout
+
+						if taker_order.amount_offered >= maker_order.unfilled_requested {
 							(maker_order.unfilled_offered, maker_order.unfilled_requested)
 						} else {
-							(
-								taker_unfilled_quantity_requested,
-								taker_order.amount_offered,
-							)
+							// taker offer < maker request
+							match taker_order.order_type {
+								OrderType::BUY => (
+									taker_order.amount_offered / maker_order.price,
+									taker_order.amount_offered,
+								),
+								OrderType::SELL => (
+									taker_order.amount_offered * maker_order.price,
+									taker_order.amount_offered,
+								),
+							}
 						}
 					} else {
-						(
-							taker_unfilled_quantity_requested,
-							taker_order.amount_offered,
-						)
+						//taker request amout < maker offer amout
+						match taker_order.order_type {
+							OrderType::BUY => (
+								taker_unfilled_quantity_requested,
+								taker_unfilled_quantity_requested * maker_order.price,
+							),
+							OrderType::SELL => (
+								taker_unfilled_quantity_requested,
+								taker_unfilled_quantity_requested / maker_order.price,
+							),
+						}
 					};
 
 				taker_unfilled_quantity_requested = taker_unfilled_quantity_requested
@@ -1185,7 +1215,9 @@ pub mod pallet {
 				taker_order.unfilled_requested = taker_unfilled_quantity_requested;
 				taker_order.unfilled_offered = taker_unfilled_quantity_offered;
 
-				if taker_unfilled_quantity_requested == BalanceOf::<T>::default() {
+				if taker_unfilled_quantity_requested == BalanceOf::<T>::default()
+					|| taker_unfilled_quantity_offered == BalanceOf::<T>::default()
+				{
 					taker_order.order_status = OrderStatus::FullyFilled;
 				} else if taker_unfilled_quantity_requested != taker_order.amout_requested {
 					taker_order.order_status = OrderStatus::PartialFilled;
@@ -1216,12 +1248,16 @@ pub mod pallet {
 					});
 				}
 
-				if taker_unfilled_quantity_requested == BalanceOf::<T>::default() {
+				if taker_unfilled_quantity_requested == BalanceOf::<T>::default()
+					|| taker_unfilled_quantity_offered == BalanceOf::<T>::default()
+				{
 					break;
 				}
 			}
 
-			if taker_unfilled_quantity_requested != BalanceOf::<T>::default() {
+			if taker_unfilled_quantity_requested != BalanceOf::<T>::default()
+				&& taker_unfilled_quantity_offered != BalanceOf::<T>::default()
+			{
 				// add to order book
 				let rt = another_book.try_insert(
 					OrderBookKey {
