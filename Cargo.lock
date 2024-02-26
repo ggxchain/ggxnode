@@ -971,6 +971,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bindgen"
+version = "0.66.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2b84e06fc203107bfbad243f4aba2af864eb7db3b1cf46ea0a023b0b433d2a7"
+dependencies = [
+ "bitflags 2.4.1",
+ "cexpr",
+ "clang-sys",
+ "lazy_static",
+ "lazycell",
+ "log 0.4.20",
+ "peeking_take_while",
+ "prettyplease 0.2.15",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustc-hash",
+ "shlex",
+ "syn 2.0.40",
+ "which",
+]
+
+[[package]]
 name = "bip39"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1198,7 +1221,7 @@ dependencies = [
 [[package]]
 name = "bls"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "arbitrary",
  "blst",
@@ -1207,9 +1230,8 @@ dependencies = [
  "ethereum_serde_utils",
  "ethereum_ssz",
  "hex",
- "rand 0.7.3",
+ "rand 0.8.5",
  "serde",
- "serde_derive",
  "tree_hash",
  "zeroize",
 ]
@@ -1457,9 +1479,23 @@ dependencies = [
 ]
 
 [[package]]
+name = "c-kzg"
+version = "0.1.0"
+source = "git+https://github.com/ethereum/c-kzg-4844?rev=748283cced543c486145d5f3f38684becdfe3e1b#748283cced543c486145d5f3f38684becdfe3e1b"
+dependencies = [
+ "bindgen 0.66.1",
+ "blst",
+ "cc",
+ "glob",
+ "hex",
+ "libc",
+ "serde",
+]
+
+[[package]]
 name = "cached_tree_hash"
 version = "0.1.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "ethereum-types 0.14.1",
  "ethereum_hashing",
@@ -1795,12 +1831,15 @@ dependencies = [
 [[package]]
 name = "compare_fields"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
+dependencies = [
+ "itertools 0.10.5",
+]
 
 [[package]]
 name = "compare_fields_derive"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -2987,7 +3026,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "derive_more",
  "ethereum-types 0.14.1",
@@ -3007,7 +3046,7 @@ dependencies = [
 [[package]]
 name = "eth2-to-substrate-relay"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3053,7 +3092,7 @@ dependencies = [
 [[package]]
 name = "eth2_interop_keypairs"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "bls",
  "ethereum_hashing",
@@ -3061,7 +3100,6 @@ dependencies = [
  "lazy_static",
  "num-bigint",
  "serde",
- "serde_derive",
  "serde_yaml",
 ]
 
@@ -5910,7 +5948,7 @@ dependencies = [
 [[package]]
 name = "int_to_bytes"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "bytes 1.5.0",
 ]
@@ -6351,6 +6389,23 @@ dependencies = [
  "regex",
  "rocksdb",
  "smallvec 1.11.2",
+]
+
+[[package]]
+name = "kzg"
+version = "0.1.0"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
+dependencies = [
+ "arbitrary",
+ "c-kzg",
+ "derivative",
+ "ethereum_hashing",
+ "ethereum_serde_utils",
+ "ethereum_ssz",
+ "ethereum_ssz_derive",
+ "hex",
+ "serde",
+ "tree_hash",
 ]
 
 [[package]]
@@ -6854,7 +6909,7 @@ version = "0.11.0+8.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3386f101bcb4bd252d8e9d2fb41ec3b0862a15a62b478c355b2982efa469e3e"
 dependencies = [
- "bindgen",
+ "bindgen 0.65.1",
  "bzip2-sys",
  "cc",
  "glob",
@@ -6913,9 +6968,9 @@ dependencies = [
 
 [[package]]
 name = "libsqlite3-sys"
-version = "0.26.0"
+version = "0.25.2"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "afc22eff61b133b115c6e8c74e818c628d6d5e7a502afea6f64dee076dd94326"
+checksum = "29f835d03d717946d28b1d1ed632eb6f0e24a299388ee623d0c23118d3e8a7fa"
 dependencies = [
  "cc",
  "pkg-config",
@@ -7266,7 +7321,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "merkle-generator"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?rev=60f184b4e92b41bb89ff1d208c0130008d9ef035#60f184b4e92b41bb89ff1d208c0130008d9ef035"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=denverUpdate#d78487de16b1783e0bfffe7a8e028f527d073b55"
 dependencies = [
  "alloy-rlp",
  "serde",
@@ -7276,7 +7331,7 @@ dependencies = [
 [[package]]
 name = "merkle_proof"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "ethereum-types 0.14.1",
  "ethereum_hashing",
@@ -8466,7 +8521,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?rev=60f184b4e92b41bb89ff1d208c0130008d9ef035#60f184b4e92b41bb89ff1d208c0130008d9ef035"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=denverUpdate#d78487de16b1783e0bfffe7a8e028f527d073b55"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -8625,7 +8680,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "bitvec",
  "derive_more",
@@ -8658,7 +8713,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8677,7 +8732,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget-cli"
 version = "0.0.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "clap",
 ]
@@ -8762,7 +8817,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?rev=60f184b4e92b41bb89ff1d208c0130008d9ef035#60f184b4e92b41bb89ff1d208c0130008d9ef035"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=denverUpdate#d78487de16b1783e0bfffe7a8e028f527d073b55"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -9241,7 +9296,7 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?rev=60f184b4e92b41bb89ff1d208c0130008d9ef035#60f184b4e92b41bb89ff1d208c0130008d9ef035"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=denverUpdate#d78487de16b1783e0bfffe7a8e028f527d073b55"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -11357,11 +11412,11 @@ dependencies = [
 
 [[package]]
 name = "rusqlite"
-version = "0.29.0"
+version = "0.28.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "549b9d036d571d42e6e85d1c1425e2ac83491075078ca9a15be021c56b1641f2"
+checksum = "01e213bc3ecb39ac32e81e51ebe31fd888a940515173e3a18a35f8c6e896422a"
 dependencies = [
- "bitflags 2.4.1",
+ "bitflags 1.3.2",
  "fallible-iterator",
  "fallible-streaming-iterator",
  "hashlink",
@@ -11630,7 +11685,7 @@ dependencies = [
 [[package]]
 name = "safe_arith"
 version = "0.1.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 
 [[package]]
 name = "safemem"
@@ -13371,37 +13426,16 @@ dependencies = [
 ]
 
 [[package]]
-name = "serde_with"
-version = "1.14.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "678b5a069e50bf00ecd22d0cd8ddf7c236f68581b03db652061ed5eb13a312ff"
-dependencies = [
- "serde",
- "serde_with_macros",
-]
-
-[[package]]
-name = "serde_with_macros"
-version = "1.5.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e182d6ec6f05393cc0e5ed1bf81ad6db3a8feedf8ee515ecdd369809bcce8082"
-dependencies = [
- "darling 0.13.4",
- "proc-macro2",
- "quote",
- "syn 1.0.109",
-]
-
-[[package]]
 name = "serde_yaml"
-version = "0.8.26"
+version = "0.9.29"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "578a7433b776b56a35785ed5ce9a7e777ac0598aac5a6dd1b4b18a307c7fc71b"
+checksum = "a15e0ef66bf939a7c890a0bf6d5a733c70202225f9888a89ed5c62298b019129"
 dependencies = [
- "indexmap 1.9.3",
+ "indexmap 2.1.0",
+ "itoa 1.0.10",
  "ryu",
  "serde",
- "yaml-rust",
+ "unsafe-libyaml",
 ]
 
 [[package]]
@@ -13611,6 +13645,9 @@ name = "slog"
 version = "2.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "8347046d4ebd943127157b94d63abb990fcf729dc4e9978927fdf4ac3c998d06"
+dependencies = [
+ "erased-serde",
+]
 
 [[package]]
 name = "smallvec"
@@ -15854,7 +15891,7 @@ dependencies = [
 [[package]]
 name = "swap_or_not_shuffle"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "ethereum-types 0.14.1",
  "ethereum_hashing",
@@ -16040,7 +16077,7 @@ dependencies = [
 [[package]]
 name = "test_random_derive"
 version = "0.2.0"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -17082,7 +17119,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?rev=60f184b4e92b41bb89ff1d208c0130008d9ef035#60f184b4e92b41bb89ff1d208c0130008d9ef035"
+source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git?branch=denverUpdate#d78487de16b1783e0bfffe7a8e028f527d073b55"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",
@@ -17096,7 +17133,7 @@ dependencies = [
 [[package]]
 name = "types"
 version = "0.2.1"
-source = "git+https://github.com/webb-tools/lighthouse.git?rev=ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8#ef72e752eaf45f4b7eb64dd8dbb0fe088f955df8"
+source = "git+https://github.com/sigp/lighthouse#b5bae6e7a2f52310617a3b93ab7579f3dc9d7880"
 dependencies = [
  "arbitrary",
  "bls",
@@ -17113,6 +17150,7 @@ dependencies = [
  "hex",
  "int_to_bytes",
  "itertools 0.10.5",
+ "kzg",
  "lazy_static",
  "log 0.4.20",
  "maplit",
@@ -17126,9 +17164,7 @@ dependencies = [
  "rusqlite",
  "safe_arith",
  "serde",
- "serde_derive",
  "serde_json",
- "serde_with",
  "serde_yaml",
  "slog",
  "smallvec 1.11.2",
@@ -17239,6 +17275,12 @@ dependencies = [
  "crypto-common",
  "subtle",
 ]
+
+[[package]]
+name = "unsafe-libyaml"
+version = "0.2.10"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ab4c90930b95a82d00dc9e9ac071b4991924390d46cbd0dfe566148667605e4b"
 
 [[package]]
 name = "unsigned-varint"
@@ -18128,7 +18170,7 @@ dependencies = [
 [[package]]
 name = "webb-bls"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18147,7 +18189,7 @@ dependencies = [
 [[package]]
 name = "webb-consensus-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "bitvec",
  "derive_more",
@@ -18170,7 +18212,7 @@ dependencies = [
 [[package]]
 name = "webb-eth-rpc-client"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -18197,7 +18239,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-hashing"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "lazy_static",
  "ring 0.16.20",
@@ -18207,7 +18249,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-pallet-init"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -18235,7 +18277,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-serde-utils"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18246,7 +18288,7 @@ dependencies = [
 [[package]]
 name = "webb-eth2-ssz"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "ethereum-types 0.14.1",
  "itertools 0.10.5",
@@ -18256,7 +18298,7 @@ dependencies = [
 [[package]]
 name = "webb-finality-update-verify"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "bitvec",
@@ -18270,7 +18312,7 @@ dependencies = [
 [[package]]
 name = "webb-lc-relay-config"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "dotenvy",
  "reqwest",
@@ -18283,7 +18325,7 @@ dependencies = [
 [[package]]
 name = "webb-lc-relay-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "backoff",
@@ -18299,7 +18341,7 @@ dependencies = [
 [[package]]
 name = "webb-lc-relayer-context"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "anyhow",
  "subxt 0.29.0",
@@ -18312,7 +18354,7 @@ dependencies = [
 [[package]]
 name = "webb-light-client-primitives"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "eth-types",
  "ethereum-types 0.14.1",
@@ -18327,7 +18369,7 @@ dependencies = [
 [[package]]
 name = "webb-merkle-proof"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "ethereum-types 0.14.1",
  "lazy_static",
@@ -18353,12 +18395,12 @@ dependencies = [
 [[package]]
 name = "webb-safe-arith"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 
 [[package]]
 name = "webb-tree-hash"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "ethereum-types 0.14.1",
  "smallvec 1.11.2",
@@ -18368,7 +18410,7 @@ dependencies = [
 [[package]]
 name = "webb-tree-hash-derive"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#44152307767554d256222085bff36de583b0bcaf"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=denebUpd#c3ac35f25dcd1c3e59897a36d88382b8b19dfed4"
 dependencies = [
  "darling 0.13.4",
  "quote",
@@ -18889,15 +18931,6 @@ dependencies = [
  "scale-info",
  "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
-]
-
-[[package]]
-name = "yaml-rust"
-version = "0.4.5"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "56c1936c4cc7a1c9ab21a1ebb602eb942ba868cbd44a99cb7cdc5892335e1c85"
-dependencies = [
- "linked-hash-map",
 ]
 
 [[package]]
