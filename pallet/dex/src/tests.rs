@@ -136,7 +136,8 @@ fn test_make_order() {
 				1,
 				200,
 				200,
-				OrderType::SELL
+				OrderType::SELL,
+				1000
 			),
 			Error::<Test>::PairAssetIdMustNotEqual
 		);
@@ -149,7 +150,8 @@ fn test_make_order() {
 				1,
 				200,
 				1,
-				OrderType::SELL
+				OrderType::SELL,
+				1000
 			),
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
@@ -162,7 +164,8 @@ fn test_make_order() {
 				1,
 				200,
 				1,
-				OrderType::BUY
+				OrderType::BUY,
+				1000
 			),
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
@@ -182,7 +185,8 @@ fn test_make_order() {
 			1,
 			200,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -191,7 +195,7 @@ fn test_make_order() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
 				price: 200,
@@ -245,7 +249,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			200,
 			1,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -254,7 +259,7 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 200,
 				amout_requested: 1,
 				price: 200,
@@ -295,7 +300,8 @@ fn test_cancel_order() {
 			1,
 			200,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_eq!(
@@ -304,7 +310,7 @@ fn test_cancel_order() {
 				counter: 0,
 				address: 1,
 				pair: (777, 888),
-				timestamp: 0,
+				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
 				price: 200,
@@ -341,7 +347,8 @@ fn test_take_order_sell() {
 			1,
 			200,
 			200,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_noop!(
@@ -435,7 +442,8 @@ fn test_take_order_buy() {
 			200,
 			200,
 			1,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_noop!(
@@ -531,7 +539,8 @@ fn test_make_cancel_take_order_buy() {
 			100,
 			1,
 			100,
-			OrderType::BUY
+			OrderType::BUY,
+			1000
 		));
 
 		assert_ok!(Dex::make_order(
@@ -541,7 +550,8 @@ fn test_make_cancel_take_order_buy() {
 			200,
 			2,
 			100,
-			OrderType::BUY
+			OrderType::BUY,
+			1000
 		));
 
 		assert_ok!(Dex::make_order(
@@ -551,7 +561,8 @@ fn test_make_cancel_take_order_buy() {
 			2,
 			200,
 			100,
-			OrderType::SELL
+			OrderType::SELL,
+			1000
 		));
 
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 300));
@@ -579,6 +590,98 @@ fn test_make_cancel_take_order_buy() {
 		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
 		assert_eq!(PairOrders::<Test>::get((888, 999)), vec![2]);
 	})
+}
+
+#[test]
+fn test_expiration_works_as_expected() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			777,
+			888,
+			100,
+			1,
+			100,
+			OrderType::BUY,
+			10
+		));
+
+		assert_eq!(Orders::<Test>::contains_key(0), true);
+		assert_eq!(UserOrders::<Test>::contains_key(1, 0), true);
+		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(
+			Orders::<Test>::get(0),
+			Some(Order {
+				counter: 0,
+				address: 1,
+				pair: (777, 888),
+				expiration_block: 10,
+				amount_offered: 100,
+				amout_requested: 1,
+				price: 100,
+				order_type: OrderType::BUY,
+				unfilled_offered: 100,
+				unfilled_requested: 1,
+				order_status: OrderStatus::Pending,
+			}),
+		);
+		assert_eq!(OrderExpiration::<Test>::get(10), vec![0]);
+
+		run_to_block(11);
+
+		assert!(!Orders::<Test>::contains_key(0));
+		assert!(!UserOrders::<Test>::contains_key(1, 0));
+		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
+		assert_eq!(OrderExpiration::<Test>::get(10), vec![]);
+	});
+}
+
+#[test]
+fn fail_on_invalid_expiry() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		run_to_block(5);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				100,
+				1,
+				100,
+				OrderType::BUY,
+				3
+			),
+			Error::<Test>::ExpirationMustBeInFuture
+		);
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				100,
+				1,
+				100,
+				OrderType::BUY,
+				5
+			),
+			Error::<Test>::ExpirationMustBeInFuture
+		);
+
+		assert_ok!(Dex::make_order(
+			RuntimeOrigin::signed(1),
+			777,
+			888,
+			100,
+			1,
+			100,
+			OrderType::BUY,
+			6
+		));
+	});
 }
 
 #[test]
@@ -643,7 +746,8 @@ fn test_offchain_worker_order_matching() {
 			208234,
 			1,
 			208234,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -653,7 +757,8 @@ fn test_offchain_worker_order_matching() {
 			2,
 			417520,
 			208760,
-			OrderType::SELL
+			OrderType::SELL,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -663,7 +768,8 @@ fn test_offchain_worker_order_matching() {
 			208780,
 			1,
 			208780,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -673,7 +779,8 @@ fn test_offchain_worker_order_matching() {
 			1042505,
 			5,
 			208501,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -683,7 +790,8 @@ fn test_offchain_worker_order_matching() {
 			3,
 			626406,
 			208802,
-			OrderType::SELL
+			OrderType::SELL,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -693,7 +801,8 @@ fn test_offchain_worker_order_matching() {
 			6,
 			1252560,
 			208760,
-			OrderType::SELL
+			OrderType::SELL,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -703,7 +812,8 @@ fn test_offchain_worker_order_matching() {
 			1456777,
 			7,
 			208111,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -713,7 +823,8 @@ fn test_offchain_worker_order_matching() {
 			625800,
 			3,
 			208600,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -723,7 +834,8 @@ fn test_offchain_worker_order_matching() {
 			208833,
 			1,
 			208833,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -733,7 +845,8 @@ fn test_offchain_worker_order_matching() {
 			2,
 			417308,
 			208654,
-			OrderType::SELL
+			OrderType::SELL,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -743,7 +856,8 @@ fn test_offchain_worker_order_matching() {
 			5,
 			1043275,
 			208655,
-			OrderType::SELL
+			OrderType::SELL,
+			1000,
 		));
 
 		assert_ok!(Dex::make_order(
@@ -753,7 +867,8 @@ fn test_offchain_worker_order_matching() {
 			625965,
 			3,
 			208655,
-			OrderType::BUY
+			OrderType::BUY,
+			1000,
 		));
 
 		Dex::offchain_worker(block);

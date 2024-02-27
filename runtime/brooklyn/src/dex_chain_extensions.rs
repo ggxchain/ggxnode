@@ -2,7 +2,7 @@
 use sp_runtime::{DispatchError, ModuleError};
 
 use frame_support::traits::Currency;
-use frame_system::RawOrigin;
+use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
 };
@@ -68,13 +68,14 @@ struct DexUserOrdersInput<AccountId> {
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
-struct DexMakeOrderInput<AssetId, Balance, OrderType> {
+struct DexMakeOrderInput<AssetId, Balance, OrderType, BlockNumber> {
 	asset_id_1: AssetId,
 	asset_id_2: AssetId,
 	offered_amount: Balance,
 	requested_amount: Balance,
 	price: Balance,
 	order_type: OrderType,
+	expires: BlockNumber,
 }
 
 #[derive(Debug, PartialEq, Encode, Decode, MaxEncodedLen)]
@@ -317,8 +318,12 @@ where
 				env.write(&order_array.encode(), false, None)?;
 			}
 			DexFunc::MakeOrder => {
-				let input: DexMakeOrderInput<u32, BalanceOf<T>, pallet_dex::OrderType> =
-					env.read_as()?;
+				let input: DexMakeOrderInput<
+					u32,
+					BalanceOf<T>,
+					pallet_dex::OrderType,
+					BlockNumberFor<T>,
+				> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::make_order(
@@ -329,6 +334,7 @@ where
 					input.requested_amount,
 					input.price,
 					input.order_type,
+					input.expires,
 				);
 
 				return match call_result {
