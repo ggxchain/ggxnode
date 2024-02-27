@@ -1,6 +1,11 @@
 use super::{pallet::Error, *};
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
+use scale_info::prelude::collections::BTreeMap;
+use sp_core::offchain::{
+	testing::{TestOffchainExt, TestTransactionPoolExt},
+	OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
+};
 
 #[test]
 fn test_deposit() {
@@ -618,11 +623,6 @@ fn test_offchain_worker_order_matching() {
 	ext.execute_with(|| add_blocks(1));
 	ext.persist_offchain_overlay();
 
-	use crate::Call;
-	use sp_core::offchain::{
-		testing::{TestOffchainExt, TestTransactionPoolExt},
-		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
-	};
 	let (offchain, _offchain_state) = TestOffchainExt::new();
 	let (pool, pool_state) = TestTransactionPoolExt::new();
 	ext.register_extension(OffchainDbExt::new(offchain.clone()));

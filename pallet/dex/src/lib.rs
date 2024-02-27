@@ -9,24 +9,20 @@ use frame_support::{
 	BoundedBTreeMap, PalletId, RuntimeDebug,
 };
 
-use frame_system::offchain::{SendTransactionTypes, SubmitTransaction};
+use frame_system::offchain::SendTransactionTypes;
 use sp_runtime::{
 	offchain::{
 		storage::StorageValueRef,
 		storage_lock::{BlockAndTime, StorageLock},
 		Duration,
 	},
-	traits::{BlockNumberProvider, CheckedAdd, CheckedSub},
+	traits::{BlockNumberProvider, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub},
 };
 
-use bigdecimal::BigDecimal;
-use core::{borrow::BorrowMut, cmp::Ordering, ops::Div};
+use core::cmp::Ordering;
 pub use pallet::*;
 use scale_codec::{Decode, Encode, MaxEncodedLen};
-use scale_info::{
-	prelude::{cmp, collections::BTreeMap},
-	TypeInfo,
-};
+use scale_info::{prelude::cmp, TypeInfo};
 use sp_runtime::{traits::One, DispatchError};
 
 use frame_support::{
@@ -386,6 +382,8 @@ pub mod pallet {
 		NotEnoughBalance,
 		OffchainUnsignedTxError,
 		PriceDoNotMatchOfferedRequestedAmount,
+		DivOverflow,
+		MulOverflow,
 	}
 
 	#[pallet::hooks]
@@ -468,11 +466,8 @@ pub mod pallet {
 
 							let rt = map_match_engines.try_insert(order.pair, engine.clone());
 
-							match rt {
-								Err(e) => {
-									log::error!("Failed in  map_match_engines.try_insert {:?}", e);
-								}
-								_ => {}
+							if let Err(e) = rt {
+								log::error!("Failed in  map_match_engines.try_insert {:?}", e);
 							}
 
 							store_hashmap_match_engines.set(&map_match_engines);
@@ -522,7 +517,7 @@ pub mod pallet {
 			};
 
 			match call {
-				Call::update_match_order_unsigned { match_result } => {
+				Call::update_match_order_unsigned { match_result: _ } => {
 					valid_tx(b"update_match_order_unsigned".to_vec())
 				}
 				_ => InvalidTransaction::Call.into(),
@@ -737,8 +732,8 @@ pub mod pallet {
 							.as_mut()
 							.ok_or(Error::<T>::PairOrderNotFound)?;
 						let rt = pair_orders.binary_search(&order_index);
-						if rt.is_ok() {
-							pair_orders.remove(rt.unwrap());
+						if let Ok(r) = rt {
+							pair_orders.remove(r);
 						}
 
 						PairOrders::<T>::insert(order.pair, pair_orders);
@@ -771,8 +766,8 @@ pub mod pallet {
 							.as_mut()
 							.ok_or(Error::<T>::PairOrderNotFound)?;
 						let rt = pair_orders.binary_search(&order_index);
-						if rt.is_ok() {
-							pair_orders.remove(rt.unwrap());
+						if let Ok(r) = rt {
+							pair_orders.remove(r);
 						}
 
 						PairOrders::<T>::insert(order.pair, pair_orders);
@@ -1044,7 +1039,7 @@ pub mod pallet {
 		}
 
 		pub fn update_order_from_trade_order(order: &OrderOf<T>) -> Result<(), DispatchError> {
-			Orders::<T>::insert(order.counter, &order);
+			Orders::<T>::insert(order.counter, order);
 			Ok(())
 		}
 
@@ -1058,8 +1053,9 @@ pub mod pallet {
 						.as_mut()
 						.ok_or(Error::<T>::PairOrderNotFound)?;
 					let rt = pair_orders.binary_search(&order.counter);
-					if rt.is_ok() {
-						pair_orders.remove(rt.unwrap());
+
+					if let Ok(r) = rt {
+						pair_orders.remove(r);
 					}
 
 					PairOrders::<T>::insert(order.pair, pair_orders);
@@ -1135,14 +1131,13 @@ pub mod pallet {
 
 				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
 
-				if taker_order.order_type == OrderType::BUY
-					&& &taker_order.price < &maker_order.price
+				if taker_order.order_type == OrderType::BUY && taker_order.price < maker_order.price
 				{
 					break;
 				}
 
 				if taker_order.order_type == OrderType::SELL
-					&& &taker_order.price > &maker_order.price
+					&& taker_order.price > maker_order.price
 				{
 					break;
 				}
@@ -1160,27 +1155,39 @@ pub mod pallet {
 						} else {
 							// taker offer < maker request
 							match taker_order.order_type {
-								OrderType::BUY => (
-									taker_order.amount_offered / maker_order.price,
-									taker_order.amount_offered,
-								),
-								OrderType::SELL => (
-									taker_order.amount_offered * maker_order.price,
-									taker_order.amount_offered,
-								),
+								OrderType::BUY => {
+									let new_request_amout = taker_order
+										.amount_offered
+										.checked_div(&maker_order.price)
+										.ok_or(Error::<T>::DivOverflow)?;
+
+									(new_request_amout, taker_order.amount_offered)
+								}
+								OrderType::SELL => {
+									let new_request_amout = taker_order
+										.amount_offered
+										.checked_mul(&maker_order.price)
+										.ok_or(Error::<T>::MulOverflow)?;
+
+									(new_request_amout, taker_order.amount_offered)
+								}
 							}
 						}
 					} else {
 						//taker request amout < maker offer amout
 						match taker_order.order_type {
-							OrderType::BUY => (
-								taker_unfilled_quantity_requested,
-								taker_unfilled_quantity_requested * maker_order.price,
-							),
-							OrderType::SELL => (
-								taker_unfilled_quantity_requested,
-								taker_unfilled_quantity_requested / maker_order.price,
-							),
+							OrderType::BUY => {
+								let new_offer_amout = taker_unfilled_quantity_requested
+									.checked_mul(&maker_order.price)
+									.ok_or(Error::<T>::MulOverflow)?;
+								(taker_unfilled_quantity_requested, new_offer_amout)
+							}
+							OrderType::SELL => {
+								let new_offer_amout = taker_unfilled_quantity_requested
+									.checked_div(&maker_order.price)
+									.ok_or(Error::<T>::DivOverflow)?;
+								(taker_unfilled_quantity_requested, new_offer_amout)
+							}
 						}
 					};
 
@@ -1267,15 +1274,12 @@ pub mod pallet {
 					taker_order,
 				);
 
-				match rt {
-					Err(e) => {
-						log::error!("Failed in  another_book.try_insert( {:?}", e);
-					}
-					_ => {}
+				if let Err(e) = rt {
+					log::error!("Failed in  another_book.try_insert( {:?}", e);
 				}
 			}
 
-			return Ok(match_result);
+			Ok(match_result)
 		}
 
 		fn offchain_unsigned_tx(

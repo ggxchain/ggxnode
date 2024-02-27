@@ -931,19 +931,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bigdecimal"
-version = "0.4.2"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "c06619be423ea5bb86c95f087d5707942791a08a85530df0db2209a3ecfb8bc9"
-dependencies = [
- "autocfg 1.1.0",
- "libm",
- "num-bigint",
- "num-integer",
- "num-traits",
-]
-
-[[package]]
 name = "binary-merkle-tree"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e49f6e44820affccaf517fd22af564f4b495d40"
@@ -8569,7 +8556,6 @@ dependencies = [
 name = "pallet-dex"
 version = "0.1.0"
 dependencies = [
- "bigdecimal",
  "frame-support",
  "frame-system",
  "log 0.4.20",

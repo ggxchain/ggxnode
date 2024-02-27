@@ -7,13 +7,7 @@ use frame_support::{
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
-use sp_core::{
-	offchain::{
-		testing::{TestOffchainExt, TestTransactionPoolExt},
-		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
-	},
-	ConstU128, ConstU32, ConstU64, H256,
-};
+use sp_core::{ConstU128, ConstU32, ConstU64, H256};
 
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 
