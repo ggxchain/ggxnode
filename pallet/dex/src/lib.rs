@@ -1262,7 +1262,7 @@ pub mod pallet {
 				let rt = another_book.try_insert(
 					OrderBookKey {
 						order_id,
-						price: Default::default(),
+						price: taker_order.price,
 					},
 					taker_order,
 				);

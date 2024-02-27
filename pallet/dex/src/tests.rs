@@ -580,33 +580,39 @@ fn test_make_cancel_take_order_buy() {
 fn test_offchain_worker_order_matching() {
 	use frame_support::traits::OffchainWorker;
 	/*
-	@@ input orders
-	//order_index  order_type price amount - offered_amount requested_amount
-	0 buy  208234 1  - 208234 1
-	1 sell 208760 2  - 2 417520
-	2 buy  208780 1  - 208780 1
-	3 buy  208501 5  - 1042505 5
-	4 sell 208802 3  - 3 626406
-	5 sell 208760 6  - 6 1252560
-	6 buy  208111 7  - 1456777 7
-	7 buy  208600 3  - 625800 3
-	8 buy  208833 1  - 208833 1
-	9 sell 208654 2  - 2 417308
-	10 sell 208655 5  - 5 1043275
-	11 buy  208655 3  - 625965 3
+		@@ input orders
+		//order_index  order_type price amount - offered_amount requested_amount
+		0 buy  208234 1  - 208234 1
+		1 sell 208760 2  - 2 417520
+		2 buy  208780 1  - 208780 1
+		3 buy  208501 5  - 1042505 5
+		4 sell 208802 3  - 3 626406
+		5 sell 208760 6  - 6 1252560
+		6 buy  208111 7  - 1456777 7
+		7 buy  208600 3  - 625800 3
+		8 buy  208833 1  - 208833 1
+		9 sell 208654 2  - 2 417308
+		10 sell 208655 5  - 5 1043275
+		11 buy  208655 3  - 625965 3
 
-	@@ finnal order_book and last_trade_price - offered_amount requested_amount:
-	208802 3 - SELL 3 626406
-	208760 6 - SELL 6 1252560
-	208655 4 - SELL 4 834620
-	---------
-	208655
-	---------
-	208600 3 - BUY 625800 3
-	208501 5 - BUY 1042505 5
-	208234 1 - BUY 208234 1
-	208111 7 - BUY 1456777 7
-	*/
+		@@ match order
+	// price amout order_1_id  order_2_id
+	[new MatchDetailRecord(bd("208760"), bd("1"), orders.get(2), orders.get(1)) ]
+	[new MatchDetailRecord(bd("208760"), bd("1"), orders.get(8), orders.get(1)) ]
+	[new MatchDetailRecord(bd("208654"), bd("2"), orders.get(11), orders.get(9)),  new MatchDetailRecord(bd("208655"), bd("1"), orders.get(11), orders.get(10)) ]
+
+		@@ finnal order_book and last_trade_price - offered_amount requested_amount:
+		208802 3 - SELL 3 626406
+		208760 6 - SELL 6 1252560
+		208655 4 - SELL 4 834620
+		---------
+		208655
+		---------
+		208600 3 - BUY 625800 3
+		208501 5 - BUY 1042505 5
+		208234 1 - BUY 208234 1
+		208111 7 - BUY 1456777 7
+		*/
 	let mut ext = new_test_ext();
 
 	ext.execute_with(|| add_blocks(1));
@@ -752,13 +758,17 @@ fn test_offchain_worker_order_matching() {
 
 		Dex::offchain_worker(block);
 
+		let mut txs = vec![];
 		while !pool_state.read().transactions.is_empty() {
 			let tx = pool_state.write().transactions.pop().unwrap();
 			let tx = Extrinsic::decode(&mut &*tx).unwrap();
+			txs.insert(0, tx);
+		}
 
+		for tx in txs {
 			match tx.call {
 				RuntimeCall::Dex(crate::Call::update_match_order_unsigned { match_result: m }) => {
-					Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
+					let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
 				}
 				_ => {
 					assert_eq!(2, 3);
@@ -772,27 +782,31 @@ fn test_offchain_worker_order_matching() {
 
 		for (_, order) in Orders::<Test>::iter() {
 			if order.order_status != OrderStatus::FullyFilled {
-				if order.order_type == OrderType::SELL {
+				if order.order_type == OrderType::BUY {
 					if !buy_order_book.contains_key(&order.price) {
-						buy_order_book
-							.insert(order.price, (order.amount_offered, order.amout_requested));
+						buy_order_book.insert(
+							order.price,
+							(order.unfilled_offered, order.unfilled_requested),
+						);
 					} else {
 						let v = buy_order_book.get(&order.price).unwrap();
 
 						buy_order_book.insert(
 							order.price,
-							(v.0 + order.amount_offered, v.1 + order.amout_requested),
+							(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
 						);
 					}
 				} else {
 					if !sell_order_book.contains_key(&order.price) {
-						sell_order_book
-							.insert(order.price, (order.amount_offered, order.amout_requested));
+						sell_order_book.insert(
+							order.price,
+							(order.unfilled_offered, order.unfilled_requested),
+						);
 					} else {
 						let v = sell_order_book.get(&order.price).unwrap();
 						sell_order_book.insert(
 							order.price,
-							(v.0 + order.amount_offered, v.1 + order.amout_requested),
+							(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
 						);
 					}
 				}
