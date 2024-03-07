@@ -6,6 +6,7 @@ members = [
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
+	"connected-spv",
 ]
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
@@ -34,7 +35,7 @@ hex-literal = "0.3.1"
 impl-trait-for-tuples = "0.2.2"
 jsonrpsee = "0.16.2"
 libsecp256k1 = "0.7"
-log = "0.4.17"
+log = { version = "0.4.17", features = ["std"] }
 nix = { version = "0.26.1", features = ["signal"] }
 num_enum = { version = "0.5.3", default-features = false }
 once_cell = { version = "1.17.1", default-features = false }

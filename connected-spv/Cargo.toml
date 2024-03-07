@@ -1,0 +1,20 @@
+[package]
+name = "connected-spv"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+argh = "0.1.3"
+atty = { version = "0.2" }
+chrono = { version = "0.4", features = ["std"], default-features = false }
+colored = "1.9"
+log = { workspace = true }
+nakamoto-client = { version = "0.4.0" }
+nakamoto-net = { version = "0.4.0" }
+nakamoto-net-poll = { version = "0.4.0" }
+nakamoto-p2p = { version = "0.4.0" }
+thiserror = "1.0"
