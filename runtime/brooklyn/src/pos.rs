@@ -88,11 +88,10 @@ parameter_types! {
 	pub const MaxCandidateIntake: u32 = 1;
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
-	// Six sessions in an era (90 * 6 * 4 hours = 90 days eras).
-	pub const SessionsPerEra: SessionIndex = prod_or_fast!(90 * 6, 6);
+	pub const SessionsPerEra: SessionIndex = 1
 
-	// 4 eras for unbonding (90 * 4 = 360 days).
-	pub const BondingDuration: sp_staking::EraIndex = prod_or_fast!(4, 360);
+	// 6 eras * 4 (session in ours) * 360 = a year.
+	pub const BondingDuration: sp_staking::EraIndex = 360 * 6;
 	pub const SlashDeferDuration: sp_staking::EraIndex = BondingDuration::get() / 4;
 	pub const MaxNominatorRewardedPerValidator: u32 = 512;
 	pub const OffendingValidatorsThreshold: Perbill = Perbill::from_percent(17);
