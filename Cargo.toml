@@ -10,6 +10,7 @@ members = [
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
 	"examples/cross-vm-communication/wasm-to-evm/flipper",
+	"c-kzg-4844",
 ]
 resolver = "2"
 
@@ -300,6 +301,10 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 # * https://github.com/paritytech/substrate/pull/14406
 [patch."https://github.com/paritytech/substrate.git"]
 sc-peerset = { git = "https://github.com/ggxchain/substrate.git", branch = "polkadot-v0.9.43" }
+
+# until https://github.com/ethereum/c-kzg-4844/issues/392 is resolved
+[patch."https://github.com/ethereum/c-kzg-4844.git"]
+c-kzg = { git = "https://github.com/ggxchain/c-kzg-4844.git", branch = "fix" }
 
 # [patch."https://github.com/ggxchain/pallet-eth2-light-client.git"]
 # webb-consensus-types = { path = "../pallet-eth2-light-client/crates/consensus-types/" }
