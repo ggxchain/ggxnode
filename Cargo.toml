@@ -304,7 +304,7 @@ sc-peerset = { git = "https://github.com/ggxchain/substrate.git", branch = "polk
 
 # until https://github.com/ethereum/c-kzg-4844/issues/392 is resolved
 [patch."https://github.com/ethereum/c-kzg-4844.git"]
-c-kzg = { git = "https://github.com/ggxchain/c-kzg-4844.git", branch = "main" }
+c-kzg = { git = "https://github.com/ggxchain/c-kzg-4844.git", branch = "fix" }
 
 # [patch."https://github.com/ggxchain/pallet-eth2-light-client.git"]
 # webb-consensus-types = { path = "../pallet-eth2-light-client/crates/consensus-types/" }

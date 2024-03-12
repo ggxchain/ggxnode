@@ -971,6 +971,29 @@ dependencies = [
 ]
 
 [[package]]
+name = "bindgen"
+version = "0.66.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f2b84e06fc203107bfbad243f4aba2af864eb7db3b1cf46ea0a023b0b433d2a7"
+dependencies = [
+ "bitflags 2.4.1",
+ "cexpr",
+ "clang-sys",
+ "lazy_static",
+ "lazycell",
+ "log 0.4.20",
+ "peeking_take_while",
+ "prettyplease 0.2.15",
+ "proc-macro2",
+ "quote",
+ "regex",
+ "rustc-hash",
+ "shlex",
+ "syn 2.0.40",
+ "which",
+]
+
+[[package]]
 name = "bip39"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1457,9 +1480,10 @@ dependencies = [
 
 [[package]]
 name = "c-kzg"
-version = "1.0.0"
-source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=main#f9c76d0b4ff70bc807b2bb60e3739dc9e9e714de"
+version = "0.1.0"
+source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=fix#7778470368bea963bf2f9753f89341680f0bce45"
 dependencies = [
+ "bindgen 0.66.1",
  "blst",
  "cc",
  "glob",
@@ -6885,7 +6909,7 @@ version = "0.11.0+8.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3386f101bcb4bd252d8e9d2fb41ec3b0862a15a62b478c355b2982efa469e3e"
 dependencies = [
- "bindgen",
+ "bindgen 0.65.1",
  "bzip2-sys",
  "cc",
  "glob",
