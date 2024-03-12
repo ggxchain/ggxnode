@@ -556,7 +556,8 @@ mod tests {
 			assert_eq!(inflation_after_year(20), Perbill::from_parts(39971726)); // 3.998%
 			assert_eq!(inflation_after_year(25), Perbill::from_parts(28259284)); // 2.826%
 			assert_eq!(inflation_after_year(30), Perbill::from_parts(19978801)); // 1.998%
-			assert_eq!(inflation_after_year(31), Perbill::from_parts(19978801)); // 1.998%
+			assert_eq!(inflation_after_year(31), Perbill::from_parts(19978801));
+			// 1.998%
 		});
 	}
 
