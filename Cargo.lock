@@ -1481,7 +1481,7 @@ dependencies = [
 [[package]]
 name = "c-kzg"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=fix#7778470368bea963bf2f9753f89341680f0bce45"
+source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=fix#00e226f75645786db1d5495cf903f47a815ccebb"
 dependencies = [
  "bindgen 0.66.1",
  "blst",
