@@ -1458,7 +1458,7 @@ dependencies = [
 [[package]]
 name = "c-kzg"
 version = "1.0.0"
-source = "git+https://github.com/akorchyn/c-kzg-4844.git?branch=main#18166d4a5b0c14d98027d87ab28d5cd13856e838"
+source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=main#f9c76d0b4ff70bc807b2bb60e3739dc9e9e714de"
 dependencies = [
  "blst",
  "cc",
