@@ -88,7 +88,7 @@ parameter_types! {
 	pub const MaxCandidateIntake: u32 = 1;
 	pub const SocietyPalletId: PalletId = PalletId(*b"py/socie");
 
-	pub const SessionsPerEra: SessionIndex = 1
+	pub const SessionsPerEra: SessionIndex = 1;
 
 	// 6 eras * 4 (session in ours) * 360 = a year.
 	pub const BondingDuration: sp_staking::EraIndex = 360 * 6;
