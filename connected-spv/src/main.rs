@@ -1,11 +1,16 @@
 use std::{net, path::PathBuf};
 
 use argh::FromArgs;
+mod gen;
 
 use nakamoto_client::Network;
+mod consts;
 mod logger;
-use connected_spv::run;
+// use connected_spv::run;
 use nakamoto_client::Domain;
+use substrate_client::{SubstrateClient, SubstrateConfig};
+use subxt_signer::bip39::Mnemonic;
+mod substrate_client;
 
 #[derive(FromArgs)]
 /// A Bitcoin light client.
@@ -30,14 +35,6 @@ pub struct Options {
 	#[argh(switch)]
 	pub regtest: bool,
 
-	/// only connect to IPv4 addresses (default: false)
-	#[argh(switch, short = '4')]
-	pub ipv4: bool,
-
-	/// only connect to IPv6 addresses (default: false)
-	#[argh(switch, short = '6')]
-	pub ipv6: bool,
-
 	/// log level (default: info)
 	#[argh(option, default = "log::Level::Info")]
 	pub log: log::Level,
@@ -53,7 +50,8 @@ impl Options {
 	}
 }
 
-fn main() {
+#[tokio::main]
+async fn main() {
 	let opts = Options::from_env();
 
 	logger::init(opts.log).expect("initializing logger for the first time");
@@ -68,18 +66,25 @@ fn main() {
 		Network::Mainnet
 	};
 
-	let domains = if opts.ipv4 && opts.ipv6 {
-		vec![Domain::IPV4, Domain::IPV6]
-	} else if opts.ipv4 {
-		vec![Domain::IPV4]
-	} else if opts.ipv6 {
-		vec![Domain::IPV6]
-	} else {
-		vec![Domain::IPV4, Domain::IPV6]
-	};
+	let domains = vec![Domain::IPV4, Domain::IPV6];
 
-	if let Err(e) = run(&opts.connect, &opts.listen, opts.root, &domains, network) {
-		log::error!(target: "node", "Exiting: {}", e);
-		std::process::exit(1);
-	}
+	let mnemonic = Mnemonic::parse_normalized(
+		"wheel blade kiss nature draw much rule devote possible path zone traffic",
+	)
+	.expect("expected valid mnemonic");
+
+	let client = SubstrateClient::new(SubstrateConfig {
+		is_dev: true,
+		ws_url: "ws://localhost:9944".to_string(),
+		phrase: mnemonic,
+		password: None,
+		chain_id: 8886u32, // not brooklyn
+	});
+
+	std::process::exit(1);
+
+	// if let Err(e) = run(&opts.connect, &opts.listen, opts.root, &domains, network) {
+	// 	log::error!(target: "node", "Exiting: {}", e);
+	// 	std::process::exit(1);
+	// }
 }

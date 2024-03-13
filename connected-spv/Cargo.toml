@@ -17,4 +17,20 @@ nakamoto-client = { version = "0.4.0" }
 nakamoto-net = { version = "0.4.0" }
 nakamoto-net-poll = { version = "0.4.0" }
 nakamoto-p2p = { version = "0.4.0" }
+serde.workspace = true
+substrate-api-client = "0.17.0"
 thiserror = "1.0"
+toml = "0.8.10"
+
+# async
+tokio = { workspace = true, features = [
+	"macros",
+	"rt-multi-thread",
+	"signal",
+	"fs",
+] }
+
+# submit extrinsics
+eyre = "0.6.8"
+subxt-signer.workspace = true
+subxt.workspace = true

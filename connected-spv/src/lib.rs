@@ -1,9 +1,8 @@
 //! Stand-alone light-client daemon. Runs the light-client as a background process.
 #![deny(missing_docs, unsafe_code)]
 
-use std::{net, path::PathBuf, thread};
+use std::{net, path::PathBuf};
 
-use nakamoto_client::traits::Handle;
 pub use nakamoto_client::{Client, Config, Domain, Error, Event, LoadingHandler, Network};
 pub mod logger;
 

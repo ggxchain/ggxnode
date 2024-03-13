@@ -16,7 +16,7 @@ The following dependencies are required to build the node:
 
 ```bash
 # Install rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install support software
 sudo apt install build-essential protobuf-compiler libclang-dev
@@ -30,7 +30,7 @@ rustup component add rust-src
 
 ```bash
 # Install rust
-curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh 
+curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh
 
 # Install protoc
 brew install protobuf
@@ -87,7 +87,7 @@ docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
     --validator \
     --chain sydney \
     --base-path=/data-sydney \
-    --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
+    --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4[opTSHTMhYYobB8pC \
     --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
 ```
 
