@@ -37,8 +37,8 @@ jobs:
           aws s3 cp s3://$S3_BUCKET/${CHAIN}_version ${CHAIN}_version
           export TAG=$(cat ${CHAIN}_version)
           echo "TAG=$(cat ${CHAIN}_version)" >> $GITHUB_ENV
-          echo "BROOKLYN_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:brooklyn-$TAG" >> "$GITHUB_OUTPUT"
-          echo "SYDNEY_IMAGE=public.ecr.aws/c6u3u5c0/ggxchain-node:sydney-$TAG" >> "$GITHUB_OUTPUT"
+          echo "BROOKLYN_IMAGE=public.ecr.aws/k7w7q6c4/ggxchain-node:brooklyn-$TAG" >> "$GITHUB_OUTPUT"
+          echo "SYDNEY_IMAGE=public.ecr.aws/k7w7q6c4/ggxchain-node:sydney-$TAG" >> "$GITHUB_OUTPUT"
           # for now they're build with the same commit IDs. Pipeline may change in future.
 
       - name: Generate Token
