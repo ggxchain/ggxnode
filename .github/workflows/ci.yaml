@@ -131,7 +131,7 @@ jobs:
       - name: Build, tag, and upload the docker image
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: c6u3u5c0
+          REGISTRY_ALIAS: k7w7q6c4
           REPOSITORY: ggxchain-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA -f Dockerfile.brooklyn .
