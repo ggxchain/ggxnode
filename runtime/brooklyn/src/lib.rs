@@ -201,25 +201,7 @@ pub type SignedExtra = (
 	OptionalSignedExtension,
 );
 
-// Remove this after runtime upgrade
-pub struct InitSepolia;
-impl frame_support::traits::OnRuntimeUpgrade for InitSepolia {
-	fn on_runtime_upgrade() -> Weight {
-		use frame_support::StorageHasher;
-		frame_support::migration::put_storage_value(
-			b"Eth2Client",
-			b"NetworkConfigForChain",
-			&webb_proposals::TypedChainId::Evm(11155111)
-				.using_encoded(frame_support::Blake2_128Concat::hash),
-			webb_consensus_types::network_config::NetworkConfig::new(
-				&webb_consensus_types::network_config::Network::Sepolia,
-			),
-		);
-		Perbill::from_percent(5) * BlockWeights::get().max_block
-	}
-}
-
-pub type Migrations = (InitSepolia,);
+pub type Migrations = ();
 
 /// Unchecked extrinsic type as expected by this runtime.
 pub type UncheckedExtrinsic =
