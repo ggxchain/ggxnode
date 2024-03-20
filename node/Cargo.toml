@@ -15,7 +15,7 @@ targets = ["x86_64-unknown-linux-gnu"]
 async-trait.workspace = true
 clap = { workspace = true, features = ["derive"] }
 futures.workspace = true
-jsonrpsee = { workspace = true, features = ["server", "macros"] }
+jsonrpsee = { workspace = true, features = ["server", "macros", "async-client", "ws-client"] }
 log.workspace = true
 rand.workspace = true
 scale-codec = { package = "parity-scale-codec", workspace = true }
@@ -120,6 +120,7 @@ substrate-test-utils = { workspace = true }
 subxt = { workspace = true }
 subxt-signer.workspace = true
 tempfile = { workspace = true }
+testutil = { path = "../testutil" }
 tokio = { workspace = true }
 tokio-util = { workspace = true }
 wait-timeout = { workspace = true }

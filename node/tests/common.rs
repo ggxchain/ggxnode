@@ -27,12 +27,11 @@ use sc_client_api::StorageKey;
 use std::{
 	io::{BufRead, BufReader, Read},
 	ops::{Deref, DerefMut},
-	path::Path,
 	process::{self, Child, Command, ExitStatus},
 	time::Duration,
 };
+use subxt::{error::DispatchError, OnlineClient};
 
-use tempfile::tempdir;
 use tokio::time::timeout;
 
 use frame_system::AccountInfo;
@@ -158,57 +157,6 @@ pub async fn get_next_session_keys(url: &str) -> Result<Vec<u8>, Box<dyn std::er
 	Ok(data)
 }
 
-/// Run the node for a while (3 blocks)
-pub async fn run_node_for_a_while(base_path: &Path, args: &[&str]) {
-	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
-
-	let cmd = Command::new(cargo_bin("ggxchain-node"))
-		.stdout(process::Stdio::piped())
-		.stderr(process::Stdio::from(stderr_file.try_clone().unwrap()))
-		.args(args)
-		.arg("-d")
-		.arg(base_path)
-		.arg("--rpc-cors=all")
-		.spawn()
-		.unwrap();
-
-	tokio::time::sleep(std::time::Duration::from_secs(5)).await;
-
-	let mut child = KillChildOnDrop(cmd, output_path);
-
-	stderr_file.sync_all().unwrap();
-	let (ws_url, _, _) = find_ws_http_url_from_output(stderr_file).unwrap();
-
-	// Let it produce some blocks.
-	let _ = wait_n_finalized_blocks(3, 30, &ws_url).await;
-
-	assert!(
-		child.try_wait().unwrap().is_none(),
-		"the process should still be running"
-	);
-
-	// Stop the process
-	kill(Pid::from_raw(child.id().try_into().unwrap()), SIGINT).unwrap();
-	assert!(wait_for(&mut child, 40).map(|x| x.success()).unwrap());
-}
-
-/// Run the node asserting that it fails with an error
-pub fn run_node_assert_fail(base_path: &Path, args: &[&str]) {
-	let mut cmd = Command::new(cargo_bin("ggxchain-node"));
-
-	let mut child = KillChildOnDrop(
-		cmd.args(args).arg("-d").arg(base_path).spawn().unwrap(),
-		Default::default(),
-	);
-
-	// Let it produce some blocks, but it should die within 10 seconds.
-	assert_ne!(
-		wait_timeout::ChildExt::wait_timeout(&mut *child, Duration::from_secs(10)).unwrap(),
-		None,
-		"the process should not be running anymore"
-	);
-}
-
 pub struct KillChildOnDrop(pub Child, pub std::path::PathBuf);
 
 impl Drop for KillChildOnDrop {
@@ -270,23 +218,32 @@ impl Node {
 }
 
 pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> Node {
-	let base_path = tempdir().expect("could not create a temp dir");
+	start_node_for_local_chain_with_flags(validator_name, chain, vec![]).await
+}
+
+pub async fn start_node_for_local_chain_with_flags(
+	validator_name: &str,
+	chain: &str,
+	extra_node_flags: Vec<&str>,
+) -> Node {
 	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
 
 	let cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::from(stderr_file))
 		.args([&format!("--{validator_name}"), &format!("--chain={chain}")])
+		.args(extra_node_flags)
+		// .args(["--database", "paritydb"])
+		.arg("--unsafe-rpc-external") // we want the node to listen on all interfaces
 		.arg("--rpc-cors=all")
-		.arg("-d")
-		.arg(base_path.path())
+		.arg("--tmp")
 		.spawn()
 		.unwrap();
 
 	let mut child = KillChildOnDrop(cmd, output_path);
 
 	let (mut ws_url, mut http_url) = Default::default();
-	for i in 0..5 {
+	for i in 0..10 {
 		if let Some((ws, http, _)) =
 			find_ws_http_url_from_output(std::fs::File::open(&child.1).unwrap())
 		{
@@ -313,4 +270,58 @@ pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> No
 		ws_url,
 		http_url,
 	}
+}
+
+#[cfg_attr(
+	feature = "brooklyn",
+	subxt::subxt(
+		runtime_metadata_path = "./tests/data/scale/metadata-ggx-dev-brooklyn.scale",
+		derive_for_all_types = "Clone",
+		substitute_type(
+			path = "bitcoin::address::Address",
+			with = "::subxt::utils::Static<bitcoin::Address>"
+		)
+	)
+)]
+pub mod ggx {}
+
+pub fn handle_tx_error(e: subxt::Error) -> ! {
+	match e {
+		subxt::Error::Runtime(DispatchError::Module(error)) => {
+			let details = error.details().expect("cannot get details");
+			let pallet = details.pallet.name();
+			let error = &details.variant;
+			panic!("Extrinsic failed with an error: {pallet}::{error:?}")
+		}
+		_ => {
+			panic!("Extrinsic failed with an error: {}", e)
+		}
+	};
+}
+
+pub async fn wait_for_event<T>(
+	api: &OnlineClient<subxt::PolkadotConfig>,
+	timeout_duration: Duration,
+) -> T
+where
+	T: std::fmt::Debug + subxt::events::StaticEvent,
+{
+	// wait for ExecuteIssue event
+	timeout(timeout_duration, async {
+		loop {
+			let events = api.events().at_latest().await.expect("cannot get events");
+			match events.find_first::<T>() {
+				Ok(Some(e)) => {
+					log::info!("Event found: {:?}", e);
+					return e;
+				}
+				_ => {
+					log::debug!("Waiting for an event...");
+					tokio::time::sleep(Duration::from_secs(1)).await;
+				}
+			}
+		}
+	})
+	.await
+	.expect("timeout waiting for event")
 }

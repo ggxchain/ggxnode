@@ -6,6 +6,7 @@ members = [
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
+	"testutil",
 ]
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",

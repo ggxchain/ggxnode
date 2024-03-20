@@ -1,0 +1,14 @@
+[package]
+name = "testutil"
+authors.workspace = true
+edition.workspace = true
+version.workspace = true
+repository.workspace = true
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitcoincore-rpc = "0.18.0"
+# we need to use that specific commit for an --add-host fix...
+testcontainers = { git = "https://github.com/testcontainers/testcontainers-rs", commit = "71bbdec" }
+tokio = { version = "1", features = ["full"] }
