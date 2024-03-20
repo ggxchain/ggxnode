@@ -275,14 +275,8 @@ parameter_types! {
 	pub ReportLongevity: u64 = EpochDurationInBlocks::get() as u64 * 10;
 }
 
-#[cfg(not(feature = "brooklyn"))]
 parameter_types! {
 	pub const SS58Prefix: u16 = 8886;
-}
-
-#[cfg(feature = "brooklyn")]
-parameter_types! {
-	pub const SS58Prefix: u16 = 42;
 }
 
 // Configure FRAME pallets to include in runtime.
