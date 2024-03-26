@@ -25,7 +25,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+      - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - name: Fmt + Doclint
@@ -41,7 +41,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+      - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
@@ -54,7 +54,7 @@ jobs:
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+      - uses: cachix/install-nix-action@v26
         with:
           github_access_token: ${{ secrets.GITHUB_TOKEN }}
       - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
