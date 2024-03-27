@@ -94,6 +94,26 @@ impl<T: frame_system::Config> btc_relay::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().reads(7_u64))
 			.saturating_add(T::DbWeight::get().writes(5_u64))
 	}
+
+	fn update_store_utxo	() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `874`
+		//  Estimated: `6340`
+		// Minimum execution time: 88_808_000 picoseconds.
+		Weight::from_parts(90_482_000, 6340)
+			.saturating_add(T::DbWeight::get().reads(7_u64))
+			.saturating_add(T::DbWeight::get().writes(5_u64))
+	}
+
+	fn store_monitor_utxo	() -> Weight {
+		// Proof Size summary in bytes:
+		//  Measured:  `874`
+		//  Estimated: `6340`
+		// Minimum execution time: 88_808_000 picoseconds.
+		Weight::from_parts(90_482_000, 6340)
+			.saturating_add(T::DbWeight::get().reads(7_u64))
+			.saturating_add(T::DbWeight::get().writes(5_u64))
+	}
 	/// Storage: BTCRelay ChainCounter (r:1 w:1)
 	/// Proof: BTCRelay ChainCounter (max_values: Some(1), max_size: Some(4), added: 499, mode: MaxEncodedLen)
 	/// Storage: BTCRelay BlockHeaders (r:2 w:1)
