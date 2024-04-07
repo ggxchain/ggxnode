@@ -25,8 +25,10 @@ else
     echo "Updated init_block_root to $FINALIZED_ROOT in $INIT_CONFIG_FILE"
 fi
 
-# Create a secret key file from the keystore
-sed 's/\"//g' $(ls -d /chain-data/chains/GGX/keystore/* | shuf -n 1) > /usr/src/app/secret-key
+if [ -n "$LIGHT_CLIENT_SIGNER" ]; then
+  echo "Creating light client secret key file"
+  echo "$LIGHT_CLIENT_SIGNER" > /usr/src/app/secret-key
+fi
 
 if [ -n "$BEACON_RPC" ]; then
   echo "Updating beacon_endpoint"
