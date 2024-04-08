@@ -1,5 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![feature(slice_pattern)]
+#![allow(clippy::unused_unit)]
 
 use frame_support::{
 	ensure,
