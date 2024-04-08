@@ -203,8 +203,8 @@ where
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit(
 					RawOrigin::Signed(sender).into(),
-					input.asset_id.into(),
-					input.amount.into(),
+					input.asset_id,
+					input.amount,
 				);
 
 				return match call_result {
@@ -219,7 +219,7 @@ where
 				let input: DexBalanceOfInput<u32, T::AccountId> = env.read_as()?;
 
 				let token_info =
-					pallet_dex::UserTokenInfoes::<T>::get(&input.owner, &input.asset_id);
+					pallet_dex::UserTokenInfoes::<T>::get(&input.owner, input.asset_id);
 				env.write(&token_info.amount.encode(), false, None)?;
 			}
 			DexFunc::Withdraw => {
@@ -228,8 +228,8 @@ where
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
 					RawOrigin::Signed(sender).into(),
-					input.asset_id.into(),
-					input.amount.into(),
+					input.asset_id,
+					input.amount,
 				);
 
 				return match call_result {
@@ -246,7 +246,7 @@ where
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit_native(
 					RawOrigin::Signed(sender).into(),
-					input.amount.into(),
+					input.amount,
 				);
 
 				return match call_result {
@@ -263,7 +263,7 @@ where
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw_native(
 					RawOrigin::Signed(sender).into(),
-					input.amount.into(),
+					input.amount,
 				);
 
 				return match call_result {

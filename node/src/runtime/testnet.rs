@@ -250,7 +250,7 @@ pub fn testnet_genesis(
 			],
 			accounts: initial_authorities
 				.iter()
-				.map(|x| -> [(u32, AccountId, Balance); 3] {
+				.flat_map(|x| -> [(u32, AccountId, Balance); 3] {
 					// id, account_id, balance
 					[
 						(999u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
@@ -258,7 +258,6 @@ pub fn testnet_genesis(
 						(777u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
 					]
 				})
-				.flatten()
 				.collect::<Vec<_>>(),
 		},
 		vesting: Default::default(),

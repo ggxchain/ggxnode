@@ -36,8 +36,9 @@ pub struct TokenInfo<Balance> {
 	pub reserved: Balance,
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[derive(Encode, Default, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderType {
+	#[default]
 	BUY,
 	SELL,
 }
@@ -49,12 +50,6 @@ impl OrderType {
 			OrderType::BUY => OrderType::SELL,
 			OrderType::SELL => OrderType::BUY,
 		}
-	}
-}
-
-impl Default for OrderType {
-	fn default() -> Self {
-		OrderType::BUY
 	}
 }
 
@@ -85,18 +80,10 @@ pub mod pallet {
 		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
 
 	#[pallet::genesis_config]
+	#[derive(Default)]
 	pub struct GenesisConfig {
 		pub asset_ids: Vec<u32>,
 		pub native_asset_id: u32,
-	}
-
-	impl Default for GenesisConfig {
-		fn default() -> Self {
-			GenesisConfig {
-				asset_ids: Default::default(),
-				native_asset_id: Default::default(),
-			}
-		}
 	}
 
 	#[pallet::genesis_build]
