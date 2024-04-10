@@ -10,13 +10,14 @@ members = [
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
 	"examples/cross-vm-communication/wasm-to-evm/flipper",
+	"c-kzg-4844",
 ]
 resolver = "2"
 
 [workspace.package]
 authors = ["GGXChain <admin@ggxchain.io>"]
 edition = "2021"
-version = "0.1.4"
+version = "0.1.5"
 repository = "https://github.com/ggxchain/ggxnode/"
 
 [workspace.dependencies]
@@ -224,19 +225,19 @@ prost = { version = "0.11", default-features = false }
 
 # Eth - Light client
 alloy-rlp = "0.3.2"
-eth-light-client-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
-eth-registry-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
+eth-light-client-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
+eth-registry-types = { package = "types", git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
 eth-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false, features = [
 	"eth2",
 ] }
 eth2-to-substrate-relay = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
-merkle-generator = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
-pallet-chain-extension-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
+merkle-generator = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
+pallet-chain-extension-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
 pallet-eth2-light-client = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 pallet-eth2-light-client-relayer-gadget = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
 pallet-eth2-light-client-relayer-gadget-cli = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43" }
-pallet-evm-eth-receipt-provider = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
-pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", rev = "60f184b4e92b41bb89ff1d208c0130008d9ef035", default-features = false }
+pallet-evm-eth-receipt-provider = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
+pallet-receipt-registry = { git = "https://github.com/ggxchain/transaction-receipt-relayer.git", ref = "0321957", default-features = false }
 webb-consensus-types = { git = "https://github.com/ggxchain/pallet-eth2-light-client.git", branch = "polkadot-v0.9.43", default-features = false }
 webb-proposals = { git = "https://github.com/ggxchain/webb-rs.git", branch = "polkadot-v0.9.43", default-features = false }
 
@@ -300,6 +301,10 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 # * https://github.com/paritytech/substrate/pull/14406
 [patch."https://github.com/paritytech/substrate.git"]
 sc-peerset = { git = "https://github.com/ggxchain/substrate.git", branch = "polkadot-v0.9.43" }
+
+# until https://github.com/ethereum/c-kzg-4844/issues/392 is resolved
+[patch."https://github.com/ethereum/c-kzg-4844.git"]
+c-kzg = { git = "https://github.com/ggxchain/c-kzg-4844.git", branch = "fix" }
 
 # [patch."https://github.com/ggxchain/pallet-eth2-light-client.git"]
 # webb-consensus-types = { path = "../pallet-eth2-light-client/crates/consensus-types/" }

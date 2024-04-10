@@ -207,3 +207,24 @@ To stop .#multi-fast or .#single-fast nodes
 ```bash
 nix run .#prune-running
 ```
+
+## Developer information
+
+Please be aware that the node uses substrate subxt to submit transactions and depends on the our metadata API.
+Anything related to eth_light_client would probably require to get updated next repos:
+
+* https://github.com/ggxchain/transaction-receipt-relayer/tree/main/relayer/metadata
+* https://github.com/ggxchain/pallet-eth2-light-client/tree/main/crates/eth2-pallet-init/metadata
+
+To generate a new metadata:
+
+```bash
+# run a new version of the node
+./ggxchain-node --dev
+
+
+# Please be aware that the executable should match the same version that you are using for library.
+# Otherwise, it may have compatibility issues
+cargo install subxt@version
+subxt metadata > file.scale
+```

@@ -16,48 +16,100 @@ env:
   GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
-  build-lint-common:
+  common:
     if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
     runs-on: buildjet-32vcpu-ubuntu-2204
+    container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+
+      - run: git config --global --add safe.directory "*"
+      - uses: technote-space/get-diff-action@v6.1.2
+        id: git-diff
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fmt + Doclint
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.fmt .\#checks.x86_64-linux.doclint 
-      - name: Runtime common
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-runtime-common .\#checks.x86_64-linux.nextest-runtime-common
-  build-lint-sydney:
+          PATTERNS: |
+            **/**.rs
+            Cargo.lock
+
+      - uses: dsherret/rust-toolchain-file@v1
+        if: steps.git-diff.outputs.diff
+
+      - uses: buildjet/cache@v3
+        if: steps.git-diff.outputs.diff
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+        if: steps.git-diff.outputs.diff
+
+      - name: clippy + build
+        if: steps.git-diff.outputs.diff
+        run: |
+          packages="runtime-common ggxchain-runtime-brooklyn ggxchain-runtime-sydney"
+          for pkg in $packages; do
+              cargo clippy --package=$pkg -- -D warnings
+              cargo build --locked --package=$pkg --release
+          done
+
+      - name: run tests common
+        if: steps.git-diff.outputs.diff
+        run: cargo test --release --package runtime-common
+
+
+  build-lint:
+    strategy:
+      matrix:
+        runtime: [sydney, brooklyn]
+      fail-fast: false
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
     runs-on: buildjet-32vcpu-ubuntu-2204
+    container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+
+      - run: git config --global --add safe.directory "*"
+      - uses: technote-space/get-diff-action@v6.1.2
+        id: git-diff
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
-  build-lint-brooklyn:
-    if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
-    runs-on: buildjet-32vcpu-ubuntu-2204
-    steps:
-      - uses: actions/checkout@v4
+          PATTERNS: |
+            **/**.rs
+            Cargo.lock
+
+      - uses: dsherret/rust-toolchain-file@v1
+        if: steps.git-diff.outputs.diff
+
+      - uses: buildjet/cache@v3
+        if: steps.git-diff.outputs.diff
         with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-      - uses: cachix/install-nix-action@v24
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: clippy + build + test
+        if: steps.git-diff.outputs.diff
+        run: |
+          cargo clippy --package=ggxchain-node --no-default-features --features=${{ matrix.runtime }} -- -D warnings
+          cargo build --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
+          cargo test --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
+
 
   docker-build-sydney:
     if: github.ref == 'refs/heads/main'
@@ -86,7 +138,7 @@ jobs:
       - name: Build, tag, and upload the docker image
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: c6u3u5c0
+          REGISTRY_ALIAS: k7w7q6c4
           REPOSITORY: ggxchain-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA -f Dockerfile.sydney .
@@ -131,7 +183,7 @@ jobs:
       - name: Build, tag, and upload the docker image
         env:
           REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: c6u3u5c0
+          REGISTRY_ALIAS: k7w7q6c4
           REPOSITORY: ggxchain-node
         run: |
           docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA -f Dockerfile.brooklyn .
