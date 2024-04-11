@@ -37,7 +37,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: buildjet/cache@v3
+      - uses: buildjet/cache@v4
         if: steps.git-diff.outputs.diff
         with:
           path: |
@@ -92,7 +92,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: buildjet/cache@v3
+      - uses: buildjet/cache@v4
         if: steps.git-diff.outputs.diff
         with:
           path: |
