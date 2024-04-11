@@ -3,9 +3,9 @@
   "id": "GGX",
   "chainType": "Live",
   "bootNodes": [
-    "/dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC",
-    "/dns/moon.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWCxnYzFkiFL5Dc6iEXXTVeFYFHmCqbhSosovEDid59TFR",
-    "/dns/earth.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWQxwb6tTHqaPy8s3133yqBuJZVvqJfH6GJGy2PspDAYzQ"
+    "/dns/bootnode-eu.ggxchain.net/tcp/33377/ws/p2p/12D3KooWBezvLPrGrpcmVPSvueGZKKEqFx7rMvxFTSMareVAjV49",
+    "/dns/bootnode-sg.ggxchain.net/tcp/33377/ws/p2p/12D3KooWKKFYQLrqRTUHLNDMZQn9Djr6XL6Pt1q5y5coLncgjFKR",
+    "/dns/bootnode-us.ggxchain.net/tcp/33377/ws/p2p/12D3KooWLw3Bv9DKp4vuHrrdQ8Wr52qedJKsYXqELqrLsfVfir8i"
   ],
   "telemetryEndpoints": [
     [
