@@ -58,6 +58,7 @@ pallet-im-online.workspace = true
 pallet-indices.workspace = true
 pallet-mmr.workspace = true
 pallet-multisig.workspace = true
+pallet-nfts.workspace = true
 pallet-offences.workspace = true
 pallet-preimage.workspace = true
 pallet-proxy.workspace = true
@@ -209,6 +210,7 @@ std = [
 	"pallet-indices/std",
 	"pallet-mmr/std",
 	"pallet-multisig/std",
+	"pallet-nfts/std",
 	"pallet-offences/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",

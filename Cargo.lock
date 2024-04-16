@@ -4846,6 +4846,7 @@ dependencies = [
  "pallet-insecure-randomness-collective-flip",
  "pallet-mmr",
  "pallet-multisig",
+ "pallet-nfts",
  "pallet-offences",
  "pallet-preimage",
  "pallet-proxy",
@@ -9218,6 +9219,24 @@ dependencies = [
  "log 0.4.20",
  "parity-scale-codec",
  "scale-info",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-nfts"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e49f6e44820affccaf517fd22af564f4b495d40"
+dependencies = [
+ "enumflags2",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log 0.4.20",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
@@ -16837,7 +16856,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "matchers",
- "parking_lot 0.9.0",
+ "parking_lot 0.7.1",
  "regex",
  "serde",
  "serde_json",
@@ -17065,9 +17084,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.7",
- "rand 0.5.6",
+ "rand 0.4.6",
  "static_assertions",
 ]
 
