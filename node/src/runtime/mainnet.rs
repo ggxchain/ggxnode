@@ -110,8 +110,8 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		// Monetary
 		balances: BalancesConfig {
 			balances: vec![
-				(MULTISIG.clone(), TOTAL_SUPPLY - (100_100 * GGX)),
-				(INITIAL_VALIDATOR.clone(), 100_100 * GGX),
+				(MULTISIG.clone(), TOTAL_SUPPLY - (1100 * GGX)),
+				(INITIAL_VALIDATOR.clone(), 1100 * GGX),
 			],
 		},
 		transaction_payment: Default::default(),
@@ -119,7 +119,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		staking: StakingConfig {
 			validator_count: 100,
 			minimum_validator_count: 1,
-			min_validator_bond: 100_000 * GGX,
+			min_validator_bond: 1000 * GGX,
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
 			stakers: vec![(
