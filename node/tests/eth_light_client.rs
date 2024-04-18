@@ -2,8 +2,27 @@ pub mod common;
 
 mod test {
 
+	#[cfg(not(feature = "brooklyn"))]
 	#[subxt::subxt(
 		runtime_metadata_path = "./tests/data/scale/eth_light_client.scale",
+		substitute_type(
+			path = "eth_types::pallet::InitInput<R>",
+			with = "::subxt::utils::Static<::eth_types::pallet::InitInput<R>>"
+		),
+		substitute_type(
+			path = "webb_proposals::header::TypedChainId",
+			with = "::subxt::utils::Static<::webb_proposals::TypedChainId>"
+		),
+		substitute_type(
+			path = "types::primitives::H160",
+			with = "::subxt::utils::Static<::eth_registry_types::H160>"
+		)
+	)]
+	pub mod ggx {}
+
+	#[cfg(feature = "brooklyn")]
+	#[subxt::subxt(
+		runtime_metadata_path = "./tests/data/scale/eth_light_client_brooklyn.scale",
 		substitute_type(
 			path = "eth_types::pallet::InitInput<R>",
 			with = "::subxt::utils::Static<::eth_types::pallet::InitInput<R>>"

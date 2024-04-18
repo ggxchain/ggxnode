@@ -43,7 +43,7 @@ jobs:
 
       - name: Generate Token
         id: generate_token
-        uses: getsentry/action-github-app-token@v2
+        uses: getsentry/action-github-app-token@v3
         with:
           private_key: ${{ secrets.GH_APP_PRIVATE_KEY }}
           app_id: ${{ secrets.GH_APP_ID }}
