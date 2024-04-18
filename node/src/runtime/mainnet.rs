@@ -73,19 +73,9 @@ fn expected_transaction_size() -> u32 {
 		},
 	)
 }
-
-pub fn testnet_genesis(
-	wasm_binary: &[u8],
-	sudo_key: AccountId,
-	endowed_accounts: Vec<(AccountId, u64)>,
-	initial_authorities: Vec<ValidatorIdentity>,
-	chain_id: u64,
-	nominate: bool,
-	bitcoin_confirmations: u32,
-	disable_difficulty_check: bool,
-) -> GenesisConfig {
-	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
-	let stash = 1000 * GGX;
+// Actually, I will revert it later, but it easier to work with code-version, then I'll create
+// a json version, and compiled version that will be included into the node.
+pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
 	const DEFAULT_DUST_VALUE: Balance = 1000;
 
@@ -100,11 +90,11 @@ pub fn testnet_genesis(
 	// (PUSH1 0x00 PUSH1 0x00 REVERT)
 	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
 
-	let stakers: Vec<_> = if nominate {
-		endowed_accounts.iter().map(|i| i.0.clone()).collect()
-	} else {
-		initial_authorities.iter().map(|i| i.id.clone()).collect()
-	};
+	const MULTISIG: AccountId = todo!();
+	const INITIAL_VALIDATOR: AccountId = todo!();
+	const VALIDATOR_SESSION_KEYS: SessionKeys = todo!();
+	const TOTAL_SUPPLY: Balance = 1_000_000_000 * GGX;
+	const CHAIN_ID: u64 = 8886u64;
 
 	GenesisConfig {
 		// System
@@ -114,67 +104,46 @@ pub fn testnet_genesis(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(sudo_key),
+			key: Some(MULTISIG.clone()),
 		},
 
 		// Monetary
 		balances: BalancesConfig {
-			// Configure endowed accounts with initial balance of 1 << 60.
-			balances: endowed_accounts
-				.iter()
-				.cloned()
-				.map(|(k, endowment)| (k, endowment as u128 * GGX))
-				.collect(),
+			balances: vec![
+				(MULTISIG.clone(), TOTAL_SUPPLY - (100_100 * GGX)),
+				(INITIAL_VALIDATOR.clone(), 100_100 * GGX),
+			],
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
 		staking: StakingConfig {
 			validator_count: 100,
 			minimum_validator_count: 1,
-			min_validator_bond: 1000 * GGX,
+			min_validator_bond: 100_000 * GGX,
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
-			stakers: stakers
-				.iter()
-				.map(|user| {
-					let status = if initial_authorities
-						.iter()
-						.any(|validator| validator.id == *user)
-					{
-						StakerStatus::Validator
-					} else {
-						use rand::{seq::SliceRandom, Rng};
-						let limit =
-							(pos::MaxNominations::get() as usize).min(initial_authorities.len());
-						let count = rng.gen::<usize>() % limit + 1;
-						let nominations = initial_authorities
-							.as_slice()
-							.choose_multiple(&mut rng, count)
-							.map(|choice| choice.id.clone())
-							.collect::<Vec<_>>();
-						StakerStatus::Nominator(nominations)
-					};
-
-					(user.clone(), user.clone(), stash, status)
-				})
-				.collect::<Vec<_>>(),
+			stakers: vec![(
+				INITIAL_VALIDATOR.clone(),
+				INITIAL_VALIDATOR.clone(),
+				100_000 * GGX,
+				StakerStatus::Validator,
+			)],
 			..Default::default()
 		},
 		// Consensus
 		session: SessionConfig {
-			keys: initial_authorities
-				.iter()
-				.map(|x| -> (AccountId, AccountId, SessionKeys) {
-					(x.id.clone(), x.id.clone(), x.session_keys.clone())
-				})
-				.collect::<Vec<_>>(),
+			keys: vec![(
+				INITIAL_VALIDATOR.clone(),
+				INITIAL_VALIDATOR.clone(),
+				VALIDATOR_SESSION_KEYS,
+			)],
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
 		beefy: BeefyConfig::default(),
 
 		// EVM compatibility
-		evm_chain_id: EVMChainIdConfig { chain_id },
+		evm_chain_id: EVMChainIdConfig { chain_id: CHAIN_ID },
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
@@ -201,27 +170,54 @@ pub fn testnet_genesis(
 				session_time_in_seconds: 4 * 3600, // 4 hours
 			},
 		},
-		assets: Default::default(),
+		assets: AssetsConfig {
+			assets: vec![
+				// id, owner, is_sufficient, min_balance
+				(1, MULTISIG.clone(), true, 1),
+				(2, MULTISIG.clone(), true, 1),
+				(3, MULTISIG.clone(), true, 1),
+				(4, MULTISIG.clone(), true, 1),
+				(5, MULTISIG.clone(), true, 1),
+				(6, MULTISIG.clone(), true, 1),
+				(7, MULTISIG.clone(), true, 1),
+				(8, MULTISIG.clone(), true, 1),
+				(9, MULTISIG.clone(), true, 1),
+			],
+			metadata: vec![
+				// id, name, symbol, decimals
+				(1, "Wrapped Ethereum".into(), "ETH".into(), 18),
+				(2, "Tether USD".into(), "USDT".into(), 6),
+				(3, "USD Coin".into(), "USDC".into(), 6),
+				(4, "Chainlink".into(), "LINK".into(), 18),
+				(5, "Uniswap".into(), "UNI".into(), 18),
+				// From the GGx cosmos testnet
+				(
+					6,
+					"GGx Cosmos testnet stake token".into(),
+					"STAKE".into(),
+					18,
+				),
+				// From the GGx cosmos testnet
+				(7, "GGx Cosmos testnet ert token".into(), "ERT".into(), 18),
+				(8, "Cosmos Hub Testnet".into(), "ATOM".into(), 18),
+				(9, "Axelar testnet token".into(), "AXL".into(), 18),
+				(10, "Ripple testnet token".into(), "XRP".into(), 6),
+			],
+			accounts: vec![],
+		},
 		vesting: Default::default(),
 		indices: Default::default(),
 		im_online: Default::default(),
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
 		account_filter: AccountFilterConfig {
-			allowed_accounts: initial_authorities
-				.iter()
-				.map(|x| (x.id.clone(), ()))
-				.collect(),
+			allowed_accounts: vec![(INITIAL_VALIDATOR, ())],
 		},
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 666)],
+			asset_id_by_name: vec![("ERT".to_string(), 7), ("stake".to_string(), 6)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
-				(
-					webb_proposals::TypedChainId::Evm(1),
-					NetworkConfig::new(&Network::Mainnet),
-				),
 				(
 					webb_proposals::TypedChainId::Evm(5),
 					NetworkConfig::new(&Network::Goerli),
@@ -234,23 +230,16 @@ pub fn testnet_genesis(
 			phantom: std::marker::PhantomData,
 		},
 		asset_registry: Default::default(),
-		tokens: TokensConfig {
-			balances: endowed_accounts
-				.iter()
-				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
-				.collect(),
-		},
+		// Do we need something here @Smith?
+		tokens: TokensConfig { balances: vec![] },
 		oracle: OracleConfig {
-			authorized_oracles: endowed_accounts
-				.iter()
-				.flat_map(|k| vec![(k.clone().0, Default::default())])
-				.collect(),
+			authorized_oracles: vec![],
 			max_delay: DEFAULT_MAX_DELAY_MS,
 		},
 		btc_relay: BTCRelayConfig {
-			bitcoin_confirmations,
+			bitcoin_confirmations: 6, // Smith, Bohdan are we going with 6?
 			parachain_confirmations: 1,
-			disable_difficulty_check,
+			disable_difficulty_check: false, // SHOULD BE FALSE RIGHT?
 			disable_inclusion_check: false,
 		},
 		issue: IssueConfig {
@@ -303,6 +292,10 @@ pub fn testnet_genesis(
 		loans: LoansConfig {
 			max_exchange_rate: Rate::from_inner(loans::DEFAULT_MAX_EXCHANGE_RATE),
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
+		},
+		dex: DexConfig {
+			asset_ids: vec![8888, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+			native_asset_id: 8888,
 		},
 	}
 }

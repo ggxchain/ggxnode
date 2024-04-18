@@ -4952,6 +4952,7 @@ dependencies = [
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-conviction-voting",
+ "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
  "pallet-eth2-light-client",
