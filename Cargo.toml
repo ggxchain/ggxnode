@@ -298,6 +298,7 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 
 # Dex
 pallet-dex = { path = "pallet/dex", default-features = false }
+pallet-psp37 = { path = "pallet/psp37", default-features = false }
 
 # Supress warnings from the peerset in logs during syncing
 # The polkadot did the same in the next release. See:
