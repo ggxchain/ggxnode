@@ -90,9 +90,18 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 	// (PUSH1 0x00 PUSH1 0x00 REVERT)
 	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
 
-	const MULTISIG: AccountId = todo!();
-	const INITIAL_VALIDATOR: AccountId = todo!();
-	const VALIDATOR_SESSION_KEYS: SessionKeys = todo!();
+	// GGx Orion validator
+	let orion = ValidatorIdentity::from_pub(
+		"5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
+		"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
+		"KWBExKgjxJ6afp2uc6qN2RR3wcTxfWrqkzZfAvbLFiwjipnVH",
+	);
+
+	// some random address until we have proper one
+	let multisig: AccountId = "qHWAsDyPAWtraWVg1cyngxjLxcCMNv6VetB3DLbFsYD8NSjNx"
+		.parse()
+		.unwrap();
+
 	const TOTAL_SUPPLY: Balance = 1_000_000_000 * GGX;
 	const CHAIN_ID: u64 = 8886u64;
 
@@ -104,14 +113,14 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(MULTISIG.clone()),
+			key: Some(multisig.clone()),
 		},
 
 		// Monetary
 		balances: BalancesConfig {
 			balances: vec![
-				(MULTISIG.clone(), TOTAL_SUPPLY - (1100 * GGX)),
-				(INITIAL_VALIDATOR.clone(), 1100 * GGX),
+				(multisig.clone(), TOTAL_SUPPLY - (1100 * GGX)),
+				(orion.id.clone(), 1100 * GGX),
 			],
 		},
 		transaction_payment: Default::default(),
@@ -123,20 +132,16 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
 			stakers: vec![(
-				INITIAL_VALIDATOR.clone(),
-				INITIAL_VALIDATOR.clone(),
-				100_000 * GGX,
+				orion.id.clone(),
+				orion.id.clone(),
+				1_000 * GGX,
 				StakerStatus::Validator,
 			)],
 			..Default::default()
 		},
 		// Consensus
 		session: SessionConfig {
-			keys: vec![(
-				INITIAL_VALIDATOR.clone(),
-				INITIAL_VALIDATOR.clone(),
-				VALIDATOR_SESSION_KEYS,
-			)],
+			keys: vec![(orion.id.clone(), orion.id.clone(), orion.session_keys)],
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
@@ -176,8 +181,8 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 				// But we will add expected assets for our cosmos testnet.
 
 				// id, owner, is_sufficient, min_balance
-				(1, MULTISIG.clone(), true, 1),
-				(2, MULTISIG.clone(), true, 1),
+				(1, multisig.clone(), true, 1),
+				(2, multisig.clone(), true, 1),
 			],
 			metadata: vec![
 				(
@@ -196,7 +201,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
 		account_filter: AccountFilterConfig {
-			allowed_accounts: vec![(INITIAL_VALIDATOR, ())],
+			allowed_accounts: vec![(orion.id, ())],
 		},
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 1), ("stake".to_string(), 2)],
