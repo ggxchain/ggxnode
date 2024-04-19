@@ -172,36 +172,21 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		},
 		assets: AssetsConfig {
 			assets: vec![
+				// As per discussion with Pavel, we don't want to commit ourselves to any assets at genesis.
+				// But we will add expected assets for our cosmos testnet.
+
 				// id, owner, is_sufficient, min_balance
 				(1, MULTISIG.clone(), true, 1),
 				(2, MULTISIG.clone(), true, 1),
-				(3, MULTISIG.clone(), true, 1),
-				(4, MULTISIG.clone(), true, 1),
-				(5, MULTISIG.clone(), true, 1),
-				(6, MULTISIG.clone(), true, 1),
-				(7, MULTISIG.clone(), true, 1),
-				(8, MULTISIG.clone(), true, 1),
-				(9, MULTISIG.clone(), true, 1),
 			],
 			metadata: vec![
-				// id, name, symbol, decimals
-				(1, "Wrapped Ethereum".into(), "ETH".into(), 18),
-				(2, "Tether USD".into(), "USDT".into(), 6),
-				(3, "USD Coin".into(), "USDC".into(), 6),
-				(4, "Chainlink".into(), "LINK".into(), 18),
-				(5, "Uniswap".into(), "UNI".into(), 18),
-				// From the GGx cosmos testnet
 				(
-					6,
+					1,
 					"GGx Cosmos testnet stake token".into(),
 					"STAKE".into(),
 					18,
 				),
-				// From the GGx cosmos testnet
-				(7, "GGx Cosmos testnet ert token".into(), "ERT".into(), 18),
-				(8, "Cosmos Hub Testnet".into(), "ATOM".into(), 18),
-				(9, "Axelar testnet token".into(), "AXL".into(), 18),
-				(10, "Ripple testnet token".into(), "XRP".into(), 6),
+				(2, "GGx Cosmos testnet ert token".into(), "ERT".into(), 18),
 			],
 			accounts: vec![],
 		},
@@ -214,7 +199,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			allowed_accounts: vec![(INITIAL_VALIDATOR, ())],
 		},
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 7), ("stake".to_string(), 6)],
+			asset_id_by_name: vec![("ERT".to_string(), 1), ("stake".to_string(), 2)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
@@ -237,9 +222,9 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			max_delay: DEFAULT_MAX_DELAY_MS,
 		},
 		btc_relay: BTCRelayConfig {
-			bitcoin_confirmations: 6, // Smith, Bohdan are we going with 6?
+			bitcoin_confirmations: 6,
 			parachain_confirmations: 1,
-			disable_difficulty_check: false, // SHOULD BE FALSE RIGHT?
+			disable_difficulty_check: false,
 			disable_inclusion_check: false,
 		},
 		issue: IssueConfig {
@@ -294,7 +279,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8888, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10],
+			asset_ids: vec![8888, 1, 2],
 			native_asset_id: 8888,
 		},
 	}
