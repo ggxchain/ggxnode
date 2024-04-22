@@ -25,6 +25,7 @@ mod ink;
 pub mod light_client;
 pub mod pos;
 mod prelude;
+pub mod psp37;
 
 mod version;
 pub use version::VERSION;
@@ -715,6 +716,10 @@ construct_runtime!(
 
 		// Dex
 		Dex: pallet_dex,
+
+		// Psp37
+		Psp37: pallet_psp37,
+
 	}
 );
 

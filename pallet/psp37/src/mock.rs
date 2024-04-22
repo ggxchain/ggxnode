@@ -1,18 +1,25 @@
-use crate as pallet_dex;
+use crate as pallet_psp37;
 
 use frame_support::{
-	pallet_prelude::Weight,
-	parameter_types, sp_io,
-	traits::{AsEnsureOriginWithArg, GenesisBuild, Hooks},
+	pallet_prelude::Weight, parameter_types, sp_io, traits::AsEnsureOriginWithArg,
 	weights::constants::RocksDbWeight,
-	PalletId,
 };
+use frame_system::EnsureSigned;
+use pallet_nfts::PalletFeatures;
 use sp_core::{ConstU128, ConstU32, ConstU64, H256};
-use sp_runtime::{testing::Header, traits::IdentityLookup};
+use sp_runtime::{testing::Header, traits::IdentityLookup, AccountId32, MultiSignature};
 
-pub type AccountId = u128;
+pub const ALICE: AccountId32 = AccountId32::new([0u8; 32]);
+pub const BOB: AccountId32 = AccountId32::new([1u8; 32]);
+pub const CHARLIE: AccountId32 = AccountId32::new([2u8; 32]);
+
+pub const INITIAL_BALANCE: u128 = 1_000_000_000;
+
+pub type AccountId = AccountId32;
 pub type Balance = u128;
 pub type AssetId = u32;
+
+pub type Signature = MultiSignature;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -26,8 +33,9 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
-	Assets: pallet_assets,
-	Dex: pallet_dex,
+		Assets: pallet_assets,
+		Nfts: pallet_nfts,
+		Psp37: pallet_psp37,
 	}
 );
 
@@ -123,15 +131,47 @@ impl pallet_timestamp::Config for Test {
 }
 
 parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
+	pub const CollectionDeposit: Balance = 100;
+	pub const ItemDeposit: Balance = 1 ;
+	pub const KeyLimit: u32 = 32;
+	pub const ValueLimit: u32 = 256;
+	pub const ApprovalsLimit: u32 = 20;
+	pub const ItemAttributesApprovalsLimit: u32 = 20;
+	pub const MaxTips: u32 = 10;
+
+	pub Features: PalletFeatures = PalletFeatures::all_enabled();
+	pub const MaxAttributesPerCall: u32 = 10;
 }
 
-impl pallet_dex::Config for Test {
+impl pallet_nfts::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
-	type PalletId = DexPalletId;
-	type Fungibles = Assets;
-	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
+	type CollectionId = u32;
+	type ItemId = u32;
 	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type CollectionDeposit = CollectionDeposit;
+	type ItemDeposit = ItemDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type AttributeDepositBase = MetadataDepositBase;
+	type DepositPerByte = MetadataDepositPerByte;
+	type StringLimit = AssetsStringLimit;
+	type KeyLimit = KeyLimit;
+	type ValueLimit = ValueLimit;
+	type ApprovalsLimit = ApprovalsLimit;
+	type ItemAttributesApprovalsLimit = ItemAttributesApprovalsLimit;
+	type MaxTips = MaxTips;
+	type MaxDeadlineDuration = ();
+	type MaxAttributesPerCall = MaxAttributesPerCall;
+	type Features = Features;
+	type OffchainSignature = Signature;
+	type OffchainPublic = <Signature as sp_runtime::traits::Verify>::Signer;
+	type WeightInfo = ();
+	type CreateOrigin = AsEnsureOriginWithArg<EnsureSigned<AccountId>>;
+	type Locker = ();
+}
+
+impl pallet_psp37::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
 }
 
 pub struct ExtBuilder;
@@ -148,47 +188,11 @@ impl ExtBuilder {
 			.build_storage::<Test>()
 			.unwrap();
 
-		// This will cause some initial issuance
 		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![(1, 9000), (2, 800)],
+			balances: vec![(ALICE, INITIAL_BALANCE)],
 		}
 		.assimilate_storage(&mut storage)
-		.ok();
-
-		pallet_assets::GenesisConfig::<Test> {
-			assets: vec![
-				// id, owner, is_sufficient, min_balance
-				(999, 0, true, 1),
-				(888, 0, true, 1),
-				(777, 0, true, 1),
-			],
-			metadata: vec![
-				// id, name, symbol, decimals
-				(999, "Bitcoin".into(), "BTC".into(), 10),
-				(888, "GGxchain".into(), "GGXT".into(), 18),
-				(777, "USDT".into(), "USDT".into(), 10),
-			],
-			accounts: vec![
-				// id, account_id, balance
-				(999, 1, 1000),
-				(888, 1, 1000),
-				(777, 1, 1000),
-				(999, 2, 1000),
-				(888, 2, 1000),
-				(777, 2, 1000),
-			],
-		}
-		.assimilate_storage(&mut storage)
-		.ok();
-
-		<pallet_dex::GenesisConfig as frame_support::traits::GenesisBuild<Test>>::assimilate_storage(
-      &pallet_dex::GenesisConfig {
-        asset_ids: vec![8888, 999, 888, 777],
-        native_asset_id: 8888,
-      },
-      &mut storage,
-  )
-  .unwrap();
+		.unwrap();
 
 		let mut ext = sp_io::TestExternalities::new(storage);
 		ext.execute_with(|| System::set_block_number(1));
@@ -198,17 +202,4 @@ impl ExtBuilder {
 
 pub fn new_test_ext() -> sp_io::TestExternalities {
 	ExtBuilder::default().build()
-}
-
-pub fn run_to_block(n: u64) {
-	while System::block_number() < n {
-		if System::block_number() > 0 {
-			Dex::on_finalize(System::block_number());
-			System::on_finalize(System::block_number());
-		}
-		System::reset_events();
-		System::set_block_number(System::block_number() + 1);
-		System::on_initialize(System::block_number());
-		Dex::on_initialize(System::block_number());
-	}
 }
