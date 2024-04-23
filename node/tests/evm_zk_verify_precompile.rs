@@ -38,7 +38,7 @@ async fn call_zk_groth16_verify(
 	);
 
 	// Create contract instance
-	let contract = ZKGroth16Verify::new(contract_addr.clone(), Arc::new(client.clone()));
+	let contract = ZKGroth16Verify::new(*contract_addr, Arc::new(client.clone()));
 
 	let valid_tx: bool = contract
 		.verify(

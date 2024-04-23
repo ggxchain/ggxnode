@@ -27,7 +27,7 @@ async fn call_set_session_key(
 	abigen!(Session, "node/tests/evm_set_session_keys.json",);
 
 	// Create contract instance
-	let contract = Session::new(contract_addr.clone(), Arc::new(client.clone()));
+	let contract = Session::new(*contract_addr, Arc::new(client.clone()));
 
 	let decoded_keys = hex::decode(session_keys).expect("Decoding failed");
 	let proof = "00";
