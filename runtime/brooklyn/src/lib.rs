@@ -583,6 +583,8 @@ parameter_types! {
 
 	pub Features: PalletFeatures = PalletFeatures::all_enabled();
 	pub const MaxAttributesPerCall: u32 = 10;
+
+	pub const NftsStringLimit: u32 = 256;
 }
 
 impl pallet_nfts::Config for Runtime {
@@ -596,7 +598,7 @@ impl pallet_nfts::Config for Runtime {
 	type MetadataDepositBase = MetadataDepositBase;
 	type AttributeDepositBase = MetadataDepositBase;
 	type DepositPerByte = MetadataDepositPerByte;
-	type StringLimit = StringLimit;
+	type StringLimit = NftsStringLimit;
 	type KeyLimit = KeyLimit;
 	type ValueLimit = ValueLimit;
 	type ApprovalsLimit = ApprovalsLimit;
