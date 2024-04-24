@@ -10,7 +10,7 @@ fn test_create_id() {
 			Error::<Test>::DefaultItemIdNotExist
 		);
 
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 	})
@@ -19,7 +19,7 @@ fn test_create_id() {
 #[test]
 fn test_mint() {
 	new_test_ext().execute_with(|| {
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 		assert_ok!(Psp37::mint(RuntimeOrigin::signed(ALICE), 0, ALICE));
@@ -29,7 +29,7 @@ fn test_mint() {
 #[test]
 fn test_approve() {
 	new_test_ext().execute_with(|| {
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 		assert_ok!(Psp37::mint(RuntimeOrigin::signed(ALICE), 0, ALICE));
@@ -46,7 +46,7 @@ fn test_approve() {
 #[test]
 fn test_transfer() {
 	new_test_ext().execute_with(|| {
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 		assert_ok!(Psp37::mint(RuntimeOrigin::signed(ALICE), 0, ALICE));
@@ -64,7 +64,7 @@ fn test_transfer() {
 #[test]
 fn test_transfer_from() {
 	new_test_ext().execute_with(|| {
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 		assert_ok!(Psp37::mint(RuntimeOrigin::signed(ALICE), 0, ALICE));
@@ -95,7 +95,7 @@ fn test_transfer_from() {
 #[test]
 fn test_set_metadata() {
 	new_test_ext().execute_with(|| {
-		DefaultItemId::<Test>::put(0);
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_ok!(Psp37::create_id(RuntimeOrigin::signed(ALICE), ALICE));
 		assert_ok!(Psp37::mint(RuntimeOrigin::signed(ALICE), 0, ALICE));
@@ -103,5 +103,20 @@ fn test_set_metadata() {
 		let data: BoundedVec<u8, AssetsStringLimit> = vec![1, 2, 3].try_into().unwrap();
 
 		assert_ok!(Psp37::set_metadata(RuntimeOrigin::signed(ALICE), 0, data));
+	})
+}
+
+#[test]
+fn test_set_default_item_id() {
+	new_test_ext().execute_with(|| {
+		assert_ok!(Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0));
+
+		let item_id = DefaultItemId::<Test>::get();
+		assert_eq!(item_id, Some(0));
+
+		assert_noop!(
+			Psp37::init_default_item_id(RuntimeOrigin::signed(ALICE), 0),
+			Error::<Test>::DefaultItemIdHadInited
+		);
 	})
 }

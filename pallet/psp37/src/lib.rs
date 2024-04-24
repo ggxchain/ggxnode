@@ -12,9 +12,12 @@ use frame_system::{
 	pallet_prelude::{BlockNumberFor, OriginFor},
 };
 pub use pallet::*;
-use pallet_nfts::{CollectionConfig, CollectionSettings, MintSettings};
+use pallet_nfts::{
+	CollectionConfig, CollectionSettings, Incrementable, MintSettings, NextCollectionId,
+};
 
 use scale_info::prelude::{vec, vec::Vec};
+use sp_runtime::traits::One;
 pub use sp_runtime::traits::{StaticLookup, Zero};
 type AccountIdLookupOf<T> = <<T as frame_system::Config>::Lookup as StaticLookup>::Source;
 // pub use xcm::prelude::*;
@@ -57,8 +60,45 @@ pub mod pallet {
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
 	pub enum Event<T: Config<I>, I: 'static = ()> {
-		/// Approved
-		Approved,
+		/// An `item` of a `id` has been approved by the `owner` for transfer by
+		/// a `operator`.
+		Approval {
+			owner: T::AccountId,
+			operator: AccountIdLookupOf<T>,
+			id: T::CollectionId,
+			value: BalanceOf<T, I>,
+		},
+
+		/// An `item` was transferred.
+		Transfer {
+			from: T::AccountId,
+			to: AccountIdLookupOf<T>,
+			id: T::CollectionId,
+			value: BalanceOf<T, I>,
+		},
+
+		/// A `token id` was created.
+		Created {
+			id: T::CollectionId,
+			creator: T::AccountId,
+			owner: AccountIdLookupOf<T>,
+		},
+
+		/// `token value` was issued.
+		Issued {
+			id: T::CollectionId,
+			owner: AccountIdLookupOf<T>,
+			value: BalanceOf<T, I>,
+		},
+
+		/// New metadata has been set for an item.
+		MetadataSet {
+			id: T::CollectionId,
+			data: BoundedVec<u8, T::StringLimit>,
+		},
+
+		/// set default item id
+		DefaultItemIdSet { id: T::ItemId },
 	}
 
 	// Errors inform users that something went wrong.
@@ -68,6 +108,8 @@ pub mod pallet {
 		DefaultItemIdNotExist,
 		// From account Id not equ origin
 		FromIdNotEquOrigin,
+		// Default item had init
+		DefaultItemIdHadInited,
 	}
 
 	#[pallet::call]
@@ -78,20 +120,31 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			operator: AccountIdLookupOf<T>,
 			id: T::CollectionId,
-			_value: BalanceOf<T, I>,
+			value: BalanceOf<T, I>,
 		) -> DispatchResult {
-			let _who = ensure_signed(origin.clone())?;
+			let owner = ensure_signed(origin.clone())?;
 
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::approve_transfer(
+			let rt = pallet_nfts::Pallet::<T, I>::approve_transfer(
 				origin.clone(),
 				id,
 				item_id.unwrap(),
-				operator,
+				operator.clone(),
 				None,
-			)
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::Approval {
+					owner,
+					operator,
+					id,
+					value,
+				});
+			}
+
+			Ok(rt)
 		}
 
 		#[pallet::weight({0})]
@@ -100,15 +153,31 @@ pub mod pallet {
 			origin: OriginFor<T>,
 			to: AccountIdLookupOf<T>,
 			id: T::CollectionId,
-			_value: BalanceOf<T, I>,
+			value: BalanceOf<T, I>,
 			_data: Vec<u8>,
 		) -> DispatchResult {
-			let _who = ensure_signed(origin.clone())?;
+			let from = ensure_signed(origin.clone())?;
 
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::transfer(origin.clone(), id, item_id.unwrap(), to)
+			let rt = pallet_nfts::Pallet::<T, I>::transfer(
+				origin.clone(),
+				id,
+				item_id.unwrap(),
+				to.clone(),
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::Transfer {
+					from,
+					to,
+					id,
+					value,
+				});
+			}
+
+			Ok(rt)
 		}
 
 		#[pallet::weight({0})]
@@ -118,7 +187,7 @@ pub mod pallet {
 			from: T::AccountId,
 			to: AccountIdLookupOf<T>,
 			id: T::CollectionId,
-			_value: BalanceOf<T, I>,
+			value: BalanceOf<T, I>,
 			_data: Vec<u8>,
 		) -> DispatchResult {
 			let who = ensure_signed(origin.clone())?;
@@ -128,26 +197,49 @@ pub mod pallet {
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::transfer(origin.clone(), id, item_id.unwrap(), to)
+			let rt = pallet_nfts::Pallet::<T, I>::transfer(
+				origin.clone(),
+				id,
+				item_id.unwrap(),
+				to.clone(),
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::Transfer {
+					from,
+					to,
+					id,
+					value,
+				});
+			}
+
+			Ok(rt)
 		}
 
 		#[pallet::weight({0})]
 		#[pallet::call_index(3)]
 		pub fn create_id(origin: OriginFor<T>, owner: AccountIdLookupOf<T>) -> DispatchResult {
-			let _who = ensure_signed(origin.clone())?;
+			let creator = ensure_signed(origin.clone())?;
 
+			let id = NextCollectionId::<T, I>::get().unwrap_or(T::CollectionId::initial_value());
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::create(
+			let rt = pallet_nfts::Pallet::<T, I>::create(
 				origin.clone(),
-				owner,
+				owner.clone(),
 				CollectionConfig {
 					settings: CollectionSettings::all_enabled(),
 					max_supply: None,
 					mint_settings: MintSettings::default(),
 				},
-			)
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::Created { id, creator, owner });
+			}
+
+			Ok(rt)
 		}
 
 		#[pallet::weight({0})]
@@ -162,7 +254,23 @@ pub mod pallet {
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::mint(origin.clone(), id, item_id.unwrap(), mint_to, None)
+			let rt = pallet_nfts::Pallet::<T, I>::mint(
+				origin.clone(),
+				id,
+				item_id.unwrap(),
+				mint_to.clone(),
+				None,
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::Issued {
+					id,
+					owner: mint_to,
+					value: One::one(),
+				});
+			}
+
+			Ok(rt)
 		}
 
 		#[pallet::weight({0})]
@@ -177,7 +285,33 @@ pub mod pallet {
 			let item_id = DefaultItemId::<T, I>::get();
 			ensure!(item_id.is_some(), Error::<T, I>::DefaultItemIdNotExist);
 
-			pallet_nfts::Pallet::<T, I>::set_metadata(origin.clone(), id, item_id.unwrap(), data)
+			let rt = pallet_nfts::Pallet::<T, I>::set_metadata(
+				origin.clone(),
+				id,
+				item_id.unwrap(),
+				data.clone(),
+			)?;
+
+			if rt == () {
+				Self::deposit_event(Event::MetadataSet { id, data });
+			}
+
+			Ok(rt)
+		}
+
+		#[pallet::weight({0})]
+		#[pallet::call_index(6)]
+		pub fn init_default_item_id(origin: OriginFor<T>, id: T::ItemId) -> DispatchResult {
+			let _who = ensure_signed(origin.clone())?;
+
+			let item_id = DefaultItemId::<T, I>::get();
+			ensure!(item_id.is_none(), Error::<T, I>::DefaultItemIdHadInited);
+
+			DefaultItemId::<T, I>::put(id);
+
+			Self::deposit_event(Event::DefaultItemIdSet { id });
+
+			Ok(())
 		}
 	}
 }
