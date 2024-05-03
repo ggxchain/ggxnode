@@ -56,7 +56,7 @@ impl SubstrateCli for Cli {
 	fn load_spec(&self, id: &str) -> Result<Box<dyn sc_service::ChainSpec>, String> {
 		Ok(match id {
 			"dev" => Box::new(chain_spec::development_config()?),
-			// "" | "local" => Box::new(chain_spec::local_testnet_config()?),
+			"" | "local" => Box::new(chain_spec::local_testnet_config()?),
 			// on """release""", replace with  included resource
 			#[cfg(feature = "brooklyn")]
 			"brooklyn" => Box::new(chain_spec::brooklyn_testnet_config()?),

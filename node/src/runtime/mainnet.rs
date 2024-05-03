@@ -74,13 +74,18 @@ fn expected_transaction_size() -> u32 {
 	)
 }
 
-fn parse_account_id(s: &str) -> AccountId {
-	s.parse().unwrap()
-}
-
-// Actually, I will revert it later, but it easier to work with code-version, then I'll create
-// a json version, and compiled version that will be included into the node.
-pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
+pub fn testnet_genesis(
+	wasm_binary: &[u8],
+	sudo_key: AccountId,
+	endowed_accounts: Vec<(AccountId, u64)>,
+	initial_authorities: Vec<ValidatorIdentity>,
+	chain_id: u64,
+	nominate: bool,
+	bitcoin_confirmations: u32,
+	disable_difficulty_check: bool,
+) -> GenesisConfig {
+	let mut rng = rand::rngs::StdRng::seed_from_u64(0);
+	let stash = 1000 * GGX;
 	const DEFAULT_MAX_DELAY_MS: u32 = 60 * 60 * 1000; // one hour
 	const DEFAULT_DUST_VALUE: Balance = 1000;
 
@@ -95,53 +100,11 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 	// (PUSH1 0x00 PUSH1 0x00 REVERT)
 	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
 
-	let session_keys = SessionKeys {
-		aura: sr25519::Public::from_string(
-			"0x26c157b927d4dcc5a8f02ecaa6270052a7b7f228ee401436b07dc6b3de232a29",
-		)
-		.unwrap()
-		.into(),
-		grandpa: ed25519::Public::from_string(
-			"0x439857916bd7b0b49293bb52742187295a45d11b8919d43a4c6a7ccce0cb4d34",
-		)
-		.unwrap()
-		.into(),
-		im_online: sr25519::Public::from_string(
-			"0x16909c2879b8fcacec6ceb5505219870bbaddd9dc8cafc9437c818f92e144735",
-		)
-		.unwrap()
-		.into(),
-		beefy: ecdsa::Public::from_string(
-			"0x027f5ad307acaa5cda676a6e2915c8ec74a412279b0dedd8e9fe6fe4cae3c6f766",
-		)
-		.unwrap()
-		.into(),
+	let stakers: Vec<_> = if nominate {
+		endowed_accounts.iter().map(|i| i.0.clone()).collect()
+	} else {
+		initial_authorities.iter().map(|i| i.id.clone()).collect()
 	};
-	let validator_identity: ValidatorIdentity = ValidatorIdentity {
-		id: parse_account_id("qHWFTG53dT7WvVa4HeGgrAwYNPDs6WFvzgkwxtJbQzJyjQH1S"),
-		session_keys,
-	};
-
-	let multisig_owners: Vec<_> = [
-		"5H9a1Q4rqzEK1SU5gFZBFjdBUEvCSGxJb7z9pRoE3veut153", // Raymond
-		"5ERyuQCk9gt1SaTggiDReduDsgbhkYnUdAaLkCHZR7paEbuw", // James
-		"5DkfsYio1xAQUeVoWemhPu8MnjPbmzKjmrNQj9N7auxsc5ut", // Pavel
-		"VkK5teWKAw7HHo4mzX4ked3Ync3oSKxmfyF6LbNKj86mVZTA6", // Matthew
-		"qHTz6mHEWviY3GxfPKhaXkw2MdFcwbF7KbRb4kTMWx9WVUnUw", // Bohdan
-		"qHTE6GBv7M1ZJ97Nnzszana18AN3CM9Bj56zxmveXSG4cT8p3", // Smith
-		"5HjEdSyJMog6CMqPvUKrcXFVntY4Zq4bYsY67bEvxS665LF4", // Artur
-	]
-	.into_iter()
-	.map(parse_account_id)
-	.collect();
-
-	// some random address until we have proper one
-	let multisig: AccountId = "qHWv27e4rqEc4ua35SxJLA3Nhtc6FPQjiiuQfdJc8qH6jGdyg"
-		.parse()
-		.unwrap();
-
-	const TOTAL_SUPPLY: Balance = 1_000_000_000 * GGX;
-	const CHAIN_ID: u64 = 8886u64;
 
 	GenesisConfig {
 		// System
@@ -151,21 +114,17 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(multisig.clone()),
+			key: Some(sudo_key),
 		},
 
 		// Monetary
 		balances: BalancesConfig {
-			balances: [
-				(
-					multisig.clone(),
-					TOTAL_SUPPLY - (1100 * GGX) - (500 * GGX * multisig_owners.len() as u128),
-				),
-				(validator_identity.id.clone(), 1100 * GGX),
-			]
-			.into_iter()
-			.chain(multisig_owners.iter().map(|x| (x.clone(), 500 * GGX)))
-			.collect(),
+			// Configure endowed accounts with initial balance of 1 << 60.
+			balances: endowed_accounts
+				.iter()
+				.cloned()
+				.map(|(k, endowment)| (k, endowment as u128 * GGX))
+				.collect(),
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
@@ -175,28 +134,47 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			min_validator_bond: 1000 * GGX,
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
-			stakers: vec![(
-				validator_identity.id.clone(),
-				validator_identity.id.clone(),
-				1_000 * GGX,
-				StakerStatus::Validator,
-			)],
+			stakers: stakers
+				.iter()
+				.map(|user| {
+					let status = if initial_authorities
+						.iter()
+						.any(|validator| validator.id == *user)
+					{
+						StakerStatus::Validator
+					} else {
+						use rand::{seq::SliceRandom, Rng};
+						let limit =
+							(pos::MaxNominations::get() as usize).min(initial_authorities.len());
+						let count = rng.gen::<usize>() % limit + 1;
+						let nominations = initial_authorities
+							.as_slice()
+							.choose_multiple(&mut rng, count)
+							.map(|choice| choice.id.clone())
+							.collect::<Vec<_>>();
+						StakerStatus::Nominator(nominations)
+					};
+
+					(user.clone(), user.clone(), stash, status)
+				})
+				.collect::<Vec<_>>(),
 			..Default::default()
 		},
 		// Consensus
 		session: SessionConfig {
-			keys: vec![(
-				validator_identity.id.clone(),
-				validator_identity.id.clone(),
-				validator_identity.session_keys,
-			)],
+			keys: initial_authorities
+				.iter()
+				.map(|x| -> (AccountId, AccountId, SessionKeys) {
+					(x.id.clone(), x.id.clone(), x.session_keys.clone())
+				})
+				.collect::<Vec<_>>(),
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
 		beefy: BeefyConfig::default(),
 
 		// EVM compatibility
-		evm_chain_id: EVMChainIdConfig { chain_id: CHAIN_ID },
+		evm_chain_id: EVMChainIdConfig { chain_id },
 		evm: EVMConfig {
 			// We need _some_ code inserted at the precompile address so that
 			// the evm will actually call the address.
@@ -225,23 +203,32 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		},
 		assets: AssetsConfig {
 			assets: vec![
-				// As per discussion with Pavel, we don't want to commit ourselves to any assets at genesis.
-				// But we will add expected assets for our cosmos testnet.
-
 				// id, owner, is_sufficient, min_balance
-				(1, multisig.clone(), true, 1),
-				(2, multisig.clone(), true, 1),
+				(999, sudo_key.clone(), true, 1),
+				(888, sudo_key.clone(), true, 1),
+				(777, sudo_key.clone(), true, 1),
+				(666, sudo_key.clone(), true, 1),
+				(667, sudo_key.clone(), true, 1),
 			],
 			metadata: vec![
-				(
-					1,
-					"GGx Cosmos testnet stake token".into(),
-					"STAKE".into(),
-					18,
-				),
-				(2, "GGx Cosmos testnet ert token".into(), "ERT".into(), 18),
+				// id, name, symbol, decimals
+				(999, "Bitcoin".into(), "BTC".into(), 10),
+				(888, "GGxchain".into(), "GGXT".into(), 18),
+				(777, "USDT".into(), "USDT".into(), 10),
+				(666, "ERT".into(), "ERT".into(), 18),
+				(667, "Stake".into(), "STAKE".into(), 18),
 			],
-			accounts: vec![],
+			accounts: initial_authorities
+				.iter()
+				.flat_map(|x| -> [(u32, AccountId, Balance); 3] {
+					// id, account_id, balance
+					[
+						(999u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(888u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(777u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+					]
+				})
+				.collect::<Vec<_>>(),
 		},
 		vesting: Default::default(),
 		indices: Default::default(),
@@ -249,13 +236,20 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
 		account_filter: AccountFilterConfig {
-			allowed_accounts: vec![(validator_identity.id, ())],
+			allowed_accounts: initial_authorities
+				.iter()
+				.map(|x| (x.id.clone(), ()))
+				.collect(),
 		},
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 1), ("stake".to_string(), 2)],
+			asset_id_by_name: vec![("ERT".to_string(), 666), ("stake".to_string(), 667)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
+				(
+					webb_proposals::TypedChainId::Evm(1),
+					NetworkConfig::new(&Network::Mainnet),
+				),
 				(
 					webb_proposals::TypedChainId::Evm(5),
 					NetworkConfig::new(&Network::Goerli),
@@ -268,16 +262,23 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			phantom: std::marker::PhantomData,
 		},
 		asset_registry: Default::default(),
-		// Do we need something here @Smith?
-		tokens: TokensConfig { balances: vec![] },
+		tokens: TokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
+				.collect(),
+		},
 		oracle: OracleConfig {
-			authorized_oracles: vec![],
+			authorized_oracles: endowed_accounts
+				.iter()
+				.flat_map(|k| vec![(k.clone().0, Default::default())])
+				.collect(),
 			max_delay: DEFAULT_MAX_DELAY_MS,
 		},
 		btc_relay: BTCRelayConfig {
-			bitcoin_confirmations: 6,
+			bitcoin_confirmations,
 			parachain_confirmations: 1,
-			disable_difficulty_check: false,
+			disable_difficulty_check,
 			disable_inclusion_check: false,
 		},
 		issue: IssueConfig {
@@ -332,7 +333,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8888, 1, 2],
+			asset_ids: vec![8888, 999, 888, 777, 666, 667],
 			native_asset_id: 8888,
 		},
 	}
