@@ -114,7 +114,7 @@ pub fn testnet_genesis(
 		},
 		sudo: SudoConfig {
 			// Assign network admin rights.
-			key: Some(sudo_key),
+			key: Some(sudo_key.clone()),
 		},
 
 		// Monetary
