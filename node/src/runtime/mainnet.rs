@@ -73,6 +73,11 @@ fn expected_transaction_size() -> u32 {
 		},
 	)
 }
+
+fn parse_account_id(s: &str) -> AccountId {
+	s.parse().unwrap()
+}
+
 // Actually, I will revert it later, but it easier to work with code-version, then I'll create
 // a json version, and compiled version that will be included into the node.
 pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
@@ -90,15 +95,48 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 	// (PUSH1 0x00 PUSH1 0x00 REVERT)
 	let revert_bytecode = vec![0x60, 0x00, 0x60, 0x00, 0xFD];
 
-	// GGx Orion validator
-	let orion = ValidatorIdentity::from_pub(
-		"5Dg4ny1CSPek3yiKMTDSC9tRHzbv2xmidGLRhQug9cLZweQk",
-		"5Gn1Vdty5miDaaxBS3RE9UdxZJQeSJEgVmzVbqjmMZWvXiSR",
-		"KWBExKgjxJ6afp2uc6qN2RR3wcTxfWrqkzZfAvbLFiwjipnVH",
-	);
+	let session_keys = SessionKeys {
+		aura: sr25519::Public::from_string(
+			"0x26c157b927d4dcc5a8f02ecaa6270052a7b7f228ee401436b07dc6b3de232a29",
+		)
+		.unwrap()
+		.into(),
+		grandpa: ed25519::Public::from_string(
+			"0x439857916bd7b0b49293bb52742187295a45d11b8919d43a4c6a7ccce0cb4d34",
+		)
+		.unwrap()
+		.into(),
+		im_online: sr25519::Public::from_string(
+			"0x16909c2879b8fcacec6ceb5505219870bbaddd9dc8cafc9437c818f92e144735",
+		)
+		.unwrap()
+		.into(),
+		beefy: ecdsa::Public::from_string(
+			"0x027f5ad307acaa5cda676a6e2915c8ec74a412279b0dedd8e9fe6fe4cae3c6f766",
+		)
+		.unwrap()
+		.into(),
+	};
+	let validator_identity: ValidatorIdentity = ValidatorIdentity {
+		id: parse_account_id("qHWFTG53dT7WvVa4HeGgrAwYNPDs6WFvzgkwxtJbQzJyjQH1S"),
+		session_keys,
+	};
+
+	let multisig_owners: Vec<_> = [
+		"5H9a1Q4rqzEK1SU5gFZBFjdBUEvCSGxJb7z9pRoE3veut153", // Raymond
+		"5ERyuQCk9gt1SaTggiDReduDsgbhkYnUdAaLkCHZR7paEbuw", // James
+		"5DkfsYio1xAQUeVoWemhPu8MnjPbmzKjmrNQj9N7auxsc5ut", // Pavel
+		"VkK5teWKAw7HHo4mzX4ked3Ync3oSKxmfyF6LbNKj86mVZTA6", // Matthew
+		"qHTz6mHEWviY3GxfPKhaXkw2MdFcwbF7KbRb4kTMWx9WVUnUw", // Bohdan
+		"qHTE6GBv7M1ZJ97Nnzszana18AN3CM9Bj56zxmveXSG4cT8p3", // Smith
+		"5HjEdSyJMog6CMqPvUKrcXFVntY4Zq4bYsY67bEvxS665LF4", // Artur
+	]
+	.into_iter()
+	.map(parse_account_id)
+	.collect();
 
 	// some random address until we have proper one
-	let multisig: AccountId = "qHWAsDyPAWtraWVg1cyngxjLxcCMNv6VetB3DLbFsYD8NSjNx"
+	let multisig: AccountId = "qHWv27e4rqEc4ua35SxJLA3Nhtc6FPQjiiuQfdJc8qH6jGdyg"
 		.parse()
 		.unwrap();
 
@@ -118,10 +156,16 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 
 		// Monetary
 		balances: BalancesConfig {
-			balances: vec![
-				(multisig.clone(), TOTAL_SUPPLY - (1100 * GGX)),
-				(orion.id.clone(), 1100 * GGX),
-			],
+			balances: [
+				(
+					multisig.clone(),
+					TOTAL_SUPPLY - (1100 * GGX) - (500 * GGX * multisig_owners.len() as u128),
+				),
+				(validator_identity.id.clone(), 1100 * GGX),
+			]
+			.into_iter()
+			.chain(multisig_owners.iter().map(|x| (x.clone(), 500 * GGX)))
+			.collect(),
 		},
 		transaction_payment: Default::default(),
 		treasury: Default::default(),
@@ -132,8 +176,8 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 			min_nominator_bond: 100 * GGX,
 			invulnerables: vec![],
 			stakers: vec![(
-				orion.id.clone(),
-				orion.id.clone(),
+				validator_identity.id.clone(),
+				validator_identity.id.clone(),
 				1_000 * GGX,
 				StakerStatus::Validator,
 			)],
@@ -141,7 +185,11 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		},
 		// Consensus
 		session: SessionConfig {
-			keys: vec![(orion.id.clone(), orion.id.clone(), orion.session_keys)],
+			keys: vec![(
+				validator_identity.id.clone(),
+				validator_identity.id.clone(),
+				validator_identity.session_keys,
+			)],
 		},
 		aura: AuraConfig::default(),
 		grandpa: GrandpaConfig::default(),
@@ -201,7 +249,7 @@ pub fn testnet_genesis(wasm_binary: &[u8]) -> GenesisConfig {
 		society: Default::default(),
 		currency_manager: CurrencyManagerConfig {},
 		account_filter: AccountFilterConfig {
-			allowed_accounts: vec![(orion.id, ())],
+			allowed_accounts: vec![(validator_identity.id, ())],
 		},
 		ics_20_transfer: Ics20TransferConfig {
 			asset_id_by_name: vec![("ERT".to_string(), 1), ("stake".to_string(), 2)],
