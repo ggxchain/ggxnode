@@ -180,6 +180,6 @@ pub fn brooklyn_testnet_config() -> Result<ChainSpec, String> {
 #[cfg(not(feature = "brooklyn"))]
 pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(
-		&include_bytes!("../../custom-spec-files/sydney-testnet.old.raw.json")[..],
+		&include_bytes!("../../custom-spec-files/sydney-testnet.raw.json")[..],
 	)
 }
