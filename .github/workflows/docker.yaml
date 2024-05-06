@@ -1,0 +1,51 @@
+name: Docker
+
+on:
+  push:
+    branches:
+      - main
+      - docker  # TODO: for testing. remove this line after testing is done.
+
+env:
+  NIX_VERSION: nix-2.13.2
+  NIXPKGS_CHANNEL: nixos-22.11
+  CACHIX_NAME: golden-gate-ggx
+  OCTOLYTICS_DIMENSION_REPOSITORY_ID: 590614152
+  GIT_LFS_SKIP_SMUDGE: 1
+
+jobs:
+  docker-build:
+    strategy:
+      matrix:
+        runtime: [sydney, brooklyn]
+      fail-fast: false
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set Image Tag
+        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Extract metadata (tags, labels) for Docker
+        id: meta
+        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        with:
+          images: ggxdocker/ggxnode
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        with:
+          context: .
+          file: ./Dockerfile.${{ matrix.runtime }}
+          push: true
+          tags: ${{ steps.meta.outputs.tags }},ggxdocker/ggxnode:${{ matrix.runtime }}-$SHORT_SHA
+          labels: ${{ steps.meta.outputs.labels }}
