@@ -95,7 +95,7 @@ impl<T: frame_system::Config> btc_relay::WeightInfo for WeightInfo<T> {
 			.saturating_add(T::DbWeight::get().writes(5_u64))
 	}
 
-	fn update_store_utxo	() -> Weight {
+	fn update_store_utxo_to_spent	() -> Weight {
 		// Proof Size summary in bytes:
 		//  Measured:  `874`
 		//  Estimated: `6340`
