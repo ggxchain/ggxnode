@@ -19,16 +19,14 @@ jobs:
       matrix:
         runtime: [sydney, brooklyn]
       fail-fast: false
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     steps:
       - name: Check out code
         uses: actions/checkout@v4
 
-      - name: Set Image Tag
-        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
-
       - name: Set up Docker Buildx
         uses: docker/setup-buildx-action@v3
+
       - name: Login to Docker Hub
         uses: docker/login-action@v3
         with:
@@ -41,11 +39,15 @@ jobs:
         with:
           images: ggxdocker/ggxnode
 
+      - name: Set outputs
+        id: vars
+        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+
       - name: Build and push Docker image
         uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
         with:
           context: .
           file: ./Dockerfile.${{ matrix.runtime }}
           push: true
-          tags: ${{ steps.meta.outputs.tags }},ggxdocker/ggxnode:${{ matrix.runtime }}-$SHORT_SHA
+          tags: ${{ steps.meta.outputs.tags }},ggxdocker/ggxnode:${{ matrix.runtime }}-${{ steps.vars.outputs.sha_short }}
           labels: ${{ steps.meta.outputs.labels }}

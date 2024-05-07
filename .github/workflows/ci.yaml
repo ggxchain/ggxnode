@@ -18,7 +18,7 @@ env:
 jobs:
   common:
     if: github.event_name == 'pull_request'
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: buildjet/cache@v3
+      - uses: actions/cache@v3
         if: steps.git-diff.outputs.diff
         with:
           path: |
@@ -73,7 +73,7 @@ jobs:
       fail-fast: false
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
     container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +92,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: buildjet/cache@v3
+      - uses: actions/cache@v3
         if: steps.git-diff.outputs.diff
         with:
           path: |
