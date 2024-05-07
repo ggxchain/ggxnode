@@ -85,11 +85,11 @@ describe('Call EVM Smart Contracts', function () {
 
         const gasEstimate = await ctrt.methods
       .flip().estimateGas({ from: deployer });
-				lg('gasEstimate:', gasEstimate);
+        lg('gasEstimate:', gasEstimate);
 
-				const encode = ctrt.methods.flip().encodeABI();
-				lg('before txn...')
-				const tx = await web3.eth.sendTransaction({
+        const encode = ctrt.methods.flip().encodeABI();
+        lg('before txn...')
+        const tx = await web3.eth.sendTransaction({
 					from: deployer,
 					to: ctrtAddr,
 					gas: gasEstimate,
@@ -98,11 +98,11 @@ describe('Call EVM Smart Contracts', function () {
 					lg('error @flip():', err);
 					return err;
 				});//value: '0x0' or feeInWei.toString(),
-				lg('txn:', tx);
+        lg('txn:', tx);
 	
-				lg('Tx hash:',tx.transactionHash);
+        lg('Tx hash:',tx.transactionHash);
 				
-				data = await ctrt.methods.data().call();
+        data = await ctrt.methods.data().call();
         lg('data:', data);
         process.exit(0);
     });
