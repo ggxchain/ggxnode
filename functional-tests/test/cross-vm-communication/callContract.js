@@ -42,7 +42,7 @@ const lg = console.log;
 let balc;//: bigint;
 
 describe('Call EVM Smart Contracts', function () {
-    lg('Here 101');
+    lg('starting the test: Call EVM Smart Contracts');
     this.timeout(30000);
 
     it('should call WASM contract from EVM contract', async () => {
@@ -74,7 +74,7 @@ describe('Call EVM Smart Contracts', function () {
         const ctrtAddr = '0xfB13f1A798a1aa6D8359fE4bEAAeF1FD04a8dCD4';
         lg('ctrtAddr:', ctrtAddr);
 				
-				const abi = ctrtJson.abi;
+        const abi = ctrtJson.abi;
 
         const ctrt = new web3.eth.Contract(abi, ctrtAddr );
         let data = await ctrt.methods.data().call().catch(err => {
@@ -83,7 +83,7 @@ describe('Call EVM Smart Contracts', function () {
         });
         lg('data:', data);
 
-				const gasEstimate = await ctrt.methods
+        const gasEstimate = await ctrt.methods
       .flip().estimateGas({ from: deployer });
 				lg('gasEstimate:', gasEstimate);
 
