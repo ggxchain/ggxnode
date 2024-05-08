@@ -1,44 +1,60 @@
 #![cfg_attr(not(feature = "std"), no_std, no_main)]
 
-mod xvm_environment;
+/// EVM ID (from astar runtime)
+const EVM_ID: u8 = 0x0F;
 
-#[ink::contract(env = crate::xvm_environment::XvmDefaultEnvironment)]
-mod flipper_wrapper {
+#[ink::contract(env = xvm_environment::XvmDefaultEnvironment)]
+pub mod flipper_wrapper {
+	use ethabi::{
+		ethereum_types::{
+				H160,
+				U256,
+		},
+		Token,
+	};
 	use hex_literal::hex;
 	use ink::prelude::vec::Vec;
 
 	const FLIP_SELECTOR: [u8; 4] = hex!["cde4efa9"];
 
 	#[ink(storage)]
-	pub struct FlipperWrapper {}
+    pub struct FlipperWrapper {
+				evm_address: [u8; 20]
+    }
 
-	impl Default for FlipperWrapper {
-		fn default() -> Self {
-			Self::new()
-		}
-	}
+    impl FlipperWrapper {
+        #[ink(constructor)]
+        pub fn new(evm_address: [u8; 20]) -> Self {
+            Self { evm_address }
+        }
+				/*impl Default for FlipperWrapper {
+					fn default() -> Self {
+						Self::new()
+					}
+				}*/
+				
+        /*#[ink(message)]
+        pub fn get(&self) -> bool {
+            self.value
+        }*/
 
-	impl FlipperWrapper {
-		/// Constructor that initializes the `bool` value to the given `init_value`.
-		#[ink(constructor)]
-		pub fn new() -> Self {
-			Self {}
-		}
-
-		/// A message that can be called on instantiated contracts.
-		/// This one flips the value of the stored `bool` from `true`
-		/// to `false` and vice versa.
-		#[ink(message)]
-		pub fn flip(&mut self, flipper_address: [u8; 20]) -> bool {
-			self.env()
-				.extension()
-				.xvm_call(
-					0x0F,
-					Vec::from(flipper_address.as_ref()),
-					FLIP_SELECTOR.to_vec(),
-					0
-				)
-				.is_ok()
-		}
-	}
+				#[ink(message)]
+        pub fn flip(&mut self) -> bool {
+					let encoded_input = Self::flip_encode(to.into(), token_id.into());
+					self.env()
+							.extension()
+							.xvm_call(
+									super::EVM_ID,
+									Vec::from(self.evm_address.as_ref()),
+									encoded_input, 0
+							)
+							.is_ok()
+        }
+        fn flip_encode(to: H160, token_id: U256) -> Vec<u8> {
+					let mut encoded = FLIP_SELECTOR.to_vec();
+					let input = [Token::Address(to), Token::Uint(token_id)];
+					encoded.extend(&ethabi::encode(&input));
+					encoded
+				}
+    }
 }

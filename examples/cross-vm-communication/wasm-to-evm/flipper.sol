@@ -1,4 +1,5 @@
-pragma solidity ^0.8.0;
+//SPDX-License-Identifier:MIT
+pragma solidity ^0.8.21;
 
 contract Flipper {
     bool public data;
@@ -12,5 +13,16 @@ contract Flipper {
     function flip() public {
         data = !data;
         emit Flipped(data);
+    }
+}
+
+contract Storage {
+    uint256 number;
+    
+    function store(uint256 num) public {
+        number = num;
+    }
+    function retrieve() public view returns (uint256) {
+        return number;
     }
 }

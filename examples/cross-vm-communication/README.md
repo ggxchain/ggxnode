@@ -9,6 +9,9 @@ This document will show you how to use the cross-VM communication feature of the
 ```bash
 # We need the following to compile WASM smart contracts
 sudo apt-get -y install binaryen protobuf
+rustup update
+rustup update nightly
+rustup target add wasm32-unknown-unknown --toolchain nightly
 rustup component add rust-src
 rustup component add rust-src --toolchain nightly-unknown-linux-gnu
 rustup target add wasm32-unknown-unknown

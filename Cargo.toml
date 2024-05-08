@@ -10,6 +10,8 @@ members = [
 exclude = [
 	"examples/cross-vm-communication/evm-to-wasm/flipper",
 	"examples/cross-vm-communication/wasm-to-evm/flipper",
+	"examples/cross-vm-communication/wasm_flipper",
+	"examples/cross-vm-communication/store_xvm",
 	"c-kzg-4844",
 ]
 resolver = "2"
