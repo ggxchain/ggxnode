@@ -7,8 +7,8 @@ const EVM_ID: u8 = 0x0F;
 pub mod flipper_wrapper {
 	use ethabi::{
 		ethereum_types::{
-				H160,
-				U256,
+			H160,
+			U256,
 		},
 		Token,
 	};
@@ -19,7 +19,7 @@ pub mod flipper_wrapper {
 
 	#[ink(storage)]
     pub struct FlipperWrapper {
-				evm_address: [u8; 20]
+			evm_address: [u8; 20]
     }
 
     impl FlipperWrapper {
@@ -27,28 +27,16 @@ pub mod flipper_wrapper {
         pub fn new(evm_address: [u8; 20]) -> Self {
             Self { evm_address }
         }
-				/*impl Default for FlipperWrapper {
-					fn default() -> Self {
-						Self::new()
-					}
-				}*/
-				
-        /*#[ink(message)]
-        pub fn get(&self) -> bool {
-            self.value
-        }*/
 
 				#[ink(message)]
         pub fn flip(&mut self) -> bool {
 					let encoded_input = Self::flip_encode(to.into(), token_id.into());
-					self.env()
-							.extension()
+						self.env().extension()
 							.xvm_call(
-									super::EVM_ID,
-									Vec::from(self.evm_address.as_ref()),
-									encoded_input, 0
-							)
-							.is_ok()
+								super::EVM_ID,
+								Vec::from(self.evm_address.as_ref()),
+								encoded_input, 0
+							).is_ok()
         }
         fn flip_encode(to: H160, token_id: U256) -> Vec<u8> {
 					let mut encoded = FLIP_SELECTOR.to_vec();
