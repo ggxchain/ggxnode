@@ -164,9 +164,9 @@ impl ExtBuilder {
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
-				(999, "Bitcoin".into(), "BTC".into(), 10),
+				(999, "Bitcoin".into(), "BTC".into(), 8),
 				(888, "GGxchain".into(), "GGXT".into(), 18),
-				(777, "USDT".into(), "USDT".into(), 10),
+				(777, "USDT".into(), "USDT".into(), 6),
 			],
 			accounts: vec![
 				// id, account_id, balance
