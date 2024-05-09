@@ -183,6 +183,7 @@ pub struct Trade<Balance, Order> {
 	maker_order: Order,
 }
 
+#[allow(clippy::unused_unit)]
 #[frame_support::pallet]
 pub mod pallet {
 	use super::*;
@@ -630,6 +631,7 @@ pub mod pallet {
 
 		#[pallet::weight({2})]
 		#[pallet::call_index(2)]
+		#[allow(clippy::too_many_arguments)]
 		pub fn make_order(
 			origin: OriginFor<T>,
 			asset_id_1: u32,
@@ -1182,49 +1184,53 @@ pub mod pallet {
 
 				// todo match use maker quantity
 				let (matched_quantity_requested, matched_quantity_offered) =
-					if taker_unfilled_quantity_requested > maker_order.unfilled_offered {
-						//taker request amout > maker offer amout
-						(maker_order.unfilled_offered, maker_order.unfilled_requested)
-					} else if taker_unfilled_quantity_requested == maker_order.unfilled_offered {
-						//taker request amout == maker offer amout
-
-						if taker_order.amount_offered >= maker_order.unfilled_requested {
+					match taker_unfilled_quantity_requested.cmp(&maker_order.unfilled_offered) {
+						Ordering::Greater => {
+							//taker request amout > maker offer amout
 							(maker_order.unfilled_offered, maker_order.unfilled_requested)
-						} else {
-							// taker offer < maker request
-							match taker_order.order_type {
-								OrderType::BUY => {
-									let new_request_amout = taker_order
-										.amount_offered
-										.checked_div(&maker_order.price)
-										.ok_or(Error::<T>::DivOverflow)?;
+						}
+						Ordering::Equal => {
+							//taker request amout == maker offer amout
 
-									(new_request_amout, taker_order.amount_offered)
-								}
-								OrderType::SELL => {
-									let new_request_amout = taker_order
-										.amount_offered
-										.checked_mul(&maker_order.price)
-										.ok_or(Error::<T>::MulOverflow)?;
+							if taker_order.amount_offered >= maker_order.unfilled_requested {
+								(maker_order.unfilled_offered, maker_order.unfilled_requested)
+							} else {
+								// taker offer < maker request
+								match taker_order.order_type {
+									OrderType::BUY => {
+										let new_request_amout = taker_order
+											.amount_offered
+											.checked_div(&maker_order.price)
+											.ok_or(Error::<T>::DivOverflow)?;
 
-									(new_request_amout, taker_order.amount_offered)
+										(new_request_amout, taker_order.amount_offered)
+									}
+									OrderType::SELL => {
+										let new_request_amout = taker_order
+											.amount_offered
+											.checked_mul(&maker_order.price)
+											.ok_or(Error::<T>::MulOverflow)?;
+
+										(new_request_amout, taker_order.amount_offered)
+									}
 								}
 							}
 						}
-					} else {
-						//taker request amout < maker offer amout
-						match taker_order.order_type {
-							OrderType::BUY => {
-								let new_offer_amout = taker_unfilled_quantity_requested
-									.checked_mul(&maker_order.price)
-									.ok_or(Error::<T>::MulOverflow)?;
-								(taker_unfilled_quantity_requested, new_offer_amout)
-							}
-							OrderType::SELL => {
-								let new_offer_amout = taker_unfilled_quantity_requested
-									.checked_div(&maker_order.price)
-									.ok_or(Error::<T>::DivOverflow)?;
-								(taker_unfilled_quantity_requested, new_offer_amout)
+						Ordering::Less => {
+							//taker request amout < maker offer amout
+							match taker_order.order_type {
+								OrderType::BUY => {
+									let new_offer_amout = taker_unfilled_quantity_requested
+										.checked_mul(&maker_order.price)
+										.ok_or(Error::<T>::MulOverflow)?;
+									(taker_unfilled_quantity_requested, new_offer_amout)
+								}
+								OrderType::SELL => {
+									let new_offer_amout = taker_unfilled_quantity_requested
+										.checked_div(&maker_order.price)
+										.ok_or(Error::<T>::DivOverflow)?;
+									(taker_unfilled_quantity_requested, new_offer_amout)
+								}
 							}
 						}
 					};
