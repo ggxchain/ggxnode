@@ -8,7 +8,6 @@ use frame_support::{
 	PalletId,
 };
 use sp_core::{ConstU128, ConstU32, ConstU64, H256};
-
 use sp_runtime::{testing::Header, traits::IdentityLookup};
 
 pub type AccountId = u128;

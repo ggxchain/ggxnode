@@ -49,8 +49,9 @@ pub struct TokenInfo<Balance> {
 	pub reserved: Balance,
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[derive(Encode, Default, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderType {
+	#[default]
 	BUY,
 	SELL,
 }
@@ -62,12 +63,6 @@ impl OrderType {
 			OrderType::BUY => OrderType::SELL,
 			OrderType::SELL => OrderType::BUY,
 		}
-	}
-}
-
-impl Default for OrderType {
-	fn default() -> Self {
-		OrderType::BUY
 	}
 }
 
@@ -187,7 +182,7 @@ pub mod pallet {
 		pallet_prelude::{ValueQuery, *},
 		Blake2_128Concat,
 	};
-	use frame_system::{offchain::SubmitTransaction, pallet_prelude::*};
+	use frame_system::offchain::SubmitTransaction;
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -196,18 +191,10 @@ pub mod pallet {
 		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
 
 	#[pallet::genesis_config]
+	#[derive(Default)]
 	pub struct GenesisConfig {
 		pub asset_ids: Vec<u32>,
 		pub native_asset_id: u32,
-	}
-
-	impl Default for GenesisConfig {
-		fn default() -> Self {
-			GenesisConfig {
-				asset_ids: Default::default(),
-				native_asset_id: Default::default(),
-			}
-		}
 	}
 
 	#[pallet::genesis_build]
@@ -1097,9 +1084,8 @@ pub mod pallet {
 						.as_mut()
 						.ok_or(Error::<T>::PairOrderNotFound)?;
 					let rt = pair_orders.binary_search(&order.counter);
-
-					if let Ok(r) = rt {
-						pair_orders.remove(r);
+					if let Ok(rt_index) = rt {
+						pair_orders.remove(rt_index);
 					}
 
 					PairOrders::<T>::insert(order.pair, pair_orders);

@@ -761,6 +761,8 @@ fn test_offchain_worker_order_matching() {
 			1000,
 		));
 
+		Dex::offchain_worker(block);
+
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
 			777,
@@ -794,6 +796,8 @@ fn test_offchain_worker_order_matching() {
 			1000,
 		));
 
+		Dex::offchain_worker(block);
+
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
 			777,
@@ -826,6 +830,7 @@ fn test_offchain_worker_order_matching() {
 			OrderType::BUY,
 			1000,
 		));
+		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),
@@ -859,6 +864,7 @@ fn test_offchain_worker_order_matching() {
 			OrderType::SELL,
 			1000,
 		));
+		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
 			RuntimeOrigin::signed(1),

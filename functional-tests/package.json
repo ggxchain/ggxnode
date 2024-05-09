@@ -4,7 +4,8 @@
   "description": "Node functional tests",
   "type": "module",
   "scripts": {
-    "test": "mocha test/**/*.test.js"
+    "test": "mocha test/**/*.test.js",
+    "callEvmContract": "mocha test/cross-vm-communication/callContract.js"
   },
   "repository": {
     "type": "git",
@@ -12,10 +13,11 @@
   },
   "keywords": [
     "autotests",
-    "polkadot-api",
-    "mocha"
+    "mocha",
+    "functional"
   ],
   "author": "Maksym Nyrka",
+  "license": "Apache-2.0",
   "bugs": {
     "url": "https://github.com/ggxchain/ggxnode/issues"
   },
@@ -24,14 +26,15 @@
     "@polkadot/api": "^10.9.1",
     "@polkadot/api-contract": "^10.9.1",
     "@polkadot/util-crypto": "^12.3.2",
-    "@truffle/hdwallet-provider": "^2.1.13",
-    "mocha": "^10.2.0",
+    "@types/chai": "^4.3.14",
+    "@types/jest": "^29.5.12",
+    "@types/mocha": "^10.0.6",
+    "chai": "^5.1.0",
+    "jest": "^29.7.0",
+    "mocha": "^10.4.0",
     "solc": "^0.8.19",
-    "truffle-hdwallet-provider": "^1.0.17",
-    "web3": "^3.0.0-rc.5",
+    "solc-js": "^1.0.1",
+    "web3": "^4.8.0",
     "websocket": "^1.0.34"
-  },
-  "devDependencies": {
-    "chai": "^4.3.7"
   }
 }

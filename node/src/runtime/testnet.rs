@@ -237,16 +237,20 @@ pub fn testnet_genesis(
 				(999, sudo_key.clone(), true, 1),
 				(888, sudo_key.clone(), true, 1),
 				(777, sudo_key.clone(), true, 1),
+				(666, sudo_key.clone(), true, 1),
+				(667, sudo_key.clone(), true, 1),
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
 				(999, "Bitcoin".into(), "BTC".into(), 10),
 				(888, "GGxchain".into(), "GGXT".into(), 18),
 				(777, "USDT".into(), "USDT".into(), 10),
+				(666, "ERT".into(), "ERT".into(), 18),
+				(667, "Stake".into(), "STAKE".into(), 18),
 			],
 			accounts: initial_authorities
 				.iter()
-				.map(|x| -> [(u32, AccountId, Balance); 3] {
+				.flat_map(|x| -> [(u32, AccountId, Balance); 3] {
 					// id, account_id, balance
 					[
 						(999u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
@@ -254,7 +258,6 @@ pub fn testnet_genesis(
 						(777u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
 					]
 				})
-				.flatten()
 				.collect::<Vec<_>>(),
 		},
 		vesting: Default::default(),
@@ -268,8 +271,9 @@ pub fn testnet_genesis(
 				.map(|x| (x.id.clone(), ()))
 				.collect(),
 		},
+		// TODO: MIGRATIONS ON IT
 		ics_20_transfer: Ics20TransferConfig {
-			asset_id_by_name: vec![("ERT".to_string(), 666)],
+			asset_id_by_name: vec![("ERT".to_string(), 666), ("stake".to_string(), 667)],
 		},
 		eth_2_client: Eth2ClientConfig {
 			networks: vec![
@@ -360,7 +364,7 @@ pub fn testnet_genesis(
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8888, 999, 888, 777],
+			asset_ids: vec![8888, 999, 888, 777, 666, 667],
 			native_asset_id: 8888,
 		},
 	}

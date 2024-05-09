@@ -16,135 +16,96 @@ env:
   GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
-  build-lint-common:
+  common:
     if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
+    container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
+
+      - run: git config --global --add safe.directory "*"
+      - uses: technote-space/get-diff-action@v6.1.2
+        id: git-diff
         with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - name: Fmt + Doclint
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.fmt .\#checks.x86_64-linux.doclint 
-      - name: Runtime common
-        run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-runtime-common .\#checks.x86_64-linux.nextest-runtime-common
-  build-lint-sydney:
+          PATTERNS: |
+            **/**.rs
+            Cargo.lock
+
+      - uses: dsherret/rust-toolchain-file@v1
+        if: steps.git-diff.outputs.diff
+
+      - uses: actions/cache@v4
+        if: steps.git-diff.outputs.diff
+        with:
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
+
+      - name: fmt
+        run: cargo fmt --all -- --check
+        if: steps.git-diff.outputs.diff
+
+      - name: clippy + build
+        if: steps.git-diff.outputs.diff
+        run: |
+          packages="runtime-common ggxchain-runtime-brooklyn ggxchain-runtime-sydney"
+          for pkg in $packages; do
+              cargo clippy --package=$pkg -- -D warnings
+              cargo build --locked --package=$pkg --release
+          done
+
+      - name: run tests common
+        if: steps.git-diff.outputs.diff
+        run: cargo test --release --package runtime-common
+
+
+  build-lint:
+    strategy:
+      matrix:
+        runtime: [sydney, brooklyn]
+      fail-fast: false
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
-    runs-on: buildjet-32vcpu-ubuntu-2204
+    runs-on: ubuntu-latest
+    container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
         with:
           ref: ${{ github.event.pull_request.head.sha }}
           persist-credentials: false
-      - uses: cachix/install-nix-action@v24
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-sydney .\#checks.x86_64-linux.nextest-sydney .\#checks.x86_64-linux.clippy-wasm-sydney
-  build-lint-brooklyn:
-    if: github.event_name == 'pull_request'
-    ## Run only if a PR is made for the main branch
-    runs-on: buildjet-32vcpu-ubuntu-2204
-    steps:
-      - uses: actions/checkout@v4
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          persist-credentials: false
-      - uses: cachix/install-nix-action@v24
-        with:
-          github_access_token: ${{ secrets.GITHUB_TOKEN }}
-      - run: nix build --log-lines 100 .\#checks.x86_64-linux.clippy-node-brooklyn .\#checks.x86_64-linux.nextest-brooklyn .\#checks.x86_64-linux.clippy-wasm-brooklyn
 
-  docker-build-sydney:
-    if: github.ref == 'refs/heads/main'
-    runs-on: buildjet-32vcpu-ubuntu-2204
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
+      - run: git config --global --add safe.directory "*"
+      - uses: technote-space/get-diff-action@v6.1.2
+        id: git-diff
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-          ## This has to be either 'us-east-1' or 'us-west-2' for public ECR
+          PATTERNS: |
+            **/**.rs
+            Cargo.lock
 
-      - name: Log in to Amazon ECR
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v2
+      - uses: dsherret/rust-toolchain-file@v1
+        if: steps.git-diff.outputs.diff
+
+      - uses: actions/cache@v4
+        if: steps.git-diff.outputs.diff
         with:
-          registry-type: public
+          path: |
+            ~/.cargo/bin/
+            ~/.cargo/registry/index/
+            ~/.cargo/registry/cache/
+            ~/.cargo/git/db/
+            target/
+          key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set Image Tag
-        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
-
-      - name: Build, tag, and upload the docker image
-        env:
-          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: c6u3u5c0
-          REPOSITORY: ggxchain-node
+      - name: clippy + build + test
+        if: steps.git-diff.outputs.diff
         run: |
-          docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA -f Dockerfile.sydney .
-          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:sydney-$SHORT_SHA
-
-      - name: Store Image Tag on AWS S3
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
-          echo "$SHORT_SHA" > sydney_version
-          aws --region eu-central-1 s3 cp sydney_version s3://$S3_BUCKET/sydney_version
-          echo "This image will be used in the future deployments.."
-
-      - name: Log out of Amazon ECR
-        run: docker logout ${{ steps.login-ecr-public.outputs.registry }}
-
-  docker-build-brooklyn:
-    if: github.ref == 'refs/heads/main'
-    runs-on: buildjet-32vcpu-ubuntu-2204
-    steps:
-      - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v2
-        with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          aws-region: us-east-1
-          ## This has to be either 'us-east-1' or 'us-west-2' for public ECR
-
-      - name: Log in to Amazon ECR
-        id: login-ecr-public
-        uses: aws-actions/amazon-ecr-login@v2
-        with:
-          registry-type: public
-
-      - name: Check out code
-        uses: actions/checkout@v4
-
-      - name: Set Image Tag
-        run: echo "SHORT_SHA=$(echo ${GITHUB_SHA} | cut -c1-8)" >> $GITHUB_ENV
-
-      - name: Build, tag, and upload the docker image
-        env:
-          REGISTRY: ${{ steps.login-ecr-public.outputs.registry }}
-          REGISTRY_ALIAS: c6u3u5c0
-          REPOSITORY: ggxchain-node
-        run: |
-          docker build -t $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA -f Dockerfile.brooklyn .
-          docker push $REGISTRY/$REGISTRY_ALIAS/$REPOSITORY:brooklyn-$SHORT_SHA
-
-      - name: Store Image Tag on AWS S3
-        env:
-          S3_BUCKET: ggx-docker-image-tags
-        run: |
-          echo "Uploading Docker Image Tag to S3 Bucket as this workflow's artifact"
-          echo "$SHORT_SHA" > brooklyn_version
-          aws --region eu-central-1 s3 cp brooklyn_version s3://$S3_BUCKET/brooklyn_version
-          echo "This image will be used in the future deployments.."
-
-      - name: Log out of Amazon ECR
-        run: docker logout ${{ steps.login-ecr-public.outputs.registry }}
+          cargo clippy --package=ggxchain-node --no-default-features --features=${{ matrix.runtime }} -- -D warnings
+          cargo build --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
+          cargo test --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
