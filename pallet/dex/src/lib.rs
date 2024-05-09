@@ -66,19 +66,14 @@ impl OrderType {
 	}
 }
 
-#[derive(Encode, Decode, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderStatus {
-	Pending,          //unfilledQuantity == quantity
+	#[default]
+	Pending, //unfilledQuantity == quantity
 	FullyFilled,      //unfilledQuantity = 0
 	PartialFilled,    // (quantity > unfilledQuantity > 0)
 	PartialCancelled, // (quantity > unfilledQuantity > 0)
 	FullyCancelled,   // (unfilledQuantity == quantity)
-}
-
-impl Default for OrderStatus {
-	fn default() -> Self {
-		OrderStatus::Pending
-	}
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -133,7 +128,7 @@ pub struct MatchEngine<Order, Balance: cmp::Ord> {
 	last_process_order_id: u64,
 }
 
-#[derive(Encode, Decode, Default, Eq, PartialEq, PartialOrd, Clone, RuntimeDebug, TypeInfo)]
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct OrderBookKey<Balance> {
 	order_id: u64,
 	price: Balance,
@@ -147,6 +142,20 @@ impl<Balance: cmp::Eq + cmp::Ord> Ord for OrderBookKey<Balance> {
 		// little order_id in front
 		if cmp == cmp::Ordering::Equal {
 			self.order_id.cmp(&other.order_id)
+		} else {
+			cmp
+		}
+	}
+}
+
+impl<Balance: cmp::PartialEq + cmp::PartialOrd> PartialOrd for OrderBookKey<Balance> {
+	fn partial_cmp(&self, other: &OrderBookKey<Balance>) -> Option<Ordering> {
+		// low price in front
+		let cmp = self.price.partial_cmp(&other.price);
+
+		// little order_id in front
+		if cmp == Some(cmp::Ordering::Equal) {
+			self.order_id.partial_cmp(&other.order_id)
 		} else {
 			cmp
 		}
@@ -189,6 +198,9 @@ pub mod pallet {
 
 	type OrderOf<T> =
 		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
+
+	type MapMatchEnginesOf<T> =
+		BoundedBTreeMap<(u32, u32), MatchEngine<OrderOf<T>, BalanceOf<T>>, ConstU32<{ u32::MAX }>>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -412,11 +424,7 @@ pub mod pallet {
 			let store_last_process_order_id =
 				StorageValueRef::persistent(b"dex_ocw::last_process_order_id");
 
-			let mut map_match_engines: BoundedBTreeMap<
-				(u32, u32),
-				MatchEngine<OrderOf<T>, BalanceOf<T>>,
-				ConstU32<{ u32::MAX }>,
-			>;
+			let mut map_match_engines: MapMatchEnginesOf<T>;
 
 			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
 				(u32, u32),
