@@ -19,7 +19,7 @@ jobs:
       matrix:
         runtime: [sydney, brooklyn]
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Check out code
         uses: actions/checkout@v4
