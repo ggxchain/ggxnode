@@ -18,7 +18,7 @@ env:
 jobs:
   common:
     if: github.event_name == 'pull_request'
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
@@ -37,7 +37,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: actions/cache@v4
+      - uses: buildjet/cache@v4
         if: steps.git-diff.outputs.diff
         with:
           path: |
@@ -73,7 +73,7 @@ jobs:
       fail-fast: false
     if: github.event_name == 'pull_request'
     ## Run only if a PR is made for the main branch
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     container: ggxdocker/ggxnode-dev:v1
     steps:
       - uses: actions/checkout@v4
@@ -92,7 +92,7 @@ jobs:
       - uses: dsherret/rust-toolchain-file@v1
         if: steps.git-diff.outputs.diff
 
-      - uses: actions/cache@v4
+      - uses: buildjet/cache@v4
         if: steps.git-diff.outputs.diff
         with:
           path: |
@@ -103,9 +103,17 @@ jobs:
             target/
           key: ${{ runner.os }}-cargo-${{ hashFiles('**/Cargo.lock') }}
 
-      - name: clippy + build + test
+      - name: clippy
         if: steps.git-diff.outputs.diff
         run: |
           cargo clippy --package=ggxchain-node --no-default-features --features=${{ matrix.runtime }} -- -D warnings
+
+      - name: build
+        if: steps.git-diff.outputs.diff
+        run: |
           cargo build --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
+
+      - name: test
+        if: steps.git-diff.outputs.diff
+        run: |
           cargo test --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
