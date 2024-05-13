@@ -892,8 +892,6 @@ pub mod pallet {
 			});
 			Ok(().into())
 		}
-	}
-}
 
 		#[pallet::weight({8})]
 		#[pallet::call_index(8)]
