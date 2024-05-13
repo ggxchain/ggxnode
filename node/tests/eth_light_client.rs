@@ -93,8 +93,13 @@ mod test {
 		let receipt = receipts[0].clone();
 
 		// Adding monitored contract address
+		#[cfg(feature = "brooklyn")]
+		type RuntimeCall = ggx::runtime_types::ggxchain_runtime_brooklyn::RuntimeCall;
 
-		let call = ggx::runtime_types::ggxchain_runtime_brooklyn::RuntimeCall::EthReceiptRegistry(
+		#[cfg(not(feature = "brooklyn"))]
+		type RuntimeCall = ggx::runtime_types::ggxchain_runtime_sydney::RuntimeCall;
+
+		let call = RuntimeCall::EthReceiptRegistry(
 			ggx::runtime_types::pallet_receipt_registry::pallet::Call::update_watching_address {
 				typed_chain_id: GOERLI,
 				address: Static(receipt.receipt.logs[0].address),
