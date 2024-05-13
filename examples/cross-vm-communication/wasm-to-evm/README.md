@@ -3,6 +3,7 @@
 #### Install Rust
 https://www.rust-lang.org/tools/install
 - Set Rust to the stable version to enable rust-toolchain.toml: `rustup default stable`
+- Set Rust to 1.77.2 (25ef9e3d8 2024-04-09): `rustup default 1.77.2`
 
 #### Download this repository code
 - Make sure Wasm folder is excluded from compilation in the root `Cargo.toml`: `"examples/cross-vm-communication/wasm-to-evm",`
@@ -84,7 +85,5 @@ Wait 20 seconds for the blockchain node to process the transaction.
 https://medium.com/astar-network/cross-virtual-machine-creating-a-portal-to-the-future-of-smart-contracts-a96c6d2f79b8
 
 https://theastarbulletin.news/how-to-implement-a-contract-using-xvm-1c94d2072c30
-
-https://substrate.stackexchange.com/questions/11435/xvm-ink-wasm-to-evm-contract-reverted-decoding-failed
 
 https://docs.astar.network/docs/learn/interoperability/xvm/#interfaces
