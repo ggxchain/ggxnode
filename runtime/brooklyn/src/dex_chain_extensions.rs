@@ -73,6 +73,7 @@ struct DexMakeOrderInput<AssetId, Balance, OrderType, BlockNumber> {
 	asset_id_2: AssetId,
 	offered_amount: Balance,
 	requested_amount: Balance,
+	price: Balance,
 	order_type: OrderType,
 	expires: BlockNumber,
 }
@@ -331,6 +332,7 @@ where
 					input.asset_id_2,
 					input.offered_amount,
 					input.requested_amount,
+					input.price,
 					input.order_type,
 					input.expires,
 				);
