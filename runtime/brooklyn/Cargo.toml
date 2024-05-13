@@ -58,6 +58,7 @@ pallet-im-online.workspace = true
 pallet-indices.workspace = true
 pallet-mmr.workspace = true
 pallet-multisig.workspace = true
+pallet-nfts.workspace = true
 pallet-offences.workspace = true
 pallet-preimage.workspace = true
 pallet-proxy.workspace = true
@@ -154,6 +155,8 @@ vault-registry-rpc-runtime-api.workspace = true
 # Dex
 pallet-dex.workspace = true
 
+pallet-psp37.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -209,6 +212,7 @@ std = [
 	"pallet-indices/std",
 	"pallet-mmr/std",
 	"pallet-multisig/std",
+	"pallet-nfts/std",
 	"pallet-offences/std",
 	"pallet-preimage/std",
 	"pallet-proxy/std",
@@ -288,6 +292,8 @@ std = [
 
 	#Dex
 	"pallet-dex/std",
+
+	"pallet-psp37/std",
 ]
 aura = []
 allowlist = []

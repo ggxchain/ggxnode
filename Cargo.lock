@@ -174,7 +174,7 @@ dependencies = [
 [[package]]
 name = "annuity"
 version = "1.0.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -1035,7 +1035,7 @@ dependencies = [
 [[package]]
 name = "bitcoin"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 0.30.2",
  "bitcoin_hashes 0.7.6",
@@ -1340,7 +1340,7 @@ checksum = "bd769563b4ea2953e2825c9e6b7470a5f55f67e0be00030bf3e390a2a6071f64"
 [[package]]
 name = "btc-relay"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "frame-benchmarking",
@@ -1360,7 +1360,7 @@ dependencies = [
 [[package]]
 name = "btc-relay-rpc"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "btc-relay-rpc-runtime-api",
  "jsonrpsee",
@@ -1373,7 +1373,7 @@ dependencies = [
 [[package]]
 name = "btc-relay-rpc-runtime-api"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -1722,7 +1722,7 @@ checksum = "702fc72eb24e5a1e48ce58027a675bc24edd52096d5397d4aea7c6dd9eca0bd1"
 [[package]]
 name = "clients-info"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "fixed-hash 0.7.0",
  "frame-benchmarking",
@@ -2207,7 +2207,7 @@ dependencies = [
 [[package]]
 name = "currency"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -2974,7 +2974,7 @@ dependencies = [
 [[package]]
 name = "escrow"
 version = "1.0.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -3838,7 +3838,7 @@ dependencies = [
 [[package]]
 name = "fee"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "currency",
  "frame-benchmarking",
@@ -4846,9 +4846,11 @@ dependencies = [
  "pallet-insecure-randomness-collective-flip",
  "pallet-mmr",
  "pallet-multisig",
+ "pallet-nfts",
  "pallet-offences",
  "pallet-preimage",
  "pallet-proxy",
+ "pallet-psp37",
  "pallet-ranked-collective",
  "pallet-receipt-registry",
  "pallet-referenda",
@@ -5956,7 +5958,7 @@ dependencies = [
 [[package]]
 name = "interbtc-primitives"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "bstringify",
@@ -6033,7 +6035,7 @@ dependencies = [
 [[package]]
 name = "issue"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "btc-relay",
@@ -6065,7 +6067,7 @@ dependencies = [
 [[package]]
 name = "issue-rpc"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "issue-rpc-runtime-api",
  "jsonrpsee",
@@ -6078,7 +6080,7 @@ dependencies = [
 [[package]]
 name = "issue-rpc-runtime-api"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -7033,7 +7035,7 @@ checksum = "c4cd1a83af159aa67994778be9070f0ae1bd732942279cabb14f86f986a21456"
 [[package]]
 name = "loans"
 version = "1.9.3"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "currency",
  "frame-benchmarking",
@@ -7848,7 +7850,7 @@ dependencies = [
 [[package]]
 name = "nomination"
 version = "0.5.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "currency",
  "fee",
@@ -8192,7 +8194,7 @@ checksum = "04744f49eae99ab78e0d5c0b603ab218f515ea8cfe5a456d7629ad883a3b6e7d"
 [[package]]
 name = "oracle"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "currency",
  "frame-benchmarking",
@@ -8215,7 +8217,7 @@ dependencies = [
 [[package]]
 name = "oracle-rpc"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "jsonrpsee",
  "oracle-rpc-runtime-api",
@@ -8228,7 +8230,7 @@ dependencies = [
 [[package]]
 name = "oracle-rpc-runtime-api"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "interbtc-primitives",
@@ -9226,6 +9228,24 @@ dependencies = [
 ]
 
 [[package]]
+name = "pallet-nfts"
+version = "4.0.0-dev"
+source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e49f6e44820affccaf517fd22af564f4b495d40"
+dependencies = [
+ "enumflags2",
+ "frame-benchmarking",
+ "frame-support",
+ "frame-system",
+ "log 0.4.20",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
 name = "pallet-offences"
 version = "4.0.0-dev"
 source = "git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43#5e49f6e44820affccaf517fd22af564f4b495d40"
@@ -9272,6 +9292,22 @@ dependencies = [
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-psp37"
+version = "0.1.0"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-nfts",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "sp-core 7.0.0",
+ "sp-runtime 7.0.0",
 ]
 
 [[package]]
@@ -10914,7 +10950,7 @@ dependencies = [
 [[package]]
 name = "redeem"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "btc-relay",
@@ -10944,7 +10980,7 @@ dependencies = [
 [[package]]
 name = "redeem-rpc"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "jsonrpsee",
  "parity-scale-codec",
@@ -10957,7 +10993,7 @@ dependencies = [
 [[package]]
 name = "redeem-rpc-runtime-api"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -11085,7 +11121,7 @@ checksum = "c08c74e62047bb2de4ff487b251e4a92e24f48745648451635cec7d591162d9f"
 [[package]]
 name = "replace"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "btc-relay",
@@ -11115,7 +11151,7 @@ dependencies = [
 [[package]]
 name = "replace-rpc"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "jsonrpsee",
  "parity-scale-codec",
@@ -11128,7 +11164,7 @@ dependencies = [
 [[package]]
 name = "replace-rpc-runtime-api"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "parity-scale-codec",
@@ -11192,7 +11228,7 @@ dependencies = [
 [[package]]
 name = "reward"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -11212,7 +11248,7 @@ dependencies = [
 [[package]]
 name = "reward-rpc"
 version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "jsonrpsee",
  "oracle-rpc-runtime-api",
@@ -11226,7 +11262,7 @@ dependencies = [
 [[package]]
 name = "reward-rpc-runtime-api"
 version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "oracle-rpc-runtime-api",
@@ -13259,7 +13295,7 @@ dependencies = [
 [[package]]
 name = "security"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -15346,7 +15382,7 @@ checksum = "a8f112729512f8e442d81f95a8a7ddf2b7c6b8a1a6f509a95864142b30cab2d3"
 [[package]]
 name = "staking"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-benchmarking",
  "frame-support",
@@ -16861,7 +16897,7 @@ checksum = "efd1f82c56340fdf16f2a953d7bda4f8fdffba13d93b00844c25572110b26079"
 [[package]]
 name = "traits"
 version = "1.9.3"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -17067,9 +17103,9 @@ version = "1.6.3"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
- "cfg-if 0.1.10",
+ "cfg-if 1.0.0",
  "digest 0.10.7",
- "rand 0.5.6",
+ "rand 0.4.6",
  "static_assertions",
 ]
 
@@ -17365,7 +17401,7 @@ checksum = "830b7e5d4d90034032940e4ace0d9a9a057e7a45cd94e6c007832e39edb82f6d"
 [[package]]
 name = "vault-registry"
 version = "1.2.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "bitcoin 1.2.0",
  "currency",
@@ -17398,7 +17434,7 @@ dependencies = [
 [[package]]
 name = "vault-registry-rpc"
 version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "jsonrpsee",
  "oracle-rpc-runtime-api",
@@ -17412,7 +17448,7 @@ dependencies = [
 [[package]]
 name = "vault-registry-rpc-runtime-api"
 version = "0.3.0"
-source = "git+https://github.com/ggxchain/interbtc.git?branch=polkadot-v0.9.43#fb0433e19d3f560b248f133c28ee0c0635e30ac0"
+source = "git+https://github.com/ggxchain/interbtc.git?rev=1074d1b7#1074d1b70be897a0abb2fd0545064cfc6e96f9c7"
 dependencies = [
  "frame-support",
  "oracle-rpc-runtime-api",
