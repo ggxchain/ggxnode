@@ -19,7 +19,7 @@ jobs:
       matrix:
         runtime: [sydney, brooklyn]
       fail-fast: false
-    runs-on: ubuntu-latest
+    runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Check out code
         uses: actions/checkout@v4
@@ -35,7 +35,7 @@ jobs:
 
       - name: Extract metadata (tags, labels) for Docker
         id: meta
-        uses: docker/metadata-action@9ec57ed1fcdbf14dcef7dfbe97b2010124a938b7
+        uses: docker/metadata-action@2ee3d3070bb41b40bf7305d15233321e12c1dc5c
         with:
           images: ggxdocker/ggxnode
 
@@ -44,7 +44,7 @@ jobs:
         run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@3b5e8027fcad23fda98b2e3ac259d8d67585f671
+        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0
         with:
           context: .
           file: ./Dockerfile.${{ matrix.runtime }}
