@@ -880,6 +880,19 @@ pub mod pallet {
 			Ok(().into())
 		}
 
+		#[pallet::weight({7})]
+		#[pallet::call_index(7)]
+		pub fn allowlist_asset(origin: OriginFor<T>, asset_id: u32) -> DispatchResultWithPostInfo {
+			T::PrivilegedOrigin::ensure_origin(origin)?;
+
+			TokenInfoes::<T>::mutate(|token_infoes| {
+				TokenIndex::<T>::insert(asset_id, token_infoes.len() as u64);
+
+				token_infoes.try_push(asset_id).expect("Max token_infoes");
+			});
+			Ok(().into())
+		}
+
 		#[pallet::weight({8})]
 		#[pallet::call_index(8)]
 		pub fn update_match_order_unsigned(
