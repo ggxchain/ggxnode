@@ -13,6 +13,7 @@ use sp_runtime::{testing::Header, traits::IdentityLookup};
 pub type AccountId = u128;
 pub type Balance = u128;
 pub type AssetId = u32;
+pub type BlockNumber = u64;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
 type Block = frame_system::mocking::MockBlock<Test>;
@@ -115,6 +116,15 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
+impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Test
+where
+	RuntimeCall: From<LocalCall>,
+{
+	type OverarchingCall = RuntimeCall;
+	type Extrinsic = Extrinsic;
+}
+pub type Extrinsic = sp_runtime::testing::TestXt<RuntimeCall, ()>;
+
 impl pallet_timestamp::Config for Test {
 	type Moment = u64;
 	type OnTimestampSet = ();
@@ -124,6 +134,7 @@ impl pallet_timestamp::Config for Test {
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
+	pub const UnsignedPriority: BlockNumber = 1;
 }
 
 impl pallet_dex::Config for Test {
@@ -132,6 +143,7 @@ impl pallet_dex::Config for Test {
 	type Fungibles = Assets;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type Currency = Balances;
+	type UnsignedPriority = UnsignedPriority;
 }
 
 pub struct ExtBuilder;
@@ -164,18 +176,18 @@ impl ExtBuilder {
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
-				(999, "Bitcoin".into(), "BTC".into(), 10),
+				(999, "Bitcoin".into(), "BTC".into(), 8),
 				(888, "GGxchain".into(), "GGXT".into(), 18),
-				(777, "USDT".into(), "USDT".into(), 10),
+				(777, "USDT".into(), "USDT".into(), 6),
 			],
 			accounts: vec![
 				// id, account_id, balance
-				(999, 1, 1000),
-				(888, 1, 1000),
-				(777, 1, 1000),
-				(999, 2, 1000),
-				(888, 2, 1000),
-				(777, 2, 1000),
+				(999, 1, 1_000_000_000),
+				(888, 1, 1_000_000_000),
+				(777, 1, 1_000_000_000),
+				(999, 2, 1_000_000_000),
+				(888, 2, 1_000_000_000),
+				(777, 2, 1_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage)
@@ -210,5 +222,21 @@ pub fn run_to_block(n: u64) {
 		System::set_block_number(System::block_number() + 1);
 		System::on_initialize(System::block_number());
 		Dex::on_initialize(System::block_number());
+	}
+}
+
+fn new_block() -> Weight {
+	let number = frame_system::Pallet::<Test>::block_number() + 1;
+	let hash = H256::repeat_byte(number as u8);
+
+	frame_system::Pallet::<Test>::reset_events();
+	frame_system::Pallet::<Test>::initialize(&number, &hash, &Default::default());
+
+	Weight::default()
+}
+
+pub fn add_blocks(blocks: usize) {
+	for _ in 0..blocks {
+		new_block();
 	}
 }
