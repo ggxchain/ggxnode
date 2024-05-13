@@ -1,23 +1,20 @@
 [package]
-name = "xvm-flipper"
-version = "4.3.0"
-authors = [""]
+name = "store_xvm"
+version = "0.1.0"
+authors = ["[your_name] <[your_email]>"]
 edition = "2021"
-publish = false
 
 [dependencies]
 ink = { version = "4.3.0", default-features = false }
-ink_env = { version = "4.3.0", default-features = false }
-ink_prelude	 = { version = "4.3.0", default-features = false }
-hex-literal = { version = "0.4.1" }
 
 scale = { package = "parity-scale-codec", version = "3", default-features = false, features = ["derive"] }
 scale-info = { version = "2.5", default-features = false, features = ["derive"], optional = true }
 
 ethabi = { git = "https://github.com/akru/ethabi", default-features = false }
 
-[dev-dependencies]
-ink_e2e = "4.3.0"
+hex-literal = "0.4.1"
+xvm-environment = { path = "../../lib/xvm-environment", default-features = false }
+
 
 [lib]
 path = "lib.rs"
@@ -28,6 +25,6 @@ std = [
     "ink/std",
     "scale/std",
     "scale-info/std",
+    "xvm-environment/std",
 ]
 ink-as-dependency = []
-e2e-tests = []
