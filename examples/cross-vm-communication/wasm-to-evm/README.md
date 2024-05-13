@@ -1,7 +1,7 @@
 ## Steps Of Deploying WASM XVM
 
 #### Install Rust
-- Rust v1.78.0 is okay
+https://www.rust-lang.org/tools/install
 - Set Rust to the stable version to enable rust-toolchain.toml: `rustup default stable`
 
 #### Download this repository code
@@ -29,9 +29,9 @@ Wait for the balance to show up after a little while...
 - in Remix. Go to `File Explorer` > `contracts` > `artifacts` > Flipper.json, copy the `methodIdentifiers`:
 ```
 "methodIdentifiers": {
-			"data()": "73d4a13a",
-			"flip()": "cde4efa9"
-		}
+	"data()": "73d4a13a",
+	"flip()": "cde4efa9"
+}
 ```
 
 #### Install Ink CLI tool `Cargo contract`

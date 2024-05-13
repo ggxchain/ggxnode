@@ -19,7 +19,6 @@ polkadot.*
 .idea/
 .cargo-remote.toml
 .direnv
-archives
 
 # Added by cargo
 /target
