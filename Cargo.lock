@@ -4676,6 +4676,25 @@ dependencies = [
 ]
 
 [[package]]
+name = "ggx-primitives"
+version = "0.0.1"
+dependencies = [
+ "bstringify",
+ "frame-support",
+ "log 0.4.20",
+ "num_enum 0.5.11",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-api",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
 name = "ggxchain-node"
 version = "0.1.5"
 dependencies = [

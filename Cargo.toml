@@ -3,6 +3,7 @@ members = [
 	"node",
 	"precompiles/session",
 	"precompiles/zk-groth16-verify",
+	"primitives",
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
@@ -24,6 +25,7 @@ repository = "https://github.com/ggxchain/ggxnode/"
 # General purpose dependencies
 assert_cmd = "2.0.2"
 async-trait = "0.1"
+bstringify = { version = "0.1.2" }
 cfg-if = "1.0"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
@@ -196,7 +198,9 @@ ggxchain-runtime-brooklyn = { path = "runtime/brooklyn", default-features = fals
 ggxchain-runtime-sydney = { path = "runtime/sydney", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
+ggx-primitives = { path = "primitives", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
+
 
 # Astar
 astar-primitives = { git = "https://github.com/AstarNetwork/Astar.git", rev = "df73ca435bbfa30548bb2446b5dbb58492c928bb", default-features = false }
