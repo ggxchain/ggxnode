@@ -260,6 +260,7 @@ ark-std = { version = "0.4.0", default-features = false }
 
 # Orml dependencies
 orml-asset-registry = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
+orml-utilities = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 
@@ -300,6 +301,7 @@ reward-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", bra
 vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # Dex
+pallet-currencies = { path = "pallet/currencies", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
 
 # Supress warnings from the peerset in logs during syncing

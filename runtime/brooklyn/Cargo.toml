@@ -152,6 +152,7 @@ reward-rpc-runtime-api.workspace = true
 vault-registry-rpc-runtime-api.workspace = true
 
 # Dex
+pallet-currencies.workspace = true
 pallet-dex.workspace = true
 
 [build-dependencies]
@@ -287,6 +288,7 @@ std = [
 	"vault-registry-rpc-runtime-api/std",
 
 	#Dex
+	"pallet-currencies/std",
 	"pallet-dex/std",
 ]
 aura = []
