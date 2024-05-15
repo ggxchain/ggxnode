@@ -154,6 +154,7 @@ vault-registry-rpc-runtime-api.workspace = true
 # Dex
 pallet-currencies.workspace = true
 pallet-dex.workspace = true
+pallet-erc20.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
@@ -290,6 +291,7 @@ std = [
 	#Dex
 	"pallet-currencies/std",
 	"pallet-dex/std",
+	"pallet-erc20/std",
 ]
 aura = []
 allowlist = []

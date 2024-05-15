@@ -29,6 +29,7 @@ bstringify = { version = "0.1.2" }
 cfg-if = "1.0"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
+ethereum-types = { version = "0.14.0", default-features = false }
 env_logger = "0.10.0"
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
@@ -302,6 +303,7 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 
 # Dex
 pallet-currencies = { path = "pallet/currencies", default-features = false }
+pallet-erc20 = { path = "pallet/erc-20", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
 
 # Supress warnings from the peerset in logs during syncing
