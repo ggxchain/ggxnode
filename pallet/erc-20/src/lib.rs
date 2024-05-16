@@ -34,7 +34,9 @@ use frame_system::pallet_prelude::*;
 // };
 use frame_support::{sp_runtime::traits::AccountIdConversion, traits::Currency};
 use ggx_primitives::evm::{EVMBridgeTrait, EvmAddress};
+use hex_literal::hex;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
+use pallet_evm::AddressMapping;
 use sp_core::{H160, H256, U256};
 use sp_runtime::{ArithmeticError, DispatchError, SaturatedConversion};
 use sp_std::{vec, vec::Vec};
@@ -63,7 +65,6 @@ pub type BalanceOf<T> =
 // 	TotalSupply = "totalSupply()",
 // 	BalanceOf = "balanceOf(address)",
 // 	Transfer = "transfer(address,uint256)",
-// 	Liquidate = "liquidate(address,address,uint256,uint256)",
 // 	OnCollateralTransfer = "onCollateralTransfer(address,uint256)",
 // 	OnRepaymentRefund = "onRepaymentRefund(address,uint256)",
 // }
@@ -80,6 +81,7 @@ pub mod module {
 	/// EvmBridge module trait
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
+		//+ pallet_evm::Config
 		//type EVM: EVM<AccountIdOf<Self>>;
 
 		/// The currency mechanism. //todo need replace to EVM<AccountIdOf<Self>>
@@ -260,12 +262,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	}
 
 	// Calls the transfer method on an ERC20 contract using the given context.
-	fn transfer(
-		context: Context,
-		source: AccountIdOf<T>,
-		to: H160,
-		value: BalanceOf<T>,
-	) -> DispatchResult {
+	fn transfer(context: Context, to: H160, value: BalanceOf<T>) -> DispatchResult {
 		// // ERC20.transfer method hash
 		// let mut input = Into::<u32>::into(Action::Transfer).to_be_bytes().to_vec();
 		// // append receiver address
@@ -301,6 +298,47 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 		// 	!info.value.is_empty() && info.value == bytes,
 		// 	Error::<T>::InvalidReturnValue
 		// );
+
+		// #############
+		// @dev Transfer token for a specified address
+		// @custom:selector a9059cbb
+		// @param to The address to transfer to.
+		// @param value The amount to be transferred.
+		// function transfer(address to, uint256 value) external returns (bool);
+
+		let context = Context {
+			source_vm_id: VmId::Wasm,
+			weight_limit: Weight::from_parts(1_000_000, 1_000_000),
+		};
+
+		const TRANSFER_SELECTOR: [u8; 4] = hex!["6057361d"];
+		// ERC20.transfer method hash
+		let mut input = TRANSFER_SELECTOR.to_vec();
+		// append receiver address
+		input.extend_from_slice(H256::from(to).as_bytes());
+		// append amount to be transferred
+		input.extend_from_slice(
+			H256::from_uint(&U256::from(value.saturated_into::<u128>())).as_bytes(),
+		);
+
+		let gas = 200_000;
+		let storage_limit = 960;
+
+		let call_result = T::XvmCallApi::call(
+			context,
+			VmId::Evm,
+			<T as Config>::PalletId::get().into_account_truncating(),
+			to.as_bytes().to_vec(),
+			input,
+			value.saturated_into::<u128>(),
+			Some(storage_limit),
+		);
+
+		let used_weight = match &call_result {
+			Ok(s) => s.used_weight,
+			Err(f) => f.used_weight,
+		};
+
 		Ok(())
 	}
 }
