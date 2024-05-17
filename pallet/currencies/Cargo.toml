@@ -21,6 +21,9 @@ sp-std = { workspace = true }
 orml-traits = { workspace = true }
 orml-utilities = { workspace = true }
 
+astar-primitives = { workspace = true }
+ggx-primitives = { workspace = true }
+
 [dev-dependencies]
 pallet-balances = { workspace = true }
 sp-core = { workspace = true }
@@ -30,9 +33,11 @@ orml-tokens = { workspace = true }
 [features]
 default = ["std"]
 std = [
+	"astar-primitives/std",
 	"serde",
 	"frame-support/std",
 	"frame-system/std",
+	"ggx-primitives/std",
 	"orml-traits/std",
 	"orml-utilities/std",
 	"scale-codec/std",

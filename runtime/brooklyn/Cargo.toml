@@ -156,6 +156,8 @@ pallet-currencies.workspace = true
 pallet-dex.workspace = true
 pallet-erc20.workspace = true
 
+ggx-primitives.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -292,6 +294,7 @@ std = [
 	"pallet-currencies/std",
 	"pallet-dex/std",
 	"pallet-erc20/std",
+	"ggx-primitives/std",
 ]
 aura = []
 allowlist = []

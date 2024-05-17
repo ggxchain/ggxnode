@@ -16,8 +16,10 @@ pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
 pub mod btcbridge;
 mod chain_extensions;
+pub mod currencies;
 pub mod dex;
 mod dex_chain_extensions;
+pub mod erc20;
 pub mod ethereum;
 pub mod governance;
 mod ibc;
@@ -670,6 +672,9 @@ construct_runtime!(
 
 		// Dex
 		Dex: pallet_dex,
+
+		Erc20: pallet_erc20,
+		//GGXCurrencies: currencies,
 	}
 );
 
