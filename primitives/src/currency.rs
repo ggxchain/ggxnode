@@ -32,7 +32,7 @@ impl TryFrom<CurrencyId> for EvmAddress {
 			CurrencyId::Erc20(erc20) => {
 				address[..].copy_from_slice(erc20.as_bytes());
 			}
-			CurrencyId::Erc1155(erc1155) => {
+			CurrencyId::Erc1155(erc1155, _) => {
 				address[..].copy_from_slice(erc1155.as_bytes());
 			}
 
@@ -169,7 +169,7 @@ pub trait TokenInfo {
 pub enum CurrencyId {
 	Token(TokenSymbol),
 	Erc20(EvmAddress),
-	Erc1155(EvmAddress),
+	Erc1155(EvmAddress, u128),
 	ForeignAsset(ForeignAssetId),
 }
 
@@ -183,7 +183,7 @@ impl CurrencyId {
 	}
 
 	pub fn is_erc1155_currency_id(&self) -> bool {
-		matches!(self, CurrencyId::Erc1155(_))
+		matches!(self, CurrencyId::Erc1155(_, _))
 	}
 
 	pub fn is_foreign_asset_currency_id(&self) -> bool {
@@ -193,7 +193,7 @@ impl CurrencyId {
 	pub fn erc20_address(&self) -> Option<EvmAddress> {
 		match self {
 			CurrencyId::Erc20(address) => Some(*address),
-			CurrencyId::Erc1155(address) => Some(*address),
+			CurrencyId::Erc1155(address, _) => Some(*address),
 			CurrencyId::Token(_) => EvmAddress::try_from(*self).ok(),
 			_ => None,
 		}

@@ -262,7 +262,13 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	}
 
 	// Calls the transfer method on an ERC20 contract using the given context.
-	fn transfer(context: Context, to: H160, value: BalanceOf<T>) -> DispatchResult {
+	fn transfer(
+		context: Context,
+		contract: H160,
+		from: AccountIdOf<T>,
+		to: H160,
+		value: BalanceOf<T>,
+	) -> DispatchResult {
 		// // ERC20.transfer method hash
 		// let mut input = Into::<u32>::into(Action::Transfer).to_be_bytes().to_vec();
 		// // append receiver address
@@ -311,7 +317,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			weight_limit: Weight::from_parts(1_000_000, 1_000_000),
 		};
 
-		const TRANSFER_SELECTOR: [u8; 4] = hex!["6057361d"];
+		const TRANSFER_SELECTOR: [u8; 4] = hex!["a9059cbb"];
 		// ERC20.transfer method hash
 		let mut input = TRANSFER_SELECTOR.to_vec();
 		// append receiver address
@@ -327,10 +333,10 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 		let call_result = T::XvmCallApi::call(
 			context,
 			VmId::Evm,
-			<T as Config>::PalletId::get().into_account_truncating(),
-			to.as_bytes().to_vec(),
+			from,
+			contract.as_bytes().to_vec(),
 			input,
-			value.saturated_into::<u128>(),
+			0,
 			Some(storage_limit),
 		);
 

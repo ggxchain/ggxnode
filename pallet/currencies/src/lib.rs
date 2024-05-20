@@ -61,6 +61,7 @@ use orml_traits::{
 };
 use orml_utilities::with_transaction_result;
 use scale_codec::Codec;
+use sp_core::H160;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, StaticLookup, Zero},
 	DispatchError, DispatchResult,
@@ -305,6 +306,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 						source_vm_id: VmId::Wasm,
 						weight_limit: Weight::from_parts(1_000_000, 1_000_000),
 					},
+					contract,
+					from.clone(),
 					address,
 					amount,
 				)?;

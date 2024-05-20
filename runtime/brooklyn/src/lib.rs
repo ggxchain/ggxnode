@@ -674,7 +674,7 @@ construct_runtime!(
 		Dex: pallet_dex,
 		GGXTokens: pallet_ggx_tokens,
 		Erc20: pallet_erc20,
-		//GGXCurrencies: currencies,
+		GGXCurrencies: pallet_currencies,
 	}
 );
 

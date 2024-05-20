@@ -19,7 +19,13 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 	/// contract
 	fn balance_of(context: Context, address: EvmAddress) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.transfer(address, uint256) to transfer value to `to`
-	fn transfer(context: Context, to: EvmAddress, value: Balance) -> DispatchResult;
+	fn transfer(
+		context: Context,
+		contract: EvmAddress,
+		from: AccountId,
+		to: EvmAddress,
+		value: Balance,
+	) -> DispatchResult;
 	// /// Get the real origin account and charge storage rent from the origin.
 	// fn get_origin() -> Option<AccountId>;
 	// /// Set the EVM origin
