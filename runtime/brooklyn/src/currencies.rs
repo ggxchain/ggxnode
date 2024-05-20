@@ -1,8 +1,33 @@
-use crate::{prelude::*, Assets, BlakeTwo256, BlockNumber, Erc20, Tokens, H160};
+use crate::{
+	prelude::*, Assets, BlakeTwo256, BlockNumber, ConstU32, Erc20, GGXTokens, MaxLocks, H160,
+};
+use orml_traits::parameter_type_with_key;
+use scale_info::prelude::vec;
+use sp_runtime::traits::Zero;
 
 use ggx_primitives::currency::{CurrencyId, TokenSymbol};
 use pallet_currencies::BasicCurrencyAdapter;
 pub type Amount = i128;
+
+parameter_type_with_key! {
+  pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
+		Zero::zero()
+  };
+}
+
+impl pallet_ggx_tokens::Config for Runtime {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type Amount = primitives::SignedBalance;
+	type CurrencyId = CurrencyId;
+	type WeightInfo = runtime_common::weights::pallet_ggx_tokens::WeightInfo<Runtime>;
+	type ExistentialDeposits = ExistentialDeposits;
+	type CurrencyHooks = ();
+	type MaxLocks = MaxLocks;
+	type DustRemovalWhitelist = ();
+	type MaxReserves = ConstU32<0>; // we don't use named reserves
+	type ReserveIdentifier = (); // we don't use named reserves
+}
 
 ///TODO: Placeholder account mapping. This would be replaced once account abstraction is finished.
 pub struct HashedAccountMapping;
@@ -18,7 +43,7 @@ parameter_types! {
 }
 
 impl pallet_currencies::Config for Runtime {
-	type MultiCurrency = Tokens;
+	type MultiCurrency = GGXTokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type GetNativeCurrencyId = NativeCurrencyId;
 	type WeightInfo = ();

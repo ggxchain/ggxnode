@@ -4723,6 +4723,7 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures 0.3.30",
+ "ggx-primitives",
  "ggxchain-runtime-brooklyn",
  "ggxchain-runtime-sydney",
  "hex",
@@ -4858,6 +4859,7 @@ dependencies = [
  "pallet-ethereum-checked",
  "pallet-evm",
  "pallet-evm-chain-id",
+ "pallet-ggx-tokens",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
  "pallet-ibc",
@@ -8723,7 +8725,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-erc20"
-version = "2.25.0"
+version = "0.0.1"
 dependencies = [
  "astar-primitives",
  "ethereum-types 0.14.1",
@@ -9091,6 +9093,24 @@ dependencies = [
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
  "sp-staking",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-ggx-tokens"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
@@ -11464,6 +11484,7 @@ dependencies = [
  "pallet-evm-precompile-substrate-ecdsa",
  "pallet-evm-precompile-xvm",
  "pallet-evm-precompile-zk-groth16-verify",
+ "pallet-ggx-tokens",
  "pallet-receipt-registry",
  "pallet-scheduler",
  "pallet-session",

@@ -1,8 +1,9 @@
 [package]
 name = "pallet-erc20"
-version = "2.25.0"
-authors = ["Acala Developers"]
-edition = "2021"
+version = "0.0.1"
+edition.workspace = true
+authors.workspace = true
+repository.workspace = true
 
 [package.metadata.docs.rs]
 targets = ["x86_64-unknown-linux-gnu"]

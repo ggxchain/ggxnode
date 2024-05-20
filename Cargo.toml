@@ -305,6 +305,7 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 pallet-currencies = { path = "pallet/currencies", default-features = false }
 pallet-erc20 = { path = "pallet/erc-20", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
+pallet-ggx-tokens = { path = "pallet/ggx-tokens", default-features = false }
 
 # Supress warnings from the peerset in logs during syncing
 # The polkadot did the same in the next release. See:

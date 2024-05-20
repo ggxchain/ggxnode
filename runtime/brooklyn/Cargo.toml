@@ -155,6 +155,7 @@ vault-registry-rpc-runtime-api.workspace = true
 pallet-currencies.workspace = true
 pallet-dex.workspace = true
 pallet-erc20.workspace = true
+pallet-ggx-tokens.workspace = true
 
 ggx-primitives.workspace = true
 
@@ -291,10 +292,11 @@ std = [
 	"vault-registry-rpc-runtime-api/std",
 
 	#Dex
+	"ggx-primitives/std",
 	"pallet-currencies/std",
 	"pallet-dex/std",
 	"pallet-erc20/std",
-	"ggx-primitives/std",
+	"pallet-ggx-tokens/std",
 ]
 aura = []
 allowlist = []

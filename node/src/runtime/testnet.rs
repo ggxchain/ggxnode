@@ -299,6 +299,20 @@ pub fn testnet_genesis(
 				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
 				.collect(),
 		},
+		ggx_tokens: GGXTokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|k| {
+					vec![(
+						k.clone().0,
+						ggx_primitives::currency::CurrencyId::Token(
+							ggx_primitives::currency::TokenSymbol::GGX,
+						),
+						1u128 << 70,
+					)]
+				})
+				.collect(),
+		},
 		oracle: OracleConfig {
 			authorized_oracles: endowed_accounts
 				.iter()
