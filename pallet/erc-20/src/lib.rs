@@ -312,11 +312,6 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 		// @param value The amount to be transferred.
 		// function transfer(address to, uint256 value) external returns (bool);
 
-		let context = Context {
-			source_vm_id: VmId::Wasm,
-			weight_limit: Weight::from_parts(1_000_000, 1_000_000),
-		};
-
 		const TRANSFER_SELECTOR: [u8; 4] = hex!["a9059cbb"];
 		// ERC20.transfer method hash
 		let mut input = TRANSFER_SELECTOR.to_vec();

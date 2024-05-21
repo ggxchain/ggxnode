@@ -162,6 +162,8 @@ substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/pa
 substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-test-utils = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
+polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.43", default-features = false }
+
 
 # Frontier Client
 fc-cli = { version = "1.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.43" }

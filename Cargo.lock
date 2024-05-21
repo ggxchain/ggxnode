@@ -4892,6 +4892,7 @@ dependencies = [
  "pallet-xvm",
  "parity-scale-codec",
  "paste",
+ "polkadot-primitives",
  "prost",
  "redeem",
  "redeem-rpc-runtime-api",

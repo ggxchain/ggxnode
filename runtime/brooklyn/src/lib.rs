@@ -243,8 +243,12 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
-const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND, 5 * WEIGHT_PROOF_SIZE_PER_MB);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+	WEIGHT_REF_TIME_PER_SECOND,
+	// TODO: drop `* 10` after https://github.com/paritytech/substrate/issues/13501
+	// and the benchmarked size is not 10x of the measured size
+	polkadot_primitives::MAX_POV_SIZE as u64 * 10,
+);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;

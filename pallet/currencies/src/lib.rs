@@ -304,7 +304,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 				T::EVMBridge::transfer(
 					Context {
 						source_vm_id: VmId::Wasm,
-						weight_limit: Weight::from_parts(1_000_000, 1_000_000),
+						weight_limit: Weight::from_parts(1_000_000_000, 1_000_000_000),
 					},
 					contract,
 					from.clone(),
