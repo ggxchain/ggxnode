@@ -173,6 +173,12 @@ pub enum CurrencyId {
 	ForeignAsset(ForeignAssetId),
 }
 
+impl Default for CurrencyId {
+	fn default() -> Self {
+		Self::Token(Default::default())
+	}
+}
+
 impl CurrencyId {
 	pub fn is_token_currency_id(&self) -> bool {
 		matches!(self, CurrencyId::Token(_))

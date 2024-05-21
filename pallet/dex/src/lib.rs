@@ -10,6 +10,7 @@ use frame_support::{
 };
 
 use frame_system::offchain::SendTransactionTypes;
+use ggx_primitives::currency::CurrencyId;
 use sp_runtime::{
 	offchain::{
 		storage::StorageValueRef,
@@ -17,6 +18,14 @@ use sp_runtime::{
 		Duration,
 	},
 	traits::{BlockNumberProvider, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub},
+};
+
+use orml_traits::{
+	arithmetic::{Signed, SimpleArithmetic},
+	currency::TransferAll,
+	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency,
+	BasicReservableCurrency, LockIdentifier, MultiCurrency, MultiCurrencyExtended,
+	MultiLockableCurrency, MultiReservableCurrency, NamedMultiReservableCurrency,
 };
 
 use core::cmp::Ordering;
@@ -78,9 +87,9 @@ pub enum OrderStatus {
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct Order<AccountId, Balance, BlockNumber> {
-	counter: u64,       //order index
-	address: AccountId, //
-	pair: (u32, u32),   //AssetId_1 is base,  AssetId_2 is quote token
+	counter: u64,                   //order index
+	address: AccountId,             //
+	pair: (CurrencyId, CurrencyId), //AssetId_1 is base,  AssetId_2 is quote token
 	expiration_block: BlockNumber,
 	order_type: OrderType,
 	amount_offered: Balance,
@@ -190,30 +199,39 @@ pub mod pallet {
 	use frame_support::{
 		dispatch::DispatchResultWithPostInfo,
 		pallet_prelude::{ValueQuery, *},
+		traits::{fungible, fungibles},
 		Blake2_128Concat,
 	};
 	use frame_system::offchain::SubmitTransaction;
 
-	pub type BalanceOf<T> =
-		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
+	pub type BalanceOf<T> = <<T as Config>::MultiCurrency as MultiCurrency<
+		<T as frame_system::Config>::AccountId,
+	>>::Balance;
 
 	type OrderOf<T> =
 		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
 
-	type MapMatchEnginesOf<T> =
-		BoundedBTreeMap<(u32, u32), MatchEngine<OrderOf<T>, BalanceOf<T>>, ConstU32<{ u32::MAX }>>;
+	pub(crate) type AmountOf<T> = <<T as Config>::MultiCurrency as MultiCurrencyExtended<
+		<T as frame_system::Config>::AccountId,
+	>>::Amount;
+
+	type MapMatchEnginesOf<T> = BoundedBTreeMap<
+		(CurrencyId, CurrencyId),
+		MatchEngine<OrderOf<T>, BalanceOf<T>>,
+		ConstU32<{ u32::MAX }>,
+	>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
 	pub struct GenesisConfig {
-		pub asset_ids: Vec<u32>,
-		pub native_asset_id: u32,
+		pub asset_ids: Vec<CurrencyId>,
+		pub native_asset_id: CurrencyId,
 	}
 
 	#[pallet::genesis_build]
 	impl<T: Config> GenesisBuild<T> for GenesisConfig {
 		fn build(&self) {
-			let bounded_token_infoes: BoundedVec<u32, ConstU32<{ u32::MAX }>> = self
+			let bounded_token_infoes: BoundedVec<CurrencyId, ConstU32<{ u32::MAX }>> = self
 				.asset_ids
 				.clone()
 				.try_into()
@@ -245,8 +263,22 @@ pub mod pallet {
 		type PalletId: Get<PalletId>;
 
 		/// Expose customizable associated type of asset transfer, lock and unlock
-		type Fungibles: Balanced<Self::AccountId>
-			+ Mutate<Self::AccountId, AssetId = u32, Balance = BalanceOf<Self>>;
+		type MultiCurrency: TransferAll<Self::AccountId>
+			+ MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId>
+			+ MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
+			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>
+			+ NamedMultiReservableCurrency<Self::AccountId>
+			+ fungibles::Inspect<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>
+			+ fungibles::Mutate<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>;
+
+		type NativeCurrency: BasicCurrencyExtended<
+				Self::AccountId,
+				Balance = BalanceOf<Self>,
+				Amount = AmountOf<Self>,
+			> + BasicLockableCurrency<Self::AccountId, Balance = BalanceOf<Self>>
+			+ BasicReservableCurrency<Self::AccountId, Balance = BalanceOf<Self>>
+			+ fungible::Inspect<Self::AccountId, Balance = BalanceOf<Self>>
+			+ fungible::Mutate<Self::AccountId, Balance = BalanceOf<Self>>;
 
 		type PrivilegedOrigin: EnsureOrigin<<Self as frame_system::Config>::RuntimeOrigin>;
 
@@ -265,7 +297,7 @@ pub mod pallet {
 		Blake2_128Concat,
 		T::AccountId, //address
 		Blake2_128Concat,
-		u32, //asset id
+		CurrencyId, //asset id
 		TokenInfo<BalanceOf<T>>,
 		ValueQuery,
 	>;
@@ -273,15 +305,15 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn token_infoes)]
 	pub type TokenInfoes<T: Config> =
-		StorageValue<_, BoundedVec<u32, ConstU32<{ u32::MAX }>>, ValueQuery>;
+		StorageValue<_, BoundedVec<CurrencyId, ConstU32<{ u32::MAX }>>, ValueQuery>;
 
 	#[pallet::storage]
 	#[pallet::getter(fn token_index)]
 	pub type TokenIndex<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
-		u32,
-		u64, //token index
+		CurrencyId,
+		u64, //token sub index in TokenInfoes
 		ValueQuery,
 	>;
 
@@ -308,7 +340,7 @@ pub mod pallet {
 	pub type PairOrders<T: Config> = StorageMap<
 		_,
 		Blake2_128Concat,
-		(u32, u32),
+		(CurrencyId, CurrencyId),
 		BoundedVec<u64, ConstU32<{ u32::MAX }>>,
 		ValueQuery,
 	>;
@@ -337,7 +369,7 @@ pub mod pallet {
 
 	#[pallet::storage]
 	#[pallet::getter(fn native_asset_id)]
-	pub type NativeAssetId<T: Config> = StorageValue<_, u32, ValueQuery>;
+	pub type NativeAssetId<T: Config> = StorageValue<_, CurrencyId, ValueQuery>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -364,11 +396,11 @@ pub mod pallet {
 			maker_order: OrderOf<T>,
 		},
 		Deposited {
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		},
 		Withdrawed {
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		},
 		NativeDeposited {
@@ -428,7 +460,7 @@ pub mod pallet {
 			let mut map_match_engines: MapMatchEnginesOf<T>;
 
 			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
-				(u32, u32),
+				(CurrencyId, CurrencyId),
 				MatchEngine<OrderOf<T>, BalanceOf<T>>,
 				ConstU32<{ u32::MAX }>,
 			>>() {
@@ -554,7 +586,7 @@ pub mod pallet {
 		#[pallet::call_index(0)]
 		pub fn deposit(
 			origin: OriginFor<T>,
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
@@ -564,12 +596,11 @@ pub mod pallet {
 				Error::<T>::AssetIdNotInTokenIndex
 			);
 
-			<T::Fungibles as Mutate<T::AccountId>>::transfer(
+			<T::MultiCurrency as MultiCurrency<T::AccountId>>::transfer(
 				asset_id,
 				&who,
 				&Self::account_id(),
 				amount,
-				Preservation::Expendable,
 			)?;
 
 			let mut info = TokenInfo::default();
@@ -594,7 +625,7 @@ pub mod pallet {
 		#[pallet::call_index(1)]
 		pub fn withdraw(
 			origin: OriginFor<T>,
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
@@ -615,12 +646,11 @@ pub mod pallet {
 				.checked_sub(&amount)
 				.ok_or(Error::<T>::NotEnoughBalance)?;
 
-			<T::Fungibles as Mutate<T::AccountId>>::transfer(
+			<T::MultiCurrency as MultiCurrency<T::AccountId>>::transfer(
 				asset_id,
 				&Self::account_id(),
 				&who,
 				amount,
-				Preservation::Expendable,
 			)?;
 
 			UserTokenInfoes::<T>::insert(who, asset_id, info);
@@ -634,8 +664,8 @@ pub mod pallet {
 		#[allow(clippy::too_many_arguments)]
 		pub fn make_order(
 			origin: OriginFor<T>,
-			asset_id_1: u32,
-			asset_id_2: u32,
+			asset_id_1: CurrencyId,
+			asset_id_2: CurrencyId,
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
 			price: BalanceOf<T>,
@@ -826,7 +856,7 @@ pub mod pallet {
 				Error::<T>::AssetIdNotInTokenIndex
 			);
 
-			T::Currency::transfer(&who, &Self::account_id(), amount, AllowDeath)?;
+			T::NativeCurrency::transfer(&who, &Self::account_id(), amount)?;
 
 			let mut info = TokenInfo::default();
 			if UserTokenInfoes::<T>::contains_key(who.clone(), asset_id) {
@@ -872,7 +902,7 @@ pub mod pallet {
 				.checked_sub(&amount)
 				.ok_or(Error::<T>::NotEnoughBalance)?;
 
-			T::Currency::transfer(&Self::account_id(), &who, amount, AllowDeath)?;
+			T::NativeCurrency::transfer(&Self::account_id(), &who, amount)?;
 
 			UserTokenInfoes::<T>::insert(who, asset_id, info);
 
@@ -882,7 +912,10 @@ pub mod pallet {
 
 		#[pallet::weight({7})]
 		#[pallet::call_index(7)]
-		pub fn allowlist_asset(origin: OriginFor<T>, asset_id: u32) -> DispatchResultWithPostInfo {
+		pub fn allowlist_asset(
+			origin: OriginFor<T>,
+			asset_id: CurrencyId,
+		) -> DispatchResultWithPostInfo {
 			T::PrivilegedOrigin::ensure_origin(origin)?;
 
 			TokenInfoes::<T>::mutate(|token_infoes| {
@@ -988,7 +1021,7 @@ pub mod pallet {
 
 		pub fn add_assert(
 			account: &T::AccountId,
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		) -> Result<(), DispatchError> {
 			let mut info = TokenInfo::default();
@@ -1008,7 +1041,7 @@ pub mod pallet {
 
 		pub fn sub_assert(
 			account: &T::AccountId,
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		) -> Result<(), DispatchError> {
 			ensure!(
@@ -1029,7 +1062,7 @@ pub mod pallet {
 
 		pub fn sub_reserved_assert(
 			account: &T::AccountId,
-			asset_id: u32,
+			asset_id: CurrencyId,
 			amount: BalanceOf<T>,
 		) -> Result<(), DispatchError> {
 			ensure!(

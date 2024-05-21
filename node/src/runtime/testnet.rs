@@ -5,6 +5,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
+use ggx_primitives::currency::CurrencyId::ForeignAsset;
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
@@ -378,8 +379,17 @@ pub fn testnet_genesis(
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8888, 999, 888, 777, 666, 667],
-			native_asset_id: 8888,
+			asset_ids: vec![
+				ForeignAsset(8888),
+				ForeignAsset(999),
+				ForeignAsset(888),
+				ForeignAsset(777),
+				ForeignAsset(666),
+				ForeignAsset(667),
+			],
+			native_asset_id: ggx_primitives::currency::CurrencyId::Token(
+				ggx_primitives::currency::TokenSymbol::GGX,
+			),
 		},
 	}
 }

@@ -3,6 +3,8 @@ use sp_runtime::{DispatchError, ModuleError};
 
 use frame_support::traits::Currency;
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
+use ggx_primitives::currency::CurrencyId;
+use orml_traits::MultiCurrency;
 use pallet_contracts::chain_extension::{
 	ChainExtension, Environment, Ext, InitState, RetVal, SysConfig,
 };
@@ -14,7 +16,7 @@ use crate::chain_extensions::get_address_from_caller;
 
 use sp_std::{vec, vec::Vec};
 
-type BalanceOf<Runtime> = <<Runtime as pallet_dex::Config>::Currency as Currency<
+type BalanceOf<Runtime> = <<Runtime as pallet_dex::Config>::MultiCurrency as MultiCurrency<
 	<Runtime as frame_system::Config>::AccountId,
 >>::Balance;
 
@@ -199,7 +201,7 @@ where
 
 		match func_id {
 			DexFunc::Deposit => {
-				let input: DexDepositInput<u32, BalanceOf<T>> = env.read_as()?;
+				let input: DexDepositInput<CurrencyId, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::deposit(
@@ -217,14 +219,14 @@ where
 				};
 			}
 			DexFunc::BalanceOf => {
-				let input: DexBalanceOfInput<u32, T::AccountId> = env.read_as()?;
+				let input: DexBalanceOfInput<CurrencyId, T::AccountId> = env.read_as()?;
 
 				let token_info =
 					pallet_dex::UserTokenInfoes::<T>::get(&input.owner, input.asset_id);
 				env.write(&token_info.amount.encode(), false, None)?;
 			}
 			DexFunc::Withdraw => {
-				let input: DexWithdrawInput<u32, BalanceOf<T>> = env.read_as()?;
+				let input: DexWithdrawInput<CurrencyId, BalanceOf<T>> = env.read_as()?;
 
 				let sender = get_address_from_caller(env.ext().caller().clone())?;
 				let call_result = pallet_dex::Pallet::<T>::withdraw(
@@ -293,7 +295,7 @@ where
 				env.write(&order.unwrap().encode(), false, None)?;
 			}
 			DexFunc::PairOrders => {
-				let input: DexPairOrdersInput<u32> = env.read_as()?;
+				let input: DexPairOrdersInput<CurrencyId> = env.read_as()?;
 
 				let order_index_array =
 					pallet_dex::PairOrders::<T>::get((input.asset_id_1, input.asset_id_2));
@@ -319,7 +321,7 @@ where
 			}
 			DexFunc::MakeOrder => {
 				let input: DexMakeOrderInput<
-					u32,
+					CurrencyId,
 					BalanceOf<T>,
 					pallet_dex::OrderType,
 					BlockNumberFor<T>,
@@ -388,7 +390,7 @@ where
 				env.write(&token_id_array[input.index as usize].encode(), false, None)?;
 			}
 			DexFunc::PairOrderByIndex => {
-				let input: DexPairOrderByIndexInput<u32> = env.read_as()?;
+				let input: DexPairOrderByIndexInput<CurrencyId> = env.read_as()?;
 
 				let order_index_array =
 					pallet_dex::PairOrders::<T>::get((input.asset_id_1, input.asset_id_2));
