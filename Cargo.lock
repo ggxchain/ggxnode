@@ -8667,15 +8667,18 @@ dependencies = [
  "frame-system",
  "ggx-primitives",
  "log 0.4.20",
+ "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-assets",
  "pallet-balances",
+ "pallet-currencies",
  "pallet-timestamp",
  "parity-scale-codec",
  "scale-info",
  "sp-core 7.0.0",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
