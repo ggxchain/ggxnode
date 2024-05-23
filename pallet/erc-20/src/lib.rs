@@ -81,9 +81,6 @@ pub mod module {
 	/// EvmBridge module trait
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		//+ pallet_evm::Config
-		//type EVM: EVM<AccountIdOf<Self>>;
-
 		/// The currency mechanism. //todo need replace to EVM<AccountIdOf<Self>>
 		type Currency: ReservableCurrency<Self::AccountId>;
 
@@ -269,42 +266,6 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 		to: H160,
 		value: BalanceOf<T>,
 	) -> DispatchResult {
-		// // ERC20.transfer method hash
-		// let mut input = Into::<u32>::into(Action::Transfer).to_be_bytes().to_vec();
-		// // append receiver address
-		// input.extend_from_slice(H256::from(to).as_bytes());
-		// // append amount to be transferred
-		// input.extend_from_slice(
-		// 	H256::from_uint(&U256::from(value.saturated_into::<u128>())).as_bytes(),
-		// );
-
-		// let storage_limit = if context.origin == Default::default() {
-		// 	0
-		// } else {
-		// 	erc20::TRANSFER.storage
-		// };
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::TRANSFER.gas,
-		// 	storage_limit,
-		// 	ExecutionMode::Execute,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-
-		// // return value is true.
-		// let mut bytes = [0u8; 32];
-		// U256::from(1).to_big_endian(&mut bytes);
-
-		// // Check return value to make sure not calling on empty contracts.
-		// ensure!(
-		// 	!info.value.is_empty() && info.value == bytes,
-		// 	Error::<T>::InvalidReturnValue
-		// );
-
 		// #############
 		// @dev Transfer token for a specified address
 		// @custom:selector a9059cbb
@@ -344,45 +305,4 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	}
 }
 
-impl<T: Config> Pallet<T> {
-	pub fn account_id() -> <T as frame_system::Config>::AccountId {
-		<T as Config>::PalletId::get().into_account_truncating()
-	}
-	// 	fn handle_exit_reason(exit_reason: ExitReason) -> Result<(), DispatchError> {
-	// 		match exit_reason {
-	// 			ExitReason::Succeed(ExitSucceed::Returned) => Ok(()),
-	// 			ExitReason::Succeed(ExitSucceed::Stopped) => Ok(()),
-	// 			ExitReason::Succeed(_) => Err(Error::<T>::ExecutionFail.into()),
-	// 			ExitReason::Revert(_) => Err(Error::<T>::ExecutionRevert.into()),
-	// 			ExitReason::Fatal(_) => Err(Error::<T>::ExecutionFatal.into()),
-	// 			ExitReason::Error(_) => Err(Error::<T>::ExecutionError.into()),
-	// 		}
-	// 	}
-
-	// 	fn decode_string(output: Vec<u8>) -> Result<Vec<u8>, DispatchError> {
-	// 		// output is 32-byte aligned and consists of 3 parts:
-	// 		// - part 1: 32 byte, the offset of its description is passed in the position of
-	// 		// the corresponding parameter or return value.
-	// 		// - part 2: 32 byte, string length
-	// 		// - part 3: string data
-	// 		ensure!(
-	// 			output.len() >= 64 && output.len() % 32 == 0,
-	// 			Error::<T>::InvalidReturnValue
-	// 		);
-
-	// 		let offset = U256::from_big_endian(&output[0..32]);
-	// 		let length = U256::from_big_endian(&output[offset.as_usize()..offset.as_usize() + 32]);
-	// 		ensure!(
-	// 			// output is 32-byte aligned. ensure total_length >= offset + string length + string data length.
-	// 			output.len() >= offset.as_usize() + 32 + length.as_usize(),
-	// 			Error::<T>::InvalidReturnValue
-	// 		);
-
-	// 		let mut data = Vec::new();
-	// 		data.extend_from_slice(
-	// 			&output[offset.as_usize() + 32..offset.as_usize() + 32 + length.as_usize()],
-	// 		);
-
-	// 		Ok(data.to_vec())
-	// 	}
-}
+impl<T: Config> Pallet<T> {}
