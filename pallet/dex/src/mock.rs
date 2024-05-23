@@ -2,23 +2,30 @@ use crate as pallet_dex;
 
 use super::*;
 
+use astar_primitives::ethereum_checked::{CheckedEthereumTransact, CheckedEthereumTx};
+use fp_evm::{CallInfo as EvmCallInfo, ExitReason, ExitSucceed, UsedGas};
 use frame_support::{
+	dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo},
 	pallet_prelude::Weight,
 	parameter_types, sp_io,
-	traits::{AsEnsureOriginWithArg, GenesisBuild, Hooks, Nothing},
+	traits::{AsEnsureOriginWithArg, ConstBool, GenesisBuild, Hooks, Nothing},
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
-use ggx_primitives::currency::{CurrencyId, TokenSymbol};
+use ggx_primitives::{
+	currency::{CurrencyId, TokenSymbol},
+	evm::EvmAddress,
+};
 use orml_tokens::TransferDust;
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
+use pallet_evm::GasWeightMapping;
 use sp_core::{ConstU128, ConstU32, ConstU64, H160, H256};
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, IdentityLookup},
 	AccountId32,
 };
-use sp_std::marker;
+use sp_std::{cell::RefCell, marker};
 
 use pallet_currencies::{BasicCurrencyAdapter, NativeCurrencyOf};
 
@@ -39,6 +46,9 @@ frame_support::construct_runtime!(
 		System: frame_system,
 		Balances: pallet_balances,
 		Timestamp: pallet_timestamp,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+		Contracts: pallet_contracts,
+		Xvm: pallet_xvm,
 		Currencies: pallet_currencies,
 		Tokens: orml_tokens,
 		Assets: pallet_assets,
@@ -146,6 +156,8 @@ impl pallet_timestamp::Config for Test {
 	type WeightInfo = ();
 }
 
+impl pallet_randomness_collective_flip::Config for Test {}
+
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
 		Default::default()
@@ -188,60 +200,119 @@ impl orml_tokens::Config for Test {
 	type DustRemovalWhitelist = Nothing;
 }
 
-pub type NativeCurrency = NativeCurrencyOf<Test>;
-pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Test, Balances, i64, u64>;
-
-/// A mapping between `AccountId` and `EvmAddress`.
-pub trait AddressMapping<AccountId> {
-	/// Returns the AccountId used go generate the given EvmAddress.
-	fn get_account_id(evm: &EvmAddress) -> AccountId;
-	/// Returns the EvmAddress associated with a given AccountId or the
-	/// underlying EvmAddress of the AccountId.
-	/// Returns None if there is no EvmAddress associated with the AccountId
-	/// and there is no underlying EvmAddress in the AccountId.
-	fn get_evm_address(account_id: &AccountId) -> Option<EvmAddress>;
-	/// Returns the EVM address associated with an account ID and generates an
-	/// account mapping if no association exists.
-	fn get_or_create_evm_address(account_id: &AccountId) -> EvmAddress;
-	/// Returns the default EVM address associated with an account ID.
-	fn get_default_evm_address(account_id: &AccountId) -> EvmAddress;
-	/// Returns true if a given AccountId is associated with a given EvmAddress
-	/// and false if is not.
-	fn is_linked(account_id: &AccountId, evm: &EvmAddress) -> bool;
+parameter_types! {
+	pub const DepositPerItem: Balance = 1_000;
+	pub const DepositPerByte: Balance = 1_000;
+	pub const DefaultDepositLimit: Balance = 1_000;
+	pub Schedule: pallet_contracts::Schedule<Test> = Default::default();
 }
 
-pub struct MockAddressMapping;
+impl pallet_contracts::Config for Test {
+	type Time = Timestamp;
+	type Randomness = RandomnessCollectiveFlip;
+	type Currency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type RuntimeCall = RuntimeCall;
+	type CallFilter = Nothing;
+	type DepositPerItem = DepositPerItem;
+	type DepositPerByte = DepositPerByte;
+	type DefaultDepositLimit = DefaultDepositLimit;
+	type CallStack = [pallet_contracts::Frame<Self>; 5];
+	type WeightPrice = ();
+	type WeightInfo = pallet_contracts::weights::SubstrateWeight<Self>;
+	type ChainExtension = ();
+	type Schedule = Schedule;
+	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;
+	type MaxCodeLen = ConstU32<{ 123 * 1024 }>;
+	type MaxStorageKeyLen = ConstU32<128>;
+	type UnsafeUnstableInterface = ConstBool<true>;
+	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
+}
 
-impl AddressMapping<AccountId32> for MockAddressMapping {
-	fn get_account_id(address: &H160) -> AccountId32 {
-		let mut data = [0u8; 32];
-		data[0..4].copy_from_slice(b"evm:");
-		data[4..24].copy_from_slice(&address[..]);
-		AccountId32::from(data)
-	}
+thread_local! {
+	static TRANSACTED: RefCell<Option<(H160, CheckedEthereumTx)>> = RefCell::new(None);
+}
 
-	fn get_evm_address(account_id: &AccountId32) -> Option<H160> {
-		let data: [u8; 32] = account_id.clone().into();
-		if data.starts_with(b"evm:") && data.ends_with(&[0u8; 8]) {
-			Some(H160::from_slice(&data[4..24]))
-		} else {
-			None
-		}
+pub struct MockEthereumTransact;
+impl MockEthereumTransact {
+	pub(crate) fn assert_transacted(source: H160, checked_tx: CheckedEthereumTx) {
+		let transacted = TRANSACTED.with(|v| v.borrow().clone());
+		assert_eq!(transacted, Some((source, checked_tx)));
 	}
+}
+impl CheckedEthereumTransact for MockEthereumTransact {
+	fn xvm_transact(
+		source: H160,
+		checked_tx: CheckedEthereumTx,
+	) -> Result<(PostDispatchInfo, EvmCallInfo), DispatchErrorWithPostInfo> {
+		TRANSACTED.with(|v| *v.borrow_mut() = Some((source, checked_tx)));
+		Ok((
+			PostDispatchInfo {
+				actual_weight: Default::default(),
+				pays_fee: Default::default(),
+			},
+			EvmCallInfo {
+				exit_reason: ExitReason::Succeed(ExitSucceed::Returned),
+				value: Default::default(),
+				used_gas: UsedGas {
+					standard: Default::default(),
+					effective: Default::default(),
+				},
+				logs: Default::default(),
+				weight_info: None,
+			},
+		))
+	}
+}
 
-	fn get_default_evm_address(account_id: &AccountId32) -> H160 {
-		let slice: &[u8] = account_id.as_ref();
-		H160::from_slice(&slice[0..20])
+pub struct MockGasWeightMapping;
+impl GasWeightMapping for MockGasWeightMapping {
+	fn gas_to_weight(gas: u64, _without_base_weight: bool) -> Weight {
+		Weight::from_parts(gas, 0)
 	}
+	fn weight_to_gas(weight: Weight) -> u64 {
+		weight.ref_time()
+	}
+}
+
+impl pallet_xvm::Config for Test {
+	type GasWeightMapping = MockGasWeightMapping;
+	type AccountMapping = HashedAccountMapping;
+	type EthereumTransact = MockEthereumTransact;
+	type WeightInfo = ();
+}
+
+parameter_types! {
+	pub const ERC20PalletId: PalletId = PalletId(*b"py/erc20");
+}
+
+impl pallet_erc20::Config for Test {
+	type Currency = Balances;
+	type PalletId = ERC20PalletId;
+	type XvmCallApi = Xvm;
+}
+
+///TODO: Placeholder account mapping. This would be replaced once account abstraction is finished.
+pub struct HashedAccountMapping;
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+	fn into_h160(account_id: AccountId) -> H160 {
+		let data = (b"evm:", account_id);
+		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
+	}
+}
+
+pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Test, Balances, i64, u64>;
+parameter_types! {
+	pub const NativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::GGX);
 }
 
 impl pallet_currencies::Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
-	type GetNativeCurrencyId = NativeCurrency;
+	type GetNativeCurrencyId = NativeCurrencyId;
 	type WeightInfo = ();
-	type AddressMapping = MockAddressMapping;
-	type EVMBridge = ();
+	type AddressMapping = HashedAccountMapping;
+	type EVMBridge = pallet_erc20::EVMBridge<Test>;
 }
 
 parameter_types! {
@@ -275,7 +346,10 @@ impl ExtBuilder {
 
 		// This will cause some initial issuance
 		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![(1, 9000), (2, 800)],
+			balances: vec![
+				(AccountId32::from([1u8; 32]), 9000),
+				(AccountId32::from([2u8; 32]), 800),
+			],
 		}
 		.assimilate_storage(&mut storage)
 		.ok();
@@ -283,9 +357,9 @@ impl ExtBuilder {
 		pallet_assets::GenesisConfig::<Test> {
 			assets: vec![
 				// id, owner, is_sufficient, min_balance
-				(999, 0, true, 1),
-				(888, 0, true, 1),
-				(777, 0, true, 1),
+				(999, AccountId32::from([0u8; 32]), true, 1),
+				(888, AccountId32::from([0u8; 32]), true, 1),
+				(777, AccountId32::from([0u8; 32]), true, 1),
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
@@ -295,12 +369,12 @@ impl ExtBuilder {
 			],
 			accounts: vec![
 				// id, account_id, balance
-				(999, 1, 1_000_000_000),
-				(888, 1, 1_000_000_000),
-				(777, 1, 1_000_000_000),
-				(999, 2, 1_000_000_000),
-				(888, 2, 1_000_000_000),
-				(777, 2, 1_000_000_000),
+				(999, AccountId32::from([1u8; 32]), 1_000_000_000),
+				(888, AccountId32::from([1u8; 32]), 1_000_000_000),
+				(777, AccountId32::from([1u8; 32]), 1_000_000_000),
+				(999, AccountId32::from([2u8; 32]), 1_000_000_000),
+				(888, AccountId32::from([2u8; 32]), 1_000_000_000),
+				(777, AccountId32::from([2u8; 32]), 1_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage)
