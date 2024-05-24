@@ -121,140 +121,30 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	// Calls the name method on an ERC20 contract using the given context
 	// and returns the token name.
 	fn name(context: Context) -> Result<Vec<u8>, DispatchError> {
-		// // ERC20.name method hash
-		// let input = Into::<u32>::into(Action::Name).to_be_bytes().to_vec();
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::NAME.gas,
-		// 	erc20::NAME.storage,
-		// 	ExecutionMode::View,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-		// Pallet::<T>::decode_string(info.value.as_slice().to_vec())
-
-		// let context = Context {
-		// 	source_vm_id: VmId::Wasm,
-		// 	weight_limit: Weight::from_parts(1_000_000, 1_000_000),
-		// };
-		// let vm_id = VmId::Evm;
-		// let target = H160::repeat_byte(0xFF);
-		// let input = vec![1; 65_536];
-		// let value = 1_000_000u128;
-
-		// T::XvmCallApi::call(
-		// 	context,
-		// 	vm_id,
-		// 	T::account_id(), //ALICE,
-		// 	target.encode(),
-		// 	input.clone(),
-		// 	value,
-		// 	None,
-		// );
-
 		Ok(vec![])
 	}
 
 	// Calls the symbol method on an ERC20 contract using the given context
 	// and returns the token symbol.
 	fn symbol(context: Context) -> Result<Vec<u8>, DispatchError> {
-		// ERC20.symbol method hash
-		// let input = Into::<u32>::into(Action::Symbol).to_be_bytes().to_vec();
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::SYMBOL.gas,
-		// 	erc20::SYMBOL.storage,
-		// 	ExecutionMode::View,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-		// Pallet::<T>::decode_string(info.value.as_slice().to_vec())
 		Ok(vec![])
 	}
 
 	// Calls the decimals method on an ERC20 contract using the given context
 	// and returns the decimals.
 	fn decimals(context: Context) -> Result<u8, DispatchError> {
-		// ERC20.decimals method hash
-		// let input = Into::<u32>::into(Action::Decimals).to_be_bytes().to_vec();
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::DECIMALS.gas,
-		// 	erc20::DECIMALS.storage,
-		// 	ExecutionMode::View,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-
-		// ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
-		// let value: u8 = U256::from(info.value.as_slice())
-		// 	.try_into()
-		// 	.map_err(|_| ArithmeticError::Overflow)?;
-		// Ok(value)
 		Ok(0)
 	}
 
 	// Calls the totalSupply method on an ERC20 contract using the given context
 	// and returns the total supply.
 	fn total_supply(context: Context) -> Result<BalanceOf<T>, DispatchError> {
-		// ERC20.totalSupply method hash
-		// let input = Into::<u32>::into(Action::TotalSupply)
-		// 	.to_be_bytes()
-		// 	.to_vec();
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::TOTAL_SUPPLY.gas,
-		// 	erc20::TOTAL_SUPPLY.storage,
-		// 	ExecutionMode::View,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-
-		// ensure!(info.value.len() == 32, Error::<T>::InvalidReturnValue);
-		// let value: u128 = U256::from(info.value.as_slice())
-		// 	.try_into()
-		// 	.map_err(|_| ArithmeticError::Overflow)?;
-		// let supply = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
-		// Ok(supply)
 		Ok(Default::default())
 	}
 
 	// Calls the balanceOf method on an ERC20 contract using the given context
 	// and returns the address's balance.
 	fn balance_of(context: Context, address: H160) -> Result<BalanceOf<T>, DispatchError> {
-		// // ERC20.balanceOf method hash
-		// let mut input = Into::<u32>::into(Action::BalanceOf).to_be_bytes().to_vec();
-		// // append address
-		// input.extend_from_slice(H256::from(address).as_bytes());
-
-		// let info = T::EVM::execute(
-		// 	context,
-		// 	input,
-		// 	Default::default(),
-		// 	erc20::BALANCE_OF.gas,
-		// 	erc20::BALANCE_OF.storage,
-		// 	ExecutionMode::View,
-		// )?;
-
-		// Pallet::<T>::handle_exit_reason(info.exit_reason)?;
-
-		// let value: u128 = U256::from(info.value.as_slice())
-		// 	.try_into()
-		// 	.map_err(|_| ArithmeticError::Overflow)?;
-		// let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
-		// Ok(balance)
 		Ok(Default::default())
 	}
 

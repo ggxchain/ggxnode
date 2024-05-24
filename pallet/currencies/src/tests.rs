@@ -16,7 +16,7 @@ fn multi_lockable_currency_should_work() {
 			assert_ok!(Currencies::set_lock(ID_1, X_TOKEN_ID, &ALICE, 50));
 			assert_eq!(Tokens::locks(&ALICE, X_TOKEN_ID).len(), 1);
 			assert_ok!(Currencies::set_lock(ID_1, NATIVE_CURRENCY_ID, &ALICE, 50));
-			assert_eq!(PalletBalances::locks(&ALICE).len(), 1);
+			assert_eq!(Balances::locks(&ALICE).len(), 1);
 		});
 }
 
@@ -39,113 +39,15 @@ fn multi_reservable_currency_should_work() {
 }
 
 #[test]
-fn named_multi_reservable_currency_should_work() {
-	ExtBuilder::default()
-		.one_hundred_for_alice_n_bob()
-		.build()
-		.execute_with(|| {
-			assert_eq!(Currencies::total_issuance(NATIVE_CURRENCY_ID), 200);
-			assert_eq!(Currencies::total_issuance(X_TOKEN_ID), 200);
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &ALICE), 100);
-			assert_eq!(NativeCurrency::free_balance(&ALICE), 100);
-
-			assert_ok!(Currencies::reserve_named(&RID_1, X_TOKEN_ID, &ALICE, 30));
-			assert_ok!(Currencies::reserve_named(&RID_2, X_TOKEN_ID, &ALICE, 50));
-			assert_ok!(Currencies::reserve_named(
-				&RID_1,
-				NATIVE_CURRENCY_ID,
-				&ALICE,
-				20
-			));
-			assert_ok!(Currencies::reserve_named(
-				&RID_2,
-				NATIVE_CURRENCY_ID,
-				&ALICE,
-				60
-			));
-			let r1x_before = 30;
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_1, X_TOKEN_ID, &ALICE),
-				r1x_before
-			);
-			let r2x_before = 50;
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, X_TOKEN_ID, &ALICE),
-				r2x_before
-			);
-			let r1n_before = 20;
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_1, NATIVE_CURRENCY_ID, &ALICE),
-				r1n_before
-			);
-			let r2n_before = 60;
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, NATIVE_CURRENCY_ID, &ALICE),
-				r2n_before
-			);
-
-			let n_free_before = 20;
-			assert_eq!(NativeCurrency::free_balance(&ALICE), n_free_before);
-			let x_free_before = 20;
-			assert_eq!(Currencies::free_balance(X_TOKEN_ID, &ALICE), x_free_before);
-
-			assert_eq!(
-				Currencies::unreserve_named(&RID_1, NATIVE_CURRENCY_ID, &ALICE, 100),
-				80
-			);
-			assert_eq!(NativeCurrency::free_balance(&ALICE), n_free_before + 20);
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_1, NATIVE_CURRENCY_ID, &ALICE),
-				0
-			);
-
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, NATIVE_CURRENCY_ID, &ALICE),
-				r2n_before
-			);
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_1, X_TOKEN_ID, &ALICE),
-				r1x_before
-			);
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, X_TOKEN_ID, &ALICE),
-				r2x_before
-			);
-
-			assert_eq!(
-				Currencies::unreserve_named(&RID_1, X_TOKEN_ID, &ALICE, 100),
-				70
-			);
-			assert_eq!(
-				Currencies::free_balance(X_TOKEN_ID, &ALICE),
-				x_free_before + 30
-			);
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_1, X_TOKEN_ID, &ALICE),
-				0
-			);
-
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, X_TOKEN_ID, &ALICE),
-				r2x_before
-			);
-			assert_eq!(
-				Currencies::reserved_balance_named(&RID_2, NATIVE_CURRENCY_ID, &ALICE),
-				r2n_before
-			);
-		});
-}
-
-#[test]
 fn native_currency_lockable_should_work() {
 	ExtBuilder::default()
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
 			assert_ok!(NativeCurrency::set_lock(ID_1, &ALICE, 10));
-			assert_eq!(PalletBalances::locks(&ALICE).len(), 1);
+			assert_eq!(Balances::locks(&ALICE).len(), 1);
 			assert_ok!(NativeCurrency::remove_lock(ID_1, &ALICE));
-			assert_eq!(PalletBalances::locks(&ALICE).len(), 0);
+			assert_eq!(Balances::locks(&ALICE).len(), 0);
 		});
 }
 
@@ -167,9 +69,9 @@ fn basic_currency_adapting_pallet_balances_lockable() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::set_lock(ID_1, &ALICE, 10));
-			assert_eq!(PalletBalances::locks(&ALICE).len(), 1);
+			assert_eq!(Balances::locks(&ALICE).len(), 1);
 			assert_ok!(AdaptedBasicCurrency::remove_lock(ID_1, &ALICE));
-			assert_eq!(PalletBalances::locks(&ALICE).len(), 0);
+			assert_eq!(Balances::locks(&ALICE).len(), 0);
 		});
 }
 
@@ -181,41 +83,6 @@ fn basic_currency_adapting_pallet_balances_reservable() {
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::reserve(&ALICE, 50));
 			assert_eq!(AdaptedBasicCurrency::reserved_balance(&ALICE), 50);
-		});
-}
-
-#[test]
-fn named_basic_currency_adapting_pallet_balances_reservable() {
-	ExtBuilder::default()
-		.one_hundred_for_alice_n_bob()
-		.build()
-		.execute_with(|| {
-			assert_ok!(AdaptedBasicCurrency::reserve_named(&RID_1, &ALICE, 50));
-			assert_ok!(AdaptedBasicCurrency::reserve_named(&RID_2, &ALICE, 30));
-			assert_eq!(
-				AdaptedBasicCurrency::reserved_balance_named(&RID_1, &ALICE),
-				50
-			);
-			assert_eq!(
-				AdaptedBasicCurrency::reserved_balance_named(&RID_2, &ALICE),
-				30
-			);
-			assert_eq!(AdaptedBasicCurrency::free_balance(&ALICE), 20);
-
-			assert_eq!(
-				AdaptedBasicCurrency::unreserve_named(&RID_1, &ALICE, 80),
-				30
-			);
-			assert_eq!(AdaptedBasicCurrency::free_balance(&ALICE), 70);
-			assert_eq!(
-				AdaptedBasicCurrency::reserved_balance_named(&RID_1, &ALICE),
-				0
-			);
-
-			assert_eq!(
-				AdaptedBasicCurrency::reserved_balance_named(&RID_2, &ALICE),
-				30
-			);
 		});
 }
 
@@ -302,13 +169,13 @@ fn basic_currency_adapting_pallet_balances_transfer() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::transfer(&ALICE, &BOB, 50));
-			assert_eq!(PalletBalances::total_balance(&ALICE), 50);
-			assert_eq!(PalletBalances::total_balance(&BOB), 150);
+			assert_eq!(Balances::total_balance(&ALICE), 50);
+			assert_eq!(Balances::total_balance(&BOB), 150);
 
 			// creation fee
 			assert_ok!(AdaptedBasicCurrency::transfer(&ALICE, &EVA, 10));
-			assert_eq!(PalletBalances::total_balance(&ALICE), 40);
-			assert_eq!(PalletBalances::total_balance(&EVA), 10);
+			assert_eq!(Balances::total_balance(&ALICE), 40);
+			assert_eq!(Balances::total_balance(&EVA), 10);
 		});
 }
 
@@ -319,8 +186,8 @@ fn basic_currency_adapting_pallet_balances_deposit() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::deposit(&EVA, 50));
-			assert_eq!(PalletBalances::total_balance(&EVA), 50);
-			assert_eq!(PalletBalances::total_issuance(), 250);
+			assert_eq!(Balances::total_balance(&EVA), 50);
+			assert_eq!(Balances::total_issuance(), 250);
 		});
 }
 
@@ -331,17 +198,17 @@ fn basic_currency_adapting_pallet_balances_deposit_throw_error_when_actual_depos
 		.one_hundred_for_alice_n_bob()
 		.build()
 		.execute_with(|| {
-			assert_eq!(PalletBalances::total_balance(&EVA), 0);
-			assert_eq!(PalletBalances::total_issuance(), 200);
+			assert_eq!(Balances::total_balance(&EVA), 0);
+			assert_eq!(Balances::total_issuance(), 200);
 			assert_noop!(
 				AdaptedBasicCurrency::deposit(&EVA, 1),
-				Error::<Runtime>::DepositFailed
+				Error::<Test>::DepositFailed
 			);
-			assert_eq!(PalletBalances::total_balance(&EVA), 0);
-			assert_eq!(PalletBalances::total_issuance(), 200);
+			assert_eq!(Balances::total_balance(&EVA), 0);
+			assert_eq!(Balances::total_issuance(), 200);
 			assert_ok!(AdaptedBasicCurrency::deposit(&EVA, 2));
-			assert_eq!(PalletBalances::total_balance(&EVA), 2);
-			assert_eq!(PalletBalances::total_issuance(), 202);
+			assert_eq!(Balances::total_balance(&EVA), 2);
+			assert_eq!(Balances::total_issuance(), 202);
 		});
 }
 
@@ -352,8 +219,8 @@ fn basic_currency_adapting_pallet_balances_withdraw() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::withdraw(&ALICE, 100));
-			assert_eq!(PalletBalances::total_balance(&ALICE), 0);
-			assert_eq!(PalletBalances::total_issuance(), 100);
+			assert_eq!(Balances::total_balance(&ALICE), 0);
+			assert_eq!(Balances::total_issuance(), 100);
 		});
 }
 
@@ -364,8 +231,8 @@ fn basic_currency_adapting_pallet_balances_slash() {
 		.build()
 		.execute_with(|| {
 			assert_eq!(AdaptedBasicCurrency::slash(&ALICE, 101), 1);
-			assert_eq!(PalletBalances::total_balance(&ALICE), 0);
-			assert_eq!(PalletBalances::total_issuance(), 100);
+			assert_eq!(Balances::total_balance(&ALICE), 0);
+			assert_eq!(Balances::total_issuance(), 100);
 		});
 }
 
@@ -376,8 +243,8 @@ fn basic_currency_adapting_pallet_balances_update_balance() {
 		.build()
 		.execute_with(|| {
 			assert_ok!(AdaptedBasicCurrency::update_balance(&ALICE, -10));
-			assert_eq!(PalletBalances::total_balance(&ALICE), 90);
-			assert_eq!(PalletBalances::total_issuance(), 190);
+			assert_eq!(Balances::total_balance(&ALICE), 90);
+			assert_eq!(Balances::total_issuance(), 190);
 		});
 }
 

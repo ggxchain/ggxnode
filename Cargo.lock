@@ -8643,6 +8643,7 @@ name = "pallet-currencies"
 version = "0.4.1-dev"
 dependencies = [
  "astar-primitives",
+ "fp-evm",
  "frame-support",
  "frame-system",
  "ggx-primitives",
@@ -8650,6 +8651,12 @@ dependencies = [
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "orml-utilities 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-balances",
+ "pallet-contracts",
+ "pallet-erc20",
+ "pallet-evm",
+ "pallet-insecure-randomness-collective-flip",
+ "pallet-timestamp",
+ "pallet-xvm",
  "parity-scale-codec",
  "scale-info",
  "serde",
