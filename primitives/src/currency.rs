@@ -130,10 +130,11 @@ create_currency_id! {
 	#[derive(Encode, Decode, Eq, PartialEq, Copy, Clone, RuntimeDebug, PartialOrd, Ord, TypeInfo, MaxEncodedLen, Serialize, Deserialize)]
 	#[repr(u8)]
 	pub enum TokenSymbol {
-		   // 0 - 19: Acala & Polkadot native tokens
 			GGX("GoldenGate", 12) = 0,
 			DOT("Polkadot", 10) = 1,
-			KSM("Kusama", 12) = 2,
+			USDT("USDT", 12) = 2,
+			GGXT("GGxchain", 12) = 3,
+			BTC("Bitcoin", 12) = 4,
 	}
 }
 

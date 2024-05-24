@@ -27,7 +27,7 @@ use sp_runtime::{
 };
 use sp_std::{cell::RefCell, marker};
 
-use pallet_currencies::{BasicCurrencyAdapter, NativeCurrencyOf};
+use pallet_currencies::BasicCurrencyAdapter;
 
 pub type AccountId = AccountId32;
 pub type Balance = u128;
@@ -330,6 +330,15 @@ impl pallet_dex::Config for Test {
 	type UnsignedPriority = UnsignedPriority;
 }
 
+pub const ALICE: AccountId = AccountId32::new([1u8; 32]);
+pub const BOB: AccountId = AccountId32::new([2u8; 32]);
+
+pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::GGX);
+pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
+pub const GGXT: CurrencyId = CurrencyId::Token(TokenSymbol::GGXT);
+pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::BTC);
+pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
+
 pub struct ExtBuilder;
 
 impl Default for ExtBuilder {
@@ -346,10 +355,7 @@ impl ExtBuilder {
 
 		// This will cause some initial issuance
 		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![
-				(AccountId32::from([1u8; 32]), 9000),
-				(AccountId32::from([2u8; 32]), 800),
-			],
+			balances: vec![(ALICE, 9000), (BOB, 800)],
 		}
 		.assimilate_storage(&mut storage)
 		.ok();
@@ -369,25 +375,49 @@ impl ExtBuilder {
 			],
 			accounts: vec![
 				// id, account_id, balance
-				(999, AccountId32::from([1u8; 32]), 1_000_000_000),
-				(888, AccountId32::from([1u8; 32]), 1_000_000_000),
-				(777, AccountId32::from([1u8; 32]), 1_000_000_000),
-				(999, AccountId32::from([2u8; 32]), 1_000_000_000),
-				(888, AccountId32::from([2u8; 32]), 1_000_000_000),
-				(777, AccountId32::from([2u8; 32]), 1_000_000_000),
+				(999, ALICE, 1_000_000_000),
+				(888, ALICE, 1_000_000_000),
+				(777, ALICE, 1_000_000_000),
+				(999, BOB, 1_000_000_000),
+				(888, BOB, 1_000_000_000),
+				(777, BOB, 1_000_000_000),
 			],
 		}
 		.assimilate_storage(&mut storage)
 		.ok();
 
+		let tokens = vec![
+			(ALICE, NATIVE_CURRENCY_ID, 1_000_000_000),
+			(BOB, NATIVE_CURRENCY_ID, 1_000_000_000),
+			(ALICE, USDT, 1_000_000_000),
+			(BOB, USDT, 1_000_000_000),
+			(ALICE, GGXT, 1_000_000_000),
+			(BOB, GGXT, 1_000_000_000),
+			(ALICE, BTC, 1_000_000_000),
+			(BOB, BTC, 1_000_000_000),
+		];
+
+		orml_tokens::GenesisConfig::<Test> {
+			balances: tokens
+				.into_iter()
+				.filter(|(_, currency_id, _)| *currency_id != NATIVE_CURRENCY_ID)
+				.collect::<Vec<_>>(),
+		}
+		.assimilate_storage(&mut storage)
+		.unwrap();
+
 		<pallet_dex::GenesisConfig as frame_support::traits::GenesisBuild<Test>>::assimilate_storage(
       &pallet_dex::GenesisConfig {
         asset_ids: vec![
+					BTC,
+					GGXT,
+					USDT,
+					NATIVE_CURRENCY_ID,
 					CurrencyId::ForeignAsset(8888),
 					CurrencyId::ForeignAsset(999),
 					CurrencyId::ForeignAsset(888),
 					CurrencyId::ForeignAsset(777),],
-        native_asset_id: CurrencyId::Token(TokenSymbol::GGX),
+        native_asset_id: NATIVE_CURRENCY_ID,
       },
       &mut storage,
   )

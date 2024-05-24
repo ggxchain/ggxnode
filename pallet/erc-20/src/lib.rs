@@ -21,10 +21,7 @@
 
 use ethereum_types::BigEndianHash;
 use frame_support::{
-	dispatch::DispatchResult,
-	pallet_prelude::*,
-	traits::{OriginTrait, ReservableCurrency},
-	PalletId,
+	dispatch::DispatchResult, pallet_prelude::*, traits::ReservableCurrency, PalletId,
 };
 use frame_system::pallet_prelude::*;
 // use module_evm::{ExitReason, ExitSucceed};
@@ -32,7 +29,7 @@ use frame_system::pallet_prelude::*;
 // 	evm::limits::{erc20, liquidation},
 // 	EVMBridge as EVMBridgeTrait, ExecutionMode, Context, LiquidationEvmBridge as LiquidationEvmBridgeT, EVM,
 // };
-use frame_support::{sp_runtime::traits::AccountIdConversion, traits::Currency};
+use frame_support::traits::Currency;
 use ggx_primitives::evm::{EVMBridgeTrait, EvmAddress};
 use hex_literal::hex;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
