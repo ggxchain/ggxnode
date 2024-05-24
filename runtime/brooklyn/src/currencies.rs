@@ -47,4 +47,5 @@ impl pallet_currencies::Config for Runtime {
 	//type Erc20HoldingAccount = ;
 	type AddressMapping = HashedAccountMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Runtime>;
+	type EVMERC1155Bridge = pallet_erc1155::EVMBridge<Runtime>;
 }

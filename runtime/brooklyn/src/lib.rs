@@ -19,6 +19,7 @@ mod chain_extensions;
 pub mod currencies;
 pub mod dex;
 mod dex_chain_extensions;
+pub mod erc1155;
 pub mod erc20;
 pub mod ethereum;
 pub mod governance;

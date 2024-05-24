@@ -4853,6 +4853,7 @@ dependencies = [
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
+ "pallet-erc1155",
  "pallet-erc20",
  "pallet-eth2-light-client",
  "pallet-ethereum",
@@ -4983,6 +4984,7 @@ dependencies = [
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
+ "pallet-erc1155",
  "pallet-erc20",
  "pallet-eth2-light-client",
  "pallet-ethereum",
@@ -8745,6 +8747,31 @@ dependencies = [
  "parity-scale-codec",
  "sp-npos-elections",
  "sp-runtime 7.0.0",
+]
+
+[[package]]
+name = "pallet-erc1155"
+version = "0.0.1"
+dependencies = [
+ "astar-primitives",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "frame-system",
+ "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
+ "impl-trait-for-tuples",
+ "num_enum 0.5.11",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde_json",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]

@@ -306,6 +306,7 @@ vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.g
 # Dex
 pallet-currencies = { path = "pallet/currencies", default-features = false }
 pallet-erc20 = { path = "pallet/erc-20", default-features = false }
+pallet-erc1155 = { path = "pallet/erc-1155", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
 pallet-ggx-tokens = { path = "pallet/ggx-tokens", default-features = false }
 

@@ -64,13 +64,16 @@ use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, StaticLookup, Zero},
 	DispatchError, DispatchResult,
 };
-use sp_std::{fmt::Debug, marker, result};
+use sp_std::{fmt::Debug, marker, result, vec};
 
 use astar_primitives::{
 	ethereum_checked::AccountMapping,
 	xvm::{Context, VmId},
 };
-use ggx_primitives::{currency::CurrencyId, evm::EVMBridgeTrait};
+use ggx_primitives::{
+	currency::CurrencyId,
+	evm::{EVMBridgeTrait, EVMERC1155BridgeTrait},
+};
 
 mod mock;
 mod tests;
@@ -115,13 +118,10 @@ pub mod module {
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// Used as temporary account for ERC20 token `withdraw` and `deposit`.
-		// #[pallet::constant]
-		// type Erc20HoldingAccount: Get<EvmAddress>;
-
 		/// Mapping from address to account id.
 		type AddressMapping: AccountMapping<Self::AccountId>;
 		type EVMBridge: EVMBridgeTrait<Self::AccountId, BalanceOf<Self>>;
+		type EVMERC1155Bridge: EVMERC1155BridgeTrait<Self::AccountId, BalanceOf<Self>>;
 	}
 
 	#[pallet::error]
@@ -132,6 +132,8 @@ pub mod module {
 		BalanceTooLow,
 		/// Erc20 invalid operation
 		Erc20InvalidOperation,
+		/// Erc1155 invalid operation
+		Erc1155InvalidOperation,
 		/// EVM account not found
 		EvmAccountNotFound,
 		/// Deposit result is not expected
@@ -238,6 +240,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	fn minimum_balance(currency_id: Self::CurrencyId) -> Self::Balance {
 		match currency_id {
 			CurrencyId::Erc20(_) => Zero::zero(),
+			CurrencyId::Erc1155(_, _) => Zero::zero(),
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::minimum_balance(),
 			_ => T::MultiCurrency::minimum_balance(currency_id),
 		}
@@ -291,7 +294,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
 				let _sender = T::AddressMapping::into_h160(from.clone());
-				let address = T::AddressMapping::into_h160(to.clone());
+				let to_evm = T::AddressMapping::into_h160(to.clone());
 				T::EVMBridge::transfer(
 					Context {
 						source_vm_id: VmId::Wasm,
@@ -299,8 +302,25 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 					},
 					contract,
 					from.clone(),
-					address,
+					to_evm,
 					amount,
+				)?;
+			}
+			CurrencyId::Erc1155(contract, id) => {
+				let from_evm = T::AddressMapping::into_h160(from.clone());
+				let to_evm = T::AddressMapping::into_h160(to.clone());
+				T::EVMERC1155Bridge::safe_transfer_from(
+					Context {
+						source_vm_id: VmId::Wasm,
+						weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
+					},
+					contract,
+					from.clone(),
+					from_evm,
+					to_evm,
+					id.into(),
+					amount,
+					vec![],
 				)?;
 			}
 			id if id == T::GetNativeCurrencyId::get() => {
