@@ -332,7 +332,6 @@ where
 					input.asset_id_2,
 					input.offered_amount,
 					input.requested_amount,
-					input.price,
 					input.order_type,
 					input.expires,
 				);

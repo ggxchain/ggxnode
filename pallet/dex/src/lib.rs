@@ -638,7 +638,6 @@ pub mod pallet {
 			asset_id_2: u32,
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
-			price: BalanceOf<T>,
 			order_type: OrderType,
 			expiration_block: BlockNumberFor<T>,
 		) -> DispatchResultWithPostInfo {
@@ -660,20 +659,14 @@ pub mod pallet {
 				Error::<T>::ExpirationMustBeInFuture
 			);
 
-			match order_type {
-				OrderType::SELL => {
-					ensure!(
-						offered_amount * price == requested_amount,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
-				OrderType::BUY => {
-					ensure!(
-						offered_amount == requested_amount * price,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
-			}
+			let price = match order_type {
+				OrderType::SELL => requested_amount
+					.checked_div(&offered_amount)
+					.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?,
+				OrderType::BUY => offered_amount
+					.checked_div(&requested_amount)
+					.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?,
+			};
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
