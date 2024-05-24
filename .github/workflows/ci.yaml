@@ -113,6 +113,16 @@ jobs:
         run: |
           cargo build --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
 
+      - name: check metadata validity
+        if: steps.git-diff.outputs.diff
+        run: |
+          apt install -y xxd jq
+          ./fetch_metadata.sh ${{ matrix.runtime }} target/release/ggxchain-node
+          if ! git diff --exit-code; then
+            echo "Metadata is out of date. Please build, then run `./fetch_metadata.sh ${{ matrix.runtime }} target/release/ggxchain-node` and commit the changes."
+            exit 1
+          fi
+
       - name: test
         if: steps.git-diff.outputs.diff
         run: |

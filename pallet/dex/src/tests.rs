@@ -146,11 +146,13 @@ fn test_make_order() {
 				RuntimeOrigin::signed(1),
 				777,
 				888,
-				1,
-				200,
-				OrderType::SELL,
+				19, // offered
+				7,  // requested
+				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 
@@ -159,11 +161,58 @@ fn test_make_order() {
 				RuntimeOrigin::signed(1),
 				777,
 				888,
-				1,
-				200,
+				19, // offered
+				7,  // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				7,  // offered
+				19, // requested
 				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				7,  // offered
+				19, // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				1,   // offered
+				200, // requested
+				OrderType::BUY,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 

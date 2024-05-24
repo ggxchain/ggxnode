@@ -659,14 +659,25 @@ pub mod pallet {
 				Error::<T>::ExpirationMustBeInFuture
 			);
 
-			let price = match order_type {
-				OrderType::SELL => requested_amount
-					.checked_div(&offered_amount)
-					.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?,
-				OrderType::BUY => offered_amount
-					.checked_div(&requested_amount)
-					.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?,
+			let (a, b) = match order_type {
+				OrderType::SELL => (requested_amount, offered_amount),
+				OrderType::BUY => (offered_amount, requested_amount),
 			};
+
+			// because price is an integer, we need to check if the division is exact
+			// (does not have a remainder)
+			let price = a
+				.checked_div(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
+
+			// do the check
+			if price
+				.checked_mul(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
+				!= a
+			{
+				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
+			}
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
