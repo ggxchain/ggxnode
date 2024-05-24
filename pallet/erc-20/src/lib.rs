@@ -30,22 +30,13 @@ use frame_system::pallet_prelude::*;
 // 	EVMBridge as EVMBridgeTrait, ExecutionMode, Context, LiquidationEvmBridge as LiquidationEvmBridgeT, EVM,
 // };
 use frame_support::traits::Currency;
-use ggx_primitives::evm::{EVMBridgeTrait, EvmAddress};
+use ggx_primitives::evm::EVMBridgeTrait;
 use hex_literal::hex;
-use num_enum::{IntoPrimitive, TryFromPrimitive};
-use pallet_evm::AddressMapping;
 use sp_core::{H160, H256, U256};
-use sp_runtime::{ArithmeticError, DispatchError, SaturatedConversion};
+use sp_runtime::{DispatchError, SaturatedConversion};
 use sp_std::{vec, vec::Vec};
 
-use astar_primitives::{
-	ethereum_checked::{CheckedEthereumTransact, CheckedEthereumTx, EthereumTxInput},
-	xvm::{
-		CallFailure, CallOutput, CallResult, Context, FailureError::*, FailureRevert::*, VmId,
-		XvmCall,
-	},
-	Balance,
-};
+use astar_primitives::xvm::{Context, VmId, XvmCall};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 //type BalanceOf<T> = <<T as Config>::EVM as EVM<AccountIdOf<T>>>::Balance;
@@ -117,31 +108,31 @@ pub struct EVMBridge<T>(sp_std::marker::PhantomData<T>);
 impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 	// Calls the name method on an ERC20 contract using the given context
 	// and returns the token name.
-	fn name(context: Context) -> Result<Vec<u8>, DispatchError> {
+	fn name(_context: Context) -> Result<Vec<u8>, DispatchError> {
 		Ok(vec![])
 	}
 
 	// Calls the symbol method on an ERC20 contract using the given context
 	// and returns the token symbol.
-	fn symbol(context: Context) -> Result<Vec<u8>, DispatchError> {
+	fn symbol(_context: Context) -> Result<Vec<u8>, DispatchError> {
 		Ok(vec![])
 	}
 
 	// Calls the decimals method on an ERC20 contract using the given context
 	// and returns the decimals.
-	fn decimals(context: Context) -> Result<u8, DispatchError> {
+	fn decimals(_context: Context) -> Result<u8, DispatchError> {
 		Ok(0)
 	}
 
 	// Calls the totalSupply method on an ERC20 contract using the given context
 	// and returns the total supply.
-	fn total_supply(context: Context) -> Result<BalanceOf<T>, DispatchError> {
+	fn total_supply(_context: Context) -> Result<BalanceOf<T>, DispatchError> {
 		Ok(Default::default())
 	}
 
 	// Calls the balanceOf method on an ERC20 contract using the given context
 	// and returns the address's balance.
-	fn balance_of(context: Context, address: H160) -> Result<BalanceOf<T>, DispatchError> {
+	fn balance_of(_context: Context, _address: H160) -> Result<BalanceOf<T>, DispatchError> {
 		Ok(Default::default())
 	}
 
@@ -170,7 +161,6 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			H256::from_uint(&U256::from(value.saturated_into::<u128>())).as_bytes(),
 		);
 
-		let gas = 200_000;
 		let storage_limit = 960;
 
 		let call_result = T::XvmCallApi::call(
@@ -183,7 +173,7 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			Some(storage_limit),
 		);
 
-		let used_weight = match &call_result {
+		let _used_weight = match &call_result {
 			Ok(s) => s.used_weight,
 			Err(f) => f.used_weight,
 		};

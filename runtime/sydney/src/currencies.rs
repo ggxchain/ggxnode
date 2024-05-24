@@ -1,8 +1,6 @@
-use crate::{
-	prelude::*, Assets, BlakeTwo256, BlockNumber, ConstU32, Erc20, GGXTokens, MaxLocks, H160,
-};
+use crate::{prelude::*, BlockNumber, ConstU32, GGXTokens, MaxLocks, H160};
 use orml_traits::parameter_type_with_key;
-use scale_info::prelude::vec;
+
 use sp_runtime::traits::Zero;
 
 use ggx_primitives::currency::{CurrencyId, TokenSymbol};

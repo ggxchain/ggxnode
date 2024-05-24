@@ -46,9 +46,8 @@ use frame_support::{
 			Provenance, WithdrawConsequence,
 		},
 		Currency as PalletCurrency, ExistenceRequirement, Get, Imbalance,
-		LockableCurrency as PalletLockableCurrency,
-		NamedReservableCurrency as PalletNamedReservableCurrency,
-		ReservableCurrency as PalletReservableCurrency, WithdrawReasons,
+		LockableCurrency as PalletLockableCurrency, ReservableCurrency as PalletReservableCurrency,
+		WithdrawReasons,
 	},
 };
 use frame_system::{ensure_root, ensure_signed, pallet_prelude::*};
@@ -61,7 +60,6 @@ use orml_traits::{
 };
 use orml_utilities::with_transaction_result;
 use scale_codec::Codec;
-use sp_core::H160;
 use sp_runtime::{
 	traits::{CheckedSub, MaybeSerializeDeserialize, StaticLookup, Zero},
 	DispatchError, DispatchResult,
@@ -72,10 +70,7 @@ use astar_primitives::{
 	ethereum_checked::AccountMapping,
 	xvm::{Context, VmId},
 };
-use ggx_primitives::{
-	currency::CurrencyId,
-	evm::{EVMBridgeTrait, EvmAddress},
-};
+use ggx_primitives::{currency::CurrencyId, evm::EVMBridgeTrait};
 
 mod mock;
 mod tests;
@@ -94,10 +89,6 @@ pub mod module {
 	pub(crate) type AmountOf<T> = <<T as Config>::MultiCurrency as MultiCurrencyExtended<
 		<T as frame_system::Config>::AccountId,
 	>>::Amount;
-	pub(crate) type ReserveIdentifierOf<T> =
-		<<T as Config>::MultiCurrency as NamedMultiReservableCurrency<
-			<T as frame_system::Config>::AccountId,
-		>>::ReserveIdentifier;
 
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
@@ -299,7 +290,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		}
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				let sender = T::AddressMapping::into_h160(from.clone());
+				let _sender = T::AddressMapping::into_h160(from.clone());
 				let address = T::AddressMapping::into_h160(to.clone());
 				T::EVMBridge::transfer(
 					Context {

@@ -5,7 +5,7 @@ use frame_support::{
 	ensure,
 	pallet_prelude::{ConstU32, DispatchResult},
 	sp_std::{convert::TryInto, prelude::*},
-	traits::{Currency, ExistenceRequirement::AllowDeath, Get, ReservableCurrency},
+	traits::{Get, ReservableCurrency},
 	BoundedBTreeMap, PalletId, RuntimeDebug,
 };
 
@@ -21,11 +21,9 @@ use sp_runtime::{
 };
 
 use orml_traits::{
-	arithmetic::{Signed, SimpleArithmetic},
-	currency::TransferAll,
-	BalanceStatus, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency,
-	BasicReservableCurrency, LockIdentifier, MultiCurrency, MultiCurrencyExtended,
-	MultiLockableCurrency, MultiReservableCurrency, NamedMultiReservableCurrency,
+	currency::TransferAll, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency,
+	BasicReservableCurrency, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
+	MultiReservableCurrency, NamedMultiReservableCurrency,
 };
 
 use core::cmp::Ordering;
@@ -36,13 +34,7 @@ use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::{prelude::cmp, TypeInfo};
 use sp_runtime::{traits::One, DispatchError};
 
-use frame_support::{
-	sp_runtime::traits::AccountIdConversion,
-	traits::{
-		fungibles::{Balanced, Mutate},
-		tokens::Preservation,
-	},
-};
+use frame_support::sp_runtime::traits::AccountIdConversion;
 
 #[cfg(test)]
 mod mock;

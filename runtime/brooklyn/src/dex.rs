@@ -1,9 +1,9 @@
 use crate::currencies::Amount;
 use frame_support::PalletId;
-use orml_traits::MultiCurrency;
+
 use pallet_currencies::BasicCurrencyAdapter;
 
-use crate::{currencies::NativeCurrencyId, prelude::*, Assets, BlockNumber, GGXTokens};
+use crate::{prelude::*, BlockNumber, GGXTokens};
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");

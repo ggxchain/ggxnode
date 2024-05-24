@@ -1,12 +1,7 @@
 use frame_support::PalletId;
-use orml_traits::MultiCurrency;
 use pallet_currencies::BasicCurrencyAdapter;
 
-use crate::{
-	currencies::{Amount, NativeCurrencyId},
-	prelude::*,
-	Assets, BlockNumber, GGXTokens,
-};
+use crate::{currencies::Amount, prelude::*, BlockNumber, GGXTokens};
 
 parameter_types! {
 	pub const UnsignedPriority: BlockNumber = 1;

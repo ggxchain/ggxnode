@@ -1,7 +1,6 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 use sp_runtime::{DispatchError, ModuleError};
 
-use frame_support::traits::Currency;
 use frame_system::{pallet_prelude::BlockNumberFor, RawOrigin};
 use ggx_primitives::currency::CurrencyId;
 use orml_traits::MultiCurrency;

@@ -35,10 +35,7 @@ use core::cmp::Ordering;
 
 #[cfg(feature = "std")]
 pub use fp_evm::GenesisAccount;
-use frame_support::{
-	pallet_prelude::{DispatchError, TransactionPriority},
-	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
-};
+use frame_support::pallet_prelude::{DispatchError, TransactionPriority};
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;

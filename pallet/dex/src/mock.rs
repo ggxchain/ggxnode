@@ -12,11 +12,7 @@ use frame_support::{
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
-use ggx_primitives::{
-	currency::{CurrencyId, TokenSymbol},
-	evm::EvmAddress,
-};
-use orml_tokens::TransferDust;
+use ggx_primitives::currency::{CurrencyId, TokenSymbol};
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
 use pallet_evm::GasWeightMapping;
 use sp_core::{ConstU128, ConstU32, ConstU64, H160, H256};
