@@ -132,7 +132,38 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 
 	// Calls the balanceOf method on an ERC20 contract using the given context
 	// and returns the address's balance.
-	fn balance_of(_context: Context, _address: H160) -> Result<BalanceOf<T>, DispatchError> {
+	fn balance_of(
+		context: Context,
+		contract: H160,
+		from: AccountIdOf<T>,
+		address: H160,
+	) -> Result<BalanceOf<T>, DispatchError> {
+		const BALANCEOF_SELECTOR: [u8; 4] = hex!["70a08231"];
+		// ERC20.balance_of method hash
+		let mut input = BALANCEOF_SELECTOR.to_vec();
+
+		// append address
+		input.extend_from_slice(H256::from(address).as_bytes());
+
+		let storage_limit = 960;
+
+		let call_result = T::XvmCallApi::call(
+			context,
+			VmId::Evm,
+			from,
+			contract.as_bytes().to_vec(),
+			input,
+			0,
+			Some(storage_limit),
+		);
+
+		let _used_weight = match &call_result {
+			Ok(s) => s.used_weight,
+			Err(f) => f.used_weight,
+		};
+
+		print!("#### call_result", call_result);
+
 		Ok(Default::default())
 	}
 

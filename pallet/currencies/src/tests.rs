@@ -338,3 +338,23 @@ fn call_event_should_work() {
 			}));
 		});
 }
+
+#[test]
+fn erc20_transfer_should_work() {
+	ExtBuilder::default()
+		.balances(vec![
+			(ALICE, NATIVE_CURRENCY_ID, 200_000_000_000),
+			(BOB, NATIVE_CURRENCY_ID, 100000),
+		])
+		.build()
+		.execute_with(|| {
+			deploy_contracts();
+
+			assert_ok!(Currencies::transfer(
+				RuntimeOrigin::signed(ALICE),
+				BOB,
+				CurrencyId::Erc20(erc20_address()),
+				100
+			));
+		});
+}
