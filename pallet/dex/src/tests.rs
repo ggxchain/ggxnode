@@ -133,7 +133,6 @@ fn test_make_order() {
 				RuntimeOrigin::signed(1),
 				777,
 				777,
-				1,
 				200,
 				200,
 				OrderType::SELL,
@@ -147,12 +146,13 @@ fn test_make_order() {
 				RuntimeOrigin::signed(1),
 				777,
 				888,
-				1,
-				200,
-				1,
-				OrderType::SELL,
+				19, // offered
+				7,  // requested
+				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 
@@ -161,12 +161,58 @@ fn test_make_order() {
 				RuntimeOrigin::signed(1),
 				777,
 				888,
-				1,
-				200,
-				1,
+				19, // offered
+				7,  // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				7,  // offered
+				19, // requested
 				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				7,  // offered
+				19, // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(1),
+				777,
+				888,
+				1,   // offered
+				200, // requested
+				OrderType::BUY,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 
@@ -183,7 +229,6 @@ fn test_make_order() {
 			777,
 			888,
 			1,
-			200,
 			200,
 			OrderType::SELL,
 			1000
@@ -248,7 +293,6 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			777,
 			200,
 			1,
-			200,
 			OrderType::SELL,
 			1000
 		));
@@ -299,7 +343,6 @@ fn test_cancel_order() {
 			888,
 			1,
 			200,
-			200,
 			OrderType::SELL,
 			1000
 		));
@@ -345,7 +388,6 @@ fn test_take_order_sell() {
 			777,
 			888,
 			1,
-			200,
 			200,
 			OrderType::SELL,
 			1000
@@ -441,7 +483,6 @@ fn test_take_order_buy() {
 			888,
 			200,
 			200,
-			1,
 			OrderType::BUY,
 			1000,
 		));
@@ -538,7 +579,6 @@ fn test_make_cancel_take_order_buy() {
 			888,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			1000
 		));
@@ -549,7 +589,6 @@ fn test_make_cancel_take_order_buy() {
 			888,
 			200,
 			2,
-			100,
 			OrderType::BUY,
 			1000
 		));
@@ -560,7 +599,6 @@ fn test_make_cancel_take_order_buy() {
 			999,
 			2,
 			200,
-			100,
 			OrderType::SELL,
 			1000
 		));
@@ -603,7 +641,6 @@ fn test_expiration_works_as_expected() {
 			888,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			10
 		));
@@ -651,7 +688,6 @@ fn fail_on_invalid_expiry() {
 				888,
 				100,
 				1,
-				100,
 				OrderType::BUY,
 				3
 			),
@@ -664,7 +700,6 @@ fn fail_on_invalid_expiry() {
 				888,
 				100,
 				1,
-				100,
 				OrderType::BUY,
 				5
 			),
@@ -677,7 +712,6 @@ fn fail_on_invalid_expiry() {
 			888,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			6
 		));
@@ -745,7 +779,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			208234,
 			1,
-			208234,
 			OrderType::BUY,
 			1000,
 		));
@@ -756,7 +789,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			2,
 			417520,
-			208760,
 			OrderType::SELL,
 			1000,
 		));
@@ -769,7 +801,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			208780,
 			1,
-			208780,
 			OrderType::BUY,
 			1000,
 		));
@@ -780,7 +811,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			1042505,
 			5,
-			208501,
 			OrderType::BUY,
 			1000,
 		));
@@ -791,7 +821,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			3,
 			626406,
-			208802,
 			OrderType::SELL,
 			1000,
 		));
@@ -804,7 +833,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			6,
 			1252560,
-			208760,
 			OrderType::SELL,
 			1000,
 		));
@@ -815,7 +843,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			1456777,
 			7,
-			208111,
 			OrderType::BUY,
 			1000,
 		));
@@ -826,7 +853,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			625800,
 			3,
-			208600,
 			OrderType::BUY,
 			1000,
 		));
@@ -838,7 +864,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			208833,
 			1,
-			208833,
 			OrderType::BUY,
 			1000,
 		));
@@ -849,7 +874,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			2,
 			417308,
-			208654,
 			OrderType::SELL,
 			1000,
 		));
@@ -860,7 +884,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			5,
 			1043275,
-			208655,
 			OrderType::SELL,
 			1000,
 		));
@@ -872,7 +895,6 @@ fn test_offchain_worker_order_matching() {
 			888,
 			625965,
 			3,
-			208655,
 			OrderType::BUY,
 			1000,
 		));
