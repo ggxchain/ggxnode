@@ -267,8 +267,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 					source_vm_id: VmId::Wasm,
 					weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
 				};
-				return T::EVMBridge::balance_of(context, contract, who.clone(), address)
-					.unwrap_or_default();
+				T::EVMBridge::balance_of(context, contract, who.clone(), address)
+					.unwrap_or_default()
 			}
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::free_balance(who),
 			_ => T::MultiCurrency::free_balance(currency_id, who),

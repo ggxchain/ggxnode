@@ -150,16 +150,13 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 
 		Pallet::<T>::handle_exit_reason(call_result.clone())?;
 
-		match call_result {
-			Ok(call_output) => {
-				let value: u128 = U256::from(call_output.output.as_slice())
-					.try_into()
-					.map_err(|_| ArithmeticError::Overflow)?;
-				let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
-				return Ok(balance);
-			}
-			_ => {}
-		}
+		if let Ok(call_output) = call_result {
+			let value: u128 = U256::from(call_output.output.as_slice())
+				.try_into()
+				.map_err(|_| ArithmeticError::Overflow)?;
+			let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
+			return Ok(balance);
+		};
 
 		Ok(Default::default())
 	}
