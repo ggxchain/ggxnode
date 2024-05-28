@@ -23,7 +23,7 @@ use sp_runtime::{
 use orml_traits::{
 	currency::TransferAll, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency,
 	BasicReservableCurrency, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
-	MultiReservableCurrency, NamedMultiReservableCurrency,
+	MultiReservableCurrency,
 };
 
 use core::cmp::Ordering;
@@ -259,7 +259,6 @@ pub mod pallet {
 			+ MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>
-			+ NamedMultiReservableCurrency<Self::AccountId>
 			+ fungibles::Inspect<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>
 			+ fungibles::Mutate<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>;
 

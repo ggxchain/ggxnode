@@ -62,7 +62,7 @@ fn test_withdraw() {
 #[test]
 fn test_deposit_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
 		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 		assert_eq!(
@@ -73,7 +73,7 @@ fn test_deposit_native() {
 			}
 		);
 
-		assert_eq!(Balances::free_balance(ALICE), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
@@ -87,7 +87,7 @@ fn test_deposit_native() {
 #[test]
 fn test_withdraw_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
 		assert_noop!(
 			Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10),
@@ -96,7 +96,7 @@ fn test_withdraw_native() {
 
 		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(ALICE), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
@@ -112,9 +112,79 @@ fn test_withdraw_native() {
 
 		assert_ok!(Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_deposit_erc20() {
+	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_erc20() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				11
+			),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
 			TokenInfo {
 				amount: 0,
 				reserved: 0
