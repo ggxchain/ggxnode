@@ -660,7 +660,6 @@ pub mod pallet {
 			asset_id_2: CurrencyId,
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
-			price: BalanceOf<T>,
 			order_type: OrderType,
 			expiration_block: BlockNumberFor<T>,
 		) -> DispatchResultWithPostInfo {
@@ -682,19 +681,24 @@ pub mod pallet {
 				Error::<T>::ExpirationMustBeInFuture
 			);
 
-			match order_type {
-				OrderType::SELL => {
-					ensure!(
-						offered_amount * price == requested_amount,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
-				OrderType::BUY => {
-					ensure!(
-						offered_amount == requested_amount * price,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
+			let (a, b) = match order_type {
+				OrderType::SELL => (requested_amount, offered_amount),
+				OrderType::BUY => (offered_amount, requested_amount),
+			};
+
+			// because price is an integer, we need to check if the division is exact
+			// (does not have a remainder)
+			let price = a
+				.checked_div(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
+
+			// do the check
+			if price
+				.checked_mul(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
+				!= a
+			{
+				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
 			}
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {

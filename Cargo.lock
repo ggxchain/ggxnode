@@ -4697,7 +4697,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-node"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "alloy-rlp",
  "assert_cmd",
@@ -4802,7 +4802,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-brooklyn"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "annuity",
  "astar-primitives",
@@ -4932,7 +4932,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-sydney"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "annuity",
  "astar-primitives",
@@ -8992,7 +8992,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-session"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "derive_more",
  "fp-evm",
@@ -9091,7 +9091,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-zk-groth16-verify"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "ark-bn254",
  "ark-crypto-primitives",
@@ -11477,7 +11477,7 @@ dependencies = [
 
 [[package]]
 name = "runtime-common"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "btc-relay",
  "cfg-if 1.0.0",

@@ -4,7 +4,7 @@ mod test {
 
 	#[cfg(not(feature = "brooklyn"))]
 	#[subxt::subxt(
-		runtime_metadata_path = "./tests/data/scale/eth_light_client.scale",
+		runtime_metadata_path = "./tests/data/scale/eth_light_client_sydney.scale",
 		substitute_type(
 			path = "eth_types::pallet::InitInput<R>",
 			with = "::subxt::utils::Static<::eth_types::pallet::InitInput<R>>"

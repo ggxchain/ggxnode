@@ -380,6 +380,9 @@ pub fn testnet_genesis(
 		},
 		dex: DexConfig {
 			asset_ids: vec![
+				native_asset_id: ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::GGX,
+				),
 				ForeignAsset(8888),
 				ForeignAsset(999),
 				ForeignAsset(888),
