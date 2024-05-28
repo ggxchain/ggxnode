@@ -19,6 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
+use astar_primitives::xvm::{CallResult, FailureReason};
 use ethereum_types::BigEndianHash;
 use frame_support::{
 	dispatch::DispatchResult, pallet_prelude::*, traits::ReservableCurrency, PalletId,
@@ -29,33 +30,18 @@ use frame_system::pallet_prelude::*;
 // 	evm::limits::{erc20, liquidation},
 // 	EVMBridge as EVMBridgeTrait, ExecutionMode, Context, LiquidationEvmBridge as LiquidationEvmBridgeT, EVM,
 // };
+use astar_primitives::xvm::{Context, VmId, XvmCall};
 use frame_support::traits::Currency;
 use ggx_primitives::evm::EVMBridgeTrait;
 use hex_literal::hex;
 use sp_core::{H160, H256, U256};
-use sp_runtime::{DispatchError, SaturatedConversion};
+use sp_runtime::{ArithmeticError, DispatchError, SaturatedConversion};
 use sp_std::{vec, vec::Vec};
-
-use astar_primitives::xvm::{Context, VmId, XvmCall};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 //type BalanceOf<T> = <<T as Config>::EVM as EVM<AccountIdOf<T>>>::Balance;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-// #[module_evm_utility_macro::generate_function_selector]
-// #[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-// #[repr(u32)]
-// pub enum Action {
-// 	Name = "name()",
-// 	Symbol = "symbol()",
-// 	Decimals = "decimals()",
-// 	TotalSupply = "totalSupply()",
-// 	BalanceOf = "balanceOf(address)",
-// 	Transfer = "transfer(address,uint256)",
-// 	OnCollateralTransfer = "onCollateralTransfer(address,uint256)",
-// 	OnRepaymentRefund = "onRepaymentRefund(address,uint256)",
-// }
 
 // mod mock;
 // mod tests;
@@ -162,7 +148,18 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			Err(f) => f.used_weight,
 		};
 
-		print!("#### call_result", call_result);
+		Pallet::<T>::handle_exit_reason(call_result.clone())?;
+
+		match call_result {
+			Ok(call_output) => {
+				let value: u128 = U256::from(call_output.output.as_slice())
+					.try_into()
+					.map_err(|_| ArithmeticError::Overflow)?;
+				let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
+				return Ok(balance);
+			}
+			_ => {}
+		}
 
 		Ok(Default::default())
 	}
@@ -204,13 +201,20 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			Some(storage_limit),
 		);
 
-		let _used_weight = match &call_result {
-			Ok(s) => s.used_weight,
-			Err(f) => f.used_weight,
-		};
+		Pallet::<T>::handle_exit_reason(call_result)?;
 
 		Ok(())
 	}
 }
 
-impl<T: Config> Pallet<T> {}
+impl<T: Config> Pallet<T> {
+	fn handle_exit_reason(rt: CallResult) -> Result<(), DispatchError> {
+		match rt {
+			Ok(_) => Ok(()),
+			Err(call_failure) => match call_failure.reason {
+				FailureReason::Revert(_) => Err(Error::<T>::ExecutionRevert.into()),
+				FailureReason::Error(_) => Err(Error::<T>::ExecutionError.into()),
+			},
+		}
+	}
+}

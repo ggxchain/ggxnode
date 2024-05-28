@@ -262,14 +262,13 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 	fn free_balance(currency_id: Self::CurrencyId, who: &T::AccountId) -> Self::Balance {
 		match currency_id {
 			CurrencyId::Erc20(contract) => {
-				if let Some(address) = T::AddressMapping::get_evm_address(who) {
-					let context = Context {
-						source_vm_id: VmId::Wasm,
-						weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
-					};
-					return T::EVMBridge::balance_of(context, address).unwrap_or_default();
-				}
-				Default::default()
+				let address = T::AddressMapping::into_h160(who.clone());
+				let context = Context {
+					source_vm_id: VmId::Wasm,
+					weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
+				};
+				return T::EVMBridge::balance_of(context, contract, who.clone(), address)
+					.unwrap_or_default();
 			}
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::free_balance(who),
 			_ => T::MultiCurrency::free_balance(currency_id, who),

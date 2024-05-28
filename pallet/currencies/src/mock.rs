@@ -3,32 +3,24 @@
 #![cfg(test)]
 
 use super::*;
-use astar_primitives::ethereum_checked::{CheckedEthereumTransact, CheckedEthereumTx};
-use fp_evm::{CallInfo as EvmCallInfo, ExitReason, ExitSucceed, UsedGas};
 use frame_support::{
-	assert_ok, construct_runtime,
-	dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo},
-	parameter_types,
+	assert_ok, parameter_types,
 	traits::{ConstBool, ConstU32, ConstU64, FindAuthor, Nothing},
 	weights::constants::RocksDbWeight,
 	ConsensusEngineId, PalletId,
 };
-use ggx_primitives::{
-	currency::{CurrencyId, TokenSymbol},
-	evm::EvmAddress,
-};
+use ggx_primitives::{currency::CurrencyId, evm::EvmAddress};
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
 use pallet_ethereum::PostLogContent;
 use pallet_ethereum_checked::EnsureXcmEthereumTx;
 use pallet_evm::{AddressMapping, FeeCalculator, GasWeightMapping};
 use sp_core::{blake2_256, ConstU128, H160, H256, U256};
-use sp_io::TestExternalities;
+
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
-	AccountId32, BuildStorage,
+	AccountId32,
 };
-use sp_std::cell::RefCell;
 use std::str::FromStr;
 
 use crate as currencies;
@@ -189,13 +181,13 @@ impl FindAuthor<H160> for MockFindAuthor {
 pub struct MockAddressMapping;
 impl AddressMapping<AccountId32> for MockAddressMapping {
 	fn into_account_id(address: H160) -> AccountId32 {
-		if address == ALICE_H160 {
+		if address == alice_evm_addr() {
 			return ALICE;
 		}
-		if address == BOB_H160 {
+		if address == bob_evm_addr() {
 			return BOB;
 		}
-		if address == CHARLIE_H160 {
+		if address == charlie_evm_addr() {
 			return CHARLIE;
 		}
 
@@ -207,13 +199,13 @@ pub struct MockAccountMapping;
 impl AccountMapping<AccountId32> for MockAccountMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
 		if account_id == ALICE {
-			return ALICE_H160;
+			return alice_evm_addr();
 		}
 		if account_id == BOB {
-			return BOB_H160;
+			return bob_evm_addr();
 		}
 		if account_id == CHARLIE {
-			return CHARLIE_H160;
+			return charlie_evm_addr();
 		}
 
 		let data = (b"evm:", account_id);
@@ -286,7 +278,7 @@ impl pallet_ethereum_checked::Config for Test {
 
 impl pallet_xvm::Config for Test {
 	type GasWeightMapping = MockGasWeightMapping;
-	type AccountMapping = HashedAccountMapping;
+	type AccountMapping = MockAddressMapping;
 	type EthereumTransact = EthereumChecked;
 	type WeightInfo = ();
 }
@@ -301,10 +293,18 @@ impl pallet_erc20::Config for Test {
 	type XvmCallApi = Xvm;
 }
 
-///TODO: Placeholder account mapping. This would be replaced once account abstraction is finished.
-pub struct HashedAccountMapping;
-impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for MockAddressMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
+		if account_id == ALICE {
+			return alice_evm_addr();
+		}
+		if account_id == BOB {
+			return bob_evm_addr();
+		}
+		if account_id == CHARLIE {
+			return charlie_evm_addr();
+		}
+
 		let data = (b"evm:", account_id);
 		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
 	}
@@ -322,7 +322,7 @@ impl Config for Test {
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
-	type AddressMapping = HashedAccountMapping;
+	type AddressMapping = MockAddressMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Test>;
 }
 pub type NativeCurrency = NativeCurrencyOf<Test>;
@@ -355,15 +355,21 @@ pub const BOB: AccountId = AccountId32::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId32::new([3u8; 32]);
 pub const EVA: AccountId = AccountId32::new([5u8; 32]);
 pub const ID_1: LockIdentifier = *b"1       ";
-pub const RID_1: ReserveIdentifier = [1u8; 8];
-pub const RID_2: ReserveIdentifier = [2u8; 8];
 
-pub const ALICE_H160: H160 = H160::repeat_byte(1);
-pub const BOB_H160: H160 = H160::repeat_byte(2);
-pub const CHARLIE_H160: H160 = H160::repeat_byte(3);
+pub fn alice_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000001").unwrap()
+}
+
+pub fn bob_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000002").unwrap()
+}
+
+pub fn charlie_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000003").unwrap()
+}
 
 pub fn erc20_address() -> EvmAddress {
-	EvmAddress::from_str("0x65935dd23110976ca3d335851f736c939ddc819e").unwrap()
+	EvmAddress::from_str("0x85728369a08dfe6660c7ff2c4f8f011fc1300973").unwrap()
 }
 
 pub fn deploy_contracts() {
@@ -378,7 +384,7 @@ pub fn deploy_contracts() {
 
 	assert_ok!(Evm::create2(
 		RuntimeOrigin::root(),
-		ALICE_H160,
+		alice_evm_addr(),
 		code,
 		H256::zero(),
 		U256::zero(),

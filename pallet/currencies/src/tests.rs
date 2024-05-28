@@ -343,7 +343,7 @@ fn call_event_should_work() {
 fn erc20_transfer_should_work() {
 	ExtBuilder::default()
 		.balances(vec![
-			(ALICE, NATIVE_CURRENCY_ID, 200_000_000_000),
+			(ALICE, NATIVE_CURRENCY_ID, 100_000_000_000),
 			(BOB, NATIVE_CURRENCY_ID, 100000),
 		])
 		.build()
@@ -356,5 +356,10 @@ fn erc20_transfer_should_work() {
 				CurrencyId::Erc20(erc20_address()),
 				100
 			));
+
+			assert_eq!(
+				Currencies::free_balance(CurrencyId::Erc20(erc20_address()), &BOB,),
+				100
+			);
 		});
 }

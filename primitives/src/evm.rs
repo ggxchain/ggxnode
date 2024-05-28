@@ -19,8 +19,8 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 	/// contract
 	fn balance_of(
 		context: Context,
-		contract: H160,
-		from: AccountIdOf<T>,
+		contract: EvmAddress,
+		from: AccountId,
 		address: EvmAddress,
 	) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.transfer(address, uint256) to transfer value to `to`
