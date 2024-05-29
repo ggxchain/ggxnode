@@ -1,4 +1,5 @@
 #![allow(clippy::from_over_into)]
+use crate::evm::EvmAddress;
 use bstringify::bstringify;
 use core::ops::Range;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
@@ -9,7 +10,6 @@ use sp_std::prelude::*;
 
 use serde::{Deserialize, Serialize};
 
-pub type EvmAddress = sp_core::H160;
 pub type ForeignAssetId = u16;
 pub type Erc20Id = u32;
 pub type TokenId = u8;

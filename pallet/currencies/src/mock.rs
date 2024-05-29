@@ -293,6 +293,12 @@ impl pallet_erc20::Config for Test {
 	type XvmCallApi = Xvm;
 }
 
+impl pallet_erc1155::Config for Test {
+	type Currency = Balances;
+	type PalletId = ERC20PalletId;
+	type XvmCallApi = Xvm;
+}
+
 impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for MockAddressMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
 		if account_id == ALICE {
@@ -324,6 +330,7 @@ impl Config for Test {
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Test>;
+	type EVMERC1155Bridge = pallet_erc1155::EVMBridge<Test>;
 }
 pub type NativeCurrency = NativeCurrencyOf<Test>;
 pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Test, Balances, i64, u64>;
@@ -346,6 +353,8 @@ frame_support::construct_runtime!(
 		Evm: pallet_evm,
 		Ethereum: pallet_ethereum,
 		EthereumChecked: pallet_ethereum_checked,
+		ERC20: pallet_erc20,
+		ERC1155: pallet_erc1155,
 		Xvm: pallet_xvm,
 	}
 );
@@ -375,6 +384,7 @@ pub fn erc20_address() -> EvmAddress {
 pub fn deploy_contracts() {
 	System::set_block_number(1);
 
+	//from https://github.com/AcalaNetwork/Acala/blob/master/ts-tests/build/Erc20DemoContract2.json
 	let json: serde_json::Value = serde_json::from_str(include_str!(
 		"../../../node/tests/data/Erc20DemoContract2.json"
 	))
@@ -401,14 +411,15 @@ pub fn deploy_contracts() {
 }
 
 pub fn erc1155_address() -> EvmAddress {
-	EvmAddress::from_str("0x85728369a08dfe6660c7ff2c4f8f011fc1300973").unwrap()
+	EvmAddress::from_str("0x54637e02ec610c27f4ea8363acfbac70764669f6").unwrap()
 }
 
 pub fn deploy_erc1155_contracts() {
 	System::set_block_number(1);
 
+	//Erc1155DemoContract.json build from ethereum-waffle
 	let json: serde_json::Value = serde_json::from_str(include_str!(
-		"../../../node/tests/data/Erc20DemoContract2.json"
+		"../../../node/tests/data/Erc1155DemoContract.json"
 	))
 	.unwrap();
 
@@ -428,7 +439,7 @@ pub fn deploy_erc1155_contracts() {
 	));
 
 	System::assert_last_event(RuntimeEvent::Evm(pallet_evm::Event::Created {
-		address: erc20_address(),
+		address: erc1155_address(),
 	}));
 }
 

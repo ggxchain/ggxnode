@@ -378,12 +378,12 @@ fn erc1155_transfer_should_work() {
 			assert_ok!(Currencies::transfer(
 				RuntimeOrigin::signed(ALICE),
 				BOB,
-				CurrencyId::Erc20(erc1155_address(), 0),
+				CurrencyId::Erc1155(erc1155_address(), 0),
 				100
 			));
 
 			assert_eq!(
-				Currencies::free_balance(CurrencyId::Erc20(erc1155_address(), 0), &BOB,),
+				Currencies::free_balance(CurrencyId::Erc1155(erc1155_address(), 0), &BOB,),
 				100
 			);
 		});

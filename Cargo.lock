@@ -8656,6 +8656,7 @@ dependencies = [
  "orml-utilities 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-balances",
  "pallet-contracts",
+ "pallet-erc1155",
  "pallet-erc20",
  "pallet-ethereum",
  "pallet-ethereum-checked",

@@ -143,11 +143,6 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			Some(storage_limit),
 		);
 
-		let _used_weight = match &call_result {
-			Ok(s) => s.used_weight,
-			Err(f) => f.used_weight,
-		};
-
 		Pallet::<T>::handle_exit_reason(call_result.clone())?;
 
 		if let Ok(call_output) = call_result {

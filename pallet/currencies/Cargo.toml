@@ -32,6 +32,7 @@ hex-literal = { workspace = true }
 pallet-balances = { workspace = true }
 pallet-contracts.workspace = true
 pallet-erc20.workspace = true
+pallet-erc1155.workspace = true
 pallet-ethereum.workspace = true
 pallet-ethereum-checked.workspace = true
 pallet-evm.workspace = true
@@ -57,6 +58,7 @@ std = [
 	"orml-utilities/std",
 	"pallet-contracts/std",
 	"pallet-erc20/std",
+	"pallet-erc1155/std",
 	"pallet-ethereum/std",
 	"pallet-ethereum-checked/std",
 	"pallet-evm/std",

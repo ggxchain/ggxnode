@@ -19,6 +19,7 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
+use astar_primitives::xvm::{CallResult, Context, FailureReason, VmId, XvmCall};
 use ethereum_types::BigEndianHash;
 use frame_support::{
 	dispatch::DispatchResult,
@@ -27,31 +28,15 @@ use frame_support::{
 	PalletId,
 };
 use frame_system::pallet_prelude::*;
-use ggx_primitives::evm::EVMERC1155BridgeTrait;
+use ggx_primitives::evm::{EVMERC1155BridgeTrait, EvmAddress};
 use hex_literal::hex;
 use sp_core::{H160, H256, U256};
-use sp_runtime::SaturatedConversion;
+use sp_runtime::{ArithmeticError, SaturatedConversion};
 use sp_std::{vec, vec::Vec};
-
-use astar_primitives::xvm::{Context, VmId, XvmCall};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
-
-// #[module_evm_utility_macro::generate_function_selector]
-// #[derive(RuntimeDebug, Eq, PartialEq, TryFromPrimitive, IntoPrimitive)]
-// #[repr(u32)]
-// pub enum Action {
-// 	Name = "name()",
-// 	Symbol = "symbol()",
-// 	Decimals = "decimals()",
-// 	TotalSupply = "totalSupply()",
-// 	BalanceOf = "balanceOf(address)",
-// 	Transfer = "transfer(address,uint256)",
-// 	OnCollateralTransfer = "onCollateralTransfer(address,uint256)",
-// 	OnRepaymentRefund = "onRepaymentRefund(address,uint256)",
-// }
 
 // mod mock;
 // mod tests;
@@ -107,11 +92,11 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 	fn balance_of(
 		context: Context,
 		contract: EvmAddress,
-		caller: AccountId,
+		caller: AccountIdOf<T>,
 		address: EvmAddress,
 		id: U256,
-	) -> Result<Balance, DispatchError> {
-		const BALANCEOF_SELECTOR: [u8; 4] = hex!["0x00fdd58e"];
+	) -> Result<BalanceOf<T>, DispatchError> {
+		const BALANCEOF_SELECTOR: [u8; 4] = hex!["00fdd58e"];
 		// ERC20.balance_of method hash
 		let mut input = BALANCEOF_SELECTOR.to_vec();
 
