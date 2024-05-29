@@ -102,7 +102,50 @@ pub mod module {
 pub struct EVMBridge<T>(sp_std::marker::PhantomData<T>);
 
 impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
-	// Calls the transfer method on an ERC20 contract using the given context.
+	// Calls the balanceOf method on an ERC1155 contract using the given context
+	// and returns the address's balance.
+	fn balance_of(
+		context: Context,
+		contract: EvmAddress,
+		caller: AccountId,
+		address: EvmAddress,
+		id: U256,
+	) -> Result<Balance, DispatchError> {
+		const BALANCEOF_SELECTOR: [u8; 4] = hex!["0x00fdd58e"];
+		// ERC20.balance_of method hash
+		let mut input = BALANCEOF_SELECTOR.to_vec();
+
+		// append address
+		input.extend_from_slice(H256::from(address).as_bytes());
+		// append id
+		input.extend_from_slice(H256::from_uint(&id).as_bytes());
+
+		let storage_limit = 960;
+
+		let call_result = T::XvmCallApi::call(
+			context,
+			VmId::Evm,
+			caller,
+			contract.as_bytes().to_vec(),
+			input,
+			0,
+			Some(storage_limit),
+		);
+
+		Pallet::<T>::handle_exit_reason(call_result.clone())?;
+
+		if let Ok(call_output) = call_result {
+			let value: u128 = U256::from(call_output.output.as_slice())
+				.try_into()
+				.map_err(|_| ArithmeticError::Overflow)?;
+			let balance = value.try_into().map_err(|_| ArithmeticError::Overflow)?;
+			return Ok(balance);
+		};
+
+		Ok(Default::default())
+	}
+
+	// Calls the transfer method on an ERC1155 contract using the given context.
 	fn safe_transfer_from(
 		context: Context,
 		contract: H160,
@@ -148,13 +191,20 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 			Some(storage_limit),
 		);
 
-		let _used_weight = match &call_result {
-			Ok(s) => s.used_weight,
-			Err(f) => f.used_weight,
-		};
+		Pallet::<T>::handle_exit_reason(call_result)?;
 
 		Ok(())
 	}
 }
 
-impl<T: Config> Pallet<T> {}
+impl<T: Config> Pallet<T> {
+	fn handle_exit_reason(rt: CallResult) -> Result<(), DispatchError> {
+		match rt {
+			Ok(_) => Ok(()),
+			Err(call_failure) => match call_failure.reason {
+				FailureReason::Revert(_) => Err(Error::<T>::ExecutionRevert.into()),
+				FailureReason::Error(_) => Err(Error::<T>::ExecutionError.into()),
+			},
+		}
+	}
+}

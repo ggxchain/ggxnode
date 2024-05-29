@@ -399,6 +399,39 @@ pub fn deploy_contracts() {
 		address: erc20_address(),
 	}));
 }
+
+pub fn erc1155_address() -> EvmAddress {
+	EvmAddress::from_str("0x85728369a08dfe6660c7ff2c4f8f011fc1300973").unwrap()
+}
+
+pub fn deploy_erc1155_contracts() {
+	System::set_block_number(1);
+
+	let json: serde_json::Value = serde_json::from_str(include_str!(
+		"../../../node/tests/data/Erc20DemoContract2.json"
+	))
+	.unwrap();
+
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+
+	assert_ok!(Evm::create2(
+		RuntimeOrigin::root(),
+		alice_evm_addr(),
+		code,
+		H256::zero(),
+		U256::zero(),
+		1_000_000_000,
+		U256::one(),
+		None,
+		Some(U256::zero()),
+		vec![],
+	));
+
+	System::assert_last_event(RuntimeEvent::Evm(pallet_evm::Event::Created {
+		address: erc20_address(),
+	}));
+}
+
 #[derive(Default)]
 pub struct ExtBuilder {
 	balances: Vec<(AccountId, CurrencyId, Balance)>,

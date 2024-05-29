@@ -21,14 +21,14 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 	fn balance_of(
 		context: Context,
 		contract: EvmAddress,
-		from: AccountId,
+		caller: AccountId,
 		address: EvmAddress,
 	) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.transfer(address, uint256) to transfer value to `to`
 	fn transfer(
 		context: Context,
 		contract: EvmAddress,
-		from: AccountId,
+		caller: AccountId,
 		to: EvmAddress,
 		value: Balance,
 	) -> DispatchResult;
@@ -36,6 +36,16 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 
 /// An abstraction of EVMBridge
 pub trait EVMERC1155BridgeTrait<AccountId, Balance> {
+	/// Execute ERC1155.balanceOf(address _owner, uint256 _id) to read balance of address from ERC20
+	/// contract
+	fn balance_of(
+		context: Context,
+		contract: EvmAddress,
+		caller: AccountId,
+		address: EvmAddress,
+		id: U256,
+	) -> Result<Balance, DispatchError>;
+
 	/// Execute ERC1155.safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) to transfer value to `to`
 	fn safe_transfer_from(
 		context: Context,
