@@ -4697,7 +4697,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-node"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "alloy-rlp",
  "assert_cmd",
@@ -4802,7 +4802,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-brooklyn"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "annuity",
  "astar-primitives",
@@ -4933,7 +4933,7 @@ dependencies = [
 
 [[package]]
 name = "ggxchain-runtime-sydney"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "annuity",
  "astar-primitives",
@@ -8649,12 +8649,16 @@ dependencies = [
  "frame-support",
  "frame-system",
  "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
  "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "orml-utilities 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-balances",
  "pallet-contracts",
  "pallet-erc20",
+ "pallet-ethereum",
+ "pallet-ethereum-checked",
  "pallet-evm",
  "pallet-insecure-randomness-collective-flip",
  "pallet-timestamp",
@@ -8662,6 +8666,7 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "serde_json",
  "sp-core 7.0.0",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
@@ -8677,6 +8682,8 @@ dependencies = [
  "frame-support",
  "frame-system",
  "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
  "log 0.4.20",
  "orml-tokens",
  "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
@@ -8685,12 +8692,15 @@ dependencies = [
  "pallet-contracts",
  "pallet-currencies",
  "pallet-erc20",
+ "pallet-ethereum",
+ "pallet-ethereum-checked",
  "pallet-evm",
  "pallet-insecure-randomness-collective-flip",
  "pallet-timestamp",
  "pallet-xvm",
  "parity-scale-codec",
  "scale-info",
+ "serde_json",
  "sp-core 7.0.0",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
@@ -9014,7 +9024,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-session"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "derive_more",
  "fp-evm",
@@ -9113,7 +9123,7 @@ dependencies = [
 
 [[package]]
 name = "pallet-evm-precompile-zk-groth16-verify"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "ark-bn254",
  "ark-crypto-primitives",
@@ -11499,7 +11509,7 @@ dependencies = [
 
 [[package]]
 name = "runtime-common"
-version = "0.1.5"
+version = "0.1.6"
 dependencies = [
  "btc-relay",
  "cfg-if 1.0.0",

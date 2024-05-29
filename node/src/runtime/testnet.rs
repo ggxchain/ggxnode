@@ -304,13 +304,36 @@ pub fn testnet_genesis(
 			balances: endowed_accounts
 				.iter()
 				.flat_map(|k| {
-					vec![(
-						k.clone().0,
-						ggx_primitives::currency::CurrencyId::Token(
-							ggx_primitives::currency::TokenSymbol::GGX,
+					vec![
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::GGX,
+							),
+							1u128 << 70,
 						),
-						1u128 << 70,
-					)]
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::BTC,
+							),
+							1u128 << 70,
+						),
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::GGXT,
+							),
+							1u128 << 70,
+						),
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::USDT,
+							),
+							1u128 << 70,
+						),
+					]
 				})
 				.collect(),
 		},
@@ -380,12 +403,24 @@ pub fn testnet_genesis(
 		},
 		dex: DexConfig {
 			asset_ids: vec![
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::GGX,
+				),
 				ForeignAsset(8888),
 				ForeignAsset(999),
 				ForeignAsset(888),
 				ForeignAsset(777),
 				ForeignAsset(666),
 				ForeignAsset(667),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::USDT,
+				),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::GGXT,
+				),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::BTC,
+				),
 			],
 			native_asset_id: ggx_primitives::currency::CurrencyId::Token(
 				ggx_primitives::currency::TokenSymbol::GGX,

@@ -62,7 +62,7 @@ fn test_withdraw() {
 #[test]
 fn test_deposit_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
 		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 		assert_eq!(
@@ -73,7 +73,7 @@ fn test_deposit_native() {
 			}
 		);
 
-		assert_eq!(Balances::free_balance(ALICE), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
@@ -87,7 +87,7 @@ fn test_deposit_native() {
 #[test]
 fn test_withdraw_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
 		assert_noop!(
 			Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10),
@@ -96,7 +96,7 @@ fn test_withdraw_native() {
 
 		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(ALICE), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
@@ -112,9 +112,79 @@ fn test_withdraw_native() {
 
 		assert_ok!(Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(ALICE), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_deposit_erc20() {
+	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_erc20() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				11
+			),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
 			TokenInfo {
 				amount: 0,
 				reserved: 0
@@ -133,7 +203,6 @@ fn test_make_order() {
 				RuntimeOrigin::signed(ALICE),
 				USDT,
 				USDT,
-				1,
 				200,
 				200,
 				OrderType::SELL,
@@ -147,12 +216,13 @@ fn test_make_order() {
 				RuntimeOrigin::signed(ALICE),
 				USDT,
 				GGXT,
-				1,
-				200,
-				1,
-				OrderType::SELL,
+				19, // offered
+				7,  // requested
+				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 
@@ -161,12 +231,58 @@ fn test_make_order() {
 				RuntimeOrigin::signed(ALICE),
 				USDT,
 				GGXT,
-				1,
-				200,
-				1,
+				19, // offered
+				7,  // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
+				7,  // offered
+				19, // requested
 				OrderType::BUY,
 				1000
 			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
+				7,  // offered
+				19, // requested
+				OrderType::SELL,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
+			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
+		);
+
+		assert_noop!(
+			Dex::make_order(
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
+				1,   // offered
+				200, // requested
+				OrderType::BUY,
+				1000
+			),
+			// because in requested * price == offered
+			// `price` cannot be an integer.
 			Error::<Test>::PriceDoNotMatchOfferedRequestedAmount
 		);
 
@@ -183,7 +299,6 @@ fn test_make_order() {
 			USDT,
 			GGXT,
 			1,
-			200,
 			200,
 			OrderType::SELL,
 			1000
@@ -248,7 +363,6 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			USDT,
 			200,
 			1,
-			200,
 			OrderType::SELL,
 			1000
 		));
@@ -299,7 +413,6 @@ fn test_cancel_order() {
 			GGXT,
 			1,
 			200,
-			200,
 			OrderType::SELL,
 			1000
 		));
@@ -345,7 +458,6 @@ fn test_take_order_sell() {
 			USDT,
 			GGXT,
 			1,
-			200,
 			200,
 			OrderType::SELL,
 			1000
@@ -441,7 +553,6 @@ fn test_take_order_buy() {
 			GGXT,
 			200,
 			200,
-			1,
 			OrderType::BUY,
 			1000,
 		));
@@ -538,7 +649,6 @@ fn test_make_cancel_take_order_buy() {
 			GGXT,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			1000
 		));
@@ -549,7 +659,6 @@ fn test_make_cancel_take_order_buy() {
 			GGXT,
 			200,
 			2,
-			100,
 			OrderType::BUY,
 			1000
 		));
@@ -560,7 +669,6 @@ fn test_make_cancel_take_order_buy() {
 			BTC,
 			2,
 			200,
-			100,
 			OrderType::SELL,
 			1000
 		));
@@ -603,7 +711,6 @@ fn test_expiration_works_as_expected() {
 			GGXT,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			10
 		));
@@ -651,7 +758,6 @@ fn fail_on_invalid_expiry() {
 				GGXT,
 				100,
 				1,
-				100,
 				OrderType::BUY,
 				3
 			),
@@ -664,7 +770,6 @@ fn fail_on_invalid_expiry() {
 				GGXT,
 				100,
 				1,
-				100,
 				OrderType::BUY,
 				5
 			),
@@ -677,7 +782,6 @@ fn fail_on_invalid_expiry() {
 			GGXT,
 			100,
 			1,
-			100,
 			OrderType::BUY,
 			6
 		));
@@ -753,7 +857,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			208234,
 			1,
-			208234,
 			OrderType::BUY,
 			1000,
 		));
@@ -764,7 +867,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			2,
 			417520,
-			208760,
 			OrderType::SELL,
 			1000,
 		));
@@ -777,7 +879,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			208780,
 			1,
-			208780,
 			OrderType::BUY,
 			1000,
 		));
@@ -788,7 +889,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			1042505,
 			5,
-			208501,
 			OrderType::BUY,
 			1000,
 		));
@@ -799,7 +899,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			3,
 			626406,
-			208802,
 			OrderType::SELL,
 			1000,
 		));
@@ -812,7 +911,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			6,
 			1252560,
-			208760,
 			OrderType::SELL,
 			1000,
 		));
@@ -823,7 +921,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			1456777,
 			7,
-			208111,
 			OrderType::BUY,
 			1000,
 		));
@@ -834,7 +931,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			625800,
 			3,
-			208600,
 			OrderType::BUY,
 			1000,
 		));
@@ -846,7 +942,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			208833,
 			1,
-			208833,
 			OrderType::BUY,
 			1000,
 		));
@@ -857,7 +952,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			2,
 			417308,
-			208654,
 			OrderType::SELL,
 			1000,
 		));
@@ -868,7 +962,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			5,
 			1043275,
-			208655,
 			OrderType::SELL,
 			1000,
 		));
@@ -880,7 +973,6 @@ fn test_offchain_worker_order_matching() {
 			GGXT,
 			625965,
 			3,
-			208655,
 			OrderType::BUY,
 			1000,
 		));

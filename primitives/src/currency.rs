@@ -1,3 +1,4 @@
+#![allow(clippy::from_over_into)]
 use bstringify::bstringify;
 use core::ops::Range;
 use num_enum::{IntoPrimitive, TryFromPrimitive};

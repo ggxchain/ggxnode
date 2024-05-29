@@ -3,29 +3,25 @@
 #![cfg(test)]
 
 use super::*;
-use astar_primitives::ethereum_checked::{CheckedEthereumTransact, CheckedEthereumTx};
-use fp_evm::{CallInfo as EvmCallInfo, ExitReason, ExitSucceed, UsedGas};
 use frame_support::{
-	construct_runtime,
-	dispatch::{DispatchErrorWithPostInfo, PostDispatchInfo},
-	parameter_types,
-	traits::{ConstBool, ConstU32, ConstU64, Nothing},
+	assert_ok, parameter_types,
+	traits::{ConstBool, ConstU32, ConstU64, FindAuthor, Nothing},
 	weights::constants::RocksDbWeight,
-	PalletId,
+	ConsensusEngineId, PalletId,
 };
-use ggx_primitives::{
-	currency::{CurrencyId, TokenSymbol},
-	evm::EvmAddress,
-};
+use ggx_primitives::{currency::CurrencyId, evm::EvmAddress};
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
-use pallet_evm::GasWeightMapping;
-use sp_core::{ConstU128, H256};
+use pallet_ethereum::PostLogContent;
+use pallet_ethereum_checked::EnsureXcmEthereumTx;
+use pallet_evm::{AddressMapping, FeeCalculator, GasWeightMapping};
+use sp_core::{blake2_256, ConstU128, H160, H256, U256};
+
 use sp_runtime::{
 	testing::Header,
-	traits::{AccountIdConversion, IdentityLookup},
-	AccountId32, BuildStorage,
+	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
+	AccountId32,
 };
-use sp_std::cell::RefCell;
+use std::str::FromStr;
 
 use crate as currencies;
 
@@ -165,39 +161,55 @@ impl pallet_contracts::Config for Test {
 	type MaxDebugBufferLen = ConstU32<{ 2 * 1024 * 1024 }>;
 }
 
-thread_local! {
-	static TRANSACTED: RefCell<Option<(H160, CheckedEthereumTx)>> = RefCell::new(None);
-}
-
-pub struct MockEthereumTransact;
-impl MockEthereumTransact {
-	pub(crate) fn assert_transacted(source: H160, checked_tx: CheckedEthereumTx) {
-		let transacted = TRANSACTED.with(|v| v.borrow().clone());
-		assert_eq!(transacted, Some((source, checked_tx)));
+pub struct MockFeeCalculator;
+impl FeeCalculator for MockFeeCalculator {
+	fn min_gas_price() -> (U256, Weight) {
+		(U256::one(), Weight::zero())
 	}
 }
-impl CheckedEthereumTransact for MockEthereumTransact {
-	fn xvm_transact(
-		source: H160,
-		checked_tx: CheckedEthereumTx,
-	) -> Result<(PostDispatchInfo, EvmCallInfo), DispatchErrorWithPostInfo> {
-		TRANSACTED.with(|v| *v.borrow_mut() = Some((source, checked_tx)));
-		Ok((
-			PostDispatchInfo {
-				actual_weight: Default::default(),
-				pays_fee: Default::default(),
-			},
-			EvmCallInfo {
-				exit_reason: ExitReason::Succeed(ExitSucceed::Returned),
-				value: Default::default(),
-				used_gas: UsedGas {
-					standard: Default::default(),
-					effective: Default::default(),
-				},
-				logs: Default::default(),
-				weight_info: None,
-			},
-		))
+
+pub struct MockFindAuthor;
+impl FindAuthor<H160> for MockFindAuthor {
+	fn find_author<'a, I>(_digests: I) -> Option<H160>
+	where
+		I: 'a + IntoIterator<Item = (ConsensusEngineId, &'a [u8])>,
+	{
+		Some(H160::from_low_u64_be(1))
+	}
+}
+
+pub struct MockAddressMapping;
+impl AddressMapping<AccountId32> for MockAddressMapping {
+	fn into_account_id(address: H160) -> AccountId32 {
+		if address == alice_evm_addr() {
+			return ALICE;
+		}
+		if address == bob_evm_addr() {
+			return BOB;
+		}
+		if address == charlie_evm_addr() {
+			return CHARLIE;
+		}
+
+		return pallet_evm::HashedAddressMapping::<BlakeTwo256>::into_account_id(address);
+	}
+}
+
+pub struct MockAccountMapping;
+impl AccountMapping<AccountId32> for MockAccountMapping {
+	fn into_h160(account_id: AccountId) -> H160 {
+		if account_id == ALICE {
+			return alice_evm_addr();
+		}
+		if account_id == BOB {
+			return bob_evm_addr();
+		}
+		if account_id == CHARLIE {
+			return charlie_evm_addr();
+		}
+
+		let data = (b"evm:", account_id);
+		return H160::from_slice(&data.using_encoded(blake2_256)[0..20]);
 	}
 }
 
@@ -211,10 +223,63 @@ impl GasWeightMapping for MockGasWeightMapping {
 	}
 }
 
+parameter_types! {
+	pub WeightPerGas: Weight = Weight::from_parts(1, 0);
+	pub const BlockGasLimit: U256 = U256::MAX;
+}
+
+impl pallet_evm::Config for Test {
+	type FeeCalculator = MockFeeCalculator;
+	type GasWeightMapping = pallet_evm::FixedGasWeightMapping<Self>;
+	type WeightPerGas = WeightPerGas;
+	type BlockHashMapping = pallet_ethereum::EthereumBlockHashMapping<Test>;
+	type CallOrigin = pallet_evm::EnsureAddressRoot<AccountId>;
+	type WithdrawOrigin = pallet_evm::EnsureAddressTruncated;
+	type AddressMapping = MockAddressMapping;
+	type Currency = Balances;
+	type RuntimeEvent = RuntimeEvent;
+	type Runner = pallet_evm::runner::stack::Runner<Self>;
+	type PrecompilesType = ();
+	type PrecompilesValue = ();
+	type ChainId = ConstU64<1024>;
+	type OnChargeTransaction = ();
+	type BlockGasLimit = BlockGasLimit;
+	type OnCreate = ();
+	type FindAuthor = MockFindAuthor;
+	type Timestamp = Timestamp;
+	type WeightInfo = pallet_evm::weights::SubstrateWeight<Test>;
+	type GasLimitPovSizeRatio = ConstU64<4>;
+}
+
+parameter_types! {
+	pub const PostBlockAndTxnHashes: PostLogContent = PostLogContent::BlockAndTxnHashes;
+}
+
+impl pallet_ethereum::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type StateRoot = pallet_ethereum::IntermediateStateRoot<Self>;
+	type PostLogContent = PostBlockAndTxnHashes;
+	type ExtraDataLength = ConstU32<30>;
+}
+
+parameter_types! {
+	pub TxWeightLimit: Weight = Weight::from_parts(u64::max_value(), 0);
+}
+
+impl pallet_ethereum_checked::Config for Test {
+	type ReservedXcmpWeight = TxWeightLimit;
+	type XvmTxWeightLimit = TxWeightLimit;
+	type InvalidEvmTransactionError = pallet_ethereum::InvalidTransactionWrapper;
+	type ValidatedTransaction = pallet_ethereum::ValidatedTransaction<Self>;
+	type AccountMapping = MockAccountMapping;
+	type XcmTransactOrigin = EnsureXcmEthereumTx<AccountId32>;
+	type WeightInfo = ();
+}
+
 impl pallet_xvm::Config for Test {
 	type GasWeightMapping = MockGasWeightMapping;
-	type AccountMapping = HashedAccountMapping;
-	type EthereumTransact = MockEthereumTransact;
+	type AccountMapping = MockAddressMapping;
+	type EthereumTransact = EthereumChecked;
 	type WeightInfo = ();
 }
 
@@ -228,10 +293,18 @@ impl pallet_erc20::Config for Test {
 	type XvmCallApi = Xvm;
 }
 
-///TODO: Placeholder account mapping. This would be replaced once account abstraction is finished.
-pub struct HashedAccountMapping;
-impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for HashedAccountMapping {
+impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for MockAddressMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
+		if account_id == ALICE {
+			return alice_evm_addr();
+		}
+		if account_id == BOB {
+			return bob_evm_addr();
+		}
+		if account_id == CHARLIE {
+			return charlie_evm_addr();
+		}
+
 		let data = (b"evm:", account_id);
 		return H160::from_slice(&data.using_encoded(sp_io::hashing::blake2_256)[0..20]);
 	}
@@ -249,7 +322,7 @@ impl Config for Test {
 	type NativeCurrency = AdaptedBasicCurrency;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
-	type AddressMapping = HashedAccountMapping;
+	type AddressMapping = MockAddressMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Test>;
 }
 pub type NativeCurrency = NativeCurrencyOf<Test>;
@@ -270,17 +343,62 @@ frame_support::construct_runtime!(
 		Balances: pallet_balances,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		Contracts: pallet_contracts,
+		Evm: pallet_evm,
+		Ethereum: pallet_ethereum,
+		EthereumChecked: pallet_ethereum_checked,
 		Xvm: pallet_xvm,
 	}
 );
 
 pub const ALICE: AccountId = AccountId32::new([1u8; 32]);
 pub const BOB: AccountId = AccountId32::new([2u8; 32]);
+pub const CHARLIE: AccountId = AccountId32::new([3u8; 32]);
 pub const EVA: AccountId = AccountId32::new([5u8; 32]);
 pub const ID_1: LockIdentifier = *b"1       ";
-pub const RID_1: ReserveIdentifier = [1u8; 8];
-pub const RID_2: ReserveIdentifier = [2u8; 8];
 
+pub fn alice_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000001").unwrap()
+}
+
+pub fn bob_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000002").unwrap()
+}
+
+pub fn charlie_evm_addr() -> EvmAddress {
+	EvmAddress::from_str("1000000000000000000000000000000000000003").unwrap()
+}
+
+pub fn erc20_address() -> EvmAddress {
+	EvmAddress::from_str("0x85728369a08dfe6660c7ff2c4f8f011fc1300973").unwrap()
+}
+
+pub fn deploy_contracts() {
+	System::set_block_number(1);
+
+	let json: serde_json::Value = serde_json::from_str(include_str!(
+		"../../../node/tests/data/Erc20DemoContract2.json"
+	))
+	.unwrap();
+
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+
+	assert_ok!(Evm::create2(
+		RuntimeOrigin::root(),
+		alice_evm_addr(),
+		code,
+		H256::zero(),
+		U256::zero(),
+		1_000_000_000,
+		U256::one(),
+		None,
+		Some(U256::zero()),
+		vec![],
+	));
+
+	System::assert_last_event(RuntimeEvent::Evm(pallet_evm::Event::Created {
+		address: erc20_address(),
+	}));
+}
 #[derive(Default)]
 pub struct ExtBuilder {
 	balances: Vec<(AccountId, CurrencyId, Balance)>,

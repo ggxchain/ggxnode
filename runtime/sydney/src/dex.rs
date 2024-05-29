@@ -1,7 +1,7 @@
 use frame_support::PalletId;
 use pallet_currencies::BasicCurrencyAdapter;
 
-use crate::{currencies::Amount, prelude::*, BlockNumber, GGXTokens};
+use crate::{currencies::Amount, prelude::*, BlockNumber, GGXCurrencies};
 
 parameter_types! {
 	pub const UnsignedPriority: BlockNumber = 1;
@@ -11,7 +11,7 @@ parameter_types! {
 impl pallet_dex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PalletId = DexPalletId;
-	type MultiCurrency = GGXTokens;
+	type MultiCurrency = GGXCurrencies;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type UnsignedPriority = UnsignedPriority;

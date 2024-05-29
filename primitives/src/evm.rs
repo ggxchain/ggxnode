@@ -18,7 +18,12 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 	fn total_supply(context: Context) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.balanceOf(address) to read balance of address from ERC20
 	/// contract
-	fn balance_of(context: Context, address: EvmAddress) -> Result<Balance, DispatchError>;
+	fn balance_of(
+		context: Context,
+		contract: EvmAddress,
+		from: AccountId,
+		address: EvmAddress,
+	) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.transfer(address, uint256) to transfer value to `to`
 	fn transfer(
 		context: Context,

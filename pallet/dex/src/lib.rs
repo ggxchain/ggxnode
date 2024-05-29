@@ -23,7 +23,7 @@ use sp_runtime::{
 use orml_traits::{
 	currency::TransferAll, BasicCurrency, BasicCurrencyExtended, BasicLockableCurrency,
 	BasicReservableCurrency, MultiCurrency, MultiCurrencyExtended, MultiLockableCurrency,
-	MultiReservableCurrency, NamedMultiReservableCurrency,
+	MultiReservableCurrency,
 };
 
 use core::cmp::Ordering;
@@ -259,7 +259,6 @@ pub mod pallet {
 			+ MultiCurrencyExtended<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiLockableCurrency<Self::AccountId, CurrencyId = CurrencyId>
 			+ MultiReservableCurrency<Self::AccountId, CurrencyId = CurrencyId>
-			+ NamedMultiReservableCurrency<Self::AccountId>
 			+ fungibles::Inspect<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>
 			+ fungibles::Mutate<Self::AccountId, AssetId = CurrencyId, Balance = BalanceOf<Self>>;
 
@@ -660,7 +659,6 @@ pub mod pallet {
 			asset_id_2: CurrencyId,
 			offered_amount: BalanceOf<T>,
 			requested_amount: BalanceOf<T>,
-			price: BalanceOf<T>,
 			order_type: OrderType,
 			expiration_block: BlockNumberFor<T>,
 		) -> DispatchResultWithPostInfo {
@@ -682,19 +680,24 @@ pub mod pallet {
 				Error::<T>::ExpirationMustBeInFuture
 			);
 
-			match order_type {
-				OrderType::SELL => {
-					ensure!(
-						offered_amount * price == requested_amount,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
-				OrderType::BUY => {
-					ensure!(
-						offered_amount == requested_amount * price,
-						Error::<T>::PriceDoNotMatchOfferedRequestedAmount
-					);
-				}
+			let (a, b) = match order_type {
+				OrderType::SELL => (requested_amount, offered_amount),
+				OrderType::BUY => (offered_amount, requested_amount),
+			};
+
+			// because price is an integer, we need to check if the division is exact
+			// (does not have a remainder)
+			let price = a
+				.checked_div(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
+
+			// do the check
+			if price
+				.checked_mul(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
+				!= a
+			{
+				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
 			}
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
