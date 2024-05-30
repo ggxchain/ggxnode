@@ -15,7 +15,6 @@ use pallet_ethereum::PostLogContent;
 use pallet_ethereum_checked::EnsureXcmEthereumTx;
 use pallet_evm::{AddressMapping, FeeCalculator, GasWeightMapping};
 use sp_core::{blake2_256, ConstU128, H160, H256, U256};
-
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
@@ -296,6 +295,7 @@ impl pallet_erc20::Config for Test {
 parameter_types! {
 	pub const ERC1155PalletId: PalletId = PalletId(*b"py/e1155");
 }
+
 impl pallet_erc1155::Config for Test {
 	type Currency = Balances;
 	type PalletId = ERC1155PalletId;

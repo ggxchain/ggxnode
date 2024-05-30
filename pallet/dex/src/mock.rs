@@ -51,6 +51,8 @@ frame_support::construct_runtime!(
 		Evm: pallet_evm,
 		Ethereum: pallet_ethereum,
 		EthereumChecked: pallet_ethereum_checked,
+		ERC20: pallet_erc20,
+		ERC1155: pallet_erc1155,
 		Xvm: pallet_xvm,
 		Currencies: pallet_currencies,
 		Tokens: orml_tokens,
@@ -364,6 +366,16 @@ impl pallet_erc20::Config for Test {
 	type XvmCallApi = Xvm;
 }
 
+parameter_types! {
+	pub const ERC1155PalletId: PalletId = PalletId(*b"py/e1155");
+}
+
+impl pallet_erc1155::Config for Test {
+	type Currency = Balances;
+	type PalletId = ERC1155PalletId;
+	type XvmCallApi = Xvm;
+}
+
 impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for MockAddressMapping {
 	fn into_h160(account_id: AccountId) -> H160 {
 		if account_id == ALICE {
@@ -393,6 +405,7 @@ impl pallet_currencies::Config for Test {
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Test>;
+	type EVMERC1155Bridge = pallet_erc1155::EVMBridge<Test>;
 }
 
 parameter_types! {
@@ -461,6 +474,39 @@ pub fn deploy_contracts() {
 
 	System::assert_last_event(RuntimeEvent::Evm(pallet_evm::Event::Created {
 		address: erc20_address(),
+	}));
+}
+
+pub fn erc1155_address() -> EvmAddress {
+	EvmAddress::from_str("0xb191721ea12518291ada844ae322f7bfb1b030fb").unwrap()
+}
+
+pub fn deploy_erc1155_contracts() {
+	System::set_block_number(1);
+
+	//Erc1155DemoContract.json build from ethereum-waffle
+	let json: serde_json::Value = serde_json::from_str(include_str!(
+		"../../../node/tests/data/Erc1155DemoContract.json"
+	))
+	.unwrap();
+
+	let code = hex::decode(json.get("bytecode").unwrap().as_str().unwrap()).unwrap();
+
+	assert_ok!(Evm::create2(
+		RuntimeOrigin::root(),
+		alice_evm_addr(),
+		code,
+		H256::zero(),
+		U256::zero(),
+		1_000_000_000,
+		U256::one(),
+		None,
+		Some(U256::zero()),
+		vec![],
+	));
+
+	System::assert_last_event(RuntimeEvent::Evm(pallet_evm::Event::Created {
+		address: erc1155_address(),
 	}));
 }
 
@@ -543,6 +589,7 @@ impl ExtBuilder {
 					CurrencyId::ForeignAsset(888),
 					CurrencyId::ForeignAsset(777),
 					CurrencyId::Erc20(erc20_address()),
+					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
 					],
         native_asset_id: NATIVE_CURRENCY_ID,
       },

@@ -8692,6 +8692,7 @@ dependencies = [
  "pallet-balances",
  "pallet-contracts",
  "pallet-currencies",
+ "pallet-erc1155",
  "pallet-erc20",
  "pallet-ethereum",
  "pallet-ethereum-checked",

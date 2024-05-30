@@ -2,9 +2,12 @@ use super::{pallet::Error, *};
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
 use scale_info::prelude::collections::BTreeMap;
-use sp_core::offchain::{
-	testing::{TestOffchainExt, TestTransactionPoolExt},
-	OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
+use sp_core::{
+	offchain::{
+		testing::{TestOffchainExt, TestTransactionPoolExt},
+		OffchainDbExt, OffchainWorkerExt, TransactionPoolExt,
+	},
+	U256,
 };
 
 #[test]
@@ -147,6 +150,8 @@ fn test_deposit_erc20() {
 #[test]
 fn test_withdraw_erc20() {
 	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
 		assert_noop!(
 			Dex::withdraw(
 				RuntimeOrigin::signed(ALICE),
@@ -185,6 +190,87 @@ fn test_withdraw_erc20() {
 		));
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_deposit_erc1155() {
+	new_test_ext().execute_with(|| {
+		deploy_erc1155_contracts();
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			10
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(
+				ALICE,
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_erc1155() {
+	new_test_ext().execute_with(|| {
+		deploy_erc1155_contracts();
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(
+				ALICE,
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+				11
+			),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(
+				ALICE,
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+			),
 			TokenInfo {
 				amount: 0,
 				reserved: 0

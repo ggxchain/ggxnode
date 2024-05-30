@@ -349,6 +349,16 @@ fn erc20_transfer_should_work() {
 		])
 		.build()
 		.execute_with(|| {
+			assert_noop!(
+				Currencies::transfer(
+					RuntimeOrigin::signed(ALICE),
+					BOB,
+					CurrencyId::Erc20(erc20_address()),
+					100
+				),
+				pallet_erc20::Error::<Test>::InvalidReturnValue,
+			);
+
 			deploy_contracts();
 
 			assert_ok!(Currencies::transfer(
@@ -374,6 +384,16 @@ fn erc1155_transfer_should_work() {
 		])
 		.build()
 		.execute_with(|| {
+			assert_noop!(
+				Currencies::transfer(
+					RuntimeOrigin::signed(ALICE),
+					BOB,
+					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+					100
+				),
+				pallet_erc1155::Error::<Test>::InvalidReturnValue,
+			);
+
 			deploy_erc1155_contracts();
 
 			assert_ok!(Currencies::transfer(

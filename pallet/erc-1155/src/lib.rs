@@ -50,7 +50,7 @@ pub mod module {
 	/// EvmBridge module trait
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// The currency mechanism. //todo need replace to EVM<AccountIdOf<Self>>
+		/// The currency mechanism.
 		type Currency: ReservableCurrency<Self::AccountId>;
 
 		#[pallet::constant]
@@ -189,7 +189,19 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 			Some(storage_limit),
 		);
 
-		Pallet::<T>::handle_exit_reason(call_result)?;
+		Pallet::<T>::handle_exit_reason(call_result.clone())?;
+
+		// return value is true.
+		let mut bytes = [0u8; 32];
+		U256::from(1).to_big_endian(&mut bytes);
+
+		if let Ok(call_output) = call_result {
+			// Check return value to make sure not calling on empty contracts.
+			ensure!(
+				!call_output.output.is_empty() && call_output.output == bytes,
+				Error::<T>::InvalidReturnValue
+			);
+		}
 
 		Ok(())
 	}
