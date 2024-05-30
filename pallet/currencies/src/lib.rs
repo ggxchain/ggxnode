@@ -273,6 +273,15 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 				T::EVMBridge::balance_of(context, contract, who.clone(), address)
 					.unwrap_or_default()
 			}
+			CurrencyId::Erc1155(contract, id) => {
+				let address = T::AddressMapping::into_h160(who.clone());
+				let context = Context {
+					source_vm_id: VmId::Wasm,
+					weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
+				};
+				T::EVMERC1155Bridge::balance_of(context, contract, who.clone(), address, id)
+					.unwrap_or_default()
+			}
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::free_balance(who),
 			_ => T::MultiCurrency::free_balance(currency_id, who),
 		}
@@ -328,7 +337,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 					to_evm,
 					id.into(),
 					amount,
-					vec![],
+					vec![0xff],
 				)?;
 			}
 			id if id == T::GetNativeCurrencyId::get() => {

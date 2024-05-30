@@ -5,6 +5,7 @@
 use super::*;
 use frame_support::{assert_noop, assert_ok};
 use mock::*;
+use sp_core::U256;
 use sp_runtime::traits::BadOrigin;
 
 #[test]
@@ -378,12 +379,15 @@ fn erc1155_transfer_should_work() {
 			assert_ok!(Currencies::transfer(
 				RuntimeOrigin::signed(ALICE),
 				BOB,
-				CurrencyId::Erc1155(erc1155_address(), 0),
+				CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
 				100
 			));
 
 			assert_eq!(
-				Currencies::free_balance(CurrencyId::Erc1155(erc1155_address(), 0), &BOB,),
+				Currencies::free_balance(
+					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+					&BOB,
+				),
 				100
 			);
 		});

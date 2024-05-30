@@ -5,6 +5,7 @@ use core::ops::Range;
 use num_enum::{IntoPrimitive, TryFromPrimitive};
 use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::TypeInfo;
+use sp_core::U256;
 use sp_runtime::RuntimeDebug;
 use sp_std::prelude::*;
 
@@ -171,7 +172,7 @@ pub trait TokenInfo {
 pub enum CurrencyId {
 	Token(TokenSymbol),
 	Erc20(EvmAddress),
-	Erc1155(EvmAddress, u128),
+	Erc1155(EvmAddress, U256),
 	ForeignAsset(ForeignAssetId),
 }
 

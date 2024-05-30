@@ -97,7 +97,7 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 		id: U256,
 	) -> Result<BalanceOf<T>, DispatchError> {
 		const BALANCEOF_SELECTOR: [u8; 4] = hex!["00fdd58e"];
-		// ERC20.balance_of method hash
+		// ERC1155.balance_of method hash
 		let mut input = BALANCEOF_SELECTOR.to_vec();
 
 		// append address
@@ -149,7 +149,7 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 		// function safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) external;
 
 		const TRANSFER_SELECTOR: [u8; 4] = hex!["f242432a"];
-		// ERC20.transfer method hash
+		// ERC1155.transfer method hash
 		let mut input = TRANSFER_SELECTOR.to_vec();
 		// append from address
 		input.extend_from_slice(H256::from(from).as_bytes());
@@ -161,6 +161,19 @@ impl<T: Config> EVMERC1155BridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridg
 		input.extend_from_slice(
 			H256::from_uint(&U256::from(value.saturated_into::<u128>())).as_bytes(),
 		);
+
+		// append data index in bytes
+		let data_index = 32 * 5; // H256 uninterpreted hash type with 32 bytes (256 bits) size. 5 counts H256 include from, to, id, value, data_index
+		input.extend_from_slice(
+			H256::from_uint(&U256::from(data_index.saturated_into::<u128>())).as_bytes(),
+		);
+
+		// append data len
+		let data_len = data.len();
+		input.extend_from_slice(
+			H256::from_uint(&U256::from(data_len.saturated_into::<u128>())).as_bytes(),
+		);
+
 		// append call data
 		input.extend_from_slice(data.as_slice());
 

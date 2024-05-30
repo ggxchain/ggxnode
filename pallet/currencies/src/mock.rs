@@ -293,9 +293,12 @@ impl pallet_erc20::Config for Test {
 	type XvmCallApi = Xvm;
 }
 
+parameter_types! {
+	pub const ERC1155PalletId: PalletId = PalletId(*b"py/e1155");
+}
 impl pallet_erc1155::Config for Test {
 	type Currency = Balances;
-	type PalletId = ERC20PalletId;
+	type PalletId = ERC1155PalletId;
 	type XvmCallApi = Xvm;
 }
 
@@ -411,7 +414,7 @@ pub fn deploy_contracts() {
 }
 
 pub fn erc1155_address() -> EvmAddress {
-	EvmAddress::from_str("0x54637e02ec610c27f4ea8363acfbac70764669f6").unwrap()
+	EvmAddress::from_str("0xb191721ea12518291ada844ae322f7bfb1b030fb").unwrap()
 }
 
 pub fn deploy_erc1155_contracts() {
