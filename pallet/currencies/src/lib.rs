@@ -115,10 +115,6 @@ pub mod module {
 		/// Weight information for extrinsics in this module.
 		type WeightInfo: WeightInfo;
 
-		/// Used as temporary account for ERC20 token `withdraw` and `deposit`.
-		// #[pallet::constant]
-		// type Erc20HoldingAccount: Get<EvmAddress>;
-
 		/// Mapping from address to account id.
 		type AddressMapping: AccountMapping<Self::AccountId>;
 		type EVMBridge: EVMBridgeTrait<Self::AccountId, BalanceOf<Self>>;
@@ -137,36 +133,6 @@ pub mod module {
 		/// Deposit result is not expected
 		DepositFailed,
 	}
-
-	// #[pallet::event]
-	// #[pallet::generate_deposit(pub(super) fn deposit_event)]
-	// pub enum Event<T: Config> {
-	// 	/// Currency transfer success.
-	// 	Transferred {
-	// 		currency_id: CurrencyId,
-	// 		from: T::AccountId,
-	// 		to: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Withdrawn some balances from an account
-	// 	Withdrawn {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Deposited some balance into an account
-	// 	Deposited {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Dust swept.
-	// 	DustSwept {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// }
 
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);

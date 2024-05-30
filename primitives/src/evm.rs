@@ -20,29 +20,15 @@ pub trait EVMBridgeTrait<AccountId, Balance> {
 	fn balance_of(
 		context: Context,
 		contract: EvmAddress,
-		from: AccountId,
+		caller: AccountId,
 		address: EvmAddress,
 	) -> Result<Balance, DispatchError>;
 	/// Execute ERC20.transfer(address, uint256) to transfer value to `to`
 	fn transfer(
 		context: Context,
 		contract: EvmAddress,
-		from: AccountId,
+		caller: AccountId,
 		to: EvmAddress,
 		value: Balance,
 	) -> DispatchResult;
-	// /// Get the real origin account and charge storage rent from the origin.
-	// fn get_origin() -> Option<AccountId>;
-	// /// Set the EVM origin
-	// fn set_origin(origin: AccountId);
-	// /// Kill the EVM origin
-	// fn kill_origin();
-	// /// Push new EVM origin in xcm
-	// fn push_xcm_origin(origin: AccountId);
-	// /// Pop EVM origin in xcm
-	// fn pop_xcm_origin();
-	// /// Kill the EVM origin in xcm
-	// fn kill_xcm_origin();
-	// /// Get the real origin account or xcm origin and charge storage rent from the origin.
-	// fn get_real_or_xcm_origin() -> Option<AccountId>;
 }

@@ -19,19 +19,15 @@
 #![cfg_attr(not(feature = "std"), no_std)]
 #![allow(clippy::unused_unit)]
 
-use astar_primitives::xvm::{CallResult, FailureReason};
+use astar_primitives::xvm::{CallResult, Context, FailureReason, VmId, XvmCall};
 use ethereum_types::BigEndianHash;
 use frame_support::{
-	dispatch::DispatchResult, pallet_prelude::*, traits::ReservableCurrency, PalletId,
+	dispatch::DispatchResult,
+	pallet_prelude::*,
+	traits::{Currency, ReservableCurrency},
+	PalletId,
 };
 use frame_system::pallet_prelude::*;
-// use module_evm::{ExitReason, ExitSucceed};
-// use module_support::{
-// 	evm::limits::{erc20, liquidation},
-// 	EVMBridge as EVMBridgeTrait, ExecutionMode, Context, LiquidationEvmBridge as LiquidationEvmBridgeT, EVM,
-// };
-use astar_primitives::xvm::{Context, VmId, XvmCall};
-use frame_support::traits::Currency;
 use ggx_primitives::evm::EVMBridgeTrait;
 use hex_literal::hex;
 use sp_core::{H160, H256, U256};
@@ -39,7 +35,6 @@ use sp_runtime::{ArithmeticError, DispatchError, SaturatedConversion};
 use sp_std::{vec, vec::Vec};
 
 type AccountIdOf<T> = <T as frame_system::Config>::AccountId;
-//type BalanceOf<T> = <<T as Config>::EVM as EVM<AccountIdOf<T>>>::Balance;
 pub type BalanceOf<T> =
 	<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
 
@@ -55,7 +50,7 @@ pub mod module {
 	/// EvmBridge module trait
 	#[pallet::config]
 	pub trait Config: frame_system::Config {
-		/// The currency mechanism. //todo need replace to EVM<AccountIdOf<Self>>
+		/// The currency mechanism.
 		type Currency: ReservableCurrency<Self::AccountId>;
 
 		#[pallet::constant]
@@ -142,11 +137,6 @@ impl<T: Config> EVMBridgeTrait<AccountIdOf<T>, BalanceOf<T>> for EVMBridge<T> {
 			0,
 			Some(storage_limit),
 		);
-
-		let _used_weight = match &call_result {
-			Ok(s) => s.used_weight,
-			Err(f) => f.used_weight,
-		};
 
 		Pallet::<T>::handle_exit_reason(call_result.clone())?;
 
