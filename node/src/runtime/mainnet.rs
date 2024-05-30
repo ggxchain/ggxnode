@@ -2,6 +2,7 @@ use bitcoin::utils::{
 	virtual_transaction_size, InputType, TransactionInputMetadata, TransactionOutputMetadata,
 };
 
+use ggx_primitives::currency::CurrencyId::ForeignAsset;
 pub use ggxchain_runtime_sydney::{btcbridge::CurrencyId::Token, opaque::SessionKeys, *};
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;

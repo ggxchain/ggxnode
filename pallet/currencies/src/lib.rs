@@ -140,36 +140,6 @@ pub mod module {
 		DepositFailed,
 	}
 
-	// #[pallet::event]
-	// #[pallet::generate_deposit(pub(super) fn deposit_event)]
-	// pub enum Event<T: Config> {
-	// 	/// Currency transfer success.
-	// 	Transferred {
-	// 		currency_id: CurrencyId,
-	// 		from: T::AccountId,
-	// 		to: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Withdrawn some balances from an account
-	// 	Withdrawn {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Deposited some balance into an account
-	// 	Deposited {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// 	/// Dust swept.
-	// 	DustSwept {
-	// 		currency_id: CurrencyId,
-	// 		who: T::AccountId,
-	// 		amount: BalanceOf<T>,
-	// 	},
-	// }
-
 	#[pallet::pallet]
 	pub struct Pallet<T>(_);
 
