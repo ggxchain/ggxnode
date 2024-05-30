@@ -147,6 +147,8 @@ fn test_deposit_erc20() {
 #[test]
 fn test_withdraw_erc20() {
 	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
 		assert_noop!(
 			Dex::withdraw(
 				RuntimeOrigin::signed(ALICE),

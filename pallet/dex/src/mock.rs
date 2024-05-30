@@ -51,6 +51,7 @@ frame_support::construct_runtime!(
 		Evm: pallet_evm,
 		Ethereum: pallet_ethereum,
 		EthereumChecked: pallet_ethereum_checked,
+		ERC20: pallet_erc20,
 		Xvm: pallet_xvm,
 		Currencies: pallet_currencies,
 		Tokens: orml_tokens,
