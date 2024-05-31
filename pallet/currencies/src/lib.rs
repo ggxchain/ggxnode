@@ -318,7 +318,7 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 					from.clone(),
 					from_evm,
 					to_evm,
-					id.into(),
+					id,
 					amount,
 					vec![0xff],
 				)?;

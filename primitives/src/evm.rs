@@ -47,6 +47,7 @@ pub trait EVMERC1155BridgeTrait<AccountId, Balance> {
 	) -> Result<Balance, DispatchError>;
 
 	/// Execute ERC1155.safeTransferFrom(address _from, address _to, uint256 _id, uint256 _value, bytes calldata _data) to transfer value to `to`
+	#[allow(clippy::too_many_arguments)]
 	fn safe_transfer_from(
 		context: Context,
 		contract: EvmAddress,
