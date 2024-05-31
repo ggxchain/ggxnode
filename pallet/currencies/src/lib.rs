@@ -296,11 +296,24 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			CurrencyId::Erc1155(contract, id) => {
 				let from_evm = T::AddressMapping::into_h160(from.clone());
 				let to_evm = T::AddressMapping::into_h160(to.clone());
+
+				let context = Context {
+					source_vm_id: VmId::Wasm,
+					weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
+				};
+				let free_balance = T::EVMERC1155Bridge::balance_of(
+					context.clone(),
+					contract,
+					from.clone(),
+					from_evm,
+					id,
+				)
+				.unwrap_or_default();
+
+				ensure!(free_balance >= amount, Error::<T>::BalanceTooLow);
+
 				T::EVMERC1155Bridge::safe_transfer_from(
-					Context {
-						source_vm_id: VmId::Wasm,
-						weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
-					},
+					context,
 					contract,
 					from.clone(),
 					from_evm,

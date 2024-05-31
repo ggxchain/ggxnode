@@ -437,7 +437,7 @@ pub fn deploy_erc1155_contracts() {
 		1_000_000_000,
 		U256::one(),
 		None,
-		Some(U256::zero()),
+		None,
 		vec![],
 	));
 

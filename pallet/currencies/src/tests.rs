@@ -391,10 +391,28 @@ fn erc1155_transfer_should_work() {
 					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
 					100
 				),
-				pallet_erc1155::Error::<Test>::InvalidReturnValue,
+				Error::<Test>::BalanceTooLow
 			);
 
 			deploy_erc1155_contracts();
+
+			assert_eq!(
+				Currencies::free_balance(
+					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+					&BOB,
+				),
+				0
+			);
+
+			assert_noop!(
+				Currencies::transfer(
+					RuntimeOrigin::signed(BOB),
+					CHARLIE,
+					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+					100
+				),
+				Error::<Test>::BalanceTooLow
+			);
 
 			assert_ok!(Currencies::transfer(
 				RuntimeOrigin::signed(ALICE),
