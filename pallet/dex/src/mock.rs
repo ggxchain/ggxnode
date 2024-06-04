@@ -401,6 +401,7 @@ parameter_types! {
 impl pallet_currencies::Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
+	type LocalAsset = Assets;
 	type GetNativeCurrencyId = NativeCurrencyId;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
@@ -590,6 +591,7 @@ impl ExtBuilder {
 					CurrencyId::ForeignAsset(777),
 					CurrencyId::Erc20(erc20_address()),
 					CurrencyId::Erc1155(erc1155_address(), U256::from(0)),
+					CurrencyId::LocalAsset(777),
 					],
         native_asset_id: NATIVE_CURRENCY_ID,
       },

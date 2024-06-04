@@ -280,6 +280,82 @@ fn test_withdraw_erc1155() {
 }
 
 #[test]
+fn test_deposit_asset() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Dex::deposit(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::LocalAsset(888),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenIndex
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::LocalAsset(777),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::LocalAsset(777)),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_asset() {
+	new_test_ext().execute_with(|| {
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::LocalAsset(777),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::LocalAsset(777),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::LocalAsset(777)),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::LocalAsset(777),
+				11
+			),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::LocalAsset(777),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::LocalAsset(777)),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
 fn test_make_order() {
 	new_test_ext().execute_with(|| {
 		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 100));

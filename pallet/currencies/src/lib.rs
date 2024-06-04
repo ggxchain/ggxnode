@@ -337,8 +337,8 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 			CurrencyId::LocalAsset(id) => {
 				<T::LocalAsset as fungibles::Mutate<T::AccountId>>::transfer(
 					id,
-					&from,
-					&to,
+					from,
+					to,
 					amount,
 					Preservation::Expendable,
 				)?;
