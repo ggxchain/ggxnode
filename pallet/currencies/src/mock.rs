@@ -5,7 +5,7 @@
 use super::*;
 use frame_support::{
 	assert_ok, parameter_types,
-	traits::{ConstBool, ConstU32, ConstU64, FindAuthor, Nothing},
+	traits::{AsEnsureOriginWithArg, ConstBool, ConstU32, ConstU64, FindAuthor, Nothing},
 	weights::constants::RocksDbWeight,
 	ConsensusEngineId, PalletId,
 };
@@ -89,6 +89,40 @@ impl pallet_balances::Config for Test {
 	type FreezeIdentifier = ();
 	type MaxHolds = ConstU32<0>;
 	type MaxFreezes = ConstU32<0>;
+}
+
+// These parameters dont matter much as this will only be called by root with the forced arguments
+// No deposit is substracted with those methods
+parameter_types! {
+  pub const AssetDeposit: Balance = 0;
+  pub const AssetAccountDeposit: Balance = 0;
+  pub const ApprovalDeposit: Balance = 0;
+  pub const AssetsStringLimit: u32 = 50;
+  pub const MetadataDepositBase: Balance = 0;
+  pub const MetadataDepositPerByte: Balance = 0;
+}
+
+impl pallet_assets::Config for Test {
+	type RuntimeEvent = RuntimeEvent;
+	type Balance = Balance;
+	type AssetId = LocalAssetId;
+	type Currency = Balances;
+	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
+	type AssetDeposit = AssetDeposit;
+	type AssetAccountDeposit = AssetAccountDeposit;
+	type MetadataDepositBase = MetadataDepositBase;
+	type MetadataDepositPerByte = MetadataDepositPerByte;
+	type ApprovalDeposit = ApprovalDeposit;
+	type StringLimit = AssetsStringLimit;
+	type Freezer = ();
+	type Extra = ();
+	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
+	type WeightInfo = pallet_assets::weights::SubstrateWeight<Test>;
+	type RemoveItemsLimit = ConstU32<0>;
+	type AssetIdParameter = LocalAssetId;
+	type CallbackHandle = ();
+	#[cfg(feature = "runtime-benchmarks")]
+	type BenchmarkHelper = ();
 }
 
 parameter_type_with_key! {
@@ -329,6 +363,7 @@ parameter_types! {
 impl Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
+	type LocalAsset = Assets;
 	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
@@ -351,6 +386,7 @@ frame_support::construct_runtime!(
 		Currencies: currencies,
 		Tokens: orml_tokens,
 		Balances: pallet_balances,
+		Assets: pallet_assets,
 		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
 		Contracts: pallet_contracts,
 		Evm: pallet_evm,
@@ -482,6 +518,24 @@ impl ExtBuilder {
 		}
 		.assimilate_storage(&mut t)
 		.unwrap();
+
+		pallet_assets::GenesisConfig::<Test> {
+			assets: vec![
+				// id, owner, is_sufficient, min_balance
+				(999, AccountId32::from([0u8; 32]), true, 1),
+			],
+			metadata: vec![
+				// id, name, symbol, decimals
+				(999, "Bitcoin".into(), "BTC".into(), 8),
+			],
+			accounts: vec![
+				// id, account_id, balance
+				(999, ALICE, 1_000_000_000),
+				(999, BOB, 1_000_000_000),
+			],
+		}
+		.assimilate_storage(&mut t)
+		.ok();
 
 		orml_tokens::GenesisConfig::<Test> {
 			balances: self

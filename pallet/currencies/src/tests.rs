@@ -430,3 +430,23 @@ fn erc1155_transfer_should_work() {
 			);
 		});
 }
+
+#[test]
+fn local_asset_transfer_should_work() {
+	ExtBuilder::default()
+		.one_hundred_for_alice_n_bob()
+		.build()
+		.execute_with(|| {
+			assert_ok!(Currencies::transfer(
+				RuntimeOrigin::signed(ALICE),
+				CHARLIE,
+				CurrencyId::LocalAsset(999),
+				100
+			));
+
+			assert_eq!(
+				Currencies::free_balance(CurrencyId::LocalAsset(999), &CHARLIE,),
+				100
+			);
+		});
+}

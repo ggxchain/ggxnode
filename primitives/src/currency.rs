@@ -12,6 +12,7 @@ use sp_std::prelude::*;
 use serde::{Deserialize, Serialize};
 
 pub type ForeignAssetId = u16;
+pub type LocalAssetId = u32;
 pub type Erc20Id = u32;
 pub type TokenId = u8;
 
@@ -42,6 +43,11 @@ impl TryFrom<CurrencyId> for EvmAddress {
 				address[H160_POSITION_CURRENCY_ID_TYPE] = CurrencyIdType::ForeignAsset.into();
 				address[H160_POSITION_FOREIGN_ASSET]
 					.copy_from_slice(&foreign_asset_id.to_be_bytes());
+			}
+
+			CurrencyId::LocalAsset(local_asset_id) => {
+				address[H160_POSITION_CURRENCY_ID_TYPE] = CurrencyIdType::LocalAsset.into();
+				address[H160_POSITION_FOREIGN_ASSET].copy_from_slice(&local_asset_id.to_be_bytes());
 			}
 		};
 
@@ -174,6 +180,7 @@ pub enum CurrencyId {
 	Erc20(EvmAddress),
 	Erc1155(EvmAddress, U256),
 	ForeignAsset(ForeignAssetId),
+	LocalAsset(LocalAssetId),
 }
 
 impl Default for CurrencyId {
@@ -197,6 +204,10 @@ impl CurrencyId {
 
 	pub fn is_foreign_asset_currency_id(&self) -> bool {
 		matches!(self, CurrencyId::ForeignAsset(_))
+	}
+
+	pub fn is_local_asset_currency_id(&self) -> bool {
+		matches!(self, CurrencyId::LocalAsset(_))
 	}
 
 	pub fn erc20_address(&self) -> Option<EvmAddress> {
@@ -228,4 +239,5 @@ impl CurrencyId {
 pub enum CurrencyIdType {
 	Token = 1, // 0 is prefix of precompile and predeploy
 	ForeignAsset,
+	LocalAsset,
 }

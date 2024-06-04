@@ -1,4 +1,4 @@
-use crate::{prelude::*, BlockNumber, ConstU32, GGXTokens, MaxLocks, H160};
+use crate::{prelude::*, Assets, BlockNumber, ConstU32, GGXTokens, MaxLocks, H160};
 use orml_traits::parameter_type_with_key;
 
 use sp_runtime::traits::Zero;
@@ -43,6 +43,7 @@ parameter_types! {
 impl pallet_currencies::Config for Runtime {
 	type MultiCurrency = GGXTokens;
 	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
+	type LocalAsset = Assets;
 	type GetNativeCurrencyId = NativeCurrencyId;
 	type WeightInfo = ();
 	//type Erc20HoldingAccount = ;

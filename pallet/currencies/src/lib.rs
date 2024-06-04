@@ -71,7 +71,7 @@ use astar_primitives::{
 	xvm::{Context, VmId},
 };
 use ggx_primitives::{
-	currency::CurrencyId,
+	currency::{CurrencyId, LocalAssetId},
 	evm::{EVMBridgeTrait, EVMERC1155BridgeTrait},
 };
 
@@ -111,6 +111,11 @@ pub mod module {
 			+ BasicReservableCurrency<Self::AccountId, Balance = BalanceOf<Self>>
 			+ fungible::Inspect<Self::AccountId, Balance = BalanceOf<Self>>
 			+ fungible::Mutate<Self::AccountId, Balance = BalanceOf<Self>>;
+
+		/// Expose customizable associated type of asset transfer, lock and unlock
+		type LocalAsset: fungibles::Balanced<Self::AccountId>
+			+ fungibles::Inspect<Self::AccountId, AssetId = LocalAssetId, Balance = BalanceOf<Self>>
+			+ fungibles::Mutate<Self::AccountId, AssetId = LocalAssetId, Balance = BalanceOf<Self>>;
 
 		#[pallet::constant]
 		type GetNativeCurrencyId: Get<CurrencyId>;
@@ -211,6 +216,9 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 		match currency_id {
 			CurrencyId::Erc20(_) => Zero::zero(),
 			CurrencyId::Erc1155(_, _) => Zero::zero(),
+			CurrencyId::LocalAsset(id) => {
+				<T::LocalAsset as fungibles::Inspect<T::AccountId>>::minimum_balance(id)
+			}
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::minimum_balance(),
 			_ => T::MultiCurrency::minimum_balance(currency_id),
 		}
@@ -251,6 +259,9 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 				};
 				T::EVMERC1155Bridge::balance_of(context, contract, who.clone(), address, id)
 					.unwrap_or_default()
+			}
+			CurrencyId::LocalAsset(id) => {
+				<T::LocalAsset as fungibles::Inspect<T::AccountId>>::balance(id, who)
 			}
 			id if id == T::GetNativeCurrencyId::get() => T::NativeCurrency::free_balance(who),
 			_ => T::MultiCurrency::free_balance(currency_id, who),
@@ -321,6 +332,15 @@ impl<T: Config> MultiCurrency<T::AccountId> for Pallet<T> {
 					id,
 					amount,
 					vec![0xff],
+				)?;
+			}
+			CurrencyId::LocalAsset(id) => {
+				<T::LocalAsset as fungibles::Mutate<T::AccountId>>::transfer(
+					id,
+					&from,
+					&to,
+					amount,
+					Preservation::Expendable,
 				)?;
 			}
 			id if id == T::GetNativeCurrencyId::get() => {
