@@ -5,7 +5,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
-use ggx_primitives::currency::CurrencyId::ForeignAsset;
+use ggx_primitives::currency::CurrencyId::LocalAsset;
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
@@ -406,12 +406,12 @@ pub fn testnet_genesis(
 				ggx_primitives::currency::CurrencyId::Token(
 					ggx_primitives::currency::TokenSymbol::GGX,
 				),
-				ForeignAsset(8888),
-				ForeignAsset(999),
-				ForeignAsset(888),
-				ForeignAsset(777),
-				ForeignAsset(666),
-				ForeignAsset(667),
+				LocalAsset(8888),
+				LocalAsset(999),
+				LocalAsset(888),
+				LocalAsset(777),
+				LocalAsset(666),
+				LocalAsset(667),
 				ggx_primitives::currency::CurrencyId::Token(
 					ggx_primitives::currency::TokenSymbol::USDT,
 				),
