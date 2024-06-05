@@ -153,5 +153,5 @@ std = [
 	"vault-registry/std",
 
 	# dex
-  "pallet-ggx-tokens/std",
+	"pallet-ggx-tokens/std",
 ]

@@ -204,7 +204,6 @@ pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verif
 ggx-primitives = { path = "primitives", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
-
 # Astar
 astar-primitives = { git = "https://github.com/AstarNetwork/Astar.git", rev = "df73ca435bbfa30548bb2446b5dbb58492c928bb", default-features = false }
 pallet-chain-extension-xvm = { version = "0.1.0", git = "https://github.com/AstarNetwork/Astar.git", rev = "df73ca435bbfa30548bb2446b5dbb58492c928bb", default-features = false }
