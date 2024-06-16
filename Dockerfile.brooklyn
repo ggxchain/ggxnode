@@ -1,4 +1,4 @@
-FROM rustlang/rust:nightly as builder
+FROM rustlang/rust:nightly-bookworm as builder
 
 ENV DEBIAN_FRONTEND=noninteractive
 
@@ -24,7 +24,7 @@ COPY . .
 RUN cargo build --locked --release --package ggxchain-node --no-default-features --features="brooklyn" --config net.git-fetch-with-cli=true
 
 
-FROM debian:11 as production
+FROM debian:bookworm as production
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV HOME /usr/src/app

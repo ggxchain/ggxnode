@@ -2,6 +2,7 @@ use super::{Balances, RandomnessCollectiveFlip, Runtime, RuntimeCall, RuntimeEve
 use crate::{
 	chain_extensions::{IBCISC20Extension, Psp37Extension},
 	deposit,
+	dex_chain_extensions::DexExtension,
 	prelude::*,
 	Balance, BlockWeights, Xvm, AVERAGE_ON_INITIALIZE_RATIO,
 };
@@ -28,6 +29,10 @@ impl RegisteredChainExtension<Runtime> for Psp37Extension {
 
 impl RegisteredChainExtension<Runtime> for ReceiptRegistryExtension<Runtime> {
 	const ID: u16 = 4;
+}
+
+impl RegisteredChainExtension<Runtime> for DexExtension {
+	const ID: u16 = 5;
 }
 
 parameter_types! {
@@ -68,6 +73,7 @@ impl pallet_contracts::Config for Runtime {
 		IBCISC20Extension,
 		Psp37Extension,
 		ReceiptRegistryExtension<Self>,
+		DexExtension,
 	);
 	type Schedule = Schedule;
 	type AddressGenerator = pallet_contracts::DefaultAddressGenerator;

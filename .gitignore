@@ -71,5 +71,8 @@ terraform.rc
 
 data-brooklyn
 data-sydney
+data
+aarchives
+zz*
 
 .direnv

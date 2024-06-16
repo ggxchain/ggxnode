@@ -10,5 +10,5 @@ beacon_rpc_version = "V1_5"
 substrate_network_name = "ggxchain"
 substrate_endpoint = "ws://127.0.0.1:9944"
 path_to_signer_secret_key = "secret-key"
-# We need to rotate it pretty often -> https://beaconstate-goerli.chainsafe.io/
+# We need to rotate it pretty often -> https://beaconstate-sepolia.chainsafe.io/
 init_block_root="0x70f6495164e315eb2f3819080cb98d1ca55c8dc169b23f428d90c43c1f3df861"

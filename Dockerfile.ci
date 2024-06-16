@@ -1,0 +1,18 @@
+# ggxdocker/ggxnode-dev:v1
+FROM rustlang/rust:nightly-bookworm as builder
+
+ENV DEBIAN_FRONTEND=noninteractive
+
+RUN apt-get update --yes && \
+    apt-get install --yes --no-install-recommends \
+        libclang-dev \
+        libudev-dev \
+        libssl-dev \
+        pkg-config \
+        gcc \
+        cmake \
+        git \
+        gcc \
+        protobuf-compiler \
+        clang && \
+    rustup target add wasm32-unknown-unknown

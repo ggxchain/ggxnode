@@ -151,6 +151,10 @@ replace-rpc-runtime-api.workspace = true
 reward-rpc-runtime-api.workspace = true
 vault-registry-rpc-runtime-api.workspace = true
 
+# Dex
+pallet-dex.workspace = true
+
+# DKG
 dkg-runtime-primitives.workspace = true
 pallet-dkg-metadata.workspace = true
 pallet-dkg-proposal-handler.workspace = true
@@ -287,6 +291,9 @@ std = [
 	"replace-rpc-runtime-api/std",
 	"reward-rpc-runtime-api/std",
 	"vault-registry-rpc-runtime-api/std",
+
+	#Dex
+	"pallet-dex/std",
 
 	# DKG
 	"pallet-dkg-metadata/std",

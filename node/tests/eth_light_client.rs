@@ -2,8 +2,27 @@ pub mod common;
 
 mod test {
 
+	#[cfg(not(feature = "brooklyn"))]
 	#[subxt::subxt(
-		runtime_metadata_path = "./tests/data/scale/eth_light_client.scale",
+		runtime_metadata_path = "./tests/data/scale/eth_light_client_sydney.scale",
+		substitute_type(
+			path = "eth_types::pallet::InitInput<R>",
+			with = "::subxt::utils::Static<::eth_types::pallet::InitInput<R>>"
+		),
+		substitute_type(
+			path = "webb_proposals::header::TypedChainId",
+			with = "::subxt::utils::Static<::webb_proposals::TypedChainId>"
+		),
+		substitute_type(
+			path = "types::primitives::H160",
+			with = "::subxt::utils::Static<::eth_registry_types::H160>"
+		)
+	)]
+	pub mod ggx {}
+
+	#[cfg(feature = "brooklyn")]
+	#[subxt::subxt(
+		runtime_metadata_path = "./tests/data/scale/eth_light_client_brooklyn.scale",
 		substitute_type(
 			path = "eth_types::pallet::InitInput<R>",
 			with = "::subxt::utils::Static<::eth_types::pallet::InitInput<R>>"
@@ -74,8 +93,13 @@ mod test {
 		let receipt = receipts[0].clone();
 
 		// Adding monitored contract address
+		#[cfg(feature = "brooklyn")]
+		type RuntimeCall = ggx::runtime_types::ggxchain_runtime_brooklyn::RuntimeCall;
 
-		let call = ggx::runtime_types::ggxchain_runtime_brooklyn::RuntimeCall::EthReceiptRegistry(
+		#[cfg(not(feature = "brooklyn"))]
+		type RuntimeCall = ggx::runtime_types::ggxchain_runtime_sydney::RuntimeCall;
+
+		let call = RuntimeCall::EthReceiptRegistry(
 			ggx::runtime_types::pallet_receipt_registry::pallet::Call::update_watching_address {
 				typed_chain_id: GOERLI,
 				address: Static(receipt.receipt.logs[0].address),
@@ -396,6 +420,7 @@ mod test {
 				// TODO: add conversion once ExecutionPayload has 4844 fields
 				blob_gas_used: None,
 				excess_blob_gas: None,
+				parent_beacon_block_root: None,
 			};
 			assert_eq!(hash, H256::hash(&block_header).0);
 
