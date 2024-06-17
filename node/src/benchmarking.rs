@@ -152,7 +152,7 @@ pub fn create_benchmark_extrinsic(
 		(
 			pallet_transaction_payment::ChargeTransactionPayment::<runtime::Runtime>::from(0),
 			#[cfg(feature = "allowlist")]
-			account_filter::account_filter::AllowAccount<Runtime>::new(),
+			account_filter::account_filter::AllowAccount::<Runtime>::new(),
 		),
 	);
 
