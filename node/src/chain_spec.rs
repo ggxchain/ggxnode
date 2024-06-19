@@ -87,7 +87,14 @@ pub fn development_config() -> Result<ChainSpec, String> {
 					),
 				],
 				// Initial PoA authorities
+				// DKG requires greater than 1 authorities
+				#[cfg(not(feature = "brooklyn"))]
 				vec![ValidatorIdentity::from_seed("Alice")],
+				#[cfg(feature = "brooklyn")]
+				vec![
+					ValidatorIdentity::from_seed("Alice"),
+					ValidatorIdentity::from_seed("Bob"),
+				],
 				CHAIN_ID,
 				true,
 				0,
