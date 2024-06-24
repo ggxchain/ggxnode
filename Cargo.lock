@@ -4887,6 +4887,7 @@ dependencies = [
  "pallet-transaction-payment",
  "pallet-transaction-payment-rpc-runtime-api",
  "pallet-treasury",
+ "pallet-tricorn",
  "pallet-utility",
  "pallet-vesting",
  "pallet-whitelist",
@@ -9643,6 +9644,31 @@ dependencies = [
  "parity-scale-codec",
  "scale-info",
  "serde",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-tricorn"
+version = "0.0.1"
+dependencies = [
+ "astar-primitives",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "frame-system",
+ "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
+ "impl-trait-for-tuples",
+ "num_enum 0.5.11",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde_json",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
  "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]

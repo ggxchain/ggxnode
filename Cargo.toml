@@ -309,6 +309,10 @@ pallet-erc1155 = { path = "pallet/erc-1155", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
 pallet-ggx-tokens = { path = "pallet/ggx-tokens", default-features = false }
 
+# Tricorn
+pallet-tricorn = { path = "pallet/tricorn", default-features = false }
+
+
 # Supress warnings from the peerset in logs during syncing
 # The polkadot did the same in the next release. See:
 # * https://github.com/paritytech/substrate/pull/14274

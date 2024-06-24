@@ -159,6 +159,9 @@ pallet-erc20.workspace = true
 pallet-erc1155.workspace = true
 pallet-ggx-tokens.workspace = true
 
+# Tricorn
+pallet-tricorn.workspace = true
+
 ggx-primitives.workspace = true
 
 [build-dependencies]
@@ -302,6 +305,9 @@ std = [
 	"pallet-erc20/std",
 	"pallet-erc1155/std",
 	"pallet-ggx-tokens/std",
+
+	#Tricorn
+	"pallet-tricorn/std",
 ]
 aura = []
 allowlist = []
