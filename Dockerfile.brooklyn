@@ -1,7 +1,10 @@
-FROM rustlang/rust:nightly-bookworm as builder
+# Use a stable version of Rust as the builder base image
+FROM rust:1.62-bullseye as builder
 
+# Avoid prompts from apt
 ENV DEBIAN_FRONTEND=noninteractive
 
+# Install dependencies necessary for building the application
 RUN apt-get update --yes && \
     apt-get install --yes --no-install-recommends \
     libclang-dev \
@@ -11,30 +14,65 @@ RUN apt-get update --yes && \
     gcc \
     cmake \
     git \
-    gcc \
     protobuf-compiler \
-    clang
+    clang && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
+# Add WebAssembly target if needed for Rust
 RUN rustup target add wasm32-unknown-unknown
 
+# Set the working directory in the builder image
 WORKDIR /usr/src/app
 
+# Copy the application source code to the builder
 COPY . .
 
+# Build the application using Cargo for Rust
 RUN cargo build --locked --release --package ggxchain-node --no-default-features --features="brooklyn" --config net.git-fetch-with-cli=true
 
+# Use Debian slim for the runtime base image
+FROM debian:bullseye-slim as production
 
-FROM debian:bookworm as production
+# Define arguments for user and user home directory
+ARG GGXNODE_USER=ggxuser
+ARG USER_UID=55500
+ARG USER_GID=55500
+ARG USERHOME=/ggxchain
 
-ENV DEBIAN_FRONTEND=noninteractive
-ENV HOME /usr/src/app
+# Create a group and user for running the application non-root
+RUN groupadd -g $USER_GID $GGXNODE_USER && \
+    useradd --create-home --uid $USER_UID --gid $USER_GID --home-dir $USERHOME $GGXNODE_USER
 
-WORKDIR $HOME
+# Set the working directory to the user home in the production image
+WORKDIR $USERHOME
 
+# Install runtime dependencies
 RUN apt-get update --yes && \
-    apt-get install curl jq openssl ca-certificates --yes --no-install-recommends
+    apt-get install --yes --no-install-recommends \
+    curl \
+    jq \
+    bc \
+    openssl \
+    ca-certificates && \
+    apt-get clean && \
+    rm -rf /var/lib/apt/lists/*
 
-COPY --from=builder $HOME/target/release/ggxchain-node ./target/release/ggxchain-node
-COPY --from=builder $HOME/eth-init.toml $HOME/eth-relay.toml $HOME/run_node.sh ./
+# Copy the built executable and the startup script from the builder stage
+COPY --from=builder /usr/src/app/target/release/ggxchain-node /usr/local/bin/
+COPY --from=builder /usr/src/app/run_node.sh /usr/local/bin/
 
-ENTRYPOINT [ "/usr/src/app/run_node.sh", "/usr/src/app/eth-init.toml", "/usr/src/app/eth-relay.toml", "/usr/src/app/target/release/ggxchain-node" ]
+# Check if the executable works in the container environment
+RUN /usr/local/bin/ggxchain-node --version
+
+# Change ownership of all files in the user home directory to the non-root user
+RUN chown -R $GGXNODE_USER:$GGXNODE_USER $USERHOME
+
+# Specify the non-root user to run the application
+USER $GGXNODE_USER
+
+# Declare a volume for any persistent data
+VOLUME ["$USERHOME"]
+
+# Define the entry point for running the application
+ENTRYPOINT ["/usr/local/bin/run_node.sh", "/usr/local/bin/ggxchain-node"]
