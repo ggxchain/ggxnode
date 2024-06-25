@@ -1,10 +1,12 @@
 name: Docker
 
 on:
+  release:
+    types:
+      - published
   push:
     branches:
       - main
-      - docker  # TODO: for testing. remove this line after testing is done.
 
 env:
   NIX_VERSION: nix-2.13.2
@@ -14,11 +16,8 @@ env:
   GIT_LFS_SKIP_SMUDGE: 1
 
 jobs:
-  docker-build:
-    strategy:
-      matrix:
-        runtime: [sydney, brooklyn]
-      fail-fast: false
+  build-sydney:
+    if: github.event_name == 'release'
     runs-on: buildjet-32vcpu-ubuntu-2204
     steps:
       - name: Check out code
@@ -33,21 +32,67 @@ jobs:
           username: ${{ secrets.DOCKERHUB_USERNAME }}
           password: ${{ secrets.DOCKERHUB_TOKEN }}
 
-      - name: Extract metadata (tags, labels) for Docker
-        id: meta
-        uses: docker/metadata-action@f7b4ed12385588c3f9bc252f0a2b520d83b52d48
+      - name: Set outputs
+        id: vars
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
+
+      - name: Build and push Docker image
+        uses: docker/build-push-action@v3.1.1
         with:
-          images: ggxdocker/ggxnode
+          context: .
+          file: ./Dockerfile.sydney
+          push: true
+          tags: |
+            ggxdocker/ggxnode-sydney-img:latest
+            ggxdocker/ggxnode-sydney-img:${{ github.event.release.tag_name }}
+            ggxdocker/ggxnode-sydney-img:${{ steps.vars.outputs.sha_short }}
+
+  build-brooklyn:
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
 
       - name: Set outputs
         id: vars
-        run: echo "sha_short=$(git rev-parse --short HEAD)" >> $GITHUB_OUTPUT
+        run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@2cdde995de11925a030ce8070c3d77a52ffcf1c0
+        id: build_and_push
+        uses: docker/build-push-action@v3.1.1
         with:
           context: .
-          file: ./Dockerfile.${{ matrix.runtime }}
+          file: ./Dockerfile.brooklyn
           push: true
-          tags: ${{ steps.meta.outputs.tags }},ggxdocker/ggxnode:${{ matrix.runtime }}-${{ steps.vars.outputs.sha_short }}
-          labels: ${{ steps.meta.outputs.labels }}
+          tags: |
+            ggxdocker/ggxnode-brooklyn-img:latest
+            ggxdocker/ggxnode-brooklyn-img:${{ steps.vars.outputs.sha_short }}
+
+  tag-brooklyn-release:
+    if: github.event_name == 'release'
+    runs-on: buildjet-32vcpu-ubuntu-2204
+    needs: build-brooklyn
+    steps:
+      - name: Check out code
+        uses: actions/checkout@v4
+
+      - name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+
+      - name: Tag and push release
+        run: |
+          docker pull ggxdocker/ggxnode-brooklyn-img:latest
+          docker tag ggxdocker/ggxnode-brooklyn-img:latest ggxdocker/ggxnode-brooklyn-img:${{ github.event.release.tag_name }}
+          docker push ggxdocker/ggxnode-brooklyn-img:${{ github.event.release.tag_name }}
