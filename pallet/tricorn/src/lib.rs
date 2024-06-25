@@ -85,6 +85,8 @@ pub mod module {
 			amount: BalanceOf<T>,
 			eth_recipient_addr: EvmAddress,
 		) -> DispatchResultWithPostInfo {
+			let _who = ensure_signed(origin)?;
+
 			let tricorn_contract_address = EvmAddress::default();
 
 			let context = Context {
@@ -117,9 +119,29 @@ pub mod module {
 			amount: BalanceOf<T>,
 			ggx_recipient_addr: T::AccountId,
 		) -> DispatchResultWithPostInfo {
+			let _who = ensure_signed(origin)?;
+
+			let tricorn_contract_address = EvmAddress::default();
+
+			let context = Context {
+				source_vm_id: VmId::Wasm,
+				weight_limit: Weight::from_parts(100_000_000_000, 1_000_000_000),
+			};
 
 			let from_evm = T::AddressMapping::into_h160(account.clone());
-			
+			let to_evm = T::AddressMapping::into_h160(ggx_recipient_addr.clone());
+
+			T::EVMERC1155Bridge::safe_transfer_from(
+				context,
+				tricorn_contract_address,
+				account.clone(),
+				from_evm,
+				to_evm,
+				asset_id.into(),
+				amount,
+				vec![0xff],
+			)?;
+
 			Ok(().into())
 		}
 	}
