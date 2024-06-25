@@ -3,6 +3,7 @@ members = [
 	"node",
 	"precompiles/session",
 	"precompiles/zk-groth16-verify",
+	"primitives",
 	"runtime/sydney",
 	"runtime/brooklyn",
 	"runtime/runtime-common",
@@ -24,9 +25,11 @@ repository = "https://github.com/ggxchain/ggxnode/"
 # General purpose dependencies
 assert_cmd = "2.0.2"
 async-trait = "0.1"
+bstringify = { version = "0.1.2" }
 cfg-if = "1.0"
 clap = { version = "4.1", features = ["derive"] }
 derive_more = { version = "0.99" }
+ethereum-types = { version = "0.14.0", default-features = false }
 env_logger = "0.10.0"
 ethers = { version = "2.0.4" }
 futures = "0.3.28"
@@ -159,6 +162,8 @@ substrate-build-script-utils = { version = "3.0.0", git = "https://github.com/pa
 substrate-frame-rpc-system = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-test-utils = { version = "4.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
 substrate-wasm-builder = { version = "5.0.0-dev", git = "https://github.com/paritytech/substrate", branch = "polkadot-v0.9.43" }
+polkadot-primitives = { git = "https://github.com/paritytech/polkadot", branch = "release-v0.9.43", default-features = false }
+
 
 # Frontier Client
 fc-cli = { version = "1.0.0-dev", git = "https://github.com/AstarNetwork/frontier.git", branch = "polkadot-v0.9.43" }
@@ -196,6 +201,7 @@ ggxchain-runtime-brooklyn = { path = "runtime/brooklyn", default-features = fals
 ggxchain-runtime-sydney = { path = "runtime/sydney", default-features = false }
 pallet-evm-precompile-session = { path = "precompiles/session", default-features = false }
 pallet-evm-precompile-zk-groth16-verify = { path = "precompiles/zk-groth16-verify", default-features = false }
+ggx-primitives = { path = "primitives", default-features = false }
 runtime-common = { path = "runtime/runtime-common", default-features = false }
 
 # Astar
@@ -256,6 +262,7 @@ ark-std = { version = "0.4.0", default-features = false }
 
 # Orml dependencies
 orml-asset-registry = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
+orml-utilities = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 orml-tokens = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 orml-traits = { git = "https://github.com/open-web3-stack/open-runtime-module-library", rev = "28a2e6f0df9540d91db4018c7ecebb8bfc217a2a", default-features = false }
 
@@ -296,7 +303,11 @@ reward-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", bra
 vault-registry-rpc-runtime-api = { git = "https://github.com/ggxchain/interbtc.git", branch = "polkadot-v0.9.43", default-features = false }
 
 # Dex
+pallet-currencies = { path = "pallet/currencies", default-features = false }
+pallet-erc20 = { path = "pallet/erc-20", default-features = false }
+pallet-erc1155 = { path = "pallet/erc-1155", default-features = false }
 pallet-dex = { path = "pallet/dex", default-features = false }
+pallet-ggx-tokens = { path = "pallet/ggx-tokens", default-features = false }
 
 # Supress warnings from the peerset in logs during syncing
 # The polkadot did the same in the next release. See:

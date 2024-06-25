@@ -5,6 +5,7 @@ use std::{collections::BTreeMap, str::FromStr};
 
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
 
+use ggx_primitives::currency::CurrencyId::LocalAsset;
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
@@ -299,6 +300,43 @@ pub fn testnet_genesis(
 				.flat_map(|k| vec![(k.clone().0, Token(GGXT), 1 << 70)])
 				.collect(),
 		},
+		ggx_tokens: GGXTokensConfig {
+			balances: endowed_accounts
+				.iter()
+				.flat_map(|k| {
+					vec![
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::GGX,
+							),
+							1u128 << 70,
+						),
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::BTC,
+							),
+							1u128 << 70,
+						),
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::GGXT,
+							),
+							1u128 << 70,
+						),
+						(
+							k.clone().0,
+							ggx_primitives::currency::CurrencyId::Token(
+								ggx_primitives::currency::TokenSymbol::USDT,
+							),
+							1u128 << 70,
+						),
+					]
+				})
+				.collect(),
+		},
 		oracle: OracleConfig {
 			authorized_oracles: endowed_accounts
 				.iter()
@@ -364,8 +402,29 @@ pub fn testnet_genesis(
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8886, 999, 888, 777, 666, 667],
-			native_asset_id: 8886,
+			asset_ids: vec![
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::GGX,
+				),
+				LocalAsset(8888),
+				LocalAsset(999),
+				LocalAsset(888),
+				LocalAsset(777),
+				LocalAsset(666),
+				LocalAsset(667),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::USDT,
+				),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::GGXT,
+				),
+				ggx_primitives::currency::CurrencyId::Token(
+					ggx_primitives::currency::TokenSymbol::BTC,
+				),
+			],
+			native_asset_id: ggx_primitives::currency::CurrencyId::Token(
+				ggx_primitives::currency::TokenSymbol::GGX,
+			),
 		},
 	}
 }

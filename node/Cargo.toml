@@ -100,6 +100,9 @@ replace-rpc.workspace = true
 reward-rpc.workspace = true
 vault-registry-rpc.workspace = true
 
+# dex
+ggx-primitives.workspace = true
+
 [dev-dependencies]
 alloy-rlp = { workspace = true }
 assert_cmd = { workspace = true }

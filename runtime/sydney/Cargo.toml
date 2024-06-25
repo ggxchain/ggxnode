@@ -152,7 +152,13 @@ reward-rpc-runtime-api.workspace = true
 vault-registry-rpc-runtime-api.workspace = true
 
 # Dex
+pallet-currencies.workspace = true
 pallet-dex.workspace = true
+pallet-erc20.workspace = true
+pallet-erc1155.workspace = true
+pallet-ggx-tokens.workspace = true
+
+ggx-primitives.workspace = true
 
 [build-dependencies]
 substrate-wasm-builder.workspace = true
@@ -284,8 +290,14 @@ std = [
 	"replace-rpc-runtime-api/std",
 	"reward-rpc-runtime-api/std",
 	"vault-registry-rpc-runtime-api/std",
+
 	#Dex
+	"ggx-primitives/std",
+	"pallet-currencies/std",
 	"pallet-dex/std",
+	"pallet-erc20/std",
+	"pallet-erc1155/std",
+	"pallet-ggx-tokens/std",
 ]
 aura = []
 allowlist = []
