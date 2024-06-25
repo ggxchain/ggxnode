@@ -1,6 +1,9 @@
+use crate::currencies::Amount;
 use frame_support::PalletId;
 
-use crate::{prelude::*, Assets, BlockNumber};
+use pallet_currencies::BasicCurrencyAdapter;
+
+use crate::{prelude::*, BlockNumber, GGXCurrencies};
 
 parameter_types! {
 	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
@@ -10,7 +13,8 @@ parameter_types! {
 impl pallet_dex::Config for Runtime {
 	type RuntimeEvent = RuntimeEvent;
 	type PalletId = DexPalletId;
-	type Fungibles = Assets;
+	type MultiCurrency = GGXCurrencies;
+	type NativeCurrency = BasicCurrencyAdapter<Runtime, Balances, Amount, BlockNumber>;
 	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
 	type Currency = Balances;
 	type UnsignedPriority = UnsignedPriority;

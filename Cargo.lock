@@ -4676,6 +4676,26 @@ dependencies = [
 ]
 
 [[package]]
+name = "ggx-primitives"
+version = "0.0.1"
+dependencies = [
+ "astar-primitives",
+ "bstringify",
+ "frame-support",
+ "log 0.4.20",
+ "num_enum 0.5.11",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "serde_json",
+ "sp-api",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
 name = "ggxchain-node"
 version = "0.1.6"
 dependencies = [
@@ -4703,6 +4723,7 @@ dependencies = [
  "frame-benchmarking-cli",
  "frame-system",
  "futures 0.3.30",
+ "ggx-primitives",
  "ggxchain-runtime-brooklyn",
  "ggxchain-runtime-sydney",
  "hex",
@@ -4801,6 +4822,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "ggx-primitives",
  "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "interbtc-primitives",
@@ -4827,14 +4849,17 @@ dependencies = [
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-conviction-voting",
+ "pallet-currencies",
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
+ "pallet-erc20",
  "pallet-eth2-light-client",
  "pallet-ethereum",
  "pallet-ethereum-checked",
  "pallet-evm",
  "pallet-evm-chain-id",
+ "pallet-ggx-tokens",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
  "pallet-ibc",
@@ -4867,6 +4892,7 @@ dependencies = [
  "pallet-xvm",
  "parity-scale-codec",
  "paste",
+ "polkadot-primitives",
  "prost",
  "redeem",
  "redeem-rpc-runtime-api",
@@ -4926,6 +4952,7 @@ dependencies = [
  "frame-system",
  "frame-system-benchmarking",
  "frame-system-rpc-runtime-api",
+ "ggx-primitives",
  "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
  "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
  "interbtc-primitives",
@@ -4952,14 +4979,17 @@ dependencies = [
  "pallet-contracts",
  "pallet-contracts-primitives",
  "pallet-conviction-voting",
+ "pallet-currencies",
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
+ "pallet-erc20",
  "pallet-eth2-light-client",
  "pallet-ethereum",
  "pallet-ethereum-checked",
  "pallet-evm",
  "pallet-evm-chain-id",
+ "pallet-ggx-tokens",
  "pallet-grandpa",
  "pallet-hotfix-sufficients",
  "pallet-ibc",
@@ -8609,20 +8639,70 @@ dependencies = [
 ]
 
 [[package]]
-name = "pallet-dex"
-version = "0.1.0"
+name = "pallet-currencies"
+version = "0.4.1-dev"
 dependencies = [
+ "astar-primitives",
+ "fp-evm",
  "frame-support",
  "frame-system",
- "log 0.4.20",
- "pallet-assets",
+ "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
+ "orml-tokens",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "orml-utilities 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
  "pallet-balances",
+ "pallet-contracts",
+ "pallet-erc20",
+ "pallet-ethereum",
+ "pallet-ethereum-checked",
+ "pallet-evm",
+ "pallet-insecure-randomness-collective-flip",
  "pallet-timestamp",
+ "pallet-xvm",
  "parity-scale-codec",
  "scale-info",
+ "serde",
+ "serde_json",
  "sp-core 7.0.0",
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-dex"
+version = "0.1.0"
+dependencies = [
+ "astar-primitives",
+ "fp-evm",
+ "frame-support",
+ "frame-system",
+ "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
+ "log 0.4.20",
+ "orml-tokens",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "pallet-assets",
+ "pallet-balances",
+ "pallet-contracts",
+ "pallet-currencies",
+ "pallet-erc20",
+ "pallet-ethereum",
+ "pallet-ethereum-checked",
+ "pallet-evm",
+ "pallet-insecure-randomness-collective-flip",
+ "pallet-timestamp",
+ "pallet-xvm",
+ "parity-scale-codec",
+ "scale-info",
+ "serde_json",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
@@ -8675,6 +8755,31 @@ dependencies = [
  "parity-scale-codec",
  "sp-npos-elections",
  "sp-runtime 7.0.0",
+]
+
+[[package]]
+name = "pallet-erc20"
+version = "0.0.1"
+dependencies = [
+ "astar-primitives",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "frame-system",
+ "ggx-primitives",
+ "hex",
+ "hex-literal 0.3.4",
+ "impl-trait-for-tuples",
+ "num_enum 0.5.11",
+ "pallet-balances",
+ "pallet-evm",
+ "pallet-timestamp",
+ "parity-scale-codec",
+ "scale-info",
+ "serde_json",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
@@ -9022,6 +9127,24 @@ dependencies = [
  "sp-io 7.0.0",
  "sp-runtime 7.0.0",
  "sp-staking",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+]
+
+[[package]]
+name = "pallet-ggx-tokens"
+version = "0.4.1-dev"
+dependencies = [
+ "frame-support",
+ "frame-system",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "pallet-treasury",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "sp-arithmetic 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+ "sp-core 7.0.0",
+ "sp-io 7.0.0",
+ "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
 ]
 
@@ -11395,6 +11518,7 @@ dependencies = [
  "pallet-evm-precompile-substrate-ecdsa",
  "pallet-evm-precompile-xvm",
  "pallet-evm-precompile-zk-groth16-verify",
+ "pallet-ggx-tokens",
  "pallet-receipt-registry",
  "pallet-scheduler",
  "pallet-session",

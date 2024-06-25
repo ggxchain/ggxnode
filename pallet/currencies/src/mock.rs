@@ -1,114 +1,35 @@
-use crate as pallet_dex;
+//! Mocks for the currencies module.
+
+#![cfg(test)]
 
 use super::*;
-
-use astar_primitives::ethereum_checked::AccountMapping;
 use frame_support::{
-	assert_ok,
-	pallet_prelude::Weight,
-	parameter_types, sp_io,
-	traits::{AsEnsureOriginWithArg, ConstBool, FindAuthor, GenesisBuild, Hooks, Nothing},
+	assert_ok, parameter_types,
+	traits::{ConstBool, ConstU32, ConstU64, FindAuthor, Nothing},
 	weights::constants::RocksDbWeight,
 	ConsensusEngineId, PalletId,
 };
-use ggx_primitives::{
-	currency::{CurrencyId, TokenSymbol},
-	evm::EvmAddress,
-};
+use ggx_primitives::{currency::CurrencyId, evm::EvmAddress};
 use orml_traits::{currency::MutationHooks, parameter_type_with_key};
-use pallet_currencies::BasicCurrencyAdapter;
 use pallet_ethereum::PostLogContent;
 use pallet_ethereum_checked::EnsureXcmEthereumTx;
 use pallet_evm::{AddressMapping, FeeCalculator, GasWeightMapping};
-use sp_core::{blake2_256, ConstU128, ConstU32, ConstU64, H160, H256, U256};
+use sp_core::{blake2_256, ConstU128, H160, H256, U256};
+
 use sp_runtime::{
 	testing::Header,
 	traits::{AccountIdConversion, BlakeTwo256, IdentityLookup},
 	AccountId32,
 };
-use sp_std::marker;
 use std::str::FromStr;
 
+use crate as currencies;
+
+pub type ReserveIdentifier = [u8; 8];
+
 pub type AccountId = AccountId32;
-pub type Balance = u128;
-pub type AssetId = u32;
-pub type BlockNumber = u64;
 
 type UncheckedExtrinsic = frame_system::mocking::MockUncheckedExtrinsic<Test>;
-type Block = frame_system::mocking::MockBlock<Test>;
-
-frame_support::construct_runtime!(
-	pub enum Test where
-		Block = Block,
-		NodeBlock = Block,
-		UncheckedExtrinsic = UncheckedExtrinsic,
-	{
-		System: frame_system,
-		Balances: pallet_balances,
-		Timestamp: pallet_timestamp,
-		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
-		Contracts: pallet_contracts,
-		Evm: pallet_evm,
-		Ethereum: pallet_ethereum,
-		EthereumChecked: pallet_ethereum_checked,
-		ERC20: pallet_erc20,
-		Xvm: pallet_xvm,
-		Currencies: pallet_currencies,
-		Tokens: orml_tokens,
-		Assets: pallet_assets,
-		Dex: pallet_dex,
-	}
-);
-
-impl pallet_balances::Config for Test {
-	type Balance = Balance;
-	type DustRemoval = ();
-	type RuntimeEvent = RuntimeEvent;
-	type ExistentialDeposit = ConstU128<1>;
-	type AccountStore = System;
-	type WeightInfo = pallet_balances::weights::SubstrateWeight<Test>;
-	type MaxLocks = ConstU32<50>;
-	type MaxReserves = ();
-	type ReserveIdentifier = [u8; 8];
-	type HoldIdentifier = ();
-	type FreezeIdentifier = ();
-	type MaxHolds = ConstU32<0>;
-	type MaxFreezes = ConstU32<0>;
-}
-
-// These parameters dont matter much as this will only be called by root with the forced arguments
-// No deposit is substracted with those methods
-parameter_types! {
-  pub const AssetDeposit: Balance = 0;
-  pub const AssetAccountDeposit: Balance = 0;
-  pub const ApprovalDeposit: Balance = 0;
-  pub const AssetsStringLimit: u32 = 50;
-  pub const MetadataDepositBase: Balance = 0;
-  pub const MetadataDepositPerByte: Balance = 0;
-}
-
-impl pallet_assets::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type Balance = Balance;
-	type AssetId = AssetId;
-	type Currency = Balances;
-	type ForceOrigin = frame_system::EnsureRoot<AccountId>;
-	type AssetDeposit = AssetDeposit;
-	type AssetAccountDeposit = AssetAccountDeposit;
-	type MetadataDepositBase = MetadataDepositBase;
-	type MetadataDepositPerByte = MetadataDepositPerByte;
-	type ApprovalDeposit = ApprovalDeposit;
-	type StringLimit = AssetsStringLimit;
-	type Freezer = ();
-	type Extra = ();
-	type CreateOrigin = AsEnsureOriginWithArg<frame_system::EnsureSigned<AccountId>>;
-	type WeightInfo = pallet_assets::weights::SubstrateWeight<Test>;
-	type RemoveItemsLimit = ConstU32<0>;
-	type AssetIdParameter = AssetId;
-	type CallbackHandle = ();
-	#[cfg(feature = "runtime-benchmarks")]
-	type BenchmarkHelper = ();
-}
 
 parameter_types! {
 	pub BlockWeights: frame_system::limits::BlockWeights =
@@ -144,14 +65,7 @@ impl frame_system::Config for Test {
 	type MaxConsumers = frame_support::traits::ConstU32<16>;
 }
 
-impl<LocalCall> frame_system::offchain::SendTransactionTypes<LocalCall> for Test
-where
-	RuntimeCall: From<LocalCall>,
-{
-	type OverarchingCall = RuntimeCall;
-	type Extrinsic = Extrinsic;
-}
-pub type Extrinsic = sp_runtime::testing::TestXt<RuntimeCall, ()>;
+type Balance = u128;
 
 impl pallet_timestamp::Config for Test {
 	type Moment = u64;
@@ -161,6 +75,22 @@ impl pallet_timestamp::Config for Test {
 }
 
 impl pallet_randomness_collective_flip::Config for Test {}
+
+impl pallet_balances::Config for Test {
+	type Balance = Balance;
+	type DustRemoval = ();
+	type RuntimeEvent = RuntimeEvent;
+	type ExistentialDeposit = ConstU128<2>;
+	type AccountStore = System;
+	type WeightInfo = pallet_balances::weights::SubstrateWeight<Test>;
+	type MaxLocks = ConstU32<50>;
+	type MaxReserves = ConstU32<2>;
+	type ReserveIdentifier = [u8; 8];
+	type HoldIdentifier = ();
+	type FreezeIdentifier = ();
+	type MaxHolds = ConstU32<0>;
+	type MaxFreezes = ConstU32<0>;
+}
 
 parameter_type_with_key! {
 	pub ExistentialDeposits: |_currency_id: CurrencyId| -> Balance {
@@ -176,7 +106,7 @@ pub struct CurrencyHooks<T>(marker::PhantomData<T>);
 impl<T: orml_tokens::Config> MutationHooks<T::AccountId, T::CurrencyId, T::Balance>
 	for CurrencyHooks<T>
 where
-	T::AccountId: From<AccountId>,
+	T::AccountId: From<AccountId32>,
 {
 	type OnDust = orml_tokens::TransferDust<T, DustAccount>;
 	type OnSlash = ();
@@ -187,8 +117,6 @@ where
 	type OnNewTokenAccount = ();
 	type OnKilledTokenAccount = ();
 }
-
-pub type ReserveIdentifier = [u8; 8];
 
 impl orml_tokens::Config for Test {
 	type RuntimeEvent = RuntimeEvent;
@@ -382,38 +310,51 @@ impl astar_primitives::ethereum_checked::AccountMapping<AccountId> for MockAddre
 	}
 }
 
-pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Test, Balances, i64, u64>;
+pub const NATIVE_CURRENCY_ID: CurrencyId = ggx_primitives::currency::CurrencyId::ForeignAsset(1);
+pub const X_TOKEN_ID: CurrencyId = ggx_primitives::currency::CurrencyId::ForeignAsset(2);
+
 parameter_types! {
-	pub const NativeCurrencyId: CurrencyId = CurrencyId::Token(TokenSymbol::GGX);
+	pub const GetNativeCurrencyId: CurrencyId = NATIVE_CURRENCY_ID;
 }
 
-impl pallet_currencies::Config for Test {
+impl Config for Test {
 	type MultiCurrency = Tokens;
 	type NativeCurrency = AdaptedBasicCurrency;
-	type GetNativeCurrencyId = NativeCurrencyId;
+	type GetNativeCurrencyId = GetNativeCurrencyId;
 	type WeightInfo = ();
 	type AddressMapping = MockAddressMapping;
 	type EVMBridge = pallet_erc20::EVMBridge<Test>;
 }
+pub type NativeCurrency = NativeCurrencyOf<Test>;
+pub type AdaptedBasicCurrency = BasicCurrencyAdapter<Test, Balances, i64, u64>;
 
-parameter_types! {
-	pub const DexPalletId: PalletId = PalletId(*b"py/sudex");
-	pub const UnsignedPriority: BlockNumber = 1;
-}
+type Block = frame_system::mocking::MockBlock<Test>;
 
-impl pallet_dex::Config for Test {
-	type RuntimeEvent = RuntimeEvent;
-	type MultiCurrency = Currencies;
-	type NativeCurrency = AdaptedBasicCurrency;
-	type PalletId = DexPalletId;
-	type PrivilegedOrigin = frame_system::EnsureRoot<Self::AccountId>;
-	type Currency = Balances;
-	type UnsignedPriority = UnsignedPriority;
-}
+frame_support::construct_runtime!(
+	pub enum Test where
+		Block = Block,
+		NodeBlock = Block,
+		UncheckedExtrinsic = UncheckedExtrinsic,
+	{
+		System: frame_system,
+		Timestamp: pallet_timestamp,
+		Currencies: currencies,
+		Tokens: orml_tokens,
+		Balances: pallet_balances,
+		RandomnessCollectiveFlip: pallet_randomness_collective_flip,
+		Contracts: pallet_contracts,
+		Evm: pallet_evm,
+		Ethereum: pallet_ethereum,
+		EthereumChecked: pallet_ethereum_checked,
+		Xvm: pallet_xvm,
+	}
+);
 
 pub const ALICE: AccountId = AccountId32::new([1u8; 32]);
 pub const BOB: AccountId = AccountId32::new([2u8; 32]);
 pub const CHARLIE: AccountId = AccountId32::new([3u8; 32]);
+pub const EVA: AccountId = AccountId32::new([5u8; 32]);
+pub const ID_1: LockIdentifier = *b"1       ";
 
 pub fn alice_evm_addr() -> EvmAddress {
 	EvmAddress::from_str("1000000000000000000000000000000000000001").unwrap()
@@ -430,12 +371,6 @@ pub fn charlie_evm_addr() -> EvmAddress {
 pub fn erc20_address() -> EvmAddress {
 	EvmAddress::from_str("0x85728369a08dfe6660c7ff2c4f8f011fc1300973").unwrap()
 }
-
-pub const NATIVE_CURRENCY_ID: CurrencyId = CurrencyId::Token(TokenSymbol::GGX);
-pub const USDT: CurrencyId = CurrencyId::Token(TokenSymbol::USDT);
-pub const GGXT: CurrencyId = CurrencyId::Token(TokenSymbol::GGXT);
-pub const BTC: CurrencyId = CurrencyId::Token(TokenSymbol::BTC);
-pub const DOT: CurrencyId = CurrencyId::Token(TokenSymbol::DOT);
 
 pub fn deploy_contracts() {
 	System::set_block_number(1);
@@ -464,128 +399,53 @@ pub fn deploy_contracts() {
 		address: erc20_address(),
 	}));
 }
-
-pub struct ExtBuilder;
-
-impl Default for ExtBuilder {
-	fn default() -> Self {
-		ExtBuilder
-	}
+#[derive(Default)]
+pub struct ExtBuilder {
+	balances: Vec<(AccountId, CurrencyId, Balance)>,
 }
 
 impl ExtBuilder {
+	pub fn balances(mut self, balances: Vec<(AccountId, CurrencyId, Balance)>) -> Self {
+		self.balances = balances;
+		self
+	}
+
+	pub fn one_hundred_for_alice_n_bob(self) -> Self {
+		self.balances(vec![
+			(ALICE, NATIVE_CURRENCY_ID, 100),
+			(BOB, NATIVE_CURRENCY_ID, 100),
+			(ALICE, X_TOKEN_ID, 100),
+			(BOB, X_TOKEN_ID, 100),
+		])
+	}
+
 	pub fn build(self) -> sp_io::TestExternalities {
-		let mut storage = frame_system::GenesisConfig::default()
+		let mut t = frame_system::GenesisConfig::default()
 			.build_storage::<Test>()
 			.unwrap();
 
-		// This will cause some initial issuance
 		pallet_balances::GenesisConfig::<Test> {
-			balances: vec![(ALICE, 100_000_000_000), (BOB, 800)],
+			balances: self
+				.balances
+				.clone()
+				.into_iter()
+				.filter(|(_, currency_id, _)| *currency_id == NATIVE_CURRENCY_ID)
+				.map(|(account_id, _, initial_balance)| (account_id, initial_balance))
+				.collect::<Vec<_>>(),
 		}
-		.assimilate_storage(&mut storage)
-		.ok();
-
-		pallet_assets::GenesisConfig::<Test> {
-			assets: vec![
-				// id, owner, is_sufficient, min_balance
-				(999, AccountId32::from([0u8; 32]), true, 1),
-				(888, AccountId32::from([0u8; 32]), true, 1),
-				(777, AccountId32::from([0u8; 32]), true, 1),
-			],
-			metadata: vec![
-				// id, name, symbol, decimals
-				(999, "Bitcoin".into(), "BTC".into(), 8),
-				(888, "GGxchain".into(), "GGXT".into(), 18),
-				(777, "USDT".into(), "USDT".into(), 6),
-			],
-			accounts: vec![
-				// id, account_id, balance
-				(999, ALICE, 1_000_000_000),
-				(888, ALICE, 1_000_000_000),
-				(777, ALICE, 1_000_000_000),
-				(999, BOB, 1_000_000_000),
-				(888, BOB, 1_000_000_000),
-				(777, BOB, 1_000_000_000),
-			],
-		}
-		.assimilate_storage(&mut storage)
-		.ok();
-
-		let tokens = vec![
-			(ALICE, NATIVE_CURRENCY_ID, 1_000_000_000),
-			(BOB, NATIVE_CURRENCY_ID, 1_000_000_000),
-			(ALICE, USDT, 1_000_000_000),
-			(BOB, USDT, 1_000_000_000),
-			(ALICE, GGXT, 1_000_000_000),
-			(BOB, GGXT, 1_000_000_000),
-			(ALICE, BTC, 1_000_000_000),
-			(BOB, BTC, 1_000_000_000),
-		];
+		.assimilate_storage(&mut t)
+		.unwrap();
 
 		orml_tokens::GenesisConfig::<Test> {
-			balances: tokens
+			balances: self
+				.balances
 				.into_iter()
 				.filter(|(_, currency_id, _)| *currency_id != NATIVE_CURRENCY_ID)
 				.collect::<Vec<_>>(),
 		}
-		.assimilate_storage(&mut storage)
+		.assimilate_storage(&mut t)
 		.unwrap();
 
-		<pallet_dex::GenesisConfig as frame_support::traits::GenesisBuild<Test>>::assimilate_storage(
-      &pallet_dex::GenesisConfig {
-        asset_ids: vec![
-					BTC,
-					GGXT,
-					USDT,
-					NATIVE_CURRENCY_ID,
-					CurrencyId::ForeignAsset(8888),
-					CurrencyId::ForeignAsset(999),
-					CurrencyId::ForeignAsset(888),
-					CurrencyId::ForeignAsset(777),
-					CurrencyId::Erc20(erc20_address()),
-					],
-        native_asset_id: NATIVE_CURRENCY_ID,
-      },
-      &mut storage,
-  )
-  .unwrap();
-
-		let mut ext = sp_io::TestExternalities::new(storage);
-		ext.execute_with(|| System::set_block_number(1));
-		ext
-	}
-}
-
-pub fn new_test_ext() -> sp_io::TestExternalities {
-	ExtBuilder::default().build()
-}
-
-pub fn run_to_block(n: u64) {
-	while System::block_number() < n {
-		if System::block_number() > 0 {
-			Dex::on_finalize(System::block_number());
-			System::on_finalize(System::block_number());
-		}
-		System::reset_events();
-		System::set_block_number(System::block_number() + 1);
-		System::on_initialize(System::block_number());
-		Dex::on_initialize(System::block_number());
-	}
-}
-
-fn new_block() -> Weight {
-	let number = frame_system::Pallet::<Test>::block_number() + 1;
-	let hash = H256::repeat_byte(number as u8);
-
-	frame_system::Pallet::<Test>::reset_events();
-	frame_system::Pallet::<Test>::initialize(&number, &hash, &Default::default());
-
-	Weight::default()
-}
-
-pub fn add_blocks(blocks: usize) {
-	for _ in 0..blocks {
-		new_block();
+		t.into()
 	}
 }

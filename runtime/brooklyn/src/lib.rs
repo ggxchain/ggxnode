@@ -16,8 +16,10 @@ pub const CALL_PARAMS_MAX_SIZE: usize = 304;
 
 pub mod btcbridge;
 mod chain_extensions;
+pub mod currencies;
 pub mod dex;
 mod dex_chain_extensions;
+pub mod erc20;
 pub mod ethereum;
 pub mod governance;
 mod ibc;
@@ -33,10 +35,7 @@ use core::cmp::Ordering;
 
 #[cfg(feature = "std")]
 pub use fp_evm::GenesisAccount;
-use frame_support::{
-	pallet_prelude::{DispatchError, TransactionPriority},
-	weights::constants::WEIGHT_PROOF_SIZE_PER_MB,
-};
+use frame_support::pallet_prelude::{DispatchError, TransactionPriority};
 use scale_codec::{Decode, Encode};
 use sp_api::impl_runtime_apis;
 pub use sp_consensus_aura::sr25519::AuthorityId as AuraId;
@@ -241,8 +240,12 @@ const NORMAL_DISPATCH_RATIO: Perbill = Perbill::from_percent(75);
 /// We assume that ~10% of the block weight is consumed by `on_initalize` handlers.
 /// This is used to limit the maximal weight of a single extrinsic.
 const AVERAGE_ON_INITIALIZE_RATIO: Perbill = Perbill::from_percent(10);
-const MAXIMUM_BLOCK_WEIGHT: Weight =
-	Weight::from_parts(WEIGHT_REF_TIME_PER_SECOND, 5 * WEIGHT_PROOF_SIZE_PER_MB);
+const MAXIMUM_BLOCK_WEIGHT: Weight = Weight::from_parts(
+	WEIGHT_REF_TIME_PER_SECOND,
+	// TODO: drop `* 10` after https://github.com/paritytech/substrate/issues/13501
+	// and the benchmarked size is not 10x of the measured size
+	polkadot_primitives::MAX_POV_SIZE as u64 * 10,
+);
 
 parameter_types! {
 	pub const Version: RuntimeVersion = VERSION;
@@ -670,6 +673,9 @@ construct_runtime!(
 
 		// Dex
 		Dex: pallet_dex,
+		GGXTokens: pallet_ggx_tokens,
+		Erc20: pallet_erc20,
+		GGXCurrencies: pallet_currencies,
 	}
 );
 

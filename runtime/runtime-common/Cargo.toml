@@ -65,6 +65,9 @@ replace.workspace = true
 security.workspace = true
 vault-registry.workspace = true
 
+# dex
+pallet-ggx-tokens.workspace = true
+
 [dev-dependencies]
 env_logger.workspace = true
 frame-election-provider-support = { workspace = true, features = ["std"] }
@@ -148,4 +151,7 @@ std = [
 	"replace/std",
 	"security/std",
 	"vault-registry/std",
+
+	# dex
+  "pallet-ggx-tokens/std",
 ]

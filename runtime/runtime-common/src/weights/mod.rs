@@ -8,6 +8,7 @@ pub mod nomination;
 pub mod oracle;
 pub mod orml_asset_registry;
 pub mod orml_tokens;
+pub mod pallet_ggx_tokens;
 pub mod redeem;
 pub mod replace;
 pub mod security;

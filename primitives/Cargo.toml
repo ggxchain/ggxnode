@@ -1,0 +1,46 @@
+[package]
+name = "ggx-primitives"
+version = "0.0.1"
+authors.workspace = true
+edition.workspace = true
+
+[dependencies]
+astar-primitives =  { workspace = true }
+bstringify = { workspace = true }
+log = { workspace = true }
+serde = { workspace = true, features = ["alloc", "derive"] }
+scale-codec = { workspace = true, features = ["max-encoded-len"] }
+scale-info = { workspace = true }
+num_enum = { workspace = true }
+
+sp-core = { workspace = true }
+sp-runtime = { workspace = true }
+sp-std = { workspace = true }
+sp-io = { workspace = true }
+sp-api = { workspace = true }
+
+frame-support = { workspace = true }
+
+[dev-dependencies]
+serde_json = { workspace = true, features = ["std"] }
+
+
+[features]
+default = ["std"]
+std = [
+	"astar-primitives/std",
+	"serde/std",
+	"scale-codec/std",
+	"scale-info/std",
+	"sp-runtime/std",
+	"sp-core/std",
+	"sp-std/std",
+	"sp-io/std",
+	"sp-api/std",
+
+	"frame-support/std",
+
+]
+evm-tests = []
+try-runtime = []
+tracing = []

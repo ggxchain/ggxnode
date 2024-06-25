@@ -11,13 +11,13 @@ use sp_core::offchain::{
 fn test_deposit() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
-			Dex::deposit(RuntimeOrigin::signed(1), 666, 10),
+			Dex::deposit(RuntimeOrigin::signed(ALICE), DOT, 10),
 			Error::<Test>::AssetIdNotInTokenIndex
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 10));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 10));
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 10,
 				reserved: 0
@@ -30,13 +30,13 @@ fn test_deposit() {
 fn test_withdraw() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
-			Dex::withdraw(RuntimeOrigin::signed(1), 777, 10),
+			Dex::withdraw(RuntimeOrigin::signed(ALICE), USDT, 10),
 			Error::<Test>::AssetIdNotInTokenInfoes
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 10));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 10));
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 10,
 				reserved: 0
@@ -44,13 +44,13 @@ fn test_withdraw() {
 		);
 
 		assert_noop!(
-			Dex::withdraw(RuntimeOrigin::signed(1), 777, 11),
+			Dex::withdraw(RuntimeOrigin::signed(ALICE), USDT, 11),
 			Error::<Test>::NotEnoughBalance
 		);
 
-		assert_ok!(Dex::withdraw(RuntimeOrigin::signed(1), 777, 10));
+		assert_ok!(Dex::withdraw(RuntimeOrigin::signed(ALICE), USDT, 10));
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0
@@ -62,20 +62,20 @@ fn test_withdraw() {
 #[test]
 fn test_deposit_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(1), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
-		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(1), 10));
+		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
 				amount: 10,
 				reserved: 0
 			}
 		);
 
-		assert_eq!(Balances::free_balance(1), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
 				amount: 10,
 				reserved: 0
@@ -87,18 +87,18 @@ fn test_deposit_native() {
 #[test]
 fn test_withdraw_native() {
 	new_test_ext().execute_with(|| {
-		assert_eq!(Balances::free_balance(1), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 
 		assert_noop!(
-			Dex::withdraw_native(RuntimeOrigin::signed(1), 10),
+			Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10),
 			Error::<Test>::AssetIdNotInTokenInfoes
 		);
 
-		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(1), 10));
+		assert_ok!(Dex::deposit_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(1), 8990);
+		assert_eq!(Balances::free_balance(ALICE), 99999999990);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
 			TokenInfo {
 				amount: 10,
 				reserved: 0
@@ -106,15 +106,87 @@ fn test_withdraw_native() {
 		);
 
 		assert_noop!(
-			Dex::withdraw_native(RuntimeOrigin::signed(1), 11),
+			Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 11),
 			Error::<Test>::NotEnoughBalance
 		);
 
-		assert_ok!(Dex::withdraw_native(RuntimeOrigin::signed(1), 10));
+		assert_ok!(Dex::withdraw_native(RuntimeOrigin::signed(ALICE), 10));
 
-		assert_eq!(Balances::free_balance(1), 9000);
+		assert_eq!(Balances::free_balance(ALICE), 100_000_000_000);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, NativeAssetId::<Test>::get()),
+			UserTokenInfoes::<Test>::get(ALICE, NativeAssetId::<Test>::get()),
+			TokenInfo {
+				amount: 0,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_deposit_erc20() {
+	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+	})
+}
+
+#[test]
+fn test_withdraw_erc20() {
+	new_test_ext().execute_with(|| {
+		deploy_contracts();
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				10
+			),
+			Error::<Test>::AssetIdNotInTokenInfoes
+		);
+
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
+			TokenInfo {
+				amount: 10,
+				reserved: 0
+			}
+		);
+
+		assert_noop!(
+			Dex::withdraw(
+				RuntimeOrigin::signed(ALICE),
+				CurrencyId::Erc20(erc20_address()),
+				11
+			),
+			Error::<Test>::NotEnoughBalance
+		);
+
+		assert_ok!(Dex::withdraw(
+			RuntimeOrigin::signed(ALICE),
+			CurrencyId::Erc20(erc20_address()),
+			10
+		));
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(ALICE, CurrencyId::Erc20(erc20_address()),),
 			TokenInfo {
 				amount: 0,
 				reserved: 0
@@ -126,13 +198,13 @@ fn test_withdraw_native() {
 #[test]
 fn test_make_order() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 100));
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				777,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				USDT,
 				200,
 				200,
 				OrderType::SELL,
@@ -143,9 +215,9 @@ fn test_make_order() {
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				19, // offered
 				7,  // requested
 				OrderType::BUY,
@@ -158,9 +230,9 @@ fn test_make_order() {
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				19, // offered
 				7,  // requested
 				OrderType::SELL,
@@ -173,9 +245,9 @@ fn test_make_order() {
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				7,  // offered
 				19, // requested
 				OrderType::BUY,
@@ -188,9 +260,9 @@ fn test_make_order() {
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				7,  // offered
 				19, // requested
 				OrderType::SELL,
@@ -203,9 +275,9 @@ fn test_make_order() {
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				1,   // offered
 				200, // requested
 				OrderType::BUY,
@@ -217,7 +289,7 @@ fn test_make_order() {
 		);
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 100,
 				reserved: 0,
@@ -225,9 +297,9 @@ fn test_make_order() {
 		);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			1,
 			200,
 			OrderType::SELL,
@@ -238,8 +310,8 @@ fn test_make_order() {
 			Orders::<Test>::get(0),
 			Some(Order {
 				counter: 0,
-				address: 1,
-				pair: (777, 888),
+				address: ALICE,
+				pair: (USDT, GGXT),
 				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
@@ -251,12 +323,12 @@ fn test_make_order() {
 			})
 		);
 
-		assert_eq!(UserOrders::<Test>::get(1, 0), ());
+		assert_eq!(UserOrders::<Test>::get(ALICE, 0), ());
 
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![0]);
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 99,
 				reserved: 1,
@@ -268,11 +340,11 @@ fn test_make_order() {
 #[test]
 fn test_make_order_asset_id_1_gt_asset_id_2() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), GGXT, 200));
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 100,
 				reserved: 0,
@@ -280,7 +352,7 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 		);
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 200,
 				reserved: 0,
@@ -288,9 +360,9 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 		);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			888,
-			777,
+			RuntimeOrigin::signed(ALICE),
+			GGXT,
+			USDT,
 			200,
 			1,
 			OrderType::SELL,
@@ -301,8 +373,8 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			Orders::<Test>::get(0),
 			Some(Order {
 				counter: 0,
-				address: 1,
-				pair: (777, 888),
+				address: ALICE,
+				pair: (USDT, GGXT),
 				expiration_block: 1000,
 				amount_offered: 200,
 				amout_requested: 1,
@@ -314,12 +386,12 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 			})
 		);
 
-		assert_eq!(UserOrders::<Test>::get(1, 0), ());
+		assert_eq!(UserOrders::<Test>::get(ALICE, 0), ());
 
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![0]);
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 0,
 				reserved: 200,
@@ -332,15 +404,15 @@ fn test_make_order_asset_id_1_gt_asset_id_2() {
 fn test_cancel_order() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
-			Dex::cancel_order(RuntimeOrigin::signed(1), 0),
+			Dex::cancel_order(RuntimeOrigin::signed(ALICE), 0),
 			Error::<Test>::InvalidOrderIndex
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 100));
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			1,
 			200,
 			OrderType::SELL,
@@ -351,8 +423,8 @@ fn test_cancel_order() {
 			Orders::<Test>::get(0),
 			Some(Order {
 				counter: 0,
-				address: 1,
-				pair: (777, 888),
+				address: ALICE,
+				pair: (USDT, GGXT),
 				expiration_block: 1000,
 				amount_offered: 1,
 				amout_requested: 200,
@@ -363,30 +435,30 @@ fn test_cancel_order() {
 				order_status: OrderStatus::Pending,
 			})
 		);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 0), true);
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 0), true);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![0]);
 
 		assert_noop!(
-			Dex::cancel_order(RuntimeOrigin::signed(2), 0),
+			Dex::cancel_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::NotOwner
 		);
 
-		assert_ok!(Dex::cancel_order(RuntimeOrigin::signed(1), 0));
+		assert_ok!(Dex::cancel_order(RuntimeOrigin::signed(ALICE), 0));
 
 		assert_eq!(Orders::<Test>::get(0), None);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 1), false);
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 1), false);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![]);
 	})
 }
 
 #[test]
 fn test_take_order_sell() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 100));
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			1,
 			200,
 			OrderType::SELL,
@@ -394,72 +466,72 @@ fn test_take_order_sell() {
 		));
 
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::UserAssetNotExist
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), GGXT, 100));
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::NotEnoughBalance
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), GGXT, 200));
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 99,
 				reserved: 1,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 777),
+			UserTokenInfoes::<Test>::get(BOB, USDT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 888),
+			UserTokenInfoes::<Test>::get(BOB, GGXT),
 			TokenInfo {
 				amount: 300,
 				reserved: 0,
 			}
 		);
 
-		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
+		assert_ok!(Dex::take_order(RuntimeOrigin::signed(BOB), 0));
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 99,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 200,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 777),
+			UserTokenInfoes::<Test>::get(BOB, USDT),
 			TokenInfo {
 				amount: 1,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 888),
+			UserTokenInfoes::<Test>::get(BOB, GGXT),
 			TokenInfo {
 				amount: 100,
 				reserved: 0,
@@ -472,15 +544,15 @@ fn test_take_order_sell() {
 fn test_take_order_buy() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::InvalidOrderIndex
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), GGXT, 200));
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			200,
 			200,
 			OrderType::BUY,
@@ -488,72 +560,72 @@ fn test_take_order_buy() {
 		));
 
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::UserAssetNotExist
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), USDT, 1));
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::NotEnoughBalance
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), USDT, 200));
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 0,
 				reserved: 200,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 777),
+			UserTokenInfoes::<Test>::get(BOB, USDT),
 			TokenInfo {
 				amount: 201,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 888),
+			UserTokenInfoes::<Test>::get(BOB, GGXT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0,
 			}
 		);
 
-		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
+		assert_ok!(Dex::take_order(RuntimeOrigin::signed(BOB), 0));
 
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
+			UserTokenInfoes::<Test>::get(ALICE, USDT),
 			TokenInfo {
 				amount: 200,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 888),
+			UserTokenInfoes::<Test>::get(ALICE, GGXT),
 			TokenInfo {
 				amount: 0,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 777),
+			UserTokenInfoes::<Test>::get(BOB, USDT),
 			TokenInfo {
 				amount: 1,
 				reserved: 0,
 			}
 		);
 		assert_eq!(
-			UserTokenInfoes::<Test>::get(2, 888),
+			UserTokenInfoes::<Test>::get(BOB, GGXT),
 			TokenInfo {
 				amount: 200,
 				reserved: 0,
@@ -566,17 +638,17 @@ fn test_take_order_buy() {
 fn test_make_cancel_take_order_buy() {
 	new_test_ext().execute_with(|| {
 		assert_noop!(
-			Dex::take_order(RuntimeOrigin::signed(2), 0),
+			Dex::take_order(RuntimeOrigin::signed(BOB), 0),
 			Error::<Test>::InvalidOrderIndex
 		);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 200));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 500));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), BTC, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), GGXT, 500));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), USDT, 200));
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			100,
 			1,
 			OrderType::BUY,
@@ -584,9 +656,9 @@ fn test_make_cancel_take_order_buy() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			200,
 			2,
 			OrderType::BUY,
@@ -594,51 +666,51 @@ fn test_make_cancel_take_order_buy() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			888,
-			999,
+			RuntimeOrigin::signed(ALICE),
+			GGXT,
+			BTC,
 			2,
 			200,
 			OrderType::SELL,
 			1000
 		));
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 300));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 300));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 300));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), BTC, 300));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), GGXT, 300));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(BOB), USDT, 300));
 
 		assert_eq!(Orders::<Test>::contains_key(0), true);
 		assert_eq!(Orders::<Test>::contains_key(1), true);
 		assert_eq!(Orders::<Test>::contains_key(2), true);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 0), true);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 1), true);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 2), true);
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0, 1]);
-		assert_eq!(PairOrders::<Test>::get((888, 999)), vec![2]);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 0), true);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 1), true);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 2), true);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![0, 1]);
+		assert_eq!(PairOrders::<Test>::get((GGXT, BTC)), vec![2]);
 
-		assert_ok!(Dex::cancel_order(RuntimeOrigin::signed(1), 1));
-		assert_ok!(Dex::take_order(RuntimeOrigin::signed(2), 0));
+		assert_ok!(Dex::cancel_order(RuntimeOrigin::signed(ALICE), 1));
+		assert_ok!(Dex::take_order(RuntimeOrigin::signed(BOB), 0));
 
 		assert_eq!(Orders::<Test>::contains_key(0), false);
 		assert_eq!(Orders::<Test>::contains_key(1), false);
 		assert_eq!(Orders::<Test>::contains_key(2), true);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 0), false);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 1), false);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 2), true);
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
-		assert_eq!(PairOrders::<Test>::get((888, 999)), vec![2]);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 0), false);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 1), false);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 2), true);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![]);
+		assert_eq!(PairOrders::<Test>::get((GGXT, BTC)), vec![2]);
 	})
 }
 
 #[test]
 fn test_expiration_works_as_expected() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), GGXT, 200));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			100,
 			1,
 			OrderType::BUY,
@@ -646,14 +718,14 @@ fn test_expiration_works_as_expected() {
 		));
 
 		assert_eq!(Orders::<Test>::contains_key(0), true);
-		assert_eq!(UserOrders::<Test>::contains_key(1, 0), true);
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![0]);
+		assert_eq!(UserOrders::<Test>::contains_key(ALICE, 0), true);
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![0]);
 		assert_eq!(
 			Orders::<Test>::get(0),
 			Some(Order {
 				counter: 0,
-				address: 1,
-				pair: (777, 888),
+				address: ALICE,
+				pair: (USDT, GGXT),
 				expiration_block: 10,
 				amount_offered: 100,
 				amout_requested: 1,
@@ -669,8 +741,8 @@ fn test_expiration_works_as_expected() {
 		run_to_block(11);
 
 		assert!(!Orders::<Test>::contains_key(0));
-		assert!(!UserOrders::<Test>::contains_key(1, 0));
-		assert_eq!(PairOrders::<Test>::get((777, 888)), vec![]);
+		assert!(!UserOrders::<Test>::contains_key(ALICE, 0));
+		assert_eq!(PairOrders::<Test>::get((USDT, GGXT)), vec![]);
 		assert_eq!(OrderExpiration::<Test>::get(10), vec![]);
 	});
 }
@@ -678,14 +750,14 @@ fn test_expiration_works_as_expected() {
 #[test]
 fn fail_on_invalid_expiry() {
 	new_test_ext().execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 200));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(ALICE), GGXT, 200));
 		run_to_block(5);
 
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				100,
 				1,
 				OrderType::BUY,
@@ -695,9 +767,9 @@ fn fail_on_invalid_expiry() {
 		);
 		assert_noop!(
 			Dex::make_order(
-				RuntimeOrigin::signed(1),
-				777,
-				888,
+				RuntimeOrigin::signed(ALICE),
+				USDT,
+				GGXT,
 				100,
 				1,
 				OrderType::BUY,
@@ -707,9 +779,9 @@ fn fail_on_invalid_expiry() {
 		);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			100,
 			1,
 			OrderType::BUY,
@@ -767,16 +839,24 @@ fn test_offchain_worker_order_matching() {
 	ext.register_extension(TransactionPoolExt::new(pool));
 
 	ext.execute_with(|| {
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1_000_000_000));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1_000_000_000));
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			1_000_000_000
+		));
+		assert_ok!(Dex::deposit(
+			RuntimeOrigin::signed(ALICE),
+			GGXT,
+			1_000_000_000
+		));
 
 		let block = 1;
 		System::set_block_number(block);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			208234,
 			1,
 			OrderType::BUY,
@@ -784,9 +864,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			2,
 			417520,
 			OrderType::SELL,
@@ -796,9 +876,9 @@ fn test_offchain_worker_order_matching() {
 		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			208780,
 			1,
 			OrderType::BUY,
@@ -806,9 +886,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			1042505,
 			5,
 			OrderType::BUY,
@@ -816,9 +896,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			3,
 			626406,
 			OrderType::SELL,
@@ -828,9 +908,9 @@ fn test_offchain_worker_order_matching() {
 		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			6,
 			1252560,
 			OrderType::SELL,
@@ -838,9 +918,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			1456777,
 			7,
 			OrderType::BUY,
@@ -848,9 +928,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			625800,
 			3,
 			OrderType::BUY,
@@ -859,9 +939,9 @@ fn test_offchain_worker_order_matching() {
 		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			208833,
 			1,
 			OrderType::BUY,
@@ -869,9 +949,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			2,
 			417308,
 			OrderType::SELL,
@@ -879,9 +959,9 @@ fn test_offchain_worker_order_matching() {
 		));
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			5,
 			1043275,
 			OrderType::SELL,
@@ -890,9 +970,9 @@ fn test_offchain_worker_order_matching() {
 		Dex::offchain_worker(block);
 
 		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			888,
+			RuntimeOrigin::signed(ALICE),
+			USDT,
+			GGXT,
 			625965,
 			3,
 			OrderType::BUY,
