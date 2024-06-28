@@ -1,0 +1,37 @@
+
+services:
+  ggxchain-node:
+    image: "${IMAGE_NAME}"
+    container_name: "${NODE_NAME}"
+    volumes:
+      - type: bind
+        source: "${DATA_PATH}"
+        target: "${PATH_INTERNAL}"
+    ports:
+      - "0.0.0.0:${P2P_PORT}:30333"
+      - "127.0.0.1:${PROMETHEUS_PORT}:9615"
+      - "127.0.0.1:${RPC_PORT}:9944"
+    command: >
+      --validator
+      --unsafe-rpc-external
+      --prometheus-external
+      --base-path="${PATH_INTERNAL}"
+      --rpc-cors all
+      --database rocksdb
+      --sync "${SYNC_MODE}"
+      --no-private-ip
+      --no-mdns
+      --state-pruning "${STATE_PRUNING}"
+      --blocks-pruning "${BLOCKS_PRUNING}"
+      --node-key-type ed25519
+      --node-key-file "${NODE_KEY_FILE}"
+      --log "${LOG_LEVEL}"
+      --rpc-methods "${RPC_METHODS}"
+      --name "${NODE_NAME}"
+      --wasm-execution Compiled
+      --chain "${CUSTOM_CHAIN_SPEC}"
+    restart: unless-stopped
+    ulimits:
+      nofile:
+        soft: 100000
+        hard: 100000
