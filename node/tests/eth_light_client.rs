@@ -145,8 +145,7 @@ mod test {
 	#[tokio::test]
 	async fn eth_light_client_loads_data_and_accepts_merkle_proof(
 	) -> Result<(), Box<dyn std::error::Error>> {
-		let mut alice = common::start_node_for_local_chain("alice", "dev").await;
-		println!("Alice ws url: {}", alice.ws_url);
+		let (mut alice, mut bob) = common::start_dev_nodes().await;
 
 		common::wait_n_finalized_blocks_from(1, &alice.ws_url).await;
 
@@ -156,6 +155,7 @@ mod test {
 		load_light_client_data(&api, &alice_pair).await;
 
 		alice.kill();
+		bob.kill();
 
 		Ok(())
 	}
@@ -163,7 +163,7 @@ mod test {
 	#[tokio::test]
 	async fn eth_light_client_data_could_be_fetched_from_evm_by_precompile(
 	) -> Result<(), Box<dyn std::error::Error>> {
-		let mut alice = common::start_node_for_local_chain("alice", "dev").await;
+		let (mut alice, mut bob) = common::start_dev_nodes().await;
 
 		let api = OnlineClient::<subxt::PolkadotConfig>::from_url(alice.ws_url.clone()).await?;
 		let alice_pair = subxt_signer::sr25519::dev::alice();
@@ -209,6 +209,7 @@ mod test {
 		}
 
 		alice.kill();
+		bob.kill();
 
 		Ok(())
 	}
@@ -216,7 +217,7 @@ mod test {
 	#[tokio::test]
 	async fn eth_light_client_data_could_be_fetched_from_chain_extension(
 	) -> Result<(), Box<dyn std::error::Error>> {
-		let mut alice = common::start_node_for_local_chain("alice", "dev").await;
+		let (mut alice, mut bob) = common::start_dev_nodes().await;
 
 		let api = OnlineClient::<subxt::PolkadotConfig>::from_url(alice.ws_url.clone()).await?;
 		let alice_pair = subxt_signer::sr25519::dev::alice();
@@ -234,6 +235,7 @@ mod test {
 		.await;
 
 		alice.kill();
+		bob.kill();
 
 		Ok(())
 	}
