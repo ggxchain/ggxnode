@@ -56,6 +56,7 @@ pub const CHAIN_ID: u64 = 8886u64;
 pub const CHAIN_ID: u64 = 888866u64;
 
 static DEV_P2P_PORT: atomic::AtomicUsize = atomic::AtomicUsize::new(30333);
+static DEV_RPC_PORT: atomic::AtomicUsize = atomic::AtomicUsize::new(9944);
 
 /// Wait for the given `child` the given number of `secs`.
 ///
@@ -277,44 +278,55 @@ pub async fn start_dev_node() -> Node {
 		"alice",
 		"dev",
 		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
 	)
 	.await
 }
 
 pub async fn start_dev_nodes() -> (Node, Node) {
+	let (alice_p2p_port, bob_p2p_port, alice_rpc_port, bob_rpc_port) = (
+		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+	);
 	(
-		start_node_for_local_chain(
-			"alice",
-			"dev",
-			DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
-		)
-		.await,
-		start_node_for_local_chain(
-			"bob",
-			"dev",
-			DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
-		)
-		.await,
+		start_node_for_local_chain("alice", "dev", alice_p2p_port, alice_rpc_port).await,
+		start_node_for_local_chain("bob", "dev", bob_p2p_port, bob_rpc_port).await,
 	)
 }
 
-pub async fn start_node_for_local_chain(validator_name: &str, chain: &str, port: usize) -> Node {
+pub async fn start_node_for_local_chain(
+	validator_name: &str,
+	chain: &str,
+	p2p_port: usize,
+	rpc_port: usize,
+) -> Node {
 	let base_path = tempdir().expect("could not create a temp dir");
 	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
 
 	let mut node_args = vec![
 		format!("--{validator_name}"),
 		format!("--chain={chain}"),
-		format!("--port={port}"),
+		format!("--port={p2p_port}"),
+		format!("--rpc-port={rpc_port}"),
+		// "--unsafe-rpc-external".to_string(),
 	];
-	if validator_name == "bob" {
-		const ALICE_NODE_ID: &str = "12D3KooWL3zHdztTgt1Vp45rgojFhEjMx32924s5mhrzhaQWAxVU";
-		node_args.push(format!(
-			"--bootnodes=/ip4/127.0.0.1/tcp/{}/p2p/{}",
-			port - 1,
-			ALICE_NODE_ID
-		));
-	};
+	match validator_name {
+		"alice" => node_args.push(
+			"--node-key=0000000000000000000000000000000000000000000000000000000000000001"
+				.to_string(),
+		),
+		"bob" => {
+			const ALICE_NODE_ID: &str = "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
+			node_args.push(format!(
+				"--bootnodes=/ip4/127.0.0.1/tcp/{}/p2p/{}",
+				p2p_port - 1,
+				ALICE_NODE_ID
+			));
+		}
+		_ => (),
+	}
 
 	let cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
