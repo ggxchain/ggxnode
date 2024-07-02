@@ -302,7 +302,19 @@ pub async fn start_node_for_local_chain(
 	p2p_port: usize,
 	rpc_port: usize,
 ) -> Node {
-	let base_path = tempdir().expect("could not create a temp dir");
+	let base_path = match std::env::var("TEST_DATA_DIR") {
+		Ok(test_data_dir) => {
+			let dir = format!("{test_data_dir}/{chain}-{validator_name}-{rpc_port}");
+			std::fs::create_dir_all(&dir).expect(&format!("could not create directory {dir}"));
+			dir
+		}
+		Err(_) => tempdir()
+			.expect("could not create a temp dir")
+			.path()
+			.to_str()
+			.unwrap()
+			.to_string(),
+	};
 	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
 
 	let mut node_args = vec![
@@ -310,7 +322,8 @@ pub async fn start_node_for_local_chain(
 		format!("--chain={chain}"),
 		format!("--port={p2p_port}"),
 		format!("--rpc-port={rpc_port}"),
-		// "--unsafe-rpc-external".to_string(),
+		format!("--base-path={base_path}"),
+		"--rpc-cors=all".to_string(),
 	];
 	match validator_name {
 		"alice" => node_args.push(
@@ -332,9 +345,6 @@ pub async fn start_node_for_local_chain(
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::from(stderr_file))
 		.args(node_args)
-		.arg("--rpc-cors=all")
-		.arg("-d")
-		.arg(base_path.path())
 		.spawn()
 		.unwrap();
 
