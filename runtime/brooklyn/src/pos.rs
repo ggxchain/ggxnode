@@ -109,7 +109,8 @@ parameter_types! {
 
 }
 
-pub type PeriodicSessions = pallet_session::PeriodicSessions<SessionPeriod, SessionOffset>;
+pub type PeriodicSessions =
+	pallet_dkg_metadata::DKGPeriodicSessions<SessionPeriod, SessionOffset, Runtime>;
 
 impl pallet_treasury::Config for Runtime {
 	type PalletId = TreasuryPalletId;
