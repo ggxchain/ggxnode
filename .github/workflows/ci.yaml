@@ -125,5 +125,8 @@ jobs:
 
       - name: test
         if: steps.git-diff.outputs.diff
+        env:
+          TEST_DATA_DIR: test-data
         run: |
+          rm -rf "node/${TEST_DATA_DIR}"
           cargo test --locked --package=ggxchain-node --release --no-default-features --features=${{ matrix.runtime }}
