@@ -48,7 +48,7 @@ async fn call_set_session_key(
 #[cfg(unix)]
 #[tokio::test]
 async fn evm_set_session_key_test() -> Result<(), Box<dyn std::error::Error>> {
-	let mut alice = common::start_dev_node().await;
+	let (mut alice, mut bob) = common::start_dev_nodes().await;
 
 	// Let it produce some blocks.
 	let _ = common::wait_n_finalized_blocks(1, 30, &alice.ws_url).await;
@@ -77,6 +77,7 @@ async fn evm_set_session_key_test() -> Result<(), Box<dyn std::error::Error>> {
 
 	// Stop the process
 	alice.kill();
+	bob.kill();
 
 	Ok(())
 }
