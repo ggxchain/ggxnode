@@ -34,7 +34,7 @@ use scale_codec::{Decode, Encode, MaxEncodedLen};
 use scale_info::{prelude::cmp, TypeInfo};
 use sp_runtime::{traits::One, DispatchError};
 
-use frame_support::sp_runtime::traits::AccountIdConversion;
+use frame_support::{sp_runtime::traits::AccountIdConversion, BoundedVec};
 
 #[cfg(test)]
 mod mock;
@@ -182,6 +182,12 @@ pub struct Trade<Balance, Order> {
 	quantity_quote: Balance,
 	taker_order: Order,
 	maker_order: Order,
+}
+
+#[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
+pub struct MultipleOrderInfo {
+	order_id_list: BoundedVec<u64, ConstU32<{ u32::MAX }>>,
+	status: OrderStatus,
 }
 
 #[allow(clippy::unused_unit)]
@@ -361,6 +367,30 @@ pub mod pallet {
 	#[pallet::storage]
 	#[pallet::getter(fn native_asset_id)]
 	pub type NativeAssetId<T: Config> = StorageValue<_, CurrencyId, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn multiple_order_infos)]
+	pub type MultipleOrderInfos<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		u64, //multiple order infos id
+		MultipleOrderInfo,
+		ValueQuery,
+	>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn next_mutiple_order_info_index)]
+	pub(super) type NextMultipleOrderInfoIndex<T: Config> = StorageValue<_, u64, ValueQuery>;
+
+	#[pallet::storage]
+	#[pallet::getter(fn map_mutiple_order_id)]
+	pub type MapMultipleOrderID<T: Config> = StorageMap<
+		_,
+		Blake2_128Concat,
+		u64, //order index,
+		u64, //multiple order infos id
+		ValueQuery,
+	>;
 
 	#[pallet::event]
 	#[pallet::generate_deposit(pub(super) fn deposit_event)]
@@ -664,96 +694,15 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			let (asset_id_1, asset_id_2, order_type) = if asset_id_1 > asset_id_2 {
-				(asset_id_2, asset_id_1, order_type.get_opposite())
-			} else {
-				(asset_id_1, asset_id_2, order_type)
-			};
-
-			ensure!(
-				asset_id_1 != asset_id_2,
-				Error::<T>::PairAssetIdMustNotEqual
-			);
-
-			ensure!(
-				expiration_block > frame_system::Pallet::<T>::block_number(),
-				Error::<T>::ExpirationMustBeInFuture
-			);
-
-			let (a, b) = match order_type {
-				OrderType::SELL => (requested_amount, offered_amount),
-				OrderType::BUY => (offered_amount, requested_amount),
-			};
-
-			// because price is an integer, we need to check if the division is exact
-			// (does not have a remainder)
-			let price = a
-				.checked_div(&b)
-				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
-
-			// do the check
-			if price
-				.checked_mul(&b)
-				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
-				!= a
-			{
-				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
-			}
-
-			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
-				let order_index = *index;
-
-				let order = Order {
-					counter: order_index,
-					pair: (asset_id_1, asset_id_2),
-					expiration_block,
-					order_type,
-					address: who.clone(),
-					amount_offered: offered_amount,
-					amout_requested: requested_amount,
-					price,
-					unfilled_offered: offered_amount,
-					unfilled_requested: requested_amount,
-					order_status: OrderStatus::Pending,
-				};
-
-				let update_asset_id = match order.order_type {
-					OrderType::SELL => asset_id_1,
-					OrderType::BUY => asset_id_2,
-				};
-				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
-				info.amount = info
-					.amount
-					.checked_sub(&order.amount_offered)
-					.ok_or(Error::<T>::NotEnoughBalance)?;
-				info.reserved = info
-					.reserved
-					.checked_add(&order.amount_offered)
-					.ok_or(Error::<T>::TokenBalanceOverflow)?;
-				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
-
-				*index = index
-					.checked_add(One::one())
-					.ok_or(Error::<T>::OrderIndexOverflow)?;
-
-				Orders::<T>::insert(order_index, &order);
-				UserOrders::<T>::insert(who.clone(), order_index, ());
-
-				let mut expiration_orders = OrderExpiration::<T>::get(expiration_block);
-				expiration_orders
-					.try_push(order_index)
-					.expect("Max expiration_orders");
-				OrderExpiration::<T>::insert(expiration_block, expiration_orders);
-
-				let mut bounded_pair_orders = PairOrders::<T>::get((asset_id_1, asset_id_2));
-				bounded_pair_orders
-					.try_push(order_index)
-					.expect("Max bounded_pair_orders");
-				PairOrders::<T>::insert((asset_id_1, asset_id_2), bounded_pair_orders);
-
-				Self::deposit_event(Event::OrderCreated { order_index, order });
-				Ok(())
-			})?;
+			Self::create_order_impl(
+				who,
+				asset_id_1,
+				asset_id_2,
+				offered_amount,
+				requested_amount,
+				order_type,
+				expiration_block,
+			)?;
 
 			Ok(().into())
 		}
@@ -1007,6 +956,52 @@ pub mod pallet {
 
 			Ok(())
 		}
+
+		#[pallet::weight({9})]
+		#[pallet::call_index(9)]
+		pub fn make_multiple_orders(
+			origin: OriginFor<T>,
+			orders: Vec<(
+				CurrencyId,
+				CurrencyId,
+				BalanceOf<T>,
+				BalanceOf<T>,
+				OrderType,
+				BlockNumberFor<T>,
+			)>,
+		) -> DispatchResultWithPostInfo {
+			let who = ensure_signed(origin)?;
+
+			let next_multiple_order_info_index = NextMultipleOrderInfoIndex::<T>::get();
+
+			let mut order_id_list = BoundedVec::<u64, ConstU32<{ u32::MAX }>>::new();
+			for order in orders {
+				let order_id = NextOrderIndex::<T>::get();
+				Self::create_order_impl(
+					who.clone(),
+					order.0,
+					order.1,
+					order.2,
+					order.3,
+					order.4,
+					order.5,
+				)?;
+
+				let _ = order_id_list.try_push(order_id);
+
+				MapMultipleOrderID::<T>::insert(order_id, next_multiple_order_info_index);
+			}
+
+			MultipleOrderInfos::<T>::insert(
+				next_multiple_order_info_index,
+				MultipleOrderInfo {
+					order_id_list: order_id_list.into(),
+					status: OrderStatus::Pending,
+				},
+			);
+
+			Ok(().into())
+		}
 	}
 
 	impl<T: Config> Pallet<T> {
@@ -1118,6 +1113,109 @@ pub mod pallet {
 
 				Ok(())
 			})
+		}
+
+		fn create_order_impl(
+			who: T::AccountId,
+			asset_id_1: CurrencyId,
+			asset_id_2: CurrencyId,
+			offered_amount: BalanceOf<T>,
+			requested_amount: BalanceOf<T>,
+			order_type: OrderType,
+			expiration_block: BlockNumberFor<T>,
+		) -> DispatchResult {
+			let (asset_id_1, asset_id_2, order_type) = if asset_id_1 > asset_id_2 {
+				(asset_id_2, asset_id_1, order_type.get_opposite())
+			} else {
+				(asset_id_1, asset_id_2, order_type)
+			};
+
+			ensure!(
+				asset_id_1 != asset_id_2,
+				Error::<T>::PairAssetIdMustNotEqual
+			);
+
+			ensure!(
+				expiration_block > frame_system::Pallet::<T>::block_number(),
+				Error::<T>::ExpirationMustBeInFuture
+			);
+
+			let (a, b) = match order_type {
+				OrderType::SELL => (requested_amount, offered_amount),
+				OrderType::BUY => (offered_amount, requested_amount),
+			};
+
+			// because price is an integer, we need to check if the division is exact
+			// (does not have a remainder)
+			let price = a
+				.checked_div(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
+
+			// do the check
+			if price
+				.checked_mul(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
+				!= a
+			{
+				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
+			}
+
+			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
+				let order_index = *index;
+
+				let order = Order {
+					counter: order_index,
+					pair: (asset_id_1, asset_id_2),
+					expiration_block,
+					order_type,
+					address: who.clone(),
+					amount_offered: offered_amount,
+					amout_requested: requested_amount,
+					price,
+					unfilled_offered: offered_amount,
+					unfilled_requested: requested_amount,
+					order_status: OrderStatus::Pending,
+				};
+
+				let update_asset_id = match order.order_type {
+					OrderType::SELL => asset_id_1,
+					OrderType::BUY => asset_id_2,
+				};
+				let mut info = UserTokenInfoes::<T>::get(who.clone(), update_asset_id);
+				info.amount = info
+					.amount
+					.checked_sub(&order.amount_offered)
+					.ok_or(Error::<T>::NotEnoughBalance)?;
+				info.reserved = info
+					.reserved
+					.checked_add(&order.amount_offered)
+					.ok_or(Error::<T>::TokenBalanceOverflow)?;
+				UserTokenInfoes::<T>::insert(who.clone(), update_asset_id, info);
+
+				*index = index
+					.checked_add(One::one())
+					.ok_or(Error::<T>::OrderIndexOverflow)?;
+
+				Orders::<T>::insert(order_index, &order);
+				UserOrders::<T>::insert(who.clone(), order_index, ());
+
+				let mut expiration_orders = OrderExpiration::<T>::get(expiration_block);
+				expiration_orders
+					.try_push(order_index)
+					.expect("Max expiration_orders");
+				OrderExpiration::<T>::insert(expiration_block, expiration_orders);
+
+				let mut bounded_pair_orders = PairOrders::<T>::get((asset_id_1, asset_id_2));
+				bounded_pair_orders
+					.try_push(order_index)
+					.expect("Max bounded_pair_orders");
+				PairOrders::<T>::insert((asset_id_1, asset_id_2), bounded_pair_orders);
+
+				Self::deposit_event(Event::OrderCreated { order_index, order });
+				Ok(())
+			})?;
+
+			Ok(())
 		}
 
 		pub fn update_order_from_trade_order(order: &OrderOf<T>) -> Result<(), DispatchError> {
