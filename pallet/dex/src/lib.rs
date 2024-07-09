@@ -6,7 +6,7 @@ use frame_support::{
 	pallet_prelude::{ConstU32, DispatchResult},
 	sp_std::{convert::TryInto, prelude::*},
 	traits::{Currency, ExistenceRequirement::AllowDeath, Get, ReservableCurrency},
-	BoundedBTreeMap, PalletId, RuntimeDebug,
+	BoundedBTreeMap, BoundedBTreeSet, PalletId, RuntimeDebug,
 };
 
 use frame_system::offchain::SendTransactionTypes;
@@ -33,7 +33,6 @@ use frame_support::{
 		fungibles::{Balanced, Mutate},
 		tokens::Preservation,
 	},
-	BoundedVec,
 };
 
 #[cfg(test)]
@@ -186,7 +185,7 @@ pub struct Trade<Balance, Order> {
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct MultipleOrderInfo {
-	order_id_list: BoundedVec<u64, ConstU32<{ u32::MAX }>>,
+	order_id_set: BoundedBTreeSet<u64, ConstU32<{ u32::MAX }>>,
 	status: OrderStatus,
 }
 
@@ -754,26 +753,7 @@ pub mod pallet {
 					}
 				}
 
-				if MapMultipleOrderID::<T>::contains_key(order_index) {
-					let multiple_order_id = MapMultipleOrderID::<T>::get(order_index);
-
-					MultipleOrderInfos::<T>::try_mutate_exists(
-						multiple_order_id,
-						|may_multiple_order_info| -> DispatchResult {
-							let multiple_order_info = may_multiple_order_info
-								.as_mut()
-								.ok_or(Error::<T>::MultipleOrderInfoNotFound)?;
-
-							for id in &multiple_order_info.order_id_list {
-								Self::cancel_order_impl(*id)?;
-							}
-
-							multiple_order_info.status = OrderStatus::FullyFilled;
-
-							Ok(())
-						},
-					)?;
-				}
+				Self::set_other_multiple_order_cancel(order_index)?;
 
 				Self::deposit_event(Event::OrderTaken {
 					account: who,
@@ -945,6 +925,9 @@ pub mod pallet {
 					)?;
 				}
 
+				Self::set_other_multiple_order_cancel(taker_order.counter)?;
+				Self::set_other_multiple_order_cancel(maker_order.counter)?;
+
 				Self::deposit_event(Event::OrderMatched {
 					quantity_base: trade.quantity_base,
 					quantity_quote: trade.quantity_quote,
@@ -973,7 +956,7 @@ pub mod pallet {
 
 			let next_multiple_order_info_index = NextMultipleOrderInfoIndex::<T>::get();
 
-			let mut order_id_list = BoundedVec::<u64, ConstU32<{ u32::MAX }>>::new();
+			let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
 			for order in orders {
 				let order_id = NextOrderIndex::<T>::get();
 				Self::create_order_impl(
@@ -986,7 +969,7 @@ pub mod pallet {
 					order.5,
 				)?;
 
-				let _ = order_id_list.try_push(order_id);
+				let _ = order_id_set.try_insert(order_id);
 
 				MapMultipleOrderID::<T>::insert(order_id, next_multiple_order_info_index);
 			}
@@ -994,7 +977,7 @@ pub mod pallet {
 			MultipleOrderInfos::<T>::insert(
 				next_multiple_order_info_index,
 				MultipleOrderInfo {
-					order_id_list: order_id_list.into(),
+					order_id_set: order_id_set.into(),
 					status: OrderStatus::Pending,
 				},
 			);
@@ -1324,6 +1307,11 @@ pub mod pallet {
 				let (matched_quantity_requested, matched_quantity_offered) =
 					match taker_unfilled_quantity_requested.cmp(&maker_order.unfilled_offered) {
 						Ordering::Greater => {
+							if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
+								// multiple order must be FullyFilled
+								continue;
+							}
+
 							//taker request amout > maker offer amout
 							(maker_order.unfilled_offered, maker_order.unfilled_requested)
 						}
@@ -1355,6 +1343,11 @@ pub mod pallet {
 							}
 						}
 						Ordering::Less => {
+							if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
+								// multiple order must be FullyFilled
+								continue;
+							}
+
 							//taker request amout < maker offer amout
 							match taker_order.order_type {
 								OrderType::BUY => {
@@ -1408,12 +1401,38 @@ pub mod pallet {
 					|| taker_unfilled_quantity_offered == BalanceOf::<T>::default()
 				{
 					taker_order.order_status = OrderStatus::FullyFilled;
+
+					if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
+						// remove from order book, and cancel other order
+						Self::remove_other_multiple_order_in_order_book(
+							taker_order.counter,
+							maker_book,
+						);
+						Self::remove_other_multiple_order_in_order_book(
+							taker_order.counter,
+							another_book,
+						);
+					}
 				} else if taker_unfilled_quantity_requested != taker_order.amout_requested {
 					taker_order.order_status = OrderStatus::PartialFilled;
 				}
 
 				if maker_unfilled_quantity_offered == BalanceOf::<T>::default() {
 					maker_order.order_status = OrderStatus::FullyFilled;
+
+					if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
+						// remove from order book, and cancel other order
+						// remove from order book, and cancel other order
+						Self::remove_other_multiple_order_in_order_book(
+							maker_order.counter,
+							maker_book,
+						);
+						Self::remove_other_multiple_order_in_order_book(
+							maker_order.counter,
+							another_book,
+						);
+						continue;
+					}
 
 					match_result.match_details.push(Trade {
 						price: maker_order.price,
@@ -1462,6 +1481,51 @@ pub mod pallet {
 			}
 
 			Ok(match_result)
+		}
+
+		fn remove_other_multiple_order_in_order_book(
+			matched_order_id: u64,
+			//order_id_set: BoundedBTreeSet<u64, ConstU32<{ u32::MAX }>>,
+			order_book: &mut BoundedBTreeMap<
+				OrderBookKey<BalanceOf<T>>,
+				OrderOf<T>,
+				ConstU32<{ u32::MAX }>,
+			>,
+		) {
+			let multiple_order_id = MapMultipleOrderID::<T>::get(matched_order_id);
+			let info = MultipleOrderInfos::<T>::get(multiple_order_id);
+
+			let mut order_id_set = info.order_id_set.clone();
+			order_id_set.remove(&matched_order_id);
+			order_book.retain(|k, _| !order_id_set.contains(&k.order_id));
+		}
+
+		fn set_other_multiple_order_cancel(order_index: u64) -> DispatchResult {
+			if MapMultipleOrderID::<T>::contains_key(order_index) {
+				let multiple_order_id = MapMultipleOrderID::<T>::get(order_index);
+
+				MultipleOrderInfos::<T>::try_mutate_exists(
+					multiple_order_id,
+					|may_multiple_order_info| -> DispatchResult {
+						let multiple_order_info = may_multiple_order_info
+							.as_mut()
+							.ok_or(Error::<T>::MultipleOrderInfoNotFound)?;
+
+						let mut order_id_set = multiple_order_info.order_id_set.clone();
+						order_id_set.remove(&order_index);
+
+						for id in &order_id_set {
+							Self::cancel_order_impl(*id)?;
+						}
+
+						multiple_order_info.status = OrderStatus::FullyFilled;
+
+						Ok(())
+					},
+				)?;
+			}
+
+			Ok(())
 		}
 
 		fn offchain_unsigned_tx(
