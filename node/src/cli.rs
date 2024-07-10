@@ -54,6 +54,10 @@ pub struct Cli {
 
 	#[clap(flatten)]
 	pub relayer_cmd: pallet_eth2_light_client_relayer_gadget_cli::LightClientRelayerCmd,
+
+	#[cfg(feature = "brooklyn")]
+	#[arg(long, short = 'o')]
+	pub output_path: Option<std::path::PathBuf>,
 }
 
 #[derive(Debug, clap::Subcommand)]

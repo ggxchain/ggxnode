@@ -87,7 +87,7 @@ async fn call_zk_groth16_verify(
 #[cfg(unix)]
 #[tokio::test]
 async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
-	let mut alice = common::start_node_for_local_chain("alice", "dev").await;
+	let (mut alice, mut bob) = common::start_dev_nodes().await;
 
 	// Let it produce some blocks.
 	let _ = common::wait_n_finalized_blocks(1, 30, &alice.ws_url).await;
@@ -111,6 +111,7 @@ async fn evm_zk_verify_test() -> Result<(), Box<dyn std::error::Error>> {
 
 	// Stop the process
 	alice.kill();
+	bob.kill();
 
 	Ok(())
 }

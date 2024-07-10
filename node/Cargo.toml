@@ -100,6 +100,10 @@ replace-rpc.workspace = true
 reward-rpc.workspace = true
 vault-registry-rpc.workspace = true
 
+# DKG
+dkg-gadget = { workspace = true, optional = true }
+dkg-primitives = { workspace = true, optional = true }
+
 [dev-dependencies]
 alloy-rlp = { workspace = true }
 assert_cmd = { workspace = true }
@@ -133,6 +137,8 @@ default = ["brooklyn"]
 sydney = ["fast-runtime", "ggxchain-runtime-sydney"]
 brooklyn = [
 	"ggxchain-runtime-brooklyn",
+	"dkg-gadget",
+	"dkg-primitives",
 ]
 fast-runtime = [
 	"ggxchain-runtime-sydney?/fast-runtime",

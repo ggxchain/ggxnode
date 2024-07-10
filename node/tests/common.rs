@@ -29,6 +29,7 @@ use std::{
 	ops::{Deref, DerefMut},
 	path::Path,
 	process::{self, Child, Command, ExitStatus},
+	sync::atomic,
 	time::Duration,
 };
 
@@ -53,6 +54,9 @@ type AccountData = pallet_balances::AccountData<Balance>;
 pub const CHAIN_ID: u64 = 8886u64;
 #[cfg(feature = "brooklyn")]
 pub const CHAIN_ID: u64 = 888866u64;
+
+static DEV_P2P_PORT: atomic::AtomicUsize = atomic::AtomicUsize::new(30333);
+static DEV_RPC_PORT: atomic::AtomicUsize = atomic::AtomicUsize::new(9944);
 
 /// Wait for the given `child` the given number of `secs`.
 ///
@@ -269,17 +273,78 @@ impl Node {
 	}
 }
 
-pub async fn start_node_for_local_chain(validator_name: &str, chain: &str) -> Node {
-	let base_path = tempdir().expect("could not create a temp dir");
+pub async fn start_dev_node() -> Node {
+	start_node_for_local_chain(
+		"alice",
+		"dev",
+		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+	)
+	.await
+}
+
+pub async fn start_dev_nodes() -> (Node, Node) {
+	let (alice_p2p_port, bob_p2p_port, alice_rpc_port, bob_rpc_port) = (
+		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_P2P_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+		DEV_RPC_PORT.fetch_add(1, atomic::Ordering::SeqCst),
+	);
+	(
+		start_node_for_local_chain("alice", "dev", alice_p2p_port, alice_rpc_port).await,
+		start_node_for_local_chain("bob", "dev", bob_p2p_port, bob_rpc_port).await,
+	)
+}
+
+pub async fn start_node_for_local_chain(
+	validator_name: &str,
+	chain: &str,
+	p2p_port: usize,
+	rpc_port: usize,
+) -> Node {
+	let base_path = match std::env::var("TEST_DATA_DIR") {
+		Ok(test_data_dir) => {
+			let dir = format!("{test_data_dir}/{chain}-{validator_name}-{rpc_port}");
+			std::fs::create_dir_all(&dir).expect(&format!("could not create directory {dir}"));
+			dir
+		}
+		Err(_) => tempdir()
+			.expect("could not create a temp dir")
+			.path()
+			.to_str()
+			.unwrap()
+			.to_string(),
+	};
 	let (stderr_file, output_path) = tempfile::NamedTempFile::new().unwrap().keep().unwrap();
+
+	let mut node_args = vec![
+		format!("--{validator_name}"),
+		format!("--chain={chain}"),
+		format!("--port={p2p_port}"),
+		format!("--rpc-port={rpc_port}"),
+		format!("--base-path={base_path}"),
+		"--rpc-cors=all".to_string(),
+	];
+	match validator_name {
+		"alice" => node_args.push(
+			"--node-key=0000000000000000000000000000000000000000000000000000000000000001"
+				.to_string(),
+		),
+		"bob" => {
+			const ALICE_NODE_ID: &str = "12D3KooWEyoppNCUx8Yx66oV9fJnriXwCcXwDDUA2kj6vnc6iDEp";
+			node_args.push(format!(
+				"--bootnodes=/ip4/127.0.0.1/tcp/{}/p2p/{}",
+				p2p_port - 1,
+				ALICE_NODE_ID
+			));
+		}
+		_ => (),
+	}
 
 	let cmd = Command::new(cargo_bin("ggxchain-node"))
 		.stdout(process::Stdio::piped())
 		.stderr(process::Stdio::from(stderr_file))
-		.args([&format!("--{validator_name}"), &format!("--chain={chain}")])
-		.arg("--rpc-cors=all")
-		.arg("-d")
-		.arg(base_path.path())
+		.args(node_args)
 		.spawn()
 		.unwrap();
 

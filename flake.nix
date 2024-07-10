@@ -391,6 +391,7 @@
                   nodePackages.markdownlint-cli2
                   jq
                   awscli2
+                  gmp
                 ];
 
                 inputsFrom = [

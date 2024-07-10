@@ -154,6 +154,12 @@ vault-registry-rpc-runtime-api.workspace = true
 # Dex
 pallet-dex.workspace = true
 
+# DKG
+dkg-runtime-primitives.workspace = true
+pallet-dkg-metadata.workspace = true
+pallet-dkg-proposal-handler.workspace = true
+pallet-dkg-proposals.workspace = true
+
 [build-dependencies]
 substrate-wasm-builder.workspace = true
 
@@ -288,6 +294,12 @@ std = [
 
 	#Dex
 	"pallet-dex/std",
+
+	# DKG
+	"pallet-dkg-metadata/std",
+	"pallet-dkg-proposal-handler/std",
+	"pallet-dkg-proposals/std",
+	"dkg-runtime-primitives/std",
 ]
 aura = []
 allowlist = []
