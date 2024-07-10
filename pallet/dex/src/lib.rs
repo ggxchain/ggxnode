@@ -199,6 +199,7 @@ pub mod pallet {
 		Blake2_128Concat,
 	};
 	use frame_system::offchain::SubmitTransaction;
+	use sp_std::collections::btree_set::BTreeSet;
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -1268,6 +1269,9 @@ pub mod pallet {
 				taker_order: taker_order.clone(),
 				match_details: vec![],
 			};
+
+			let mut disable_multiple_order_id_in_group = BTreeSet::<u64>::new();
+
 			let mut taker_unfilled_quantity_requested = taker_order.amout_requested;
 			let mut taker_unfilled_quantity_offered = taker_order.amount_offered;
 			loop {
@@ -1292,6 +1296,10 @@ pub mod pallet {
 
 				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
 
+				if disable_multiple_order_id_in_group.contains(&maker_order.counter) {
+					break;
+				}
+
 				if taker_order.order_type == OrderType::BUY && taker_order.price < maker_order.price
 				{
 					break;
@@ -1309,7 +1317,7 @@ pub mod pallet {
 						Ordering::Greater => {
 							if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
 								// multiple order must be FullyFilled
-								continue;
+								break;
 							}
 
 							//taker request amout > maker offer amout
@@ -1345,7 +1353,7 @@ pub mod pallet {
 						Ordering::Less => {
 							if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
 								// multiple order must be FullyFilled
-								continue;
+								break;
 							}
 
 							//taker request amout < maker offer amout
@@ -1403,15 +1411,10 @@ pub mod pallet {
 					taker_order.order_status = OrderStatus::FullyFilled;
 
 					if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
-						// remove from order book, and cancel other order
-						Self::remove_other_multiple_order_in_order_book(
-							taker_order.counter,
-							maker_book,
-						);
-						Self::remove_other_multiple_order_in_order_book(
-							taker_order.counter,
-							another_book,
-						);
+						let mut order_id_set =
+							Self::get_disable_multiple_order_id_in_group(taker_order.counter);
+
+						disable_multiple_order_id_in_group.append(&mut order_id_set);
 					}
 				} else if taker_unfilled_quantity_requested != taker_order.amout_requested {
 					taker_order.order_status = OrderStatus::PartialFilled;
@@ -1421,17 +1424,10 @@ pub mod pallet {
 					maker_order.order_status = OrderStatus::FullyFilled;
 
 					if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
-						// remove from order book, and cancel other order
-						// remove from order book, and cancel other order
-						Self::remove_other_multiple_order_in_order_book(
-							maker_order.counter,
-							maker_book,
-						);
-						Self::remove_other_multiple_order_in_order_book(
-							maker_order.counter,
-							another_book,
-						);
-						continue;
+						let mut order_id_set =
+							Self::get_disable_multiple_order_id_in_group(maker_order.counter);
+
+						disable_multiple_order_id_in_group.append(&mut order_id_set);
 					}
 
 					match_result.match_details.push(Trade {
@@ -1480,24 +1476,19 @@ pub mod pallet {
 				}
 			}
 
+			maker_book.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
+			another_book.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
+
 			Ok(match_result)
 		}
 
-		fn remove_other_multiple_order_in_order_book(
-			matched_order_id: u64,
-			//order_id_set: BoundedBTreeSet<u64, ConstU32<{ u32::MAX }>>,
-			order_book: &mut BoundedBTreeMap<
-				OrderBookKey<BalanceOf<T>>,
-				OrderOf<T>,
-				ConstU32<{ u32::MAX }>,
-			>,
-		) {
+		fn get_disable_multiple_order_id_in_group(matched_order_id: u64) -> BTreeSet<u64> {
 			let multiple_order_id = MapMultipleOrderID::<T>::get(matched_order_id);
 			let info = MultipleOrderInfos::<T>::get(multiple_order_id);
 
 			let mut order_id_set = info.order_id_set.clone();
 			order_id_set.remove(&matched_order_id);
-			order_book.retain(|k, _| !order_id_set.contains(&k.order_id));
+			order_id_set.into()
 		}
 
 		fn set_other_multiple_order_cancel(order_index: u64) -> DispatchResult {

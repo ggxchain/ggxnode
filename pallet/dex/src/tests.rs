@@ -971,17 +971,28 @@ fn test_offchain_worker_order_matching() {
 
 #[test]
 fn test_multiple_orders() {
-	new_test_ext().execute_with(|| {
+	use frame_support::traits::OffchainWorker;
+	let mut ext = new_test_ext();
+
+	ext.execute_with(|| add_blocks(1));
+	ext.persist_offchain_overlay();
+
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
+	ext.execute_with(|| {
 		let block = 1;
 		System::set_block_number(block);
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 100));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 100));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 1000));
 
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 100));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 100));
-		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 100));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 1000));
 
 		assert_ok!(Dex::make_multiple_orders(
 			RuntimeOrigin::signed(1),
@@ -1049,7 +1060,7 @@ fn test_multiple_orders() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 777),
 			TokenInfo {
-				amount: 0,
+				amount: 900,
 				reserved: 0,
 			}
 		);
@@ -1057,7 +1068,7 @@ fn test_multiple_orders() {
 		assert_eq!(
 			UserTokenInfoes::<Test>::get(1, 999),
 			TokenInfo {
-				amount: 101,
+				amount: 1001,
 				reserved: 0,
 			}
 		);
@@ -1078,5 +1089,5 @@ fn test_multiple_orders() {
 			Orders::<Test>::get(4).unwrap().order_status,
 			OrderStatus::FullyFilled,
 		);
-	});
+	})
 }
