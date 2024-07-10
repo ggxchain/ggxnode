@@ -12,7 +12,11 @@ pub mod common;
 
 use common::CHAIN_ID;
 
+#[cfg(feature = "brooklyn")]
 const SESSION_KEYS: &str= "dc2a5a4d7d9cd10807ba90f4cc2ca6af94414d3f9a4a7c47ae3371263ee9894706361d59c0503c78196ffb531c244edc78c6585680c6ca97068c850bea7a8abe2eeda6e65141736b2a609e6ee8dac17dc37c4ec3cc1f807e6552fce0ff60d32f0325ff58ef8784f6aef99c3870b697f8d7511f905d67f42d17fb5886718ba2f62a03ebc395e821e76e61e783b3325ce6fc84f3da4b61a8ee2759bf8a2a0f78c0f461";
+
+#[cfg(not(feature = "brooklyn"))]
+const SESSION_KEYS: &str= "6a8357e87e163a03ed9c03ce2852bcf673121fc67c9fa7b839797879547c155c5c9479d0fea15172526450eb3bda80d9830fabf07e4fe4b7c020bfd0e6dbd321bc7e65505f0967481fb2c7d5226072d14efaae9d65c1d732548c1cf07d675927038602d835e19cd18df04a40a0c3991fa76f254b89fe9b98401961bde94f15bc6e";
 
 type Client = SignerMiddleware<Provider<Http>, Wallet<k256::ecdsa::SigningKey>>;
 
