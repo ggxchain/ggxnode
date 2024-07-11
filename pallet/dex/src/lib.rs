@@ -210,6 +210,15 @@ pub mod pallet {
 	type MapMatchEnginesOf<T> =
 		BoundedBTreeMap<(u32, u32), MatchEngine<OrderOf<T>, BalanceOf<T>>, ConstU32<{ u32::MAX }>>;
 
+	type OrderInput<T> = (
+		u32,
+		u32,
+		BalanceOf<T>,
+		BalanceOf<T>,
+		OrderType,
+		BlockNumberFor<T>,
+	);
+
 	#[pallet::genesis_config]
 	#[derive(Default)]
 	pub struct GenesisConfig {
@@ -944,14 +953,7 @@ pub mod pallet {
 		#[pallet::call_index(9)]
 		pub fn make_multiple_orders(
 			origin: OriginFor<T>,
-			orders: Vec<(
-				u32,
-				u32,
-				BalanceOf<T>,
-				BalanceOf<T>,
-				OrderType,
-				BlockNumberFor<T>,
-			)>,
+			orders: Vec<OrderInput<T>>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
@@ -978,7 +980,7 @@ pub mod pallet {
 			MultipleOrderInfos::<T>::insert(
 				next_multiple_order_info_index,
 				MultipleOrderInfo {
-					order_id_set: order_id_set.into(),
+					order_id_set,
 					status: OrderStatus::Pending,
 				},
 			);
