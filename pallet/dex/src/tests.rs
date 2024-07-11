@@ -901,23 +901,7 @@ fn test_offchain_worker_order_matching() {
 
 		Dex::offchain_worker(block);
 
-		let mut txs = vec![];
-		while !pool_state.read().transactions.is_empty() {
-			let tx = pool_state.write().transactions.pop().unwrap();
-			let tx = Extrinsic::decode(&mut &*tx).unwrap();
-			txs.insert(0, tx);
-		}
-
-		for tx in txs {
-			match tx.call {
-				RuntimeCall::Dex(crate::Call::update_match_order_unsigned { match_result: m }) => {
-					let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
-				}
-				_ => {
-					assert_eq!(2, 3);
-				}
-			};
-		}
+		call_offchain_worker_function_in_transactions(&pool_state);
 
 		//order_book  price=> (total_offered_amount, total_requested_amount)
 		let mut sell_order_book = BTreeMap::new();
@@ -970,7 +954,7 @@ fn test_offchain_worker_order_matching() {
 }
 
 #[test]
-fn test_multiple_orders() {
+fn test_multiple_orders_buy() {
 	use frame_support::traits::OffchainWorker;
 	let mut ext = new_test_ext();
 
@@ -1019,62 +1003,13 @@ fn test_multiple_orders() {
 
 			Dex::offchain_worker(block);
 
-			let mut txs = vec![];
-			while !pool_state.read().transactions.is_empty() {
-				let tx = pool_state.write().transactions.pop().unwrap();
-				let tx = Extrinsic::decode(&mut &*tx).unwrap();
-				txs.insert(0, tx);
-			}
+			call_offchain_worker_function_in_transactions(&pool_state);
 
-			for tx in txs {
-				match tx.call {
-					RuntimeCall::Dex(crate::Call::update_match_order_unsigned {
-						match_result: m,
-					}) => {
-						let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
-					}
-					_ => {
-						assert_eq!(2, 3);
-					}
-				};
-			}
-
-			//order_book  price=> (total_offered_amount, total_requested_amount)
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
 			let mut sell_order_book = BTreeMap::new();
 			let mut buy_order_book = BTreeMap::new();
 
-			for (_, order) in Orders::<Test>::iter() {
-				if order.order_status != OrderStatus::FullyFilled {
-					if order.order_type == OrderType::BUY {
-						if !buy_order_book.contains_key(&(order.price, order.pair)) {
-							buy_order_book.insert(
-								(order.price, order.pair),
-								(order.unfilled_offered, order.unfilled_requested),
-							);
-						} else {
-							let v = buy_order_book.get(&(order.price, order.pair)).unwrap();
-
-							buy_order_book.insert(
-								(order.price, order.pair),
-								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-							);
-						}
-					} else {
-						if !sell_order_book.contains_key(&(order.price, order.pair)) {
-							sell_order_book.insert(
-								(order.price, order.pair),
-								(order.unfilled_offered, order.unfilled_requested),
-							);
-						} else {
-							let v = sell_order_book.get(&(order.price, order.pair)).unwrap();
-							sell_order_book.insert(
-								(order.price, order.pair),
-								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-							);
-						}
-					}
-				}
-			}
+			create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
 
 			assert_eq!(sell_order_book.len(), 1);
 			assert_eq!(buy_order_book.len(), 3);
@@ -1096,62 +1031,13 @@ fn test_multiple_orders() {
 
 			Dex::offchain_worker(block);
 
-			let mut txs = vec![];
-			while !pool_state.read().transactions.is_empty() {
-				let tx = pool_state.write().transactions.pop().unwrap();
-				let tx = Extrinsic::decode(&mut &*tx).unwrap();
-				txs.insert(0, tx);
-			}
+			call_offchain_worker_function_in_transactions(&pool_state);
 
-			for tx in txs {
-				match tx.call {
-					RuntimeCall::Dex(crate::Call::update_match_order_unsigned {
-						match_result: m,
-					}) => {
-						let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
-					}
-					_ => {
-						assert_eq!(2, 3);
-					}
-				};
-			}
-
-			//order_book  price=> (total_offered_amount, total_requested_amount)
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
 			let mut sell_order_book = BTreeMap::new();
 			let mut buy_order_book = BTreeMap::new();
 
-			for (_, order) in Orders::<Test>::iter() {
-				if order.order_status != OrderStatus::FullyFilled {
-					if order.order_type == OrderType::BUY {
-						if !buy_order_book.contains_key(&(order.price, order.pair)) {
-							buy_order_book.insert(
-								(order.price, order.pair),
-								(order.unfilled_offered, order.unfilled_requested),
-							);
-						} else {
-							let v = buy_order_book.get(&(order.price, order.pair)).unwrap();
-
-							buy_order_book.insert(
-								(order.price, order.pair),
-								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-							);
-						}
-					} else {
-						if !sell_order_book.contains_key(&(order.price, order.pair)) {
-							sell_order_book.insert(
-								(order.price, order.pair),
-								(order.unfilled_offered, order.unfilled_requested),
-							);
-						} else {
-							let v = sell_order_book.get(&(order.price, order.pair)).unwrap();
-							sell_order_book.insert(
-								(order.price, order.pair),
-								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-							);
-						}
-					}
-				}
-			}
+			create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
 
 			assert_eq!(sell_order_book.len(), 1);
 			assert_eq!(buy_order_book.len(), 0);
@@ -1168,6 +1054,114 @@ fn test_multiple_orders() {
 				UserTokenInfoes::<Test>::get(1, 999),
 				TokenInfo {
 					amount: 900,
+					reserved: 0,
+				}
+			);
+		}
+	})
+}
+
+#[test]
+fn test_multiple_orders_sell() {
+	use frame_support::traits::OffchainWorker;
+	let mut ext = new_test_ext();
+
+	ext.execute_with(|| add_blocks(1));
+	ext.persist_offchain_overlay();
+
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
+	ext.execute_with(|| {
+		let block = 1;
+		System::set_block_number(block);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 1000));
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 1000));
+
+		assert_ok!(Dex::make_multiple_orders(
+			RuntimeOrigin::signed(1),
+			vec![
+				(777, 888, 10, 100, OrderType::SELL, 6),
+				(777, 999, 10, 100, OrderType::SELL, 6),
+				(888, 999, 10, 100, OrderType::SELL, 6),
+			],
+		));
+
+		// not full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				50,
+				5,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_book.len(), 3);
+			assert_eq!(buy_order_book.len(), 1);
+		}
+
+		// full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				100,
+				10,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_book.len(), 0);
+			assert_eq!(buy_order_book.len(), 1);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 990,
+					reserved: 0,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 1100,
 					reserved: 0,
 				}
 			);

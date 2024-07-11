@@ -1,5 +1,7 @@
 use crate as pallet_dex;
+use std::{collections::BTreeMap, sync::Arc};
 
+use crate::{OrderStatus, OrderType, Orders};
 use frame_support::{
 	pallet_prelude::Weight,
 	parameter_types, sp_io,
@@ -7,8 +9,10 @@ use frame_support::{
 	weights::constants::RocksDbWeight,
 	PalletId,
 };
+use parking_lot::RwLock;
+use scale_codec::Decode;
 use sp_core::{ConstU128, ConstU32, ConstU64, H256};
-use sp_runtime::{testing::Header, traits::IdentityLookup};
+use sp_runtime::{offchain::testing::PoolState, testing::Header, traits::IdentityLookup};
 
 pub type AccountId = u128;
 pub type Balance = u128;
@@ -238,5 +242,63 @@ fn new_block() -> Weight {
 pub fn add_blocks(blocks: usize) {
 	for _ in 0..blocks {
 		new_block();
+	}
+}
+
+pub fn call_offchain_worker_function_in_transactions(pool_state: &Arc<RwLock<PoolState>>) {
+	let mut txs = vec![];
+	while !pool_state.read().transactions.is_empty() {
+		let tx = pool_state.write().transactions.pop().unwrap();
+		let tx = Extrinsic::decode(&mut &*tx).unwrap();
+		txs.insert(0, tx);
+	}
+
+	for tx in txs {
+		match tx.call {
+			RuntimeCall::Dex(crate::Call::update_match_order_unsigned { match_result: m }) => {
+				let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
+			}
+			_ => {
+				assert_eq!(2, 3);
+			}
+		};
+	}
+}
+
+pub fn create_order_book_map_by_price(
+	sell_order_book: &mut BTreeMap<(Balance, (u32, u32)), (Balance, Balance)>,
+	buy_order_book: &mut BTreeMap<(Balance, (u32, u32)), (Balance, Balance)>,
+) {
+	for (_, order) in Orders::<Test>::iter() {
+		if order.order_status != OrderStatus::FullyFilled {
+			if order.order_type == OrderType::BUY {
+				if !buy_order_book.contains_key(&(order.price, order.pair)) {
+					buy_order_book.insert(
+						(order.price, order.pair),
+						(order.unfilled_offered, order.unfilled_requested),
+					);
+				} else {
+					let v = buy_order_book.get(&(order.price, order.pair)).unwrap();
+
+					buy_order_book.insert(
+						(order.price, order.pair),
+						(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+					);
+				}
+			} else {
+				if !sell_order_book.contains_key(&(order.price, order.pair)) {
+					sell_order_book.insert(
+						(order.price, order.pair),
+						(order.unfilled_offered, order.unfilled_requested),
+					);
+				} else {
+					let v = sell_order_book.get(&(order.price, order.pair)).unwrap();
+					sell_order_book.insert(
+						(order.price, order.pair),
+						(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+					);
+				}
+			}
+		}
 	}
 }
