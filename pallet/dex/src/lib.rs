@@ -957,33 +957,41 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
-			let next_multiple_order_info_index = NextMultipleOrderInfoIndex::<T>::get();
+			NextMultipleOrderInfoIndex::<T>::try_mutate(|index| -> DispatchResult {
+				let next_multiple_order_info_index = *index;
 
-			let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
-			for order in orders {
-				let order_id = NextOrderIndex::<T>::get();
-				Self::create_order_impl(
-					who.clone(),
-					order.0,
-					order.1,
-					order.2,
-					order.3,
-					order.4,
-					order.5,
-				)?;
+				let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+				for order in orders {
+					let order_id = NextOrderIndex::<T>::get();
+					Self::create_order_impl(
+						who.clone(),
+						order.0,
+						order.1,
+						order.2,
+						order.3,
+						order.4,
+						order.5,
+					)?;
 
-				let _ = order_id_set.try_insert(order_id);
+					let _ = order_id_set.try_insert(order_id);
 
-				MapMultipleOrderID::<T>::insert(order_id, next_multiple_order_info_index);
-			}
+					MapMultipleOrderID::<T>::insert(order_id, next_multiple_order_info_index);
+				}
 
-			MultipleOrderInfos::<T>::insert(
-				next_multiple_order_info_index,
-				MultipleOrderInfo {
-					order_id_set,
-					status: OrderStatus::Pending,
-				},
-			);
+				MultipleOrderInfos::<T>::insert(
+					next_multiple_order_info_index,
+					MultipleOrderInfo {
+						order_id_set,
+						status: OrderStatus::Pending,
+					},
+				);
+
+				*index = index
+					.checked_add(One::one())
+					.ok_or(Error::<T>::OrderIndexOverflow)?;
+
+				Ok(())
+			})?;
 
 			Ok(().into())
 		}
