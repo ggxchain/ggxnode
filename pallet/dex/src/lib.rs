@@ -1274,9 +1274,24 @@ pub mod pallet {
 
 			let mut taker_unfilled_quantity_requested = taker_order.amout_requested;
 			let mut taker_unfilled_quantity_offered = taker_order.amount_offered;
-			loop {
+
+			let max_loop_step: usize = maker_book.len();
+			for _n in 0..max_loop_step {
 				if maker_book.is_empty() {
 					break;
+				}
+
+				{
+					if !disable_multiple_order_id_in_group.is_empty() {
+						maker_book.retain(|k, _| {
+							!disable_multiple_order_id_in_group.contains(&k.order_id)
+						});
+						another_book.retain(|k, _| {
+							!disable_multiple_order_id_in_group.contains(&k.order_id)
+						});
+
+						disable_multiple_order_id_in_group.clear();
+					}
 				}
 
 				let maker_order_key = match maker_book_type {
@@ -1296,10 +1311,6 @@ pub mod pallet {
 
 				let maker_order = maker_book.get_mut(&maker_order_key).unwrap();
 
-				if disable_multiple_order_id_in_group.contains(&maker_order.counter) {
-					break;
-				}
-
 				if taker_order.order_type == OrderType::BUY && taker_order.price < maker_order.price
 				{
 					break;
@@ -1316,8 +1327,8 @@ pub mod pallet {
 					match taker_unfilled_quantity_requested.cmp(&maker_order.unfilled_offered) {
 						Ordering::Greater => {
 							if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
-								// multiple order must be FullyFilled
-								break;
+								// multiple order must be FullyFilled, skip PartialFilled
+								continue;
 							}
 
 							//taker request amout > maker offer amout
@@ -1352,8 +1363,8 @@ pub mod pallet {
 						}
 						Ordering::Less => {
 							if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
-								// multiple order must be FullyFilled
-								break;
+								// multiple order must be FullyFilled, skip PartialFilled
+								continue;
 							}
 
 							//taker request amout < maker offer amout
@@ -1476,8 +1487,13 @@ pub mod pallet {
 				}
 			}
 
-			maker_book.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
-			another_book.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
+			if !disable_multiple_order_id_in_group.is_empty() {
+				maker_book.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
+				another_book
+					.retain(|k, _| !disable_multiple_order_id_in_group.contains(&k.order_id));
+
+				disable_multiple_order_id_in_group.clear();
+			}
 
 			Ok(match_result)
 		}

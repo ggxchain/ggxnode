@@ -997,97 +997,180 @@ fn test_multiple_orders() {
 		assert_ok!(Dex::make_multiple_orders(
 			RuntimeOrigin::signed(1),
 			vec![
-				(777, 888, 100, 1, OrderType::BUY, 6),
-				(777, 999, 100, 1, OrderType::BUY, 6),
-				(888, 999, 100, 1, OrderType::BUY, 6),
+				(777, 888, 100, 10, OrderType::BUY, 6),
+				(777, 999, 100, 10, OrderType::BUY, 6),
+				(888, 999, 100, 10, OrderType::BUY, 6),
 			],
 		));
 
-		Dex::offchain_worker(block);
+		// not full filled
+		{
+			Dex::offchain_worker(block);
 
-		assert_ok!(Dex::make_order(
-			RuntimeOrigin::signed(1),
-			777,
-			999,
-			1,
-			100,
-			OrderType::SELL,
-			6
-		));
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				5,
+				50,
+				OrderType::SELL,
+				6
+			));
 
-		Dex::offchain_worker(block);
+			Dex::offchain_worker(block);
 
-		//order_book  price=> (total_offered_amount, total_requested_amount)
-		let mut sell_order_book = BTreeMap::new();
-		let mut buy_order_book = BTreeMap::new();
+			let mut txs = vec![];
+			while !pool_state.read().transactions.is_empty() {
+				let tx = pool_state.write().transactions.pop().unwrap();
+				let tx = Extrinsic::decode(&mut &*tx).unwrap();
+				txs.insert(0, tx);
+			}
 
-		for (_, order) in Orders::<Test>::iter() {
-			if order.order_status != OrderStatus::FullyFilled {
-				if order.order_type == OrderType::BUY {
-					if !buy_order_book.contains_key(&order.price) {
-						buy_order_book.insert(
-							order.price,
-							(order.unfilled_offered, order.unfilled_requested),
-						);
-					} else {
-						let v = buy_order_book.get(&order.price).unwrap();
-
-						buy_order_book.insert(
-							order.price,
-							(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-						);
+			for tx in txs {
+				match tx.call {
+					RuntimeCall::Dex(crate::Call::update_match_order_unsigned {
+						match_result: m,
+					}) => {
+						let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
 					}
-				} else {
-					if !sell_order_book.contains_key(&order.price) {
-						sell_order_book.insert(
-							order.price,
-							(order.unfilled_offered, order.unfilled_requested),
-						);
+					_ => {
+						assert_eq!(2, 3);
+					}
+				};
+			}
+
+			//order_book  price=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			for (_, order) in Orders::<Test>::iter() {
+				if order.order_status != OrderStatus::FullyFilled {
+					if order.order_type == OrderType::BUY {
+						if !buy_order_book.contains_key(&(order.price, order.pair)) {
+							buy_order_book.insert(
+								(order.price, order.pair),
+								(order.unfilled_offered, order.unfilled_requested),
+							);
+						} else {
+							let v = buy_order_book.get(&(order.price, order.pair)).unwrap();
+
+							buy_order_book.insert(
+								(order.price, order.pair),
+								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+							);
+						}
 					} else {
-						let v = sell_order_book.get(&order.price).unwrap();
-						sell_order_book.insert(
-							order.price,
-							(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
-						);
+						if !sell_order_book.contains_key(&(order.price, order.pair)) {
+							sell_order_book.insert(
+								(order.price, order.pair),
+								(order.unfilled_offered, order.unfilled_requested),
+							);
+						} else {
+							let v = sell_order_book.get(&(order.price, order.pair)).unwrap();
+							sell_order_book.insert(
+								(order.price, order.pair),
+								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+							);
+						}
 					}
 				}
 			}
+
+			assert_eq!(sell_order_book.len(), 1);
+			assert_eq!(buy_order_book.len(), 3);
 		}
 
-		assert_eq!(sell_order_book.len(), 0);
-		assert_eq!(buy_order_book.len(), 0);
+		// full filled
+		{
+			Dex::offchain_worker(block);
 
-		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 777),
-			TokenInfo {
-				amount: 900,
-				reserved: 0,
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				10,
+				100,
+				OrderType::SELL,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			let mut txs = vec![];
+			while !pool_state.read().transactions.is_empty() {
+				let tx = pool_state.write().transactions.pop().unwrap();
+				let tx = Extrinsic::decode(&mut &*tx).unwrap();
+				txs.insert(0, tx);
 			}
-		);
 
-		assert_eq!(
-			UserTokenInfoes::<Test>::get(1, 999),
-			TokenInfo {
-				amount: 1001,
-				reserved: 0,
+			for tx in txs {
+				match tx.call {
+					RuntimeCall::Dex(crate::Call::update_match_order_unsigned {
+						match_result: m,
+					}) => {
+						let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
+					}
+					_ => {
+						assert_eq!(2, 3);
+					}
+				};
 			}
-		);
 
-		assert_eq!(
-			Orders::<Test>::get(0).unwrap().order_status,
-			OrderStatus::FullyCancelled,
-		);
-		assert_eq!(
-			Orders::<Test>::get(1).unwrap().order_status,
-			OrderStatus::FullyFilled,
-		);
-		assert_eq!(
-			Orders::<Test>::get(2).unwrap().order_status,
-			OrderStatus::FullyCancelled,
-		);
-		assert_eq!(
-			Orders::<Test>::get(4).unwrap().order_status,
-			OrderStatus::FullyFilled,
-		);
+			//order_book  price=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			for (_, order) in Orders::<Test>::iter() {
+				if order.order_status != OrderStatus::FullyFilled {
+					if order.order_type == OrderType::BUY {
+						if !buy_order_book.contains_key(&(order.price, order.pair)) {
+							buy_order_book.insert(
+								(order.price, order.pair),
+								(order.unfilled_offered, order.unfilled_requested),
+							);
+						} else {
+							let v = buy_order_book.get(&(order.price, order.pair)).unwrap();
+
+							buy_order_book.insert(
+								(order.price, order.pair),
+								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+							);
+						}
+					} else {
+						if !sell_order_book.contains_key(&(order.price, order.pair)) {
+							sell_order_book.insert(
+								(order.price, order.pair),
+								(order.unfilled_offered, order.unfilled_requested),
+							);
+						} else {
+							let v = sell_order_book.get(&(order.price, order.pair)).unwrap();
+							sell_order_book.insert(
+								(order.price, order.pair),
+								(v.0 + order.unfilled_offered, v.1 + order.unfilled_requested),
+							);
+						}
+					}
+				}
+			}
+
+			assert_eq!(sell_order_book.len(), 1);
+			assert_eq!(buy_order_book.len(), 0);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 1010,
+					reserved: 0,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 900,
+					reserved: 0,
+				}
+			);
+		}
 	})
 }
