@@ -184,9 +184,13 @@ pub struct Trade<Balance, Order> {
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct MultipleOrderInfo {
+pub struct MultipleOrderInfo<Balance> {
 	order_id_set: BoundedBTreeSet<u64, ConstU32<{ u32::MAX }>>,
+	unfilled_order_id_set: BoundedBTreeSet<u64, ConstU32<{ u32::MAX }>>,
 	status: OrderStatus,
+	reserved_asset_id: u32,
+	reserved: Balance,
+	unuse_reserved: Balance,
 }
 
 #[allow(clippy::unused_unit)]
@@ -199,7 +203,7 @@ pub mod pallet {
 		Blake2_128Concat,
 	};
 	use frame_system::offchain::SubmitTransaction;
-	use sp_std::collections::btree_set::BTreeSet;
+	use sp_std::collections::{btree_map::BTreeMap, btree_set::BTreeSet};
 
 	pub type BalanceOf<T> =
 		<<T as Config>::Currency as Currency<<T as frame_system::Config>::AccountId>>::Balance;
@@ -361,7 +365,7 @@ pub mod pallet {
 		_,
 		Blake2_128Concat,
 		u64, //multiple order infos id
-		MultipleOrderInfo,
+		MultipleOrderInfo<BalanceOf<T>>,
 		ValueQuery,
 	>;
 
@@ -439,6 +443,8 @@ pub mod pallet {
 		DivOverflow,
 		MulOverflow,
 		MultipleOrderInfoNotFound,
+		OfferAssetMustBeReservedAsset,
+		OfferedAmountMustBeLessThanReservedAmount,
 	}
 
 	#[pallet::hooks]
@@ -763,7 +769,7 @@ pub mod pallet {
 					}
 				}
 
-				Self::set_other_multiple_order_cancel(order_index)?;
+				Self::update_multiple_order_in_group(order_index, order.unfilled_offered)?;
 
 				Self::deposit_event(Event::OrderTaken {
 					account: who,
@@ -935,8 +941,14 @@ pub mod pallet {
 					)?;
 				}
 
-				Self::set_other_multiple_order_cancel(taker_order.counter)?;
-				Self::set_other_multiple_order_cancel(maker_order.counter)?;
+				Self::update_multiple_order_in_group(
+					taker_order.counter,
+					taker_order.unfilled_offered,
+				)?;
+				Self::update_multiple_order_in_group(
+					maker_order.counter,
+					maker_order.unfilled_offered,
+				)?;
 
 				Self::deposit_event(Event::OrderMatched {
 					quantity_base: trade.quantity_base,
@@ -954,8 +966,48 @@ pub mod pallet {
 		pub fn make_multiple_orders(
 			origin: OriginFor<T>,
 			orders: Vec<OrderInput<T>>,
+			reserved_asset_id: u32,
+			reserved_amount: BalanceOf<T>,
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
+
+			for order in &orders {
+				let (
+					asset_id_1,
+					asset_id_2,
+					offered_amount,
+					_requested_amount,
+					order_type,
+					_expiration_block,
+				) = order;
+
+				let offer_asset = match order_type {
+					OrderType::SELL => asset_id_1,
+					OrderType::BUY => asset_id_2,
+				};
+
+				ensure!(
+					offer_asset == &reserved_asset_id,
+					Error::<T>::OfferAssetMustBeReservedAsset
+				);
+
+				ensure!(
+					offered_amount <= &reserved_amount,
+					Error::<T>::OfferedAmountMustBeLessThanReservedAmount
+				);
+			}
+
+			let mut info = UserTokenInfoes::<T>::get(who.clone(), reserved_asset_id);
+			info.amount = info
+				.amount
+				.checked_sub(&reserved_amount)
+				.ok_or(Error::<T>::NotEnoughBalance)?;
+
+			info.reserved = info
+				.reserved
+				.checked_add(&reserved_amount)
+				.ok_or(Error::<T>::TokenBalanceOverflow)?;
+			UserTokenInfoes::<T>::insert(who.clone(), reserved_asset_id, info);
 
 			NextMultipleOrderInfoIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let next_multiple_order_info_index = *index;
@@ -963,7 +1015,8 @@ pub mod pallet {
 				let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
 				for order in orders {
 					let order_id = NextOrderIndex::<T>::get();
-					Self::create_order_impl(
+
+					Self::create_multiple_order_impl(
 						who.clone(),
 						order.0,
 						order.1,
@@ -981,8 +1034,12 @@ pub mod pallet {
 				MultipleOrderInfos::<T>::insert(
 					next_multiple_order_info_index,
 					MultipleOrderInfo {
-						order_id_set,
+						order_id_set: order_id_set.clone(),
+						unfilled_order_id_set: order_id_set.clone(),
 						status: OrderStatus::Pending,
+						reserved_asset_id,
+						reserved: reserved_amount,
+						unuse_reserved: reserved_amount,
 					},
 				);
 
@@ -1211,6 +1268,94 @@ pub mod pallet {
 			Ok(())
 		}
 
+		fn create_multiple_order_impl(
+			who: T::AccountId,
+			asset_id_1: u32,
+			asset_id_2: u32,
+			offered_amount: BalanceOf<T>,
+			requested_amount: BalanceOf<T>,
+			order_type: OrderType,
+			expiration_block: BlockNumberFor<T>,
+		) -> DispatchResult {
+			let (asset_id_1, asset_id_2, order_type) = if asset_id_1 > asset_id_2 {
+				(asset_id_2, asset_id_1, order_type.get_opposite())
+			} else {
+				(asset_id_1, asset_id_2, order_type)
+			};
+
+			ensure!(
+				asset_id_1 != asset_id_2,
+				Error::<T>::PairAssetIdMustNotEqual
+			);
+
+			ensure!(
+				expiration_block > frame_system::Pallet::<T>::block_number(),
+				Error::<T>::ExpirationMustBeInFuture
+			);
+
+			let (a, b) = match order_type {
+				OrderType::SELL => (requested_amount, offered_amount),
+				OrderType::BUY => (offered_amount, requested_amount),
+			};
+
+			// because price is an integer, we need to check if the division is exact
+			// (does not have a remainder)
+			let price = a
+				.checked_div(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
+
+			// do the check
+			if price
+				.checked_mul(&b)
+				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
+				!= a
+			{
+				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
+			}
+
+			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
+				let order_index = *index;
+
+				let order = Order {
+					counter: order_index,
+					pair: (asset_id_1, asset_id_2),
+					expiration_block,
+					order_type,
+					address: who.clone(),
+					amount_offered: offered_amount,
+					amout_requested: requested_amount,
+					price,
+					unfilled_offered: offered_amount,
+					unfilled_requested: requested_amount,
+					order_status: OrderStatus::Pending,
+				};
+
+				*index = index
+					.checked_add(One::one())
+					.ok_or(Error::<T>::OrderIndexOverflow)?;
+
+				Orders::<T>::insert(order_index, &order);
+				UserOrders::<T>::insert(who.clone(), order_index, ());
+
+				let mut expiration_orders = OrderExpiration::<T>::get(expiration_block);
+				expiration_orders
+					.try_push(order_index)
+					.expect("Max expiration_orders");
+				OrderExpiration::<T>::insert(expiration_block, expiration_orders);
+
+				let mut bounded_pair_orders = PairOrders::<T>::get((asset_id_1, asset_id_2));
+				bounded_pair_orders
+					.try_push(order_index)
+					.expect("Max bounded_pair_orders");
+				PairOrders::<T>::insert((asset_id_1, asset_id_2), bounded_pair_orders);
+
+				Self::deposit_event(Event::OrderCreated { order_index, order });
+				Ok(())
+			})?;
+
+			Ok(())
+		}
+
 		pub fn update_order_from_trade_order(order: &OrderOf<T>) -> Result<(), DispatchError> {
 			Orders::<T>::insert(order.counter, order);
 			Ok(())
@@ -1284,6 +1429,9 @@ pub mod pallet {
 
 			let mut taker_unfilled_quantity_requested = taker_order.amout_requested;
 			let mut taker_unfilled_quantity_offered = taker_order.amount_offered;
+
+			let mut multiple_order_group_cache =
+				BTreeMap::<u64, MultipleOrderInfo<BalanceOf<T>>>::new();
 
 			let max_loop_step: usize = maker_book.len();
 			for _n in 0..max_loop_step {
@@ -1432,8 +1580,10 @@ pub mod pallet {
 					taker_order.order_status = OrderStatus::FullyFilled;
 
 					if MapMultipleOrderID::<T>::contains_key(taker_order.counter) {
-						let mut order_id_set =
-							Self::get_disable_multiple_order_id_in_group(taker_order.counter);
+						let mut order_id_set = Self::get_disable_multiple_order_id_in_group(
+							taker_order.counter,
+							&mut multiple_order_group_cache,
+						);
 
 						disable_multiple_order_id_in_group.append(&mut order_id_set);
 					}
@@ -1445,8 +1595,10 @@ pub mod pallet {
 					maker_order.order_status = OrderStatus::FullyFilled;
 
 					if MapMultipleOrderID::<T>::contains_key(maker_order.counter) {
-						let mut order_id_set =
-							Self::get_disable_multiple_order_id_in_group(maker_order.counter);
+						let mut order_id_set = Self::get_disable_multiple_order_id_in_group(
+							maker_order.counter,
+							&mut multiple_order_group_cache,
+						);
 
 						disable_multiple_order_id_in_group.append(&mut order_id_set);
 					}
@@ -1508,16 +1660,47 @@ pub mod pallet {
 			Ok(match_result)
 		}
 
-		fn get_disable_multiple_order_id_in_group(matched_order_id: u64) -> BTreeSet<u64> {
+		fn get_disable_multiple_order_id_in_group(
+			matched_order_id: u64,
+			map_infos: &mut BTreeMap<u64, MultipleOrderInfo<BalanceOf<T>>>,
+		) -> BTreeSet<u64> {
 			let multiple_order_id = MapMultipleOrderID::<T>::get(matched_order_id);
-			let info = MultipleOrderInfos::<T>::get(multiple_order_id);
+
+			if !map_infos.contains_key(&multiple_order_id) {
+				map_infos.insert(
+					multiple_order_id,
+					MultipleOrderInfos::<T>::get(multiple_order_id),
+				);
+			}
+			let info = map_infos.get_mut(&multiple_order_id).unwrap();
+			let order = Orders::<T>::get(matched_order_id).unwrap();
 
 			let mut order_id_set = info.order_id_set.clone();
 			order_id_set.remove(&matched_order_id);
-			order_id_set.into()
+
+			let mut new_order_id_set = BTreeSet::<u64>::new();
+
+			if info.unuse_reserved < order.unfilled_offered {
+				info.unuse_reserved = Default::default();
+			} else {
+				info.unuse_reserved = info.unuse_reserved - order.unfilled_offered;
+			}
+
+			for id in &order_id_set {
+				let order = Orders::<T>::get(id).unwrap();
+
+				if order.unfilled_offered > info.unuse_reserved {
+					new_order_id_set.insert(*id);
+				}
+			}
+
+			new_order_id_set.into()
 		}
 
-		fn set_other_multiple_order_cancel(order_index: u64) -> DispatchResult {
+		fn update_multiple_order_in_group(
+			order_index: u64,
+			offered_amount: BalanceOf<T>,
+		) -> DispatchResult {
 			if MapMultipleOrderID::<T>::contains_key(order_index) {
 				let multiple_order_id = MapMultipleOrderID::<T>::get(order_index);
 
@@ -1528,14 +1711,31 @@ pub mod pallet {
 							.as_mut()
 							.ok_or(Error::<T>::MultipleOrderInfoNotFound)?;
 
-						let mut order_id_set = multiple_order_info.order_id_set.clone();
+						let mut order_id_set = multiple_order_info.unfilled_order_id_set.clone();
 						order_id_set.remove(&order_index);
 
+						multiple_order_info.unuse_reserved = multiple_order_info
+							.unuse_reserved
+							.checked_sub(&offered_amount)
+							.ok_or(Error::<T>::NotEnoughBalance)?;
+
 						for id in &order_id_set {
-							Self::cancel_order_impl(*id)?;
+							if !Orders::<T>::contains_key(id) {
+								multiple_order_info.unfilled_order_id_set.remove(id);
+								continue;
+							}
+
+							let order = Orders::<T>::get(id).unwrap();
+
+							if order.unfilled_offered > multiple_order_info.unuse_reserved {
+								Self::cancel_order_impl(*id)?;
+								multiple_order_info.unfilled_order_id_set.remove(id);
+							}
 						}
 
-						multiple_order_info.status = OrderStatus::FullyFilled;
+						if multiple_order_info.unfilled_order_id_set.is_empty() {
+							multiple_order_info.status = OrderStatus::FullyFilled;
+						}
 
 						Ok(())
 					},
