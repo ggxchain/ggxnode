@@ -1734,7 +1734,9 @@ pub mod pallet {
 		) -> BTreeSet<u64> {
 			let multiple_order_id = MapMultipleOrderID::<T>::get(matched_order_id);
 
-			map_infos.entry(multiple_order_id).or_insert_with(|| MultipleOrderInfos::<T>::get(multiple_order_id));
+			map_infos
+				.entry(multiple_order_id)
+				.or_insert_with(|| MultipleOrderInfos::<T>::get(multiple_order_id));
 			let info = map_infos.get_mut(&multiple_order_id).unwrap();
 			let order = Orders::<T>::get(matched_order_id).unwrap();
 
