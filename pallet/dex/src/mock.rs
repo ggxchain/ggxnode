@@ -268,10 +268,13 @@ pub fn call_offchain_worker_function_in_transactions(pool_state: &Arc<RwLock<Poo
 pub fn create_order_book_map_by_price(
 	sell_order_book: &mut BTreeMap<(Balance, (u32, u32)), (Balance, Balance)>,
 	buy_order_book: &mut BTreeMap<(Balance, (u32, u32)), (Balance, Balance)>,
-) {
+) -> (u32, u32) {
+	let mut sell_order_count = 0;
+	let mut buy_order_count = 0;
 	for (_, order) in Orders::<Test>::iter() {
 		if order.order_status != OrderStatus::FullyFilled {
 			if order.order_type == OrderType::BUY {
+				buy_order_count += 1;
 				if !buy_order_book.contains_key(&(order.price, order.pair)) {
 					buy_order_book.insert(
 						(order.price, order.pair),
@@ -286,6 +289,7 @@ pub fn create_order_book_map_by_price(
 					);
 				}
 			} else {
+				sell_order_count += 1;
 				if !sell_order_book.contains_key(&(order.price, order.pair)) {
 					sell_order_book.insert(
 						(order.price, order.pair),
@@ -301,4 +305,6 @@ pub fn create_order_book_map_by_price(
 			}
 		}
 	}
+
+	(sell_order_count, buy_order_count)
 }
