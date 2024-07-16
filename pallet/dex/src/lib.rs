@@ -1734,12 +1734,7 @@ pub mod pallet {
 		) -> BTreeSet<u64> {
 			let multiple_order_id = MapMultipleOrderID::<T>::get(matched_order_id);
 
-			if !map_infos.contains_key(&multiple_order_id) {
-				map_infos.insert(
-					multiple_order_id,
-					MultipleOrderInfos::<T>::get(multiple_order_id),
-				);
-			}
+			map_infos.entry(multiple_order_id).or_insert_with(|| MultipleOrderInfos::<T>::get(multiple_order_id));
 			let info = map_infos.get_mut(&multiple_order_id).unwrap();
 			let order = Orders::<T>::get(matched_order_id).unwrap();
 
@@ -1751,7 +1746,7 @@ pub mod pallet {
 			if info.unuse_reserved < order.unfilled_offered {
 				info.unuse_reserved = Default::default();
 			} else {
-				info.unuse_reserved = info.unuse_reserved - order.unfilled_offered;
+				info.unuse_reserved -= order.unfilled_offered;
 			}
 
 			for id in &order_id_set {
@@ -1762,7 +1757,7 @@ pub mod pallet {
 				}
 			}
 
-			new_order_id_set.into()
+			new_order_id_set
 		}
 
 		fn update_multiple_order_in_group(
