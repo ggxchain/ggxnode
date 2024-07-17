@@ -901,23 +901,7 @@ fn test_offchain_worker_order_matching() {
 
 		Dex::offchain_worker(block);
 
-		let mut txs = vec![];
-		while !pool_state.read().transactions.is_empty() {
-			let tx = pool_state.write().transactions.pop().unwrap();
-			let tx = Extrinsic::decode(&mut &*tx).unwrap();
-			txs.insert(0, tx);
-		}
-
-		for tx in txs {
-			match tx.call {
-				RuntimeCall::Dex(crate::Call::update_match_order_unsigned { match_result: m }) => {
-					let _ = Dex::update_match_order_unsigned(RuntimeOrigin::none(), m);
-				}
-				_ => {
-					assert_eq!(2, 3);
-				}
-			};
-		}
+		call_offchain_worker_function_in_transactions(&pool_state);
 
 		//order_book  price=> (total_offered_amount, total_requested_amount)
 		let mut sell_order_book = BTreeMap::new();
@@ -966,5 +950,608 @@ fn test_offchain_worker_order_matching() {
 		assert_eq!(buy_order_book.get(&208501).unwrap(), &(1042505, 5));
 		assert_eq!(buy_order_book.get(&208234).unwrap(), &(208234, 1));
 		assert_eq!(buy_order_book.get(&208111).unwrap(), &(1456777, 7));
+	})
+}
+
+#[test]
+fn test_multiple_orders_buy() {
+	use frame_support::traits::OffchainWorker;
+	let mut ext = new_test_ext();
+
+	ext.execute_with(|| add_blocks(1));
+	ext.persist_offchain_overlay();
+
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
+	ext.execute_with(|| {
+		let block = 1;
+		System::set_block_number(block);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 1000));
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 1000));
+
+		assert_ok!(Dex::make_multiple_orders(
+			RuntimeOrigin::signed(1),
+			vec![
+				(777, 999, 100, 10, OrderType::BUY, 6),
+				(777, 999, 100, 10, OrderType::BUY, 6),
+				(777, 999, 200, 20, OrderType::BUY, 6),
+			],
+			999,
+			300,
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 999),
+			TokenInfo {
+				amount: 700,
+				reserved: 300,
+			}
+		);
+
+		let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = order_id_set.try_insert(0);
+		let _ = order_id_set.try_insert(1);
+		let _ = order_id_set.try_insert(2);
+
+		let mut unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = unfilled_order_id_set.try_insert(0);
+		let _ = unfilled_order_id_set.try_insert(1);
+		let _ = unfilled_order_id_set.try_insert(2);
+
+		assert_eq!(
+			MultipleOrderInfos::<Test>::get(0),
+			MultipleOrderInfo {
+				order_id_set,
+				unfilled_order_id_set,
+				status: OrderStatus::Pending,
+				reserved_asset_id: 999,
+				reserved: 300,
+				unuse_reserved: 300,
+			}
+		);
+
+		// not full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				5,
+				50,
+				OrderType::SELL,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 1);
+			assert_eq!(buy_order_count, 3);
+		}
+
+		// full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				10,
+				100,
+				OrderType::SELL,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 1);
+			assert_eq!(buy_order_count, 2);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 1010,
+					reserved: 0,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 700,
+					reserved: 200,
+				}
+			);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				20,
+				200,
+				OrderType::SELL,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 1);
+			assert_eq!(buy_order_count, 0);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 1030,
+					reserved: 0,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 700,
+					reserved: 0,
+				}
+			);
+
+			let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			let _ = order_id_set.try_insert(0);
+			let _ = order_id_set.try_insert(1);
+			let _ = order_id_set.try_insert(2);
+
+			let unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			assert_eq!(
+				MultipleOrderInfos::<Test>::get(0),
+				MultipleOrderInfo {
+					order_id_set,
+					unfilled_order_id_set,
+					status: OrderStatus::FullyFilled,
+					reserved_asset_id: 999,
+					reserved: 300,
+					unuse_reserved: 0,
+				}
+			);
+		}
+	})
+}
+
+#[test]
+fn test_multiple_orders_sell() {
+	use frame_support::traits::OffchainWorker;
+	let mut ext = new_test_ext();
+
+	ext.execute_with(|| add_blocks(1));
+	ext.persist_offchain_overlay();
+
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
+	ext.execute_with(|| {
+		let block = 1;
+		System::set_block_number(block);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 1000));
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 1000));
+
+		assert_ok!(Dex::make_multiple_orders(
+			RuntimeOrigin::signed(1),
+			vec![
+				(777, 888, 10, 100, OrderType::SELL, 6),
+				(777, 999, 10, 100, OrderType::SELL, 6),
+				(777, 999, 20, 200, OrderType::SELL, 6),
+			],
+			777,
+			30,
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 970,
+				reserved: 30,
+			}
+		);
+
+		let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = order_id_set.try_insert(0);
+		let _ = order_id_set.try_insert(1);
+		let _ = order_id_set.try_insert(2);
+
+		let mut unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = unfilled_order_id_set.try_insert(0);
+		let _ = unfilled_order_id_set.try_insert(1);
+		let _ = unfilled_order_id_set.try_insert(2);
+
+		assert_eq!(
+			MultipleOrderInfos::<Test>::get(0),
+			MultipleOrderInfo {
+				order_id_set,
+				unfilled_order_id_set,
+				status: OrderStatus::Pending,
+				reserved_asset_id: 777,
+				reserved: 30,
+				unuse_reserved: 30,
+			}
+		);
+
+		// not full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				50,
+				5,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 3);
+			assert_eq!(buy_order_count, 1);
+		}
+
+		// full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				100,
+				10,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 2);
+			assert_eq!(buy_order_count, 1);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 970,
+					reserved: 20,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 1100,
+					reserved: 0,
+				}
+			);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				200,
+				20,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 0);
+			assert_eq!(buy_order_count, 1);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 970,
+					reserved: 0,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 1300,
+					reserved: 0,
+				}
+			);
+
+			let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			let _ = order_id_set.try_insert(0);
+			let _ = order_id_set.try_insert(1);
+			let _ = order_id_set.try_insert(2);
+
+			let unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			assert_eq!(
+				MultipleOrderInfos::<Test>::get(0),
+				MultipleOrderInfo {
+					order_id_set,
+					unfilled_order_id_set,
+					status: OrderStatus::FullyFilled,
+					reserved_asset_id: 777,
+					reserved: 30,
+					unuse_reserved: 0,
+				}
+			);
+		}
+	})
+}
+
+#[test]
+fn test_multiple_orders_different_pricess() {
+	use frame_support::traits::OffchainWorker;
+	let mut ext = new_test_ext();
+
+	ext.execute_with(|| add_blocks(1));
+	ext.persist_offchain_overlay();
+
+	let (offchain, _offchain_state) = TestOffchainExt::new();
+	let (pool, pool_state) = TestTransactionPoolExt::new();
+	ext.register_extension(OffchainDbExt::new(offchain.clone()));
+	ext.register_extension(OffchainWorkerExt::new(offchain));
+	ext.register_extension(TransactionPoolExt::new(pool));
+	ext.execute_with(|| {
+		let block = 1;
+		System::set_block_number(block);
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(1), 999, 1000));
+
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 777, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 888, 1000));
+		assert_ok!(Dex::deposit(RuntimeOrigin::signed(2), 999, 1000));
+
+		assert_ok!(Dex::make_multiple_orders(
+			RuntimeOrigin::signed(1),
+			vec![
+				(777, 888, 10, 100, OrderType::SELL, 6),
+				(777, 999, 10, 100, OrderType::SELL, 6),
+				(777, 999, 20, 400, OrderType::SELL, 6),
+			],
+			777,
+			30,
+		));
+
+		assert_ok!(Dex::make_multiple_orders(
+			RuntimeOrigin::signed(1),
+			vec![
+				(777, 888, 10, 200, OrderType::SELL, 6),
+				(777, 999, 10, 200, OrderType::SELL, 6),
+				(777, 999, 20, 600, OrderType::SELL, 6),
+			],
+			777,
+			30,
+		));
+
+		assert_eq!(
+			UserTokenInfoes::<Test>::get(1, 777),
+			TokenInfo {
+				amount: 940,
+				reserved: 60,
+			}
+		);
+
+		let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = order_id_set.try_insert(0);
+		let _ = order_id_set.try_insert(1);
+		let _ = order_id_set.try_insert(2);
+
+		let mut unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = unfilled_order_id_set.try_insert(0);
+		let _ = unfilled_order_id_set.try_insert(1);
+		let _ = unfilled_order_id_set.try_insert(2);
+
+		assert_eq!(
+			MultipleOrderInfos::<Test>::get(0),
+			MultipleOrderInfo {
+				order_id_set,
+				unfilled_order_id_set,
+				status: OrderStatus::Pending,
+				reserved_asset_id: 777,
+				reserved: 30,
+				unuse_reserved: 30,
+			}
+		);
+
+		let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = order_id_set.try_insert(3);
+		let _ = order_id_set.try_insert(4);
+		let _ = order_id_set.try_insert(5);
+
+		let mut unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+		let _ = unfilled_order_id_set.try_insert(3);
+		let _ = unfilled_order_id_set.try_insert(4);
+		let _ = unfilled_order_id_set.try_insert(5);
+		assert_eq!(
+			MultipleOrderInfos::<Test>::get(1),
+			MultipleOrderInfo {
+				order_id_set,
+				unfilled_order_id_set,
+				status: OrderStatus::Pending,
+				reserved_asset_id: 777,
+				reserved: 30,
+				unuse_reserved: 30,
+			}
+		);
+
+		// full filled
+		{
+			Dex::offchain_worker(block);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				100,
+				10,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 5);
+			assert_eq!(buy_order_count, 0);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 940,
+					reserved: 50,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 1100,
+					reserved: 0,
+				}
+			);
+
+			assert_ok!(Dex::make_order(
+				RuntimeOrigin::signed(2),
+				777,
+				999,
+				400,
+				20,
+				OrderType::BUY,
+				6
+			));
+
+			Dex::offchain_worker(block);
+
+			call_offchain_worker_function_in_transactions(&pool_state);
+
+			//order_book  price, pair=> (total_offered_amount, total_requested_amount)
+			let mut sell_order_book = BTreeMap::new();
+			let mut buy_order_book = BTreeMap::new();
+
+			let (sell_order_count, buy_order_count) =
+				create_order_book_map_by_price(&mut sell_order_book, &mut buy_order_book);
+
+			assert_eq!(sell_order_count, 3);
+			assert_eq!(buy_order_count, 0);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 777),
+				TokenInfo {
+					amount: 940,
+					reserved: 30,
+				}
+			);
+
+			assert_eq!(
+				UserTokenInfoes::<Test>::get(1, 999),
+				TokenInfo {
+					amount: 1500,
+					reserved: 0,
+				}
+			);
+
+			let mut order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			let _ = order_id_set.try_insert(0);
+			let _ = order_id_set.try_insert(1);
+			let _ = order_id_set.try_insert(2);
+
+			let unfilled_order_id_set = BoundedBTreeSet::<u64, ConstU32<{ u32::MAX }>>::new();
+			assert_eq!(
+				MultipleOrderInfos::<Test>::get(0),
+				MultipleOrderInfo {
+					order_id_set,
+					unfilled_order_id_set,
+					status: OrderStatus::FullyFilled,
+					reserved_asset_id: 777,
+					reserved: 30,
+					unuse_reserved: 0,
+				}
+			);
+		}
 	})
 }
