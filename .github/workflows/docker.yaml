@@ -37,7 +37,7 @@ jobs:
         run: echo "::set-output name=sha_short::$(git rev-parse --short HEAD)"
 
       - name: Build and push Docker image
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v6.4.1
         with:
           context: .
           file: ./Dockerfile.sydney
@@ -68,7 +68,7 @@ jobs:
 
       - name: Build and push Docker image
         id: build_and_push
-        uses: docker/build-push-action@v3.1.1
+        uses: docker/build-push-action@v6.4.1
         with:
           context: .
           file: ./Dockerfile.brooklyn
