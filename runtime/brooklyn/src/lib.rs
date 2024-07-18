@@ -28,6 +28,7 @@ mod ink;
 pub mod light_client;
 pub mod pos;
 mod prelude;
+mod tricorn;
 
 mod version;
 pub use version::VERSION;
@@ -677,6 +678,9 @@ construct_runtime!(
 		GGXTokens: pallet_ggx_tokens,
 		Erc20: pallet_erc20,
 		GGXCurrencies: pallet_currencies,
+
+		// Tricorn
+		Tricorn: pallet_tricorn,
 	}
 );
 
