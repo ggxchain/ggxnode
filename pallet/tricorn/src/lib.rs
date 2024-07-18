@@ -61,6 +61,10 @@ pub mod module {
 		type EVMERC1155Bridge: EVMERC1155BridgeTrait<Self::AccountId, BalanceOf<Self>>;
 	}
 
+	#[pallet::storage]
+	#[pallet::getter(fn next_order_index)]
+	pub(super) type TricornAddress<T: Config> = StorageValue<_, H160, ValueQuery>;
+
 	#[pallet::error]
 	pub enum Error<T> {
 		/// Execution failed
