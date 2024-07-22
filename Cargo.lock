@@ -272,6 +272,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "archery"
+version = "0.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "0a8da9bc4c4053ee067669762bcaeea6e241841295a2b6c948312dad6ef4cc02"
+dependencies = [
+ "static_assertions",
+]
+
+[[package]]
 name = "ark-bn254"
 version = "0.4.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -970,29 +979,6 @@ dependencies = [
 ]
 
 [[package]]
-name = "bindgen"
-version = "0.66.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "f2b84e06fc203107bfbad243f4aba2af864eb7db3b1cf46ea0a023b0b433d2a7"
-dependencies = [
- "bitflags 2.4.1",
- "cexpr",
- "clang-sys",
- "lazy_static",
- "lazycell",
- "log 0.4.20",
- "peeking_take_while",
- "prettyplease 0.2.16",
- "proc-macro2",
- "quote",
- "regex",
- "rustc-hash",
- "shlex",
- "syn 2.0.48",
- "which",
-]
-
-[[package]]
 name = "bip39"
 version = "2.0.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1220,18 +1206,18 @@ dependencies = [
 [[package]]
 name = "bls"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "arbitrary",
  "blst",
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "ethereum_serde_utils",
  "ethereum_ssz",
  "hex",
  "rand 0.8.5",
  "serde",
- "tree_hash",
+ "tree_hash 0.6.0",
  "zeroize",
 ]
 
@@ -1479,30 +1465,29 @@ dependencies = [
 
 [[package]]
 name = "c-kzg"
-version = "0.1.0"
-source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=fix#00e226f75645786db1d5495cf903f47a815ccebb"
+version = "1.0.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "cdf100c4cea8f207e883ff91ca886d621d8a166cb04971dfaa9bb8fd99ed95df"
 dependencies = [
- "bindgen 0.66.1",
  "blst",
  "cc",
  "glob",
  "hex",
  "libc",
- "serde",
 ]
 
 [[package]]
 name = "cached_tree_hash"
 version = "0.1.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "ethereum_ssz",
  "ethereum_ssz_derive",
  "smallvec 1.12.0",
  "ssz_types",
- "tree_hash",
+ "tree_hash 0.6.0",
 ]
 
 [[package]]
@@ -1830,7 +1815,7 @@ dependencies = [
 [[package]]
 name = "compare_fields"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "itertools 0.10.5",
 ]
@@ -1838,7 +1823,7 @@ dependencies = [
 [[package]]
 name = "compare_fields_derive"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -3016,7 +3001,7 @@ dependencies = [
 [[package]]
 name = "eth-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "derive_more",
  "ethereum-types 0.14.1",
@@ -3027,16 +3012,36 @@ dependencies = [
  "scale-info",
  "serde",
  "tiny-keccak 2.0.2",
- "webb-eth2-serde-utils",
- "webb-eth2-ssz",
- "webb-tree-hash",
- "webb-tree-hash-derive",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+]
+
+[[package]]
+name = "eth-types"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "derive_more",
+ "ethereum-types 0.14.1",
+ "hex",
+ "parity-scale-codec",
+ "rlp",
+ "rlp-derive",
+ "scale-info",
+ "serde",
+ "tiny-keccak 2.0.2",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
 name = "eth2-to-substrate-relay"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -3045,9 +3050,9 @@ dependencies = [
  "bitvec",
  "dotenvy",
  "env_logger 0.9.3",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 1.0.0-beta.2",
  "ethereum_ssz",
  "funty",
  "futures 0.3.30",
@@ -3068,24 +3073,24 @@ dependencies = [
  "types 0.2.1",
  "warp",
  "webb",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-eth-rpc-client",
  "webb-eth2-pallet-init",
  "webb-finality-update-verify",
  "webb-lc-relay-config",
  "webb-lc-relayer-context",
- "webb-merkle-proof",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
- "webb-tree-hash",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
 ]
 
 [[package]]
 name = "eth2_interop_keypairs"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "bls",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "hex",
  "lazy_static",
  "num-bigint",
@@ -3208,6 +3213,18 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "1873d77b32bc1891a79dad925f2acbc318ee942b38b9110f9dbc5fbeffcea350"
 dependencies = [
  "serde",
+]
+
+[[package]]
+name = "ethereum_hashing"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "6ea7b408432c13f71af01197b1d3d0069c48a27bfcfbe72a81fc346e47f6defb"
+dependencies = [
+ "cpufeatures",
+ "lazy_static",
+ "ring 0.17.7",
+ "sha2 0.10.8",
 ]
 
 [[package]]
@@ -4686,7 +4703,7 @@ dependencies = [
  "btc-relay-rpc",
  "clap",
  "env_logger 0.10.1",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "ethers",
  "fc-cli",
  "fc-consensus",
@@ -4705,6 +4722,7 @@ dependencies = [
  "futures 0.3.30",
  "ggxchain-runtime-brooklyn",
  "ggxchain-runtime-sydney",
+ "ggxchain-runtime-toronto",
  "hex",
  "hex-literal 0.3.4",
  "interbtc-primitives",
@@ -4775,7 +4793,7 @@ dependencies = [
  "vault-registry-rpc",
  "wait-timeout",
  "web3",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
 ]
 
@@ -4830,7 +4848,7 @@ dependencies = [
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
- "pallet-eth2-light-client",
+ "pallet-eth2-light-client 0.1.0 (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "pallet-ethereum",
  "pallet-ethereum-checked",
  "pallet-evm",
@@ -4900,7 +4918,7 @@ dependencies = [
  "substrate-wasm-builder",
  "vault-registry",
  "vault-registry-rpc-runtime-api",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
 ]
 
@@ -4955,7 +4973,7 @@ dependencies = [
  "pallet-dex",
  "pallet-dynamic-fee",
  "pallet-election-provider-multi-phase",
- "pallet-eth2-light-client",
+ "pallet-eth2-light-client 0.1.0 (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "pallet-ethereum",
  "pallet-ethereum-checked",
  "pallet-evm",
@@ -5025,7 +5043,132 @@ dependencies = [
  "substrate-wasm-builder",
  "vault-registry",
  "vault-registry-rpc-runtime-api",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-proposals",
+]
+
+[[package]]
+name = "ggxchain-runtime-toronto"
+version = "0.1.6"
+dependencies = [
+ "annuity",
+ "astar-primitives",
+ "btc-relay",
+ "btc-relay-rpc-runtime-api",
+ "clients-info",
+ "currency",
+ "escrow",
+ "fee",
+ "fp-evm",
+ "fp-rpc",
+ "fp-self-contained",
+ "frame-benchmarking",
+ "frame-election-provider-support",
+ "frame-executive",
+ "frame-support",
+ "frame-system",
+ "frame-system-benchmarking",
+ "frame-system-rpc-runtime-api",
+ "ibc 0.28.0 (registry+https://github.com/rust-lang/crates.io-index)",
+ "ibc-proto 0.25.0 (git+https://github.com/octopus-network/ibc-proto-rs?branch=ibc)",
+ "interbtc-primitives",
+ "issue",
+ "issue-rpc-runtime-api",
+ "loans",
+ "log 0.4.20",
+ "nomination",
+ "oracle",
+ "oracle-rpc-runtime-api",
+ "orml-asset-registry",
+ "orml-tokens",
+ "orml-traits 0.4.1-dev (git+https://github.com/open-web3-stack/open-runtime-module-library?rev=28a2e6f0df9540d91db4018c7ecebb8bfc217a2a)",
+ "pallet-assets",
+ "pallet-aura",
+ "pallet-authorship",
+ "pallet-balances",
+ "pallet-base-fee",
+ "pallet-beefy",
+ "pallet-beefy-mmr",
+ "pallet-bounties",
+ "pallet-chain-extension-receipt-registry",
+ "pallet-chain-extension-xvm",
+ "pallet-contracts",
+ "pallet-contracts-primitives",
+ "pallet-conviction-voting",
+ "pallet-dex",
+ "pallet-dynamic-fee",
+ "pallet-election-provider-multi-phase",
+ "pallet-eth2-light-client 0.1.0 (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "pallet-ethereum",
+ "pallet-ethereum-checked",
+ "pallet-evm",
+ "pallet-evm-chain-id",
+ "pallet-grandpa",
+ "pallet-hotfix-sufficients",
+ "pallet-ibc",
+ "pallet-ibc-utils",
+ "pallet-ics20-transfer",
+ "pallet-identity",
+ "pallet-im-online",
+ "pallet-indices",
+ "pallet-insecure-randomness-collective-flip",
+ "pallet-mmr",
+ "pallet-multisig",
+ "pallet-offences",
+ "pallet-preimage",
+ "pallet-proxy",
+ "pallet-ranked-collective",
+ "pallet-receipt-registry",
+ "pallet-referenda",
+ "pallet-scheduler",
+ "pallet-session",
+ "pallet-society",
+ "pallet-staking",
+ "pallet-sudo",
+ "pallet-timestamp",
+ "pallet-transaction-payment",
+ "pallet-transaction-payment-rpc-runtime-api",
+ "pallet-treasury",
+ "pallet-utility",
+ "pallet-vesting",
+ "pallet-whitelist",
+ "pallet-xvm",
+ "parity-scale-codec",
+ "paste",
+ "prost",
+ "redeem",
+ "redeem-rpc-runtime-api",
+ "replace",
+ "replace-rpc-runtime-api",
+ "reward",
+ "reward-rpc-runtime-api",
+ "runtime-common",
+ "scale-info",
+ "security",
+ "serde",
+ "sp-api",
+ "sp-application-crypto 7.0.0",
+ "sp-arithmetic 6.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+ "sp-block-builder",
+ "sp-consensus-aura",
+ "sp-consensus-beefy",
+ "sp-core 7.0.0",
+ "sp-inherents",
+ "sp-io 7.0.0",
+ "sp-mmr-primitives",
+ "sp-offchain",
+ "sp-runtime 7.0.0",
+ "sp-session",
+ "sp-staking",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+ "sp-transaction-pool",
+ "sp-version",
+ "staking",
+ "substrate-account-filter",
+ "substrate-wasm-builder",
+ "vault-registry",
+ "vault-registry-rpc-runtime-api",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
 ]
 
@@ -5560,7 +5703,7 @@ dependencies = [
  "httpdate 1.0.3",
  "itoa 1.0.10",
  "pin-project-lite 0.2.13",
- "socket2 0.5.5",
+ "socket2 0.4.10",
  "tokio 1.35.1",
  "tower-service",
  "tracing",
@@ -5636,7 +5779,7 @@ dependencies = [
  "iana-time-zone-haiku",
  "js-sys",
  "wasm-bindgen",
- "windows-core 0.52.0",
+ "windows-core",
 ]
 
 [[package]]
@@ -5940,7 +6083,7 @@ dependencies = [
 [[package]]
 name = "int_to_bytes"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "bytes 1.5.0",
 ]
@@ -6386,18 +6529,18 @@ dependencies = [
 [[package]]
 name = "kzg"
 version = "0.1.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "arbitrary",
  "c-kzg",
  "derivative",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "ethereum_serde_utils",
  "ethereum_ssz",
  "ethereum_ssz_derive",
  "hex",
  "serde",
- "tree_hash",
+ "tree_hash 0.6.0",
 ]
 
 [[package]]
@@ -6901,7 +7044,7 @@ version = "0.11.0+8.1.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "d3386f101bcb4bd252d8e9d2fb41ec3b0862a15a62b478c355b2982efa469e3e"
 dependencies = [
- "bindgen 0.65.1",
+ "bindgen",
  "bzip2-sys",
  "cc",
  "glob",
@@ -7304,7 +7447,7 @@ checksum = "8452105ba047068f40ff7093dd1d9da90898e63dd61736462e9cdda6a90ad3c3"
 [[package]]
 name = "merkle-generator"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#03219570e44f5aac0dba1063e385bb5b138fd4b8"
+source = "git+https://github.com/liquid369/transaction-receipt-relayer.git#f1fdf4001b67ab4f5f6d06dbaecafaaa478e2045"
 dependencies = [
  "alloy-rlp",
  "serde",
@@ -7314,10 +7457,10 @@ dependencies = [
 [[package]]
 name = "merkle_proof"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "lazy_static",
  "safe_arith",
 ]
@@ -7381,6 +7524,29 @@ dependencies = [
  "rand 0.8.5",
  "scale-info",
  "zeroize",
+]
+
+[[package]]
+name = "milhouse"
+version = "0.1.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "3826d3602a3674b07e080ce1982350e454ec253d73f156bd927ac1b652293f4d"
+dependencies = [
+ "arbitrary",
+ "derivative",
+ "ethereum-types 0.14.1",
+ "ethereum_hashing 0.6.0",
+ "ethereum_ssz",
+ "ethereum_ssz_derive",
+ "itertools 0.10.5",
+ "parking_lot 0.12.1",
+ "rayon",
+ "serde",
+ "smallvec 1.12.0",
+ "tree_hash 0.6.0",
+ "triomphe",
+ "typenum",
+ "vec_map",
 ]
 
 [[package]]
@@ -8504,7 +8670,7 @@ dependencies = [
 [[package]]
 name = "pallet-chain-extension-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#03219570e44f5aac0dba1063e385bb5b138fd4b8"
+source = "git+https://github.com/liquid369/transaction-receipt-relayer.git#f1fdf4001b67ab4f5f6d06dbaecafaaa478e2045"
 dependencies = [
  "frame-support",
  "frame-system",
@@ -8680,11 +8846,11 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "bitvec",
  "derive_more",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "ethereum-types 0.14.1",
  "frame-support",
  "frame-system",
@@ -8700,20 +8866,53 @@ dependencies = [
  "sp-runtime 7.0.0",
  "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
  "tiny-keccak 2.0.2",
- "webb-bls",
- "webb-consensus-types",
- "webb-eth2-ssz",
- "webb-light-client-primitives",
- "webb-merkle-proof",
+ "webb-bls 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-light-client-primitives 0.1.0 (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
- "webb-tree-hash",
- "webb-tree-hash-derive",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+]
+
+[[package]]
+name = "pallet-eth2-light-client"
+version = "0.1.0"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "bitvec",
+ "derive_more",
+ "eth-types 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "frame-system",
+ "hex",
+ "log 0.4.20",
+ "pallet-balances",
+ "parity-scale-codec",
+ "rlp",
+ "rlp-derive",
+ "scale-info",
+ "serde",
+ "sp-core 7.0.0",
+ "sp-runtime 7.0.0",
+ "sp-std 5.0.0 (git+https://github.com/paritytech/substrate?branch=polkadot-v0.9.43)",
+ "tiny-keccak 2.0.2",
+ "webb-bls 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-light-client-primitives 0.1.0 (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-proposals",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "async-trait",
@@ -8732,7 +8931,7 @@ dependencies = [
 [[package]]
 name = "pallet-eth2-light-client-relayer-gadget-cli"
 version = "0.0.1"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "clap",
 ]
@@ -8817,7 +9016,7 @@ dependencies = [
 [[package]]
 name = "pallet-evm-eth-receipt-provider"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#03219570e44f5aac0dba1063e385bb5b138fd4b8"
+source = "git+https://github.com/liquid369/transaction-receipt-relayer.git#f1fdf4001b67ab4f5f6d06dbaecafaaa478e2045"
 dependencies = [
  "fp-evm",
  "frame-support",
@@ -9296,11 +9495,11 @@ dependencies = [
 [[package]]
 name = "pallet-receipt-registry"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#03219570e44f5aac0dba1063e385bb5b138fd4b8"
+source = "git+https://github.com/liquid369/transaction-receipt-relayer.git#f1fdf4001b67ab4f5f6d06dbaecafaaa478e2045"
 dependencies = [
  "frame-support",
  "frame-system",
- "pallet-eth2-light-client",
+ "pallet-eth2-light-client 0.1.0 (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
  "parity-scale-codec",
  "scale-info",
  "serde_json",
@@ -11333,6 +11532,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "rpds"
+version = "0.11.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "b4ef5140bcb576bfd6d56cd2de709a7d17851ac1f3805e67fe9d99e42a11821f"
+dependencies = [
+ "archery",
+]
+
+[[package]]
 name = "rtnetlink"
 version = "0.10.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -11695,7 +11903,7 @@ dependencies = [
 [[package]]
 name = "safe_arith"
 version = "0.1.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 
 [[package]]
 name = "safemem"
@@ -15322,9 +15530,9 @@ dependencies = [
 
 [[package]]
 name = "ssz_types"
-version = "0.5.4"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "382939886cb24ee8ac885d09116a60f6262d827c7a9e36012b4f6d3d0116d0b3"
+checksum = "625b20de2d4b3891e6972f4ce5061cb11bd52b3479270c4b177c134b571194a9"
 dependencies = [
  "arbitrary",
  "derivative",
@@ -15334,7 +15542,7 @@ dependencies = [
  "serde",
  "serde_derive",
  "smallvec 1.12.0",
- "tree_hash",
+ "tree_hash 0.6.0",
  "typenum",
 ]
 
@@ -15857,9 +16065,9 @@ dependencies = [
 
 [[package]]
 name = "superstruct"
-version = "0.6.0"
+version = "0.7.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "75b9e5728aa1a87141cefd4e7509903fc01fa0dcb108022b1e841a67c5159fc5"
+checksum = "6f4e1f478a7728f8855d7e620e9a152cf8932c6614f86564c886f9b8141f3201"
 dependencies = [
  "darling 0.13.4",
  "itertools 0.10.5",
@@ -15892,10 +16100,10 @@ dependencies = [
 [[package]]
 name = "swap_or_not_shuffle"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
 ]
 
 [[package]]
@@ -16078,7 +16286,7 @@ dependencies = [
 [[package]]
 name = "test_random_derive"
 version = "0.2.0"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "quote",
  "syn 1.0.109",
@@ -16840,7 +17048,7 @@ dependencies = [
  "chrono",
  "lazy_static",
  "matchers",
- "parking_lot 0.11.2",
+ "parking_lot 0.7.1",
  "regex",
  "serde",
  "serde_json",
@@ -16887,15 +17095,26 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "5c998ac5fe2b07c025444bdd522e6258110b63861c6698eedc610c071980238d"
 dependencies = [
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 1.0.0-beta.2",
+ "smallvec 1.12.0",
+]
+
+[[package]]
+name = "tree_hash"
+version = "0.6.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "134d6b24a5b829f30b5ee7de05ba7384557f5f6b00e29409cdf2392f93201bfa"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "ethereum_hashing 0.6.0",
  "smallvec 1.12.0",
 ]
 
 [[package]]
 name = "tree_hash_derive"
-version = "0.5.2"
+version = "0.6.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "84303a9c7cda5f085a3ed9cd241d1e95e04d88aab1d679b02f212e653537ba86"
+checksum = "9ce7bccc538359a213436af7bc95804bdbf1c2a21d80e22953cbe9e096837ff1"
 dependencies = [
  "darling 0.13.4",
  "quote",
@@ -16954,6 +17173,16 @@ checksum = "a1631b201eb031b563d2e85ca18ec8092508e262a3196ce9bd10a67ec87b9f5c"
 dependencies = [
  "hash-db 0.15.2",
  "rlp",
+]
+
+[[package]]
+name = "triomphe"
+version = "0.1.13"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e6631e42e10b40c0690bf92f404ebcfe6e1fdb480391d15f17cc8e96eeed5369"
+dependencies = [
+ "serde",
+ "stable_deref_trait",
 ]
 
 [[package]]
@@ -17070,7 +17299,7 @@ checksum = "97fee6b57c6a41524a810daee9286c02d7752c4253064d0b05472833a438f675"
 dependencies = [
  "cfg-if 1.0.0",
  "digest 0.10.7",
- "rand 0.8.5",
+ "rand 0.4.6",
  "static_assertions",
 ]
 
@@ -17120,7 +17349,7 @@ checksum = "42ff0bf0c66b8238c6f3b578df37d0b7848e55df8577b3f74f92a69acceeb825"
 [[package]]
 name = "types"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/transaction-receipt-relayer.git#03219570e44f5aac0dba1063e385bb5b138fd4b8"
+source = "git+https://github.com/liquid369/transaction-receipt-relayer.git#f1fdf4001b67ab4f5f6d06dbaecafaaa478e2045"
 dependencies = [
  "alloy-rlp",
  "ethbloom 0.13.0",
@@ -17134,7 +17363,7 @@ dependencies = [
 [[package]]
 name = "types"
 version = "0.2.1"
-source = "git+https://github.com/sigp/lighthouse#2a3c709f8ceec4d47c1934446511660c429fe90a"
+source = "git+https://github.com/sigp/lighthouse#9e12c21f268c80a3f002ae0ca27477f9f512eb6f"
 dependencies = [
  "arbitrary",
  "bls",
@@ -17144,7 +17373,7 @@ dependencies = [
  "derivative",
  "eth2_interop_keypairs",
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 0.6.0",
  "ethereum_serde_utils",
  "ethereum_ssz",
  "ethereum_ssz_derive",
@@ -17157,11 +17386,13 @@ dependencies = [
  "maplit",
  "merkle_proof",
  "metastruct",
+ "milhouse",
  "parking_lot 0.12.1",
  "rand 0.8.5",
  "rand_xorshift 0.3.0",
  "rayon",
  "regex",
+ "rpds",
  "rusqlite",
  "safe_arith",
  "serde",
@@ -17170,12 +17401,11 @@ dependencies = [
  "slog",
  "smallvec 1.12.0",
  "ssz_types",
- "strum 0.24.1",
  "superstruct",
  "swap_or_not_shuffle",
  "tempfile",
  "test_random_derive",
- "tree_hash",
+ "tree_hash 0.6.0",
  "tree_hash_derive",
 ]
 
@@ -17427,6 +17657,12 @@ name = "vcpkg"
 version = "0.2.15"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "accd4ea62f7bb7a82fe23066fb0957d48ef677f6eeb8215f372f52e48bb32426"
+
+[[package]]
+name = "vec_map"
+version = "0.8.2"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "f1bddf1187be692e79c5ffeab891132dfb0f236ed36a43c7ed39f1165ee20191"
 
 [[package]]
 name = "version_check"
@@ -18171,7 +18407,7 @@ dependencies = [
 [[package]]
 name = "webb-bls"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18180,21 +18416,40 @@ dependencies = [
  "rand 0.7.3",
  "rand_chacha 0.3.1",
  "serde",
- "webb-eth2-hashing",
- "webb-eth2-serde-utils",
- "webb-eth2-ssz",
- "webb-tree-hash",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "zeroize",
+]
+
+[[package]]
+name = "webb-bls"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "hex",
+ "log 0.4.20",
+ "milagro_bls",
+ "rand 0.7.3",
+ "rand_chacha 0.3.1",
+ "serde",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
  "zeroize",
 ]
 
 [[package]]
 name = "webb-consensus-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "bitvec",
  "derive_more",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "ethereum-types 0.14.1",
  "hex",
  "parity-scale-codec",
@@ -18203,25 +18458,49 @@ dependencies = [
  "scale-info",
  "serde",
  "tiny-keccak 2.0.2",
- "webb-eth2-hashing",
- "webb-eth2-serde-utils",
- "webb-eth2-ssz",
- "webb-merkle-proof",
- "webb-tree-hash",
- "webb-tree-hash-derive",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+]
+
+[[package]]
+name = "webb-consensus-types"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "bitvec",
+ "derive_more",
+ "eth-types 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "ethereum-types 0.14.1",
+ "hex",
+ "parity-scale-codec",
+ "rlp",
+ "rlp-derive",
+ "scale-info",
+ "serde",
+ "tiny-keccak 2.0.2",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-serde-utils 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-eth2-ssz 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-tree-hash-derive 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
 name = "webb-eth-rpc-client"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "bitvec",
  "dotenv",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "ethereum-types 0.14.1",
- "ethereum_hashing",
+ "ethereum_hashing 1.0.0-beta.2",
  "ethereum_ssz",
  "funty",
  "hex",
@@ -18233,16 +18512,26 @@ dependencies = [
  "serde_json",
  "tokio 1.35.1",
  "toml 0.5.11",
- "tree_hash",
+ "tree_hash 0.5.2",
  "types 0.2.1",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-lc-relay-types",
 ]
 
 [[package]]
 name = "webb-eth2-hashing"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
+dependencies = [
+ "lazy_static",
+ "ring 0.16.20",
+ "sha2 0.10.8",
+]
+
+[[package]]
+name = "webb-eth2-hashing"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
 dependencies = [
  "lazy_static",
  "ring 0.16.20",
@@ -18252,13 +18541,13 @@ dependencies = [
 [[package]]
 name = "webb-eth2-pallet-init"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "async-trait",
  "clap",
  "dotenvy",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "log 0.4.20",
  "reqwest",
  "scale-info",
@@ -18270,17 +18559,28 @@ dependencies = [
  "toml 0.5.11",
  "types 0.2.1",
  "webb",
- "webb-consensus-types",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-eth-rpc-client",
- "webb-merkle-proof",
+ "webb-merkle-proof 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "webb-proposals",
- "webb-tree-hash",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
 ]
 
 [[package]]
 name = "webb-eth2-serde-utils"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "hex",
+ "serde",
+ "serde_json",
+]
+
+[[package]]
+name = "webb-eth2-serde-utils"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
 dependencies = [
  "ethereum-types 0.14.1",
  "hex",
@@ -18291,7 +18591,17 @@ dependencies = [
 [[package]]
 name = "webb-eth2-ssz"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "itertools 0.10.5",
+ "smallvec 1.12.0",
+]
+
+[[package]]
+name = "webb-eth2-ssz"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
 dependencies = [
  "ethereum-types 0.14.1",
  "itertools 0.10.5",
@@ -18301,21 +18611,21 @@ dependencies = [
 [[package]]
 name = "webb-finality-update-verify"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "bitvec",
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
  "serde",
- "webb-bls",
- "webb-consensus-types",
- "webb-tree-hash",
+ "webb-bls 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-consensus-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-tree-hash 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
 ]
 
 [[package]]
 name = "webb-lc-relay-config"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "dotenvy",
  "reqwest",
@@ -18328,7 +18638,7 @@ dependencies = [
 [[package]]
 name = "webb-lc-relay-types"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "backoff",
@@ -18344,7 +18654,7 @@ dependencies = [
 [[package]]
 name = "webb-lc-relayer-context"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "anyhow",
  "subxt 0.29.0",
@@ -18357,9 +18667,24 @@ dependencies = [
 [[package]]
 name = "webb-light-client-primitives"
 version = "0.1.0"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
- "eth-types",
+ "eth-types 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "ethereum-types 0.14.1",
+ "frame-support",
+ "log 0.4.20",
+ "parity-scale-codec",
+ "scale-info",
+ "serde",
+ "webb-proposals",
+]
+
+[[package]]
+name = "webb-light-client-primitives"
+version = "0.1.0"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "eth-types 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
  "ethereum-types 0.14.1",
  "frame-support",
  "log 0.4.20",
@@ -18372,12 +18697,23 @@ dependencies = [
 [[package]]
 name = "webb-merkle-proof"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "ethereum-types 0.14.1",
  "lazy_static",
- "webb-eth2-hashing",
- "webb-safe-arith",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+ "webb-safe-arith 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+]
+
+[[package]]
+name = "webb-merkle-proof"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "lazy_static",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
+ "webb-safe-arith 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
@@ -18398,22 +18734,47 @@ dependencies = [
 [[package]]
 name = "webb-safe-arith"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
+
+[[package]]
+name = "webb-safe-arith"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
 
 [[package]]
 name = "webb-tree-hash"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
 dependencies = [
  "ethereum-types 0.14.1",
  "smallvec 1.12.0",
- "webb-eth2-hashing",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update)",
+]
+
+[[package]]
+name = "webb-tree-hash"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
+dependencies = [
+ "ethereum-types 0.14.1",
+ "smallvec 1.12.0",
+ "webb-eth2-hashing 0.2.0-dev (git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43)",
 ]
 
 [[package]]
 name = "webb-tree-hash-derive"
 version = "0.2.0-dev"
-source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#9f8c8369f300bcb28b09b08b47f1597abd6191d3"
+source = "git+https://github.com/ggxchain/pallet-eth2-light-client.git?branch=2024_metadata_update#2fd7b003517ea9ff305f1eec2f2ff316a4c0e8e4"
+dependencies = [
+ "darling 0.13.4",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "webb-tree-hash-derive"
+version = "0.2.0-dev"
+source = "git+https://github.com/liquid369/pallet-eth2-light-client.git?branch=polkadot-v0.9.43#2f06868a260bb00cd75cb4afd9192d1c3d06f258"
 dependencies = [
  "darling 0.13.4",
  "quote",
@@ -18544,7 +18905,7 @@ version = "0.51.1"
 source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "ca229916c5ee38c2f2bc1e9d8f04df975b4bd93f9955dc69fabb5d91270045c9"
 dependencies = [
- "windows-core 0.51.1",
+ "windows-core",
  "windows-targets 0.48.5",
 ]
 
@@ -18555,15 +18916,6 @@ source = "registry+https://github.com/rust-lang/crates.io-index"
 checksum = "f1f8cf84f35d2db49a46868f947758c7a1138116f7fac3bc844f43ade1292e64"
 dependencies = [
  "windows-targets 0.48.5",
-]
-
-[[package]]
-name = "windows-core"
-version = "0.52.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "33ab640c8d7e35bf8ba19b884ba838ceb4fba93a4e8c65a9059d08afcfc683d9"
-dependencies = [
- "windows-targets 0.52.0",
 ]
 
 [[package]]
@@ -19093,3 +19445,8 @@ dependencies = [
  "cc",
  "pkg-config",
 ]
+
+[[patch.unused]]
+name = "c-kzg"
+version = "0.1.0"
+source = "git+https://github.com/ggxchain/c-kzg-4844.git?branch=fix#00e226f75645786db1d5495cf903f47a815ccebb"

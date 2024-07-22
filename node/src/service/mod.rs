@@ -3,9 +3,14 @@ pub mod brooklyn;
 #[cfg(feature = "brooklyn")]
 use brooklyn as service;
 
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub mod toronto;
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+use toronto as service;
+
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 pub mod sydney;
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 use sydney as service;
 
 pub use service::{create_full_rpc, new_full, new_partial};

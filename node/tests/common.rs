@@ -40,7 +40,11 @@ use frame_system::AccountInfo;
 pub use ggxchain_runtime_brooklyn::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub use ggxchain_runtime_toronto::{
+	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
+};
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 pub use ggxchain_runtime_sydney::{
 	AccountId, Address, Balance, BlockNumber, Hash, Header, Index, Signature, GGX,
 };
@@ -49,10 +53,13 @@ use scale_codec::DecodeAll;
 
 type AccountData = pallet_balances::AccountData<Balance>;
 
-#[cfg(not(feature = "brooklyn"))]
-pub const CHAIN_ID: u64 = 8886u64;
 #[cfg(feature = "brooklyn")]
 pub const CHAIN_ID: u64 = 888866u64;
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub const CHAIN_ID: u64 = 888888u64;
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+pub const CHAIN_ID: u64 = 8886u64;
+
 
 /// Wait for the given `child` the given number of `secs`.
 ///
@@ -100,7 +107,6 @@ pub async fn wait_n_finalized_blocks_from(n: usize, url: &str) {
 	let rpc = ws_client(url)
 		.await
 		.expect(&format!("failed to connect to node with {url}"));
-
 	// Might be good to have a timeout here.
 	loop {
 		if let Ok(block) = ChainApi::<(), Hash, Header, ()>::finalized_head(&rpc).await {

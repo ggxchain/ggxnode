@@ -166,9 +166,17 @@ pub fn brooklyn_testnet_config() -> Result<ChainSpec, String> {
 	)
 }
 
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub fn toronto_mainnet_config() -> Result<ChainSpec, String> {
+	ChainSpec::from_json_bytes(
+		&include_bytes!("../../custom-spec-files/toronto-testnet.raw.json")[..],
+	)
+}
+
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 pub fn sydney_testnet_config() -> Result<ChainSpec, String> {
 	ChainSpec::from_json_bytes(
 		&include_bytes!("../../custom-spec-files/sydney-testnet.raw.json")[..],
 	)
 }
+
