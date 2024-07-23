@@ -6,11 +6,14 @@ use crate::runtime::{
 	WASM_BINARY,
 };
 
-#[cfg(not(feature = "brooklyn"))]
-const CHAIN_ID: u64 = 8886u64;
 #[cfg(feature = "brooklyn")]
-const CHAIN_ID: u64 = 888866u64;
+pub const CHAIN_ID: u64 = 888866u64;
 
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub const CHAIN_ID: u64 = 416u64;
+
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+pub const CHAIN_ID: u64 = 8886u64;
 /// Node `ChainSpec` extensions.
 ///
 /// Additional parameters for some Substrate core modules,

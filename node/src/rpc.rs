@@ -18,7 +18,7 @@ pub struct FullDeps<C, P, A: sc_transaction_pool::ChainApi> {
 	#[cfg(feature = "brooklyn")]
 	pub testnet: crate::service::brooklyn::TestNetParams<A>,
 	#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
-	pub testnet: crate::service::toronto::MainNetParams<A>,
+	pub mainnet: crate::service::toronto::MainNetParams<A>,
 	/// Manual seal command sink
 	#[cfg(feature = "manual-seal")]
 	pub command_sink:
