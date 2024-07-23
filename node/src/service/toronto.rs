@@ -1092,7 +1092,7 @@ where
 	Ok(io)
 }
 
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
 pub struct MainNetParams<A: sc_transaction_pool::ChainApi> {
 	/// Graph pool instance.                        
 	pub graph: Arc<Pool<A>>,

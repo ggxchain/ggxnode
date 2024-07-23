@@ -3,9 +3,21 @@ use bitcoin::utils::{
 };
 use std::{collections::BTreeMap, str::FromStr};
 
+#[cfg(feature = "brooklyn")]
 pub use ggxchain_runtime_brooklyn::{opaque::SessionKeys, *};
-
+#[cfg(feature = "brooklyn")]
 use ggxchain_runtime_brooklyn::btcbridge::CurrencyId::Token;
+
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub use ggxchain_runtime_toronto::{opaque::SessionKeys, *};
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+use ggxchain_runtime_toronto::btcbridge::CurrencyId::Token;
+
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+pub use ggxchain_runtime_sydney::{opaque::SessionKeys, *};
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+use ggxchain_runtime_sydney::btcbridge::CurrencyId::Token;
+
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
@@ -58,7 +70,12 @@ impl ValidatorIdentity {
 fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyId> {
 	VaultCurrencyPair {
 		collateral: currency_id,
+		#[cfg(feature = "brooklyn")]
 		wrapped: ggxchain_runtime_brooklyn::btcbridge::GetWrappedCurrencyId::get(),
+		#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+		wrapped: ggxchain_runtime_toronto::btcbridge::GetWrappedCurrencyId::get(),
+		#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+		wrapped: ggxchain_runtime_sydney::btcbridge::GetWrappedCurrencyId::get(),
 	}
 }
 

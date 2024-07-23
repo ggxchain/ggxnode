@@ -6,9 +6,14 @@ pub mod testnet;
 #[cfg(feature = "brooklyn")]
 pub use testnet::*;
 
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
 pub mod mainnet;
-#[cfg(not(feature = "brooklyn"))]
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub use mainnet::*;
+
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
+pub mod mainnet;
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 pub use mainnet::*;
 
 pub type AccountPublic = <Signature as Verify>::Signer;

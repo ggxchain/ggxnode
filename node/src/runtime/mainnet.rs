@@ -2,7 +2,11 @@ use bitcoin::utils::{
 	virtual_transaction_size, InputType, TransactionInputMetadata, TransactionOutputMetadata,
 };
 
+#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 pub use ggxchain_runtime_sydney::{btcbridge::CurrencyId::Token, opaque::SessionKeys, *};
+#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+pub use ggxchain_runtime_toronto::{btcbridge::CurrencyId::Token, opaque::SessionKeys, *};
+
 use primitives::{CurrencyId, Rate, TokenSymbol::GGXT, VaultCurrencyPair};
 use rand::SeedableRng;
 use sp_consensus_beefy::crypto::AuthorityId as BeefyId;
@@ -55,6 +59,11 @@ impl ValidatorIdentity {
 fn default_pair_interlay(currency_id: CurrencyId) -> VaultCurrencyPair<CurrencyId> {
 	VaultCurrencyPair {
 		collateral: currency_id,
+		#[cfg(feature = "brooklyn")]
+		wrapped: ggxchain_runtime_brooklyn::btcbridge::GetWrappedCurrencyId::get(),
+		#[cfg(all(not(feature = "brooklyn"), feature = "toronto"))]
+		wrapped: ggxchain_runtime_toronto::btcbridge::GetWrappedCurrencyId::get(),
+		#[cfg(all(not(feature = "brooklyn"), not(feature = "toronto")))]
 		wrapped: ggxchain_runtime_sydney::btcbridge::GetWrappedCurrencyId::get(),
 	}
 }
@@ -204,28 +213,33 @@ pub fn testnet_genesis(
 		assets: AssetsConfig {
 			assets: vec![
 				// id, owner, is_sufficient, min_balance
-				(999, sudo_key.clone(), true, 1),
-				(888, sudo_key.clone(), true, 1),
-				(777, sudo_key.clone(), true, 1),
-				(666, sudo_key.clone(), true, 1),
-				(667, sudo_key.clone(), true, 1),
+				(626, sudo_key.clone(), true, 1),
+				(416, sudo_key.clone(), true, 1),
+				(612, sudo_key.clone(), true, 1),
+				(4533, sudo_key.clone(), true, 1),
+				(7496, sudo_key.clone(), true, 1),
+				(617, sudo_key.clone(), true, 1),
 			],
 			metadata: vec![
 				// id, name, symbol, decimals
-				(999, "Bitcoin".into(), "BTC".into(), 10),
-				(888, "GGxchain".into(), "GGXT".into(), 18),
-				(777, "USDT".into(), "USDT".into(), 10),
-				(666, "ERT".into(), "ERT".into(), 18),
-				(667, "Stake".into(), "STAKE".into(), 18),
+				(626, "Bitcoin".into(), "BTC".into(), 10),
+				(416, "GGxchain".into(), "GGXT".into(), 18),
+				(612, "USDT".into(), "USDT".into(), 10),
+				(4533, "DAI".into(), "DAI".into(), 18),
+				(7496, "ETH".into(), "STAKE".into(), 18),
+				(617, "USDC".into(), "USDC".into(), 10)
 			],
 			accounts: initial_authorities
 				.iter()
-				.flat_map(|x| -> [(u32, AccountId, Balance); 3] {
+				.flat_map(|x| -> [(u32, AccountId, Balance); 6] {
 					// id, account_id, balance
 					[
-						(999u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
-						(888u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
-						(777u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(626u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(416u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(612u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(4533u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(7496u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
+						(617u32, x.id.clone(), 1_000_000_000_000_000_000_000_000u128),
 					]
 				})
 				.collect::<Vec<_>>(),
@@ -333,8 +347,8 @@ pub fn testnet_genesis(
 			min_exchange_rate: Rate::from_inner(loans::DEFAULT_MIN_EXCHANGE_RATE),
 		},
 		dex: DexConfig {
-			asset_ids: vec![8888, 999, 888, 777, 666, 667],
-			native_asset_id: 8888,
+			asset_ids: vec![416, 626, 612, 4533, 7496, 617],
+			native_asset_id: 416,
 		},
 	}
 }
