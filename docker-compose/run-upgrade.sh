@@ -6,7 +6,7 @@ source .env
 if [ ! -d "$DATA_PATH" ] || [ "$(stat -c %u "$DATA_PATH")" != "55500" ] || [ "$(stat -c %g "$DATA_PATH")" != "55500" ]; then
     echo " Mount point $DATA_PATH does not exist or is not owned by 55500:55500."
     echo " Create the mount point with the following command:"
-    echo " sudo mkdir -p $DATA_PATH && sudo chown -R 55500:55500 $DATA_PATH"
+    echo " sudo -u $USER mkdir -p $DATA_PATH && sudo chown -R 55500:55500 $DATA_PATH"
     exit 1
 fi
 
