@@ -1,64 +1,94 @@
 #!/bin/bash -e
 
-# This script runs a both brooklyn and sydney nodes (in --dev), then fetches metadata.
-# The metadata is saved to metadata_ggx_brooklyn.scale and metadata_ggx_sydney.scale respectively.
+# ==============================================================================
+# This script fetches blockchain metadata from specified network endpoints using
+# JSON-RPC. The script can be run with predefined network names ('sydney' or
+# 'brooklyn') or with a 'custom' RPC endpoint specified by the user.
+#
+# Usage:
+#   ./fetch_metadata.sh <network> [<custom RPC>]
+#
+# Parameters:
+#   <network>     The network name from which to fetch metadata. Supported values:
+#                 - sydney   : Use the Sydney network RPC endpoint.
+#                 - brooklyn : Use the Brooklyn network RPC endpoint.
+#                 - custom   : Use a custom RPC endpoint. Must provide the RPC URL
+#                              as the second argument.
+#   [<custom RPC>]: (Optional) The RPC endpoint URL when using the 'custom' network.
+#                   This argument is required when <network> is set to 'custom'.
+#
+# Example:
+#   ./fetch_metadata.sh sydney
+#   ./fetch_metadata.sh brooklyn
+#   ./fetch_metadata.sh custom "http://127.0.0.1:5100"
+#
+# Output:
+#   The script will generate a file named "eth_light_client_<network>.scale"
+#   containing the metadata retrieved from the specified RPC endpoint.
+#
+# Prerequisites:
+#   - jq : Command-line JSON processor
+#   - xxd: Hex dump tool
+#   - curl: Command-line tool for transferring data with URLs
+#
+# Notes:
+#   - Ensure the required tools (jq, xxd, curl) are installed and available in
+#     the system's PATH.
+#   - For the 'custom' network option, a valid RPC URL must be provided as the
+#     second argument.
+# ==============================================================================
 
-cd $(dirname $0)
+# Define default RPC endpoints
+SYDNEY_RPC="https://gate.ggxchain.net/sydney-archive"
+BROOKLYN_RPC="https://brooklyn-archive.ggxchain.net/dev-brooklyn"
 
-if [ "$#" -ne 2 ]; then
-    echo "Usage: $0 <brooklyn or sydney> <path/to/ggx-node>"
-    exit 1
-fi
-
+# Get network and custom RPC (if provided)
 NETWORK="$1"
-NODE="$2"
-
-if [ ! -f "$NODE" ]; then
-    echo "Error: ggx-node binary not found at $NODE"
-    exit 1
-fi
+CUSTOM_RPC="$2"
 
 function get_metadata() {
-    attempts=0
-    max_attempts=30
-    while sleep 1; do
-        (( attempts++ )) || true
 
-        curl -sX POST -H "Content-Type: application/json" --data \
-        '{"jsonrpc":"2.0","method":"state_getMetadata", "id": 1}' \
-        localhost:9944 | jq .result | cut -d '"' -f 2 | xxd -r -p > $1
+    local rpc_url="$1"
+    local output_file="$2"
+    local json_rpc_request='{"jsonrpc":"2.0","method":"state_getMetadata", "id": 1}'
 
-        # Check if file is empty
-        if [ ! -s "$1" ]; then
-            echo "Fetched metadata $1 is empty... retrying (attempt $attempts/$max_attempts)"
-            if [ $attempts -ge $max_attempts ]; then
-                echo "Failed to fetch metadata $1"
-                exit 1
-            fi
-
-            continue
-        fi
-
-        echo "SUCCESS"
-        echo
-        return
-    done
+    curl -sX POST -H "Content-Type: application/json" \
+        --data "${json_rpc_request}" "${rpc_url}" | \
+        jq -r .result | xxd -r -p > "${output_file}"
 }
 
-# starts a process then kills it after scale file is fetched
-start_and_kill() {
-    # Start the command in the background
-    $NODE --dev --tmp --rpc-external 1>/dev/null 2>/dev/null &
+# Display usage if no arguments are provided
+if [[ -z "${NETWORK}" ]]; then
+    echo "Usage: fetch_metadata.sh <network> [<custom RPC>]"
+    echo "Networks:"
+    echo "  sydney     - Use Sydney network RPC"
+    echo "  brooklyn   - Use Brooklyn network RPC"
+    echo "  custom     - Use a custom RPC endpoint (provide RPC URL as second argument)"
+    echo "Example:"
+    echo "  fetch_metadata.sh sydney"
+    echo "  fetch_metadata.sh custom \"http://127.0.0.1:5100\""
+    exit 1
+fi
 
-    # Get its PID
-    local pid=$!
+# Determine the appropriate RPC URL based on the network name
+if [[ "${NETWORK}" == "sydney" ]]; then
+    RPC="${SYDNEY_RPC}"
+elif [[ "${NETWORK}" == "brooklyn" ]]; then
+    RPC="${BROOKLYN_RPC}"
+elif [[ "${NETWORK}" == "custom" ]]; then
+    if [[ -n "${CUSTOM_RPC}" ]]; then
+        RPC="${CUSTOM_RPC}"
+    else
+        echo "Error: For custom network, please provide the RPC endpoint."
+        exit 1
+    fi
+else
+    echo "Error: Unknown network '${NETWORK}'. Supported networks: sydney, brooklyn, custom."
+    exit 1
+fi
 
-    sleep 5  # wait for node to start
-    get_metadata node/tests/data/scale/eth_light_client_$NETWORK.scale
+# Set output filename based on network
+OUTPUT_FILE="eth_light_client_${NETWORK}.scale"
 
-    # Then kill it
-    kill -9 $pid
-}
-
-echo "Starting $NETWORK"
-start_and_kill
+# Fetch metadata
+get_metadata "${RPC}" "${OUTPUT_FILE}"

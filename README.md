@@ -1,5 +1,11 @@
 # GGX Chain node set-up
 
+**Detailed production setup can be found in** [Documentation Repository](https://github.com/ggxchain/documentation/blob/main/src/sydney-testnet/validator-guides/how-to-setup-a-validator-node.md) **or** [Official Documentation Portal](https://docs.ggxchain.io/)
+
+For instant non-production deployment with docker-compose please follow steps in [Docker Compose Documentation](https://github.com/ggxchain/ggxnode/tree/main/docker-compose)
+
+**WARNING:** *Information below this point is dedicated for developers only and can lag behind the resources mentioned above or be to far in the future.*
+
 ## 1. Clone repo
 
 To get started download this repository and navigate to `ggxnode` folder, e.g.:
@@ -86,9 +92,7 @@ docker run -d -it --restart=unless-stopped --ulimit nofile=100000:100000 \
     --prometheus-external \
     --validator \
     --chain sydney \
-    --base-path=/data-sydney \
-    --bootnodes /dns/sun.sydney.ggxchain.io/tcp/30333/p2p/12D3KooWGmopnFNtQb2bo1irpjPLJUnmt9K4opTSHTMhYYobB8pC \
-    --telemetry-url "wss://telemetry.sydney.ggxchain.io/submit 0"
+    --base-path=/data-sydney
 ```
 
 #### Brooklyn - development network:
@@ -117,13 +121,11 @@ docker run \
     ggxchain-node:brooklyn \
     --base-path=/data-brooklyn \
     --chain brooklyn \
-    --bootnodes /ip4/3.74.168.122/tcp/30333/p2p/12D3KooWCUvCEgrEqNHgMJjRmq2dYJmLX5jfcmMSte5SSwtsAsao \
-    --telemetry-url "ws://test.telemetry.brooklyn.ggxchain.io/submit 0" \
     --light-client-relay-config-path eth-relay.toml \
     --light-client-init-pallet-config-path eth-init.toml
 ```
 
-You can use the following optional flags:
+Following optional flags are availabe:
 
 | Flags                             | Description |
 |-----------------------------------|---|
