@@ -16,7 +16,9 @@ use sp_runtime::{
 		storage_lock::{BlockAndTime, StorageLock},
 		Duration,
 	},
-	traits::{BlockNumberProvider, CheckedAdd, CheckedDiv, CheckedMul, CheckedSub},
+	traits::{
+		BlockNumberProvider, CheckedAdd, CheckedConversion, CheckedDiv, CheckedMul, CheckedSub,
+	},
 };
 
 use core::cmp::Ordering;
@@ -34,6 +36,8 @@ use frame_support::{
 		tokens::Preservation,
 	},
 };
+
+use fixed::types::U64F64;
 
 #[cfg(test)]
 mod mock;
@@ -66,6 +70,64 @@ impl OrderType {
 	}
 }
 
+#[derive(
+	Encode,
+	Default,
+	Decode,
+	Ord,
+	PartialOrd,
+	Eq,
+	PartialEq,
+	Clone,
+	RuntimeDebug,
+	TypeInfo,
+	MaxEncodedLen,
+)]
+pub struct Price {
+	inner: U64F64,
+}
+
+impl Price {
+	pub fn checked_mul(&self, other: &Self) -> Option<Self> {
+		self.inner
+			.checked_mul(&other.inner)
+			.map(|inner| Self { inner })
+	}
+
+	pub fn checked_div(&self, other: &Self) -> Option<Self> {
+		self.inner
+			.checked_div(&other.inner)
+			.map(|inner| Self { inner })
+	}
+
+	pub fn checked_from_num<Balance>(num: Balance) -> Result<Self, DispatchError> {
+		U64F64::try_from(num)
+			.map(|inner| Self { inner })
+			.ok_or(Error::<T>::PriceOverflow.into())
+	}
+
+	pub fn checked_from_num_denum<Balance>(
+		num: Balance,
+		denum: Balance,
+	) -> Result<Self, DispatchError> {
+		let a = U64F64::try_from(num).map_err(|_| Error::<T>::PriceOverflow)?;
+		let b = U64F64::try_from(denum).map_err(|_| Error::<T>::PriceOverflow)?;
+		a.checked_div(&b)
+			.map(|inner| Self { inner })
+			.ok_or(Error::<T>::DivOverflow.into())
+	}
+
+	pub fn checked_from_str(src: &str) -> Result<Self, DispatchError> {
+		U64F64::from_str(src)
+			.map(|inner| Self { inner })
+			.ok_or(Error::<T>::PriceOverflow.into())
+	}
+
+	pub fn inner(&self) -> U64F64 {
+		self.inner
+	}
+}
+
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo, MaxEncodedLen)]
 pub enum OrderStatus {
 	#[default]
@@ -85,7 +147,7 @@ pub struct Order<AccountId, Balance, BlockNumber> {
 	order_type: OrderType,
 	amount_offered: Balance,
 	amout_requested: Balance,
-	price: Balance,
+	price: Price,
 	unfilled_offered: Balance,
 	unfilled_requested: Balance,
 	order_status: OrderStatus,
@@ -121,21 +183,21 @@ impl<AccountId, Balance, BlockNumber> Order<AccountId, Balance, BlockNumber> {
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct MatchEngine<Order, Balance: cmp::Ord> {
-	buy_book: OrderBook<Order, Balance>,
-	sell_book: OrderBook<Order, Balance>,
-	market_price: Balance,
+pub struct MatchEngine<Order> {
+	buy_book: OrderBook<Order>,
+	sell_book: OrderBook<Order>,
+	market_price: Price,
 	last_process_order_id: u64,
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct OrderBookKey<Balance> {
+pub struct OrderBookKey {
 	order_id: u64,
-	price: Balance,
+	price: Price,
 }
 
-impl<Balance: cmp::Eq + cmp::Ord> Ord for OrderBookKey<Balance> {
-	fn cmp(&self, other: &OrderBookKey<Balance>) -> Ordering {
+impl Ord for OrderBookKey {
+	fn cmp(&self, other: &OrderBookKey) -> Ordering {
 		// low price in front
 		let cmp = self.price.cmp(&other.price);
 
@@ -148,8 +210,8 @@ impl<Balance: cmp::Eq + cmp::Ord> Ord for OrderBookKey<Balance> {
 	}
 }
 
-impl<Balance: cmp::PartialEq + cmp::PartialOrd> PartialOrd for OrderBookKey<Balance> {
-	fn partial_cmp(&self, other: &OrderBookKey<Balance>) -> Option<Ordering> {
+impl PartialOrd for OrderBookKey {
+	fn partial_cmp(&self, other: &OrderBookKey) -> Option<Ordering> {
 		// low price in front
 		let cmp = self.price.partial_cmp(&other.price);
 
@@ -163,9 +225,9 @@ impl<Balance: cmp::PartialEq + cmp::PartialOrd> PartialOrd for OrderBookKey<Bala
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
-pub struct OrderBook<Order, Balance: cmp::Ord> {
+pub struct OrderBook<Order> {
 	order_type: OrderType,
-	book: BoundedBTreeMap<OrderBookKey<Balance>, Order, ConstU32<{ u32::MAX }>>,
+	book: BoundedBTreeMap<OrderBookKey, Order, ConstU32<{ u32::MAX }>>,
 }
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
@@ -176,7 +238,7 @@ pub struct MatchResult<Balance, Order> {
 
 #[derive(Encode, Decode, Default, Eq, PartialEq, Clone, RuntimeDebug, TypeInfo)]
 pub struct Trade<Balance, Order> {
-	price: Balance,
+	price: Price,
 	quantity_base: Balance,
 	quantity_quote: Balance,
 	taker_order: Order,
@@ -201,7 +263,7 @@ pub mod pallet {
 		Order<<T as frame_system::Config>::AccountId, BalanceOf<T>, BlockNumberFor<T>>;
 
 	type MapMatchEnginesOf<T> =
-		BoundedBTreeMap<(u32, u32), MatchEngine<OrderOf<T>, BalanceOf<T>>, ConstU32<{ u32::MAX }>>;
+		BoundedBTreeMap<(u32, u32), MatchEngine<OrderOf<T>>, ConstU32<{ u32::MAX }>>;
 
 	#[pallet::genesis_config]
 	#[derive(Default)]
@@ -398,6 +460,8 @@ pub mod pallet {
 		PriceDoNotMatchOfferedRequestedAmount,
 		DivOverflow,
 		MulOverflow,
+		PriceOverflow,
+		AmountIsZero,
 	}
 
 	#[pallet::hooks]
@@ -429,7 +493,7 @@ pub mod pallet {
 
 			if let Ok(Some(engines)) = store_hashmap_match_engines.get::<BoundedBTreeMap<
 				(u32, u32),
-				MatchEngine<OrderOf<T>, BalanceOf<T>>,
+				MatchEngine<OrderOf<T>>,
 				ConstU32<{ u32::MAX }>,
 			>>() {
 				map_match_engines = engines;
@@ -464,7 +528,7 @@ pub mod pallet {
 					}
 					let order = Orders::<T>::get(last_process_order_id).unwrap();
 
-					let mut engine: MatchEngine<OrderOf<T>, BalanceOf<T>>;
+					let mut engine: MatchEngine<OrderOf<T>>;
 					if let Some(en) = map_match_engines.get_mut(&order.pair) {
 						engine = en.clone();
 					} else {
@@ -643,6 +707,9 @@ pub mod pallet {
 		) -> DispatchResultWithPostInfo {
 			let who = ensure_signed(origin)?;
 
+			ensure!(offered_amount > 0, Error::<T>::AmountIsZero);
+			ensure!(requested_amount > 0, Error::<T>::AmountIsZero);
+
 			let (asset_id_1, asset_id_2, order_type) = if asset_id_1 > asset_id_2 {
 				(asset_id_2, asset_id_1, order_type.get_opposite())
 			} else {
@@ -666,18 +733,7 @@ pub mod pallet {
 
 			// because price is an integer, we need to check if the division is exact
 			// (does not have a remainder)
-			let price = a
-				.checked_div(&b)
-				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?;
-
-			// do the check
-			if price
-				.checked_mul(&b)
-				.ok_or(Error::<T>::PriceDoNotMatchOfferedRequestedAmount)?
-				!= a
-			{
-				return Err(Error::<T>::PriceDoNotMatchOfferedRequestedAmount.into());
-			}
+			let price = Price::checked_from_num_denum(a, b)?;
 
 			NextOrderIndex::<T>::try_mutate(|index| -> DispatchResult {
 				let order_index = *index;
@@ -1125,7 +1181,7 @@ pub mod pallet {
 		fn process_order(
 			order_id: u64,
 			order: OrderOf<T>,
-			engine: &mut MatchEngine<OrderOf<T>, BalanceOf<T>>,
+			engine: &mut MatchEngine<OrderOf<T>>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
 			match order.order_type {
 				OrderType::BUY => Self::match_in_orderbook(
@@ -1149,16 +1205,8 @@ pub mod pallet {
 			order_id: u64,
 			mut taker_order: OrderOf<T>,
 			maker_book_type: OrderType,
-			maker_book: &mut BoundedBTreeMap<
-				OrderBookKey<BalanceOf<T>>,
-				OrderOf<T>,
-				ConstU32<{ u32::MAX }>,
-			>,
-			another_book: &mut BoundedBTreeMap<
-				OrderBookKey<BalanceOf<T>>,
-				OrderOf<T>,
-				ConstU32<{ u32::MAX }>,
-			>,
+			maker_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
+			another_book: &mut BoundedBTreeMap<OrderBookKey, OrderOf<T>, ConstU32<{ u32::MAX }>>,
 		) -> Result<MatchResult<BalanceOf<T>, OrderOf<T>>, DispatchError> {
 			let mut match_result = MatchResult {
 				taker_order: taker_order.clone(),
@@ -1237,15 +1285,17 @@ pub mod pallet {
 							//taker request amout < maker offer amout
 							match taker_order.order_type {
 								OrderType::BUY => {
-									let new_offer_amout = taker_unfilled_quantity_requested
-										.checked_mul(&maker_order.price)
-										.ok_or(Error::<T>::MulOverflow)?;
+									let new_offer_amout =
+										Price::checked_from_num(taker_unfilled_quantity_requested)?
+											.checked_mul(&maker_order.price)
+											.ok_or(Error::<T>::MulOverflow)?;
 									(taker_unfilled_quantity_requested, new_offer_amout)
 								}
 								OrderType::SELL => {
-									let new_offer_amout = taker_unfilled_quantity_requested
-										.checked_div(&maker_order.price)
-										.ok_or(Error::<T>::DivOverflow)?;
+									let new_offer_amout =
+										Price::checked_from_num(taker_unfilled_quantity_requested)?
+											.checked_div(&maker_order.price)
+											.ok_or(Error::<T>::DivOverflow)?;
 									(taker_unfilled_quantity_requested, new_offer_amout)
 								}
 							}
